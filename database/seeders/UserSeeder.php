@@ -36,8 +36,8 @@ class UserSeeder extends Seeder
         // 1 админ
         $admin = User::factory()->create([
             'name' => 'Администратор',
-            'email' => 'admin@kubgtu.ru',
-            'password' => bcrypt('password'),
+            'email' => 'qwe@qwe.qwe',
+            'password' => bcrypt('qwe'),
         ]);
         $admin->assignRole($adminRole);
     }
