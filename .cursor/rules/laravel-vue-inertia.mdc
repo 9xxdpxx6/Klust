@@ -1,0 +1,150 @@
+---
+alwaysApply: true
+---
+
+# 🧭 Cursor AI Project Rule: Laravel 10.10 + Vue 3 + Inertia Monolith
+
+You are an expert in **Laravel**, **Vue.js**, and **modern full-stack web development**.
+
+---
+
+## Key Principles
+- Write concise, technical responses with accurate examples in **PHP** and **Vue.js**.
+- Follow **Laravel 10.10** and **Vue 3** best practices and conventions.
+- Use **object-oriented programming** with a focus on **SOLID principles**.
+- Favor **iteration and modularization** over duplication.
+- Use **descriptive and meaningful names** for variables, methods, and files.
+- Adhere to **Laravel’s directory structure** conventions (e.g., `app/Http/Controllers`).
+- Prioritize **dependency injection** and **service container** usage.
+
+---
+
+## Laravel
+- Use **PHP 8.1+** features (e.g., readonly properties, enums, match expressions).
+- Apply strict typing: `declare(strict_types=1);`
+- Follow **PSR-12** coding standards for PHP.
+- Use Laravel’s built-in helpers (`Str::`, `Arr::`, etc.).
+- Stick to **MVC architecture** and standard file organization.
+- Implement **error handling and logging**:
+  - Use Laravel’s exception handling (`app/Exceptions/Handler.php`).
+  - Create custom exceptions when needed.
+  - Apply `try/catch` blocks for predictable errors.
+- Use **request validation** via **Form Request classes**.
+- Implement **Eloquent ORM** for data modeling and queries.
+- Manage schema with **migrations**, **seeders**, and **factories**.
+- Apply **repository pattern** for data access abstraction.
+- Use **service classes** for business logic.
+- Secure endpoints with **CSRF**, **Sanctum**, or **Passport**.
+- Use **events**, **listeners**, and **jobs** for async tasks.
+- Implement **queues** and **scheduling** for background and recurring processes.
+- Apply **caching** (Redis, file, database) for performance optimization.
+- Write **unit** and **feature tests** with **PHPUnit** and **Laravel Dusk**.
+- Use **localization** for multi-language support.
+- Follow **RESTful routing** conventions in `routes/web.php` and `routes/api.php`.
+
+---
+
+## Inertia.js Integration
+- Use **Inertia.js** to connect Laravel backend routes directly to Vue 3 pages.
+- Do **not** build a separate API layer — rely on server-side routing with Inertia.
+- Each Laravel controller action should return an Inertia page:
+  ```php
+  return Inertia::render('Dashboard', [
+      'user' => Auth::user(),
+  ]);
+````
+
+* Define shared props (e.g., auth user, flash messages) in `HandleInertiaRequests` middleware.
+* Use **Ziggy** for named route access inside Vue components.
+* Keep routes in `routes/web.php`; avoid using `routes/api.php` unless strictly required.
+
+---
+
+## Vue.js
+
+* Use **Vue 3 Composition API** and `<script setup>` syntax.
+* Integrate with **Inertia.js** and **Vite** (no standalone SPA router unless needed).
+* Organize files:
+
+  * Pages → `resources/js/Pages/`
+  * Components → `resources/js/Components/`
+  * Layouts → `resources/js/Layouts/`
+* Use **TailwindCSS** for styling and responsive design.
+* Use **TypeScript** when possible for Vue components.
+* Implement **Vuelidate** for form validation.
+* Use **PrimeVue** for UI enhancements.
+* Handle form submissions with `@inertiajs/vue3` form helpers.
+* Flash messages and modals should be reusable components.
+* Example of page setup:
+
+  ```vue
+  <script setup>
+  import { ref } from 'vue'
+  import { useForm } from '@inertiajs/vue3'
+
+  const form = useForm({ name: '' })
+
+  const submit = () => form.post(route('users.store'))
+  </script>
+
+  <template>
+    <form @submit.prevent="submit">
+      <input v-model="form.name" type="text" />
+      <button type="submit">Save</button>
+    </form>
+  </template>
+  ```
+
+---
+
+## Dependencies
+
+* **Laravel 10.10**
+* **PHP 8.1+**
+* **Composer** for dependency management
+* **Inertia.js** + **Vue 3**
+* **Vite** for asset bundling
+* **TailwindCSS** for styling
+* **PrimeVue** for UI components
+* **Pinia** for state management
+* **Ziggy** for Laravel route helpers in Vue
+
+---
+
+## Best Practices
+
+* Keep logic modular and decoupled.
+* Use **repository + service layers** for maintainability.
+* Secure APIs and Inertia routes with Laravel’s auth features.
+* Leverage **Eloquent relationships**, **mutators**, and **accessors**.
+* Apply **API versioning** when exposing endpoints.
+* Use **transactions** and **indexes** for data integrity.
+* Use **Laravel’s testing tools** for CI/CD pipelines.
+* Optimize front-end development with **Vite**, **Tailwind**, and **PrimeVue** integration.
+
+---
+
+## Key Conventions
+
+1. Follow Laravel’s **MVC architecture**.
+2. Use **routing** for clean URL and endpoint definitions.
+3. Implement **Form Requests** for validation.
+4. Build **reusable Vue components** and modular state with Pinia.
+5. Prefer **Inertia pages** over Blade views.
+6. Manage **Eloquent relationships** effectively.
+7. Decouple logic using **events**, **listeners**, and **jobs**.
+8. Use **queues** and **scheduling** for scalability.
+9. Apply **caching** and **database optimization** strategies.
+10. Use **Vite** for asset bundling and hot reload during development.
+
+---
+
+## Development Workflow
+
+1. Add route in `routes/web.php`.
+2. Create controller method returning `Inertia::render()`.
+3. Build matching Vue page in `resources/js/Pages/`.
+4. Use shared layouts and components for consistency.
+5. Test with Laravel’s built-in tools.
+6. Commit and document all schema and dependency changes.
+
