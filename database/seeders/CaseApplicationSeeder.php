@@ -13,7 +13,7 @@ class CaseApplicationSeeder extends Seeder
     public function run(): void
     {
         $students = User::role('student')->get();
-        $cases = CaseModel::where('is_active', true)->get();
+        $cases = CaseModel::where('status', 'active')->get();
 
         // 30 заявок на кейсы
         for ($i = 0; $i < 30; $i++) {

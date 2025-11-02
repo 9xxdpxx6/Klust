@@ -41,7 +41,7 @@ class CaseModelFactory extends Factory
             'deadline' => fake()->dateTimeBetween('now', '+3 months'),
             'reward' => fake()->randomElement($rewards),
             'required_team_size' => fake()->numberBetween(2, 5),
-            'is_active' => fake()->boolean(85),
+            'status' => fake()->randomElement(['draft', 'active', 'active', 'active', 'completed', 'archived']), // Больше active для реалистичности
         ];
     }
 }

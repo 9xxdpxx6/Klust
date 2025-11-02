@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Database\Factories\CaseModelFactory;
 
@@ -27,12 +28,11 @@ class CaseModel extends Model
         'deadline',
         'reward',
         'required_team_size',
-        'is_active',
+        'status',
     ];
 
     protected $casts = [
         'deadline' => 'date',
-        'is_active' => 'boolean',
     ];
 
     public function partner(): BelongsTo
@@ -48,6 +48,12 @@ class CaseModel extends Model
     public function applications(): HasMany
     {
         return $this->hasMany(CaseApplication::class, 'case_id');
+    }
+
+    public function skills(): BelongsToMany
+    {
+        return $this->belongsToMany(Skill::class, 'case_skills')
+            ->withTimestamps();
     }
 }
 

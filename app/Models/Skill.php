@@ -23,5 +23,11 @@ class Skill extends Model
             ->withPivot('level', 'points_earned')
             ->withTimestamps();
     }
+
+    public function cases(): BelongsToMany
+    {
+        return $this->belongsToMany(CaseModel::class, 'case_skills')
+            ->withTimestamps();
+    }
 }
 

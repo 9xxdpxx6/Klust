@@ -34,7 +34,7 @@ class CaseSeeder extends Seeder
                 'deadline' => fake()->dateTimeBetween('now', '+3 months'),
                 'reward' => $caseData['reward'],
                 'required_team_size' => fake()->numberBetween(2, 5),
-                'is_active' => fake()->boolean(85),
+                'status' => fake()->randomElement(['draft', 'active', 'active', 'active', 'completed']), // Больше active для реалистичности
             ]);
         }
     }

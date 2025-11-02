@@ -17,10 +17,10 @@ return new class extends Migration
             $table->date('deadline');
             $table->text('reward');
             $table->integer('required_team_size')->default(1);
-            $table->boolean('is_active')->default(true);
+            $table->enum('status', ['draft', 'active', 'completed', 'archived'])->default('draft');
             $table->timestamps();
 
-            $table->index(['partner_id', 'is_active']);
+            $table->index(['partner_id', 'status']);
         });
     }
 
