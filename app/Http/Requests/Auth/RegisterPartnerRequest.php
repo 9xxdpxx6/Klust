@@ -29,7 +29,7 @@ class RegisterPartnerRequest extends FormRequest
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'contact_phone' => ['required', 'string', 'max:20'],
-            'description' => ['nullable', 'string', 'max:1000'],
+            'description' => ['nullable', 'string', 'max:2000'],
         ];
     }
 

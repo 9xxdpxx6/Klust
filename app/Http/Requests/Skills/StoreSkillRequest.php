@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Skills;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -11,7 +13,7 @@ class StoreSkillRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true; // Авторизация должна проверяться в контроллере через middleware
     }
 
     /**
@@ -22,8 +24,8 @@ class StoreSkillRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:100|min:2|unique:skills,name',
-            'category' => 'required|string|in:hard,soft,technical,business,creative,language',
+            'name' => 'required|string|max:255|unique:skills,name',
+            'category' => 'required|string|in:hard,soft,language,other',
             'max_level' => 'required|integer|min:1|max:1000',
         ];
     }
@@ -32,11 +34,10 @@ class StoreSkillRequest extends FormRequest
     {
         return [
             'name.required' => 'Название навыка обязательно',
-            'name.min' => 'Название навыка должно содержать минимум 2 символа',
-            'name.max' => 'Название навыка не должно превышать 100 символов',
+            'name.max' => 'Название навыка не должно превышать 255 символов',
             'name.unique' => 'Навык с таким названием уже существует',
             'category.required' => 'Категория навыка обязательна',
-            'category.in' => 'Выбрана недопустимая категория. Допустимые: hard, soft, technical, business, creative, language',
+            'category.in' => 'Выбрана недопустимая категория. Допустимые: hard, soft, language, other',
             'max_level.required' => 'Максимальный уровень обязателен',
             'max_level.integer' => 'Максимальный уровень должен быть целым числом',
             'max_level.min' => 'Максимальный уровень должен быть не менее 1',
