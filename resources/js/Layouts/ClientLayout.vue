@@ -3,6 +3,9 @@
     <BaseHeader
       :logo-text="logoText"
       :logo-link="logoLink"
+      :logo-icon="logoIcon"
+      :logo-image="logoImage"
+      :logo-image-class="logoImageClass"
       :show-search="showSearch"
       :show-notifications="showNotifications"
       :show-mobile-menu="showMobileMenu"
@@ -34,6 +37,20 @@ const props = defineProps({
   logoLink: {
     type: String,
     default: '/',
+  },
+  logoIcon: {
+    type: String,
+    default: '/images/logo/icon.png',
+    // Иконка (просто буква) - приоритет над logoImage
+  },
+  logoImage: {
+    type: String,
+    default: '/images/logo/logo.png',
+    // Длинное лого (весь текст) - используется если logoIcon не указан
+  },
+  logoImageClass: {
+    type: String,
+    default: '',
   },
   showSearch: {
     type: Boolean,

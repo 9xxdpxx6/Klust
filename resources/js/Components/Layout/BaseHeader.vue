@@ -4,7 +4,31 @@
     <div class="base-header__logo">
       <slot name="logo">
         <a :href="logoLink" class="flex items-center gap-2">
-          <span class="text-primary font-bold text-xl">{{ logoText }}</span>
+          <!-- Иконка (просто буква) - приоритет -->
+          <template v-if="logoIcon">
+            <img
+              v-if="!imageError.icon"
+              :src="logoIcon"
+              :alt="logoText"
+              class="h-8 w-8 object-contain"
+              @error="handleImageError('icon')"
+            />
+            <span v-else class="text-primary font-bold text-xl">{{ logoText }}</span>
+          </template>
+          <!-- Длинное лого (весь текст) - если нет иконки -->
+          <template v-else-if="logoImage">
+            <img
+              v-if="!imageError.image"
+              :src="logoImage"
+              :alt="logoText"
+              class="h-10 object-contain max-w-[200px]"
+              :class="logoImageClass"
+              @error="handleImageError('image')"
+            />
+            <span v-else class="text-primary font-bold text-xl">{{ logoText }}</span>
+          </template>
+          <!-- Текстовое лого по умолчанию -->
+          <span v-else class="text-primary font-bold text-xl">{{ logoText }}</span>
         </a>
       </slot>
     </div>
@@ -51,7 +75,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref } from 'vue';
 import UserDropdown from '@/Components/Navigation/UserDropdown.vue';
 import NotificationBell from '@/Components/Navigation/NotificationBell.vue';
 import { useAuth } from '@/Composables/useAuth';
@@ -64,6 +88,21 @@ const props = defineProps({
   logoLink: {
     type: String,
     default: '/',
+  },
+  logoIcon: {
+    type: String,
+    default: null,
+    // Путь к иконке (просто буква), например: '/images/logo/icon.svg'
+  },
+  logoImage: {
+    type: String,
+    default: null,
+    // Путь к длинному лого (весь текст), например: '/images/logo/logo-full.svg'
+  },
+  logoImageClass: {
+    type: String,
+    default: '',
+    // Дополнительные классы для длинного лого
   },
   showSearch: {
     type: Boolean,
@@ -90,6 +129,13 @@ const props = defineProps({
 const emit = defineEmits(['toggle-mobile-menu', 'search']);
 
 const { user } = useAuth();
+
+const imageError = ref({ icon: false, image: false });
+
+const handleImageError = (type) => {
+  imageError.value[type] = true;
+  // Если изображение не загрузилось, показываем текстовое лого
+};
 
 const handleSearch = (event) => {
   emit('search', event.target.value);

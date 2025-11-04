@@ -5,18 +5,36 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-16">
                     <div class="flex items-center gap-3">
-                        <img src="/img/logo.png" alt="Klust" class="h-10" v-if="false" />
-                        <h1 class="text-2xl font-bold text-primary">Klust</h1>
+                        <!-- Иконка логотипа -->
+                        <img 
+                            v-if="logoIcon"
+                            :src="logoIcon" 
+                            alt="Klust" 
+                            class="h-10 w-10 object-contain"
+                            @error="$event.target.style.display = 'none'"
+                        />
+                        <!-- Длинное лого -->
+                        <img 
+                            v-else-if="logoImage"
+                            :src="logoImage" 
+                            alt="Klust" 
+                            class="h-10 object-contain"
+                            @error="$event.target.style.display = 'none'"
+                        />
+                        <!-- Текстовое лого по умолчанию -->
+                        <h1 v-else class="text-2xl font-bold text-primary">Klust</h1>
                     </div>
                     <div class="flex items-center gap-4">
                         <Link
-                            :href="route('login')"
+                            v-if="routeExists('login')"
+                            :href="safeRoute('login')"
                             class="text-sm font-medium text-text-primary hover:text-primary transition-colors"
                         >
                             Войти
                         </Link>
                         <Link
-                            :href="route('register')"
+                            v-if="routeExists('register')"
+                            :href="safeRoute('register')"
                             class="px-4 py-2 text-sm font-medium text-kubgtu-white bg-primary rounded-lg hover:bg-primary-light transition-colors shadow-sm"
                         >
                             Регистрация
@@ -45,12 +63,34 @@
 
 <script setup>
 import { Link } from '@inertiajs/vue3';
+import { routeExists } from '@/Utils/routes';
 
 defineProps({
     title: {
         type: String,
         required: true,
     },
+    logoIcon: {
+        type: String,
+        default: '/images/logo/icon.png',
+        // Иконка (просто буква) - используется если указано
+    },
+    logoImage: {
+        type: String,
+        default: '/images/logo/logo.png',
+        // Длинное лого (весь текст) - используется если logoIcon не указан
+    },
 });
+
+const safeRoute = (routeName) => {
+    if (routeExists(routeName)) {
+        try {
+            return route(routeName);
+        } catch (e) {
+            return '#';
+        }
+    }
+    return '#';
+};
 </script>
 
