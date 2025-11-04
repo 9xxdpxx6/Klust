@@ -15,6 +15,7 @@
     <div class="layout-with-sidebar__content">
       <BaseHeader
         logo-text="КубГТУ"
+        logo-image="/images/logo/logo.png"
         :show-search="true"
         :show-notifications="true"
         :show-mobile-menu="!!sidebarState.isMobile"

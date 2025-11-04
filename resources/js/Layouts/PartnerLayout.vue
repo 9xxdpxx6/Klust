@@ -14,6 +14,8 @@
     
     <div class="layout-with-sidebar__content">
       <BaseHeader
+        logo-icon="/images/logo/icon.png"
+        logo-image="/images/logo/logo.png"
         :show-search="false"
         :show-mobile-menu="!!sidebarState.isMobile"
         @toggle-mobile-menu="sidebarState.toggleCollapse"
