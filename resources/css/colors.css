@@ -1,0 +1,43 @@
+:root {
+  /* Основные цвета КубГТУ (по дизайну сайта kubstu.ru) */
+  --color-kubgtu-blue: #3157DD;      /* Основной синий (#3161DD ~ #3157DD) */
+  --color-kubgtu-blue-light: #4163DF; /* Светлый синий */
+  --color-kubgtu-blue-dark: #1E3A8A;  /* Темный синий */
+  --color-kubgtu-cyan: #9BD1FF;      /* Голубой (rgb(155, 213, 255)) */
+  --color-kubgtu-cyan-light: #B8D4FF; /* Светло-голубой */
+  --color-kubgtu-white: #FFFFFF;      /* Белый */
+  
+  /* Оттенки серого (по дизайну сайта) */
+  --color-kubgtu-gray-light: #F4F4F4;  /* rgb(244, 244, 244) - основной фон */
+  --color-kubgtu-gray: #E5E5E5;
+  --color-kubgtu-gray-medium: #CCCCCC;
+  --color-kubgtu-gray-dark: #808080;
+  --color-kubgtu-blue-gray: #9198E5;   /* rgba(145,152,229) - для градиентов */
+  
+  /* Семантические цвета на основе палитры */
+  --color-primary: var(--color-kubgtu-blue);
+  --color-primary-light: var(--color-kubgtu-blue-light);
+  --color-primary-dark: var(--color-kubgtu-blue-dark);
+  --color-accent: var(--color-kubgtu-cyan);
+  --color-accent-light: var(--color-kubgtu-cyan-light);
+  --color-background: var(--color-kubgtu-white);
+  --color-surface: var(--color-kubgtu-gray-light);
+  --color-surface-hover: var(--color-kubgtu-gray);
+  
+  /* Текст */
+  --color-text-primary: #000000;      /* Черный текст */
+  --color-text-secondary: #404040;    /* Темно-серый */
+  --color-text-muted: #808080;        /* Серый */
+  --color-text-on-primary: var(--color-kubgtu-white); /* Белый на синем */
+  
+  /* Границы */
+  --color-border: var(--color-kubgtu-gray-medium);
+  --color-border-light: var(--color-kubgtu-gray);
+  
+  /* Состояния */
+  --color-success: #11D56B;           /* Зеленый из сайта */
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  --color-info: var(--color-kubgtu-blue);
+}
+
