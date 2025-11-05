@@ -11,6 +11,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\Admin\UpdateUserRequest;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class UsersController extends Controller
 {
@@ -160,14 +161,14 @@ class UsersController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
-                'avatar' => $request->avatar,
+                'avatar' => null, // Пока null, обновим после загрузки файла
                 'course' => $request->course,
                 'email_verified_at' => now(),
             ]);
 
             if ($request->hasFile('avatar')) {
                 $avatarPath = $request->file('avatar')->store('avatars', 'public');
-                $updateData['avatar'] = $avatarPath;
+                $user->update(['avatar' => $avatarPath]);
             }
 
             // Назначаем роль пользователю
@@ -175,8 +176,12 @@ class UsersController extends Controller
                 $user->assignRole($request->role);
             }
 
+            $message = $kubgtu_id
+                ? "Пользователь успешно создан с ID: {$kubgtu_id}"
+                : 'Пользователь успешно создан';
+
             return redirect()->route('admin.users.index')
-                ->with('success', "Пользователь успешно создан с ID: {$kubgtu_id}");
+                ->with('success', $message);
         });
     }
 
@@ -209,10 +214,6 @@ class UsersController extends Controller
         }
 
         // Обновляем аватар если указан
-        if ($request->has('avatar')) {
-            $updateData['avatar'] = $request->avatar;
-        }
-
         if ($request->hasFile('avatar')) {
             // Удаляем старый аватар если есть
             if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
