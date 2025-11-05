@@ -30,7 +30,6 @@ class StoreUserRequest extends FormRequest
             'password' => 'required|string|min:6|confirmed',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'course' => 'nullable|integer|min:1|max:6',
-            'role' => 'required|in:admin,user,student,partner',
-        ];
+            'role' => 'required|in:admin,teacher,student,partner',        ];
     }
 }
