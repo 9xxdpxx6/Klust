@@ -57,16 +57,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
 
     // Админка (будет дополнено позже)
-    Route::prefix('admin')->middleware('role:admin|teacher')->name('admin.')->group(function () {
-        Route::get('/dashboard', function () {
-            return Inertia::render('Admin/Dashboard');
-        })->name('dashboard');
-
-        Route::get('/users', [UsersController::class, 'index'])->name('users.index');
-        Route::get('/users/{user}', [UsersController::class, 'show'])->name('users.show');
-        Route::get('/users/create', [UsersController::class, 'create'])->name('users.create');
-        Route::post('/users', [UsersController::class, 'store'])->name('users.store');
-    });
+//    Route::prefix('admin')->middleware('role:admin|teacher')->name('admin.')->group(function () {
+//        Route::get('/dashboard', function () {
+//            return Inertia::render('Admin/Dashboard');
+//        })->name('dashboard');
+//
+//        Route::get('/users', [UsersController::class, 'index'])->name('users.index');
+//        Route::get('/users/{user}', [UsersController::class, 'show'])->name('users.show');
+//        Route::get('/users/create', [UsersController::class, 'create'])->name('users.create');
+//        Route::post('/users', [UsersController::class, 'store'])->name('users.store');
+//    });
 
     // Студент (будет дополнено позже)
     Route::prefix('student')->middleware('role:student')->name('student.')->group(function () {
@@ -81,6 +81,21 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('Client/Partner/Dashboard');
         })->name('dashboard');
     });
+});
+
+Route::prefix('admin')->middleware(['auth', 'role:admin|teacher'])->name('admin.')->group(function () {
+    Route::get('/dashboard', function () {
+        return Inertia::render('Admin/Dashboard');
+    })->name('dashboard');
+
+    // Маршруты пользователей
+    Route::get('/users', [UsersController::class, 'index'])->name('users.index');
+    Route::get('/users/create', [UsersController::class, 'create'])->name('users.create');
+    Route::post('/users', [UsersController::class, 'store'])->name('users.store');
+    Route::get('/users/{user}', [UsersController::class, 'show'])->name('users.show');
+    Route::get('/users/{user}/edit', [UsersController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{user}', [UsersController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user}', [UsersController::class, 'destroy'])->name('users.destroy');
 });
 
 Route::get('/', function () {

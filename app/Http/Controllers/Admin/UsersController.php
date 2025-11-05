@@ -8,7 +8,9 @@ use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use App\Http\Controllers\Controller;
-
+use Illuminate\Support\Facades\Hash;
+use App\Http\Requests\Admin\UpdateUserRequest;
+use Illuminate\Support\Facades\DB;
 
 class UsersController extends Controller
 {
@@ -133,23 +135,98 @@ class UsersController extends Controller
 
     public function store(StoreUserRequest $request)
     {
-        // Создаем пользователя
-        $user = User::create([
-            'kubgtu_id' => $request->kubgtu_id,
+        // Используем транзакцию для избежания race condition
+        return DB::transaction(function () use ($request) {
+            // Находим максимальный существующий номер
+            $lastUser = User::where('kubgtu_id', 'like', 'STU%')
+                ->orderByRaw('CAST(SUBSTRING(kubgtu_id, 4) AS UNSIGNED) DESC')
+                ->first();
+
+            if ($lastUser && preg_match('/STU(\d+)/', $lastUser->kubgtu_id, $matches)) {
+                $nextNumber = (int)$matches[1] + 1;
+            } else {
+                $nextNumber = 1000001;
+            }
+
+            $kubgtu_id = 'STU' . $nextNumber;
+
+            // Создаем пользователя
+            $user = User::create([
+                'kubgtu_id' => $kubgtu_id,
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'avatar' => $request->avatar,
+                'course' => $request->course,
+                'email_verified_at' => now(),
+            ]);
+
+            // Назначаем роль пользователю
+            if ($request->role) {
+                $user->assignRole($request->role);
+            }
+
+            return redirect()->route('admin.users.index')
+                ->with('success', "Пользователь успешно создан с ID: {$kubgtu_id}");
+        });
+    }
+
+    public function edit(User $user)
+    {
+        $roles = Role::pluck('name');
+
+        // Загружаем текущую роль пользователя
+        $user->load('roles');
+        $currentRole = $user->roles->first()->name ?? '';
+        return Inertia::render('Admin/Users/Edit', [
+            'user' => $user,
+            'currentRole' => $currentRole,
+            'roles' => $roles,
+        ]);
+    }
+
+    public function update(UpdateUserRequest $request, User $user)
+    {
+        // Подготовка данных для обновления
+        $updateData = [
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'avatar' => $request->avatar,
             'course' => $request->course,
-            'email_verified_at' => $request->has('email_verified') ? now() : null,
-        ]);
+        ];
 
-        // Назначаем роль пользователю
-        if ($request->role) {
-            $user->assignRole($request->role);
+        // Обновляем пароль только если он указан
+        if ($request->filled('password')) {
+            $updateData['password'] = Hash::make($request->password);
+        }
+
+        // Обновляем аватар если указан
+        if ($request->has('avatar')) {
+            $updateData['avatar'] = $request->avatar;
+        }
+
+        // Обновляем пользователя
+        $user->update($updateData);
+
+        // Обновляем роль если она изменилась
+        if ($request->role && $request->role !== $user->roles->first()->name) {
+            $user->syncRoles([$request->role]);
         }
 
         return redirect()->route('admin.users.index')
-            ->with('success', 'Пользователь успешно создан.');
+            ->with('success', 'Пользователь успешно обновлен.');
+    }
+
+    public function destroy(User $user)
+    {
+        // Нельзя удалить самого себя
+        if ($user->id === auth()->id()) {
+            return redirect()->back()
+                ->with('error', 'Вы не можете удалить свой собственный аккаунт.');
+        }
+
+        $user->delete();
+
+        return redirect()->route('admin.users.index')
+            ->with('success', 'Пользователь успешно удален.');
     }
 }

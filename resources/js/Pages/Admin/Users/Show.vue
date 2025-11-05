@@ -39,6 +39,16 @@
 <!--                    </Link>-->
 <!--                </div>-->
             </div>
+            <!-- Добавьте эту кнопку в начало страницы Show.vue -->
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-bold text-gray-900">Профиль пользователя: {{ user.name }}</h1>
+                <Link
+                    :href="route('admin.users.edit', user.id)"
+                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                >
+                    Редактировать
+                </Link>
+            </div>
             <div class="border-t border-gray-200">
                 <dl>
                     <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">

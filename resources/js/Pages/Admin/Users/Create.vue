@@ -61,19 +61,6 @@
                                 <div v-if="errors.email" class="text-red-500 text-sm mt-1">{{ errors.email }}</div>
                             </div>
 
-                            <!-- KUBGTU ID -->
-                            <div>
-                                <label for="kubgtu_id" class="block text-sm font-medium text-gray-700">KUBGTU ID</label>
-                                <input
-                                    type="text"
-                                    id="kubgtu_id"
-                                    v-model="form.kubgtu_id"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    :class="{ 'border-red-300': errors.kubgtu_id }"
-                                />
-                                <div v-if="errors.kubgtu_id" class="text-red-500 text-sm mt-1">{{ errors.kubgtu_id }}</div>
-                            </div>
-
                             <!-- Курс -->
                             <div>
                                 <label for="course" class="block text-sm font-medium text-gray-700">Курс</label>
@@ -127,21 +114,6 @@
                                     </option>
                                 </select>
                                 <div v-if="errors.role" class="text-red-500 text-sm mt-1">{{ errors.role }}</div>
-                            </div>
-
-                            <!-- Статус верификации -->
-                            <div class="sm:col-span-2">
-                                <div class="flex items-center">
-                                    <input
-                                        type="checkbox"
-                                        id="email_verified"
-                                        v-model="form.email_verified"
-                                        class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                                    />
-                                    <label for="email_verified" class="ml-2 block text-sm text-gray-900">
-                                        Email подтвержден
-                                    </label>
-                                </div>
                             </div>
                         </div>
 
