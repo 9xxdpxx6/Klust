@@ -152,7 +152,6 @@ const props = defineProps({
 })
 
 const form = useForm({
-    kubgtu_id: '',
     name: '',
     email: '',
     password: '',

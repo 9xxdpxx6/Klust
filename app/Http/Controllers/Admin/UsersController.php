@@ -138,19 +138,23 @@ class UsersController extends Controller
         // Используем транзакцию для избежания race condition
         return DB::transaction(function () use ($request) {
             // Находим максимальный существующий номер
-            $lastUser = User::where('kubgtu_id', 'like', 'STU%')
-                ->orderByRaw('CAST(SUBSTRING(kubgtu_id, 4) AS UNSIGNED) DESC')
-                ->first();
+            $kubgtu_id = null;
 
-            if ($lastUser && preg_match('/STU(\d+)/', $lastUser->kubgtu_id, $matches)) {
-                $nextNumber = (int)$matches[1] + 1;
-            } else {
-                $nextNumber = 1000001;
+            // Генерируем kubgtu_id только для студентов
+            if ($request->role === 'student') {
+                $lastUser = User::where('kubgtu_id', 'like', 'STU%')
+                    ->orderByRaw('CAST(SUBSTRING(kubgtu_id, 4) AS UNSIGNED) DESC')
+                    ->first();
+
+                if ($lastUser && preg_match('/STU(\d+)/', $lastUser->kubgtu_id, $matches)) {
+                    $nextNumber = (int)$matches[1] + 1;
+                } else {
+                    $nextNumber = 1000001;
+                }
+
+                $kubgtu_id = 'STU' . $nextNumber;
             }
 
-            $kubgtu_id = 'STU' . $nextNumber;
-
-            // Создаем пользователя
             $user = User::create([
                 'kubgtu_id' => $kubgtu_id,
                 'name' => $request->name,
@@ -160,6 +164,11 @@ class UsersController extends Controller
                 'course' => $request->course,
                 'email_verified_at' => now(),
             ]);
+
+            if ($request->hasFile('avatar')) {
+                $avatarPath = $request->file('avatar')->store('avatars', 'public');
+                $updateData['avatar'] = $avatarPath;
+            }
 
             // Назначаем роль пользователю
             if ($request->role) {
@@ -204,12 +213,24 @@ class UsersController extends Controller
             $updateData['avatar'] = $request->avatar;
         }
 
+        if ($request->hasFile('avatar')) {
+            // Удаляем старый аватар если есть
+            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            $avatarPath = $request->file('avatar')->store('avatars', 'public');
+            $updateData['avatar'] = $avatarPath;
+        }
+
         // Обновляем пользователя
         $user->update($updateData);
 
         // Обновляем роль если она изменилась
-        if ($request->role && $request->role !== $user->roles->first()->name) {
-            $user->syncRoles([$request->role]);
+        if ($request->role) {
+            $currentRole = $user->roles->first()?->name ?? null;
+            if ($request->role !== $currentRole) {
+                $user->syncRoles([$request->role]);
+            }
         }
 
         return redirect()->route('admin.users.index')

@@ -39,6 +39,7 @@ class UpdateUserRequest extends FormRequest
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'course' => 'nullable|integer|min:1|max:6',
             'role' => 'required|in:admin,teacher,student,partner',
+            'email_verified' => 'nullable|boolean',
         ];
     }
 
