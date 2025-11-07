@@ -1,213 +1,298 @@
 <template>
-    <AdminLayout>
-        <div class="space-y-6">
-            <div class="flex items-center justify-between">
+    <div class="p-6">
+        <Head title="Пользователи" />
+
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold">Управление пользователями</h1>
+        </div>
+
+        <!-- Фильтры -->
+        <div class="bg-white rounded-lg shadow p-4 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <!-- Поиск -->
                 <div>
-                    <h1 class="text-3xl font-bold text-text-primary mb-2">Пользователи</h1>
-                    <p class="text-text-secondary">Управление всеми пользователями системы</p>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Поиск</label>
+                    <input
+                        v-model="filters.search"
+                        type="text"
+                        placeholder="Имя, email или ID"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        @change="updateFilters"
+                    />
                 </div>
-                <Button
-                    variant="primary"
-                    icon="pi pi-plus"
-                    @click="safeVisit('admin.users.create')"
-                >
-                    Создать пользователя
-                </Button>
+
+                <!-- Фильтр по ролям -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Роль</label>
+                    <select
+                        v-model="filters.role"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        @change="updateFilters"
+                    >
+                        <option value="">Все роли</option>
+                        <option v-for="role in roles" :key="role" :value="role">
+                            {{ role }}
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Фильтр по статусу -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Статус</label>
+                    <select
+                        v-model="filters.status"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        @change="updateFilters"
+                    >
+                        <option value="">Все</option>
+                        <option value="verified">Верифицирован</option>
+                        <option value="unverified">Не верифицирован</option>
+                    </select>
+                </div>
+
+                <!-- Фильтр по курсу -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Курс</label>
+                    <select
+                        v-model="filters.course"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        @change="updateFilters"
+                    >
+                        <option value="">Все курсы</option>
+                        <option v-for="course in courses" :key="course" :value="course">
+                            {{ course }} курс
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Количество на странице -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">На странице</label>
+                    <select
+                        v-model="filters.perPage"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        @change="updateFilters"
+                    >
+                        <option value="10">10</option>
+                        <option value="15">15</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
             </div>
 
-            <FlashMessage />
-
-            <!-- Фильтры -->
-            <Card>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Select
-                        v-model="filters.role"
-                        :options="roleOptions"
-                        optionLabel="label"
-                        optionValue="value"
-                        label="Роль"
-                        placeholder="Все роли"
-                        @update:modelValue="handleFilter"
-                    />
-                    <Select
-                        v-model="filters.status"
-                        :options="statusOptions"
-                        optionLabel="label"
-                        optionValue="value"
-                        label="Статус"
-                        placeholder="Все статусы"
-                        @update:modelValue="handleFilter"
-                    />
-                    <Input
-                        v-model="filters.search"
-                        label="Поиск"
-                        placeholder="Имя, email, kubgtu_id..."
-                        rightIcon="pi pi-search"
-                        @update:modelValue="handleSearch"
-                    />
-                </div>
-            </Card>
-
-            <!-- Таблица -->
-            <Card>
-                <DataTable
-                    :value="users.data"
-                    :paginator="true"
-                    :rows="users.meta?.per_page || 10"
-                    :totalRecords="users.meta?.total || 0"
-                    :lazy="true"
-                    :loading="loading"
-                    @page="handlePage"
+            <!-- Кнопка сброса фильтров -->
+            <div class="mt-4 flex justify-end">
+                <button
+                    @click="resetFilters"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
                 >
-                    <Column field="id" header="ID" :sortable="true" style="width: 80px" />
-                    <Column field="name" header="ФИО" :sortable="true" />
-                    <Column field="email" header="Email" :sortable="true" />
-                    <Column field="kubgtu_id" header="ID КубГТУ" :sortable="true">
-                        <template #body="slotProps">
-                            <span v-if="slotProps.data.kubgtu_id">{{ slotProps.data.kubgtu_id }}</span>
-                            <span v-else class="text-text-muted">—</span>
-                        </template>
-                    </Column>
-                    <Column field="roles" header="Роль">
-                        <template #body="slotProps">
-                            <Badge
-                                v-for="role in slotProps.data.roles"
-                                :key="role"
-                                variant="secondary"
-                                size="sm"
-                                class="mr-1"
-                            >
-                                {{ role }}
-                            </Badge>
-                        </template>
-                    </Column>
-                    <Column field="course" header="Курс">
-                        <template #body="slotProps">
-                            <span v-if="slotProps.data.profile?.course">{{ slotProps.data.profile.course }}</span>
-                            <span v-else class="text-text-muted">—</span>
-                        </template>
-                    </Column>
-                    <Column field="created_at" header="Дата регистрации" :sortable="true">
-                        <template #body="slotProps">
-                            {{ formatDate(slotProps.data.created_at) }}
-                        </template>
-                    </Column>
-                    <Column header="Действия" style="width: 150px">
-                        <template #body="slotProps">
-                            <div class="flex gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    icon="pi pi-eye"
-                                    @click="safeVisit('admin.users.show', slotProps.data.id)"
-                                />
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    icon="pi pi-pencil"
-                                    @click="safeVisit('admin.users.edit', slotProps.data.id)"
-                                />
-                            </div>
-                        </template>
-                    </Column>
-                </DataTable>
-            </Card>
+                    Сбросить фильтры
+                </button>
+            </div>
         </div>
-    </AdminLayout>
+
+        <!-- Таблица пользователей -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                <div class="text-sm text-gray-600">
+                    Всего пользователей: {{ usersTotal }}
+                </div>
+                <Link
+                    :href="route('admin.users.create')"
+                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+                >
+                    Добавить пользователя
+                </Link>
+            </div>
+
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Пользователь
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Контакты
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Курс
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Роли
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Статус
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Дата регистрации
+                    </th>
+                </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                <tr v-for="user in usersData" :key="user.id">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-10 w-10">
+                                <img
+                                    v-if="user.avatar"
+                                    class="h-10 w-10 rounded-full"
+                                    :src="user.avatar"
+                                    alt=""
+                                />
+                                <div
+                                    v-else
+                                    class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center"
+                                >
+                                    <span class="text-gray-600 text-sm font-medium">{{ getUserInitials(user.name) }}</span>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <Link :href="route('admin.users.show', user.id)" class="text-sm font-medium text-gray-900 hover:text-indigo-600">
+                                    {{ user.name }}
+                                </Link>
+                                <div v-if="user.kubgtu_id" class="text-sm text-gray-500">
+                                    ID: {{ user.kubgtu_id }}
+                                </div>
+                            </div>
+
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ user.email }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+              <span
+                  v-if="user.course"
+                  class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800"
+              >
+                {{ user.course }} курс
+              </span>
+                        <span v-else class="text-sm text-gray-500">—</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex flex-wrap gap-1">
+                <span
+                    v-for="role in user.roles"
+                    :key="role.id"
+                    class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800"
+                >
+                  {{ role.name }}
+                </span>
+                            <span
+                                v-if="!user.roles || user.roles.length === 0"
+                                class="text-sm text-gray-500"
+                            >
+                  Нет ролей
+                </span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+              <span
+                  v-if="user.email_verified_at"
+                  class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800"
+              >
+                Верифицирован
+              </span>
+                        <span
+                            v-else
+                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800"
+                        >
+                Не верифицирован
+              </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ formatDate(user.created_at) }}
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <!-- Пагинация -->
+            <Pagination v-if="usersLinks" :links="usersLinks" class="mt-4" />
+        </div>
+
+        <!-- Сообщение если нет пользователей -->
+        <div v-if="!usersData || usersData.length === 0" class="bg-white rounded-lg shadow p-8 text-center">
+            <p class="text-gray-500">Пользователи не найдены</p>
+        </div>
+    </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { router } from '@inertiajs/vue3';
-import AdminLayout from '@/Layouts/AdminLayout.vue';
-import FlashMessage from '@/Components/Shared/FlashMessage.vue';
-import Card from '@/Components/UI/Card.vue';
-import Button from '@/Components/UI/Button.vue';
-import Input from '@/Components/UI/Input.vue';
-import Select from '@/Components/UI/Select.vue';
-import Badge from '@/Components/UI/Badge.vue';
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import { routeExists } from '@/Utils/routes';
+import { ref, computed } from 'vue'
+import { router, Link } from '@inertiajs/vue3'
+import { Head } from '@inertiajs/vue3'
+import Pagination from '@/Components/Pagination.vue'
 
 const props = defineProps({
     users: {
         type: Object,
-        default: () => ({ data: [], meta: {}, links: {} }),
+        default: () => ({})
     },
     filters: {
         type: Object,
-        default: () => ({}),
+        default: () => ({})
     },
-    loading: {
-        type: Boolean,
-        default: false,
+    roles: {
+        type: Array,
+        default: () => []
     },
-});
+    courses: {
+        type: Array,
+        default: () => []
+    },
+})
 
+// Computed свойства для безопасного доступа
+const usersData = computed(() => props.users?.data || [])
+const usersTotal = computed(() => props.users?.total || 0)
+const usersLinks = computed(() => props.users?.links || [])
+
+// Безопасная инициализация filters
 const filters = ref({
-    role: props.filters.role || '',
-    status: props.filters.status || '',
-    search: props.filters.search || '',
-});
+    search: props.filters?.search || '',
+    role: props.filters?.role || '',
+    status: props.filters?.status || '',
+    course: props.filters?.course || '',
+    perPage: props.filters?.perPage || 15,
+})
 
-const roleOptions = [
-    { label: 'Все роли', value: '' },
-    { label: 'Студент', value: 'student' },
-    { label: 'Партнер', value: 'partner' },
-    { label: 'Преподаватель', value: 'teacher' },
-    { label: 'Администратор', value: 'admin' },
-];
-
-const statusOptions = [
-    { label: 'Все статусы', value: '' },
-    { label: 'Активен', value: 'active' },
-    { label: 'Заблокирован', value: 'blocked' },
-];
-
-const handleFilter = () => {
-    if (routeExists('admin.users.index')) {
+// Обновление фильтров с debounce для поиска
+let searchTimeout = null
+const updateFilters = () => {
+    clearTimeout(searchTimeout)
+    searchTimeout = setTimeout(() => {
         router.get(route('admin.users.index'), filters.value, {
             preserveState: true,
-            preserveScroll: true,
-        });
-    }
-};
+            replace: true,
+        })
+    }, 500)
+}
 
-let searchTimeout = null;
-const handleSearch = () => {
-    if (searchTimeout) clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-        handleFilter();
-    }, 500);
-};
-
-const handlePage = (event) => {
-    if (routeExists('admin.users.index')) {
-        router.get(route('admin.users.index'), {
-            ...filters.value,
-            page: event.page + 1,
-        }, {
-            preserveState: true,
-            preserveScroll: true,
-        });
+const resetFilters = () => {
+    filters.value = {
+        search: '',
+        role: '',
+        status: '',
+        course: '',
+        perPage: 15,
     }
-};
-
-const safeVisit = (routeName, params = {}) => {
-    if (routeExists(routeName)) {
-        try {
-            router.visit(route(routeName, params));
-        } catch (e) {
-            console.warn(`Route "${routeName}" not found`);
-        }
-    }
-};
+    updateFilters()
+}
 
 const formatDate = (date) => {
-    if (!date) return '';
-    const d = new Date(date);
-    return d.toLocaleDateString('ru-RU');
-};
-</script>
+    if (!date) return ''
+    return new Date(date).toLocaleDateString('ru-RU')
+}
 
+const getUserInitials = (name) => {
+    if (!name) return '??'
+    return name
+        .split(' ')
+        .map(part => part.charAt(0))
+        .join('')
+        .toUpperCase()
+        .substring(0, 2)
+}
+</script>
