@@ -136,10 +136,15 @@
                 </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                <tr v-for="caseItem in casesData" :key="caseItem.id">
+                <tr
+                    v-for="caseItem in casesData"
+                    :key="caseItem.id"
+                    class="hover:bg-gray-50 cursor-pointer transition-colors"
+                    @click="goToCase(caseItem.id)"
+                >
                     <td class="px-6 py-4">
                         <div>
-                            <div class="text-sm font-medium text-gray-900">
+                            <div class="text-sm font-medium text-gray-900 hover:text-indigo-600 transition-colors">
                                 {{ caseItem.title }}
                             </div>
                             <div class="text-sm text-gray-500 mt-1 line-clamp-2">
@@ -253,6 +258,11 @@ const filters = ref({
     team_size: props.filters?.team_size || '',
     perPage: props.filters?.perPage || 15,
 })
+
+// Функция перехода к конкретному кейсу
+const goToCase = (caseId) => {
+    router.get(route('admin.cases.show', caseId))
+}
 
 // Функция для отображения имени партнера
 const getPartnerDisplayName = (partner) => {

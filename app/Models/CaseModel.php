@@ -52,9 +52,12 @@ class CaseModel extends Model
 
     public function skills(): BelongsToMany
     {
-        return $this->belongsToMany(Skill::class, 'case_skills')
-            ->withTimestamps();
+        return $this->belongsToMany(Skill::class, 'case_skills', 'case_id', 'skill_id');
     }
+
+    /**
+     * Relationship with case_skills intermediate model
+     */
 
     // Добавить в класс CaseModel
 
@@ -109,5 +112,7 @@ class CaseModel extends Model
     {
         return $this->deadline->isPast();
     }
+
+
 }
 

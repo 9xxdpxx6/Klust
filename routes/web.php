@@ -99,6 +99,7 @@ Route::prefix('admin')->middleware(['auth', 'role:admin|teacher'])->name('admin.
     Route::delete('/users/{user}', [UsersController::class, 'destroy'])->name('users.destroy');
 
     Route::get('/cases', [CaseController::class, 'index'])->name('cases.index');
+    Route::get('/cases/{case}', [CaseController::class, 'show'])->name('cases.show'); // Добавляем этот маршрут
 
 });
 

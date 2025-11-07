@@ -76,4 +76,43 @@ class CaseController extends Controller
             'partners' => $partners,
         ]);
     }
+
+    public function show(CaseModel $case)
+    {
+        // Загружаем кейс со всеми связями
+        $case->load([
+            'partner.user',
+            'simulator',
+            'skills',
+            'applications' => function ($query) {
+                $query->with([
+                    'user.studentProfile',
+                    'teamMembers.user.studentProfile'
+                ])->orderBy('created_at', 'desc');
+            },
+            'applications.teamMembers.user.studentProfile'
+        ]);
+
+        // Статистика по кейсу
+        $statistics = [
+            'total_applications' => $case->applications_count,
+            'pending_applications' => $case->applications->where('status', 'pending')->count(),
+            'approved_applications' => $case->applications->where('status', 'approved')->count(),
+            'rejected_applications' => $case->applications->where('status', 'rejected')->count(),
+            'average_team_size' => $case->applications->avg('team_members_count') + 1, // +1 для лидера
+        ];
+
+        // Группируем заявки по статусу
+        $applicationsByStatus = [
+            'pending' => $case->applications->where('status', 'pending'),
+            'approved' => $case->applications->where('status', 'approved'),
+            'rejected' => $case->applications->where('status', 'rejected'),
+        ];
+
+        return Inertia::render('Admin/Cases/Show', [
+            'case' => $case,
+            'statistics' => $statistics,
+            'applicationsByStatus' => $applicationsByStatus,
+        ]);
+    }
 }
