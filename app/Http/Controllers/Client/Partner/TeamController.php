@@ -66,7 +66,7 @@ class TeamController extends Controller
         // Получить историю активности
         $activityHistory = $this->teamService->getTeamActivityHistory($application);
 
-        return Inertia::render('Client/Partner/Teams/Show', [
+        return Inertia::render('Client/Partner/Team/Show', [
             'team' => $application,
             'progress' => $progress,
             'activityHistory' => $activityHistory,

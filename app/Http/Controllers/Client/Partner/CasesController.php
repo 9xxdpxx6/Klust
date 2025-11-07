@@ -47,8 +47,6 @@ class CasesController extends Controller
         // Получить только кейсы партнера
         $cases = $this->caseService->getPartnerCases($partner, $filters);
 
-        // Применить пагинацию
-        $cases = $cases->paginate(15);
 
         return Inertia::render('Client/Partner/Cases/Index', [
             'cases' => $cases,
@@ -109,11 +107,15 @@ class CasesController extends Controller
         $user = auth()->user();
         $partner = $user->partner;
 
+        // Загрузить кейс со связями через eager loading
+        $case = CaseModel::with([
+            'skills',
+            'applications.leader',
+            'applications.teamMembers.user'
+        ])->findOrFail($case->id);
+
         // Проверить права (только свой кейс)
         $this->caseService->ensureCaseBelongsToPartner($case, $partner);
-
-        // Загрузить связи
-        $case->load(['skills', 'applications.leader', 'applications.teamMembers.user']);
 
         // Получить статистику
         $statistics = $this->caseService->getCaseStatistics($case);

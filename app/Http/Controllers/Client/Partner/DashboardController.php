@@ -26,12 +26,13 @@ class DashboardController extends Controller
     public function index(): Response
     {
         $user = auth()->user();
+        $partner = $user->partner;
 
         // Получить статистику партнера
         $statistics = $this->partnerService->getDashboardStatistics($user);
 
-        // Получить активные кейсы
-        $activeCases = $this->caseService->getActiveCasesForPartner($user);
+        // Получить активные кейсы через getPartnerCases() с фильтром status='active'
+        $activeCases = $this->caseService->getPartnerCases($partner, ['status' => 'active']);
 
         // Получить последние активности (новые заявки, завершенные кейсы)
         $recentActivities = $this->partnerService->getRecentActivities($user);
