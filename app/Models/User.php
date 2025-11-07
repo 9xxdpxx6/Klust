@@ -121,4 +121,10 @@ class User extends Authenticatable
     {
         return $this->hasOne(Partner::class);
     }
+
+    // Accessor для удобного доступа к факультету студента
+    public function getFacultyAttribute()
+    {
+        return $this->studentProfile?->faculty;
+    }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -24,12 +26,5 @@ class Faculty extends Model
     public function studentProfiles(): HasMany
     {
         return $this->hasMany(StudentProfile::class);
-    }
-
-    public function activeStudents(): HasMany
-    {
-        return $this->studentProfiles()->whereHas('user', function ($query) {
-            $query->where('is_active', true);
-        });
     }
 }

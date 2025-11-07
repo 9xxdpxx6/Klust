@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
 use App\Models\Faculty;
@@ -38,7 +40,10 @@ class FacultySeeder extends Seeder
         ];
 
         foreach ($faculties as $faculty) {
-            Faculty::create($faculty);
+            Faculty::updateOrCreate(
+                ['code' => $faculty['code']],
+                $faculty
+            );
         }
     }
 }
