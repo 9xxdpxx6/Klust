@@ -3,6 +3,11 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Client\Partner\DashboardController;
+use App\Http\Controllers\Client\Partner\CasesController;
+use App\Http\Controllers\Client\Partner\ProfileController;
+use App\Http\Controllers\Client\Partner\TeamController;
+use App\Http\Controllers\Client\Partner\AnalyticsController;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -69,11 +74,34 @@ Route::middleware('auth')->group(function () {
         })->name('dashboard');
     });
     
-    // Партнер (будет дополнено позже)
+    // Партнер
     Route::prefix('partner')->middleware('role:partner')->name('partner.')->group(function () {
-        Route::get('/dashboard', function () {
-            return Inertia::render('Client/Partner/Dashboard');
-        })->name('dashboard');
+        // Dashboard
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        
+        // Profile
+        Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+        Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        
+        // Cases
+        Route::get('/cases', [CasesController::class, 'index'])->name('cases.index');
+        Route::get('/cases/create', [CasesController::class, 'create'])->name('cases.create');
+        Route::post('/cases', [CasesController::class, 'store'])->name('cases.store');
+        Route::get('/cases/{case}', [CasesController::class, 'show'])->name('cases.show');
+        Route::get('/cases/{case}/edit', [CasesController::class, 'edit'])->name('cases.edit');
+        Route::put('/cases/{case}', [CasesController::class, 'update'])->name('cases.update');
+        Route::post('/cases/{case}/archive', [CasesController::class, 'archive'])->name('cases.archive');
+        Route::get('/cases/{case}/applications', [CasesController::class, 'applications'])->name('cases.applications');
+        Route::post('/cases/{case}/applications/{application}/approve', [CasesController::class, 'approve'])->name('cases.applications.approve');
+        Route::post('/cases/{case}/applications/{application}/reject', [CasesController::class, 'reject'])->name('cases.applications.reject');
+        
+        // Teams
+        Route::get('/teams', [TeamController::class, 'index'])->name('teams.index');
+        Route::get('/teams/{application}', [TeamController::class, 'show'])->name('teams.show');
+        
+        // Analytics
+        Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
     });
 });
 

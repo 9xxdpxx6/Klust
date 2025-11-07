@@ -25,22 +25,31 @@ class DashboardController extends Controller
      */
     public function index(): Response
     {
-        $user = auth()->user();
+        try {
+            $user = auth()->user();
 
-        // Получить статистику партнера
-        $statistics = $this->partnerService->getDashboardStatistics($user);
+            // Получить статистику партнера
+            $statistics = $this->partnerService->getDashboardStatistics($user);
 
-        // Получить активные кейсы
-        $activeCases = $this->caseService->getActiveCasesForPartner($user);
+            // Получить активные кейсы
+            $activeCases = $this->caseService->getActiveCasesForPartner($user);
 
-        // Получить последние активности (новые заявки, завершенные кейсы)
-        $recentActivities = $this->partnerService->getRecentActivities($user);
+            // Получить последние активности (новые заявки, завершенные кейсы)
+            $recentActivities = $this->partnerService->getRecentActivities($user);
 
-        return Inertia::render('Client/Partner/Dashboard', [
-            'statistics' => $statistics,
-            'activeCases' => $activeCases,
-            'recentActivities' => $recentActivities,
-        ]);
+            return Inertia::render('Client/Partner/Dashboard', [
+                'statistics' => $statistics,
+                'activeCases' => $activeCases,
+                'recentActivities' => $recentActivities,
+            ]);
+        } catch (\Exception $e) {
+            return Inertia::render('Client/Partner/Dashboard', [
+                'statistics' => [],
+                'activeCases' => [],
+                'recentActivities' => [],
+                'error' => 'Ошибка при загрузке данных: ' . $e->getMessage(),
+            ]);
+        }
     }
 }
 

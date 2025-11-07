@@ -26,11 +26,19 @@ class ProfileController extends Controller
      */
     public function show(): Response
     {
-        $user = auth()->user()->load(['partnerProfile', 'partner']);
+        try {
+            $user = auth()->user()->load(['partnerProfile', 'partner']);
 
-        return Inertia::render('Client/Partner/Profile/Index', [
-            'user' => $user,
-        ]);
+            return Inertia::render('Client/Partner/Profile/Index', [
+                'user' => $user,
+            ]);
+        } catch (\Exception $e) {
+            $user = auth()->user();
+            return Inertia::render('Client/Partner/Profile/Index', [
+                'user' => $user,
+                'error' => 'Ошибка при загрузке профиля: ' . $e->getMessage(),
+            ]);
+        }
     }
 
     /**
@@ -38,11 +46,19 @@ class ProfileController extends Controller
      */
     public function edit(): Response
     {
-        $user = auth()->user()->load(['partnerProfile', 'partner']);
+        try {
+            $user = auth()->user()->load(['partnerProfile', 'partner']);
 
-        return Inertia::render('Client/Partner/Profile/Edit', [
-            'user' => $user,
-        ]);
+            return Inertia::render('Client/Partner/Profile/Edit', [
+                'user' => $user,
+            ]);
+        } catch (\Exception $e) {
+            $user = auth()->user();
+            return Inertia::render('Client/Partner/Profile/Edit', [
+                'user' => $user,
+                'error' => 'Ошибка при загрузке формы: ' . $e->getMessage(),
+            ]);
+        }
     }
 
     /**
@@ -50,21 +66,28 @@ class ProfileController extends Controller
      */
     public function update(UpdateRequest $request): RedirectResponse
     {
-        $user = auth()->user();
+        try {
+            $user = auth()->user();
 
-        $data = $request->validated();
+            $data = $request->validated();
 
-        // Обработать загрузку логотипа, если есть
-        if ($request->hasFile('logo')) {
-            $data['logo'] = $this->fileService->storeLogo($request->file('logo'));
+            // Обработать загрузку логотипа, если есть
+            if ($request->hasFile('logo')) {
+                $data['logo'] = $this->fileService->storeLogo($request->file('logo'));
+            }
+
+            // Обновить профиль партнера
+            $this->userService->updatePartnerProfile($user, $data);
+
+            return redirect()
+                ->route('partner.profile.show')
+                ->with('success', 'Профиль успешно обновлен');
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Ошибка при обновлении профиля: ' . $e->getMessage());
         }
-
-        // Обновить профиль партнера
-        $this->userService->updatePartnerProfile($user, $data);
-
-        return redirect()
-            ->route('partner.profile.show')
-            ->with('success', 'Профиль успешно обновлен');
     }
 }
 

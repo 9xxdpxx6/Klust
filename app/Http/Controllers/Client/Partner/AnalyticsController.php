@@ -23,15 +23,22 @@ class AnalyticsController extends Controller
      */
     public function index(IndexRequest $request): Response
     {
-        $user = auth()->user();
-        $partner = $user->partner;
+        try {
+            $user = auth()->user();
+            $partner = $user->partner;
 
-        // Получить аналитику через AnalyticsService::getPartnerAnalytics($partner, $request->validated())
-        $analytics = $this->analyticsService->getPartnerAnalytics($partner, $request->validated());
+            // Получить аналитику через AnalyticsService::getPartnerAnalytics($partner, $request->validated())
+            $analytics = $this->analyticsService->getPartnerAnalytics($partner, $request->validated());
 
-        return Inertia::render('Client/Partner/Analytics/Index', [
-            'analytics' => $analytics,
-        ]);
+            return Inertia::render('Client/Partner/Analytics/Index', [
+                'analytics' => $analytics,
+            ]);
+        } catch (\Exception $e) {
+            return Inertia::render('Client/Partner/Analytics/Index', [
+                'analytics' => [],
+                'error' => 'Ошибка при загрузке аналитики: ' . $e->getMessage(),
+            ]);
+        }
     }
 }
 
