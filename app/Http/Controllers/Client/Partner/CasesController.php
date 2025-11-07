@@ -45,11 +45,8 @@ class CasesController extends Controller
                 'search' => $request->input('search'),
             ];
 
-            // Получить только кейсы партнера
+            // Получить только кейсы партнера (getPartnerCases уже возвращает пагинированный результат)
             $cases = $this->caseService->getPartnerCases($partner, $filters);
-
-            // Применить пагинацию
-            $cases = $cases->paginate(15);
 
             return Inertia::render('Client/Partner/Cases/Index', [
                 'cases' => $cases,
