@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Admin\UsersController;
+use App\Http\Controllers\Admin\CaseController;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -96,6 +97,9 @@ Route::prefix('admin')->middleware(['auth', 'role:admin|teacher'])->name('admin.
     Route::get('/users/{user}/edit', [UsersController::class, 'edit'])->name('users.edit');
     Route::put('/users/{user}', [UsersController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [UsersController::class, 'destroy'])->name('users.destroy');
+
+    Route::get('/cases', [CaseController::class, 'index'])->name('cases.index');
+
 });
 
 Route::get('/', function () {
