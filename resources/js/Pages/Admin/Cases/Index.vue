@@ -5,7 +5,15 @@
         <div class="mb-6">
             <h1 class="text-2xl font-bold">Управление кейсами</h1>
             <p class="text-gray-600 mt-2">Список всех кейсов в системе</p>
+
+            <Link
+                :href="route('admin.cases.create')"
+                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+            >
+                + Создать кейс
+            </Link>
         </div>
+
 
         <!-- Фильтры -->
         <div class="bg-white rounded-lg shadow p-4 mb-6">
@@ -215,8 +223,10 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { router } from '@inertiajs/vue3'
-import { Head } from '@inertiajs/vue3'
+import { Head, Link  } from '@inertiajs/vue3'
 import Pagination from '@/Components/Pagination.vue'
+import {route} from "ziggy-js";
+
 
 const props = defineProps({
     cases: {

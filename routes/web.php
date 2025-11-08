@@ -89,6 +89,7 @@ Route::prefix('admin')->middleware(['auth', 'role:admin|teacher'])->name('admin.
         return Inertia::render('Admin/Dashboard');
     })->name('dashboard');
 
+
     // Маршруты пользователей
     Route::get('/users', [UsersController::class, 'index'])->name('users.index');
     Route::get('/users/create', [UsersController::class, 'create'])->name('users.create');
@@ -98,11 +99,18 @@ Route::prefix('admin')->middleware(['auth', 'role:admin|teacher'])->name('admin.
     Route::put('/users/{user}', [UsersController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [UsersController::class, 'destroy'])->name('users.destroy');
 
-    Route::get('/cases', [CaseController::class, 'index'])->name('cases.index');
-    Route::get('/cases/{case}', [CaseController::class, 'show'])->name('cases.show'); // Добавляем этот маршрут
 
+    Route::get('/cases/create', [CaseController::class, 'create'])->name('cases.create');
+    Route::post('/cases', [CaseController::class, 'store'])->name('cases.store');
+    Route::get('/cases', [CaseController::class, 'index'])->name('cases.index');
+    Route::get('/cases/{case}', [CaseController::class, 'show'])->name('cases.show');
 });
 
+
+
+//Route::prefix('admin')->name('admin.')->group(function () {
+//    Route::get('/cases/create', [CaseController::class, 'create'])->name('cases.create');
+//});
 Route::get('/', function () {
     return view('welcome');
 });

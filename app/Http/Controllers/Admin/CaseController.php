@@ -4,14 +4,27 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CaseModel;
+use App\Models\CaseSkill;
 use App\Models\Partner;
+use App\Models\Simulator;
+use App\Models\Skill;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Http\Requests\Cases\StoreCaseRequest;
+use Illuminate\Support\Facades\DB;
+
 
 class CaseController extends Controller
 {
     public function index(Request $request)
     {
+        if (auth()->check()) {
+            logger('Current user: ' . auth()->id());
+            logger('User roles: ' . implode(', ', auth()->user()->getRoleNames()->toArray()));
+        } else {
+            logger('No authenticated user');
+        }
+
         // Получаем параметры фильтрации из запроса
         $filters = [
             'search' => $request->input('search', ''),
@@ -114,5 +127,71 @@ class CaseController extends Controller
             'statistics' => $statistics,
             'applicationsByStatus' => $applicationsByStatus,
         ]);
+    }
+
+    public function create()
+    {
+        return Inertia::render('Admin/Cases/Create', [
+            'partners' => Partner::with('user')->get()->map(function ($partner) {
+                return [
+                    'id' => $partner->id,
+                    'company_name' => $partner->company_name,
+                    'contact_person' => $partner->user->name ?? 'Без контакта',
+                ];
+            }),
+            'skills' => Skill::all()->map(function ($skill) {
+                return [
+                    'id' => $skill->id,
+                    'name' => $skill->name,
+                    'category' => $skill->category,
+                ];
+            }),
+            'simulators' => Simulator::all(), // если есть симуляторы
+            'statusOptions' => [
+                ['value' => 'draft', 'label' => 'Черновик'],
+                ['value' => 'active', 'label' => 'Активный'],
+            ],
+        ]);
+    }
+
+    public function store(StoreCaseRequest $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Создаем кейс согласно валидации
+            $case = CaseModel::create([
+                'title' => $request->title,
+                'description' => $request->description,
+                'partner_id' => $request->partner_id, // из формы
+                'simulator_id' => $request->simulator_id,
+                'deadline' => $request->deadline,
+                'reward' => $request->reward,
+                'required_team_size' => $request->required_team_size,
+                'status' => $request->status ?? 'draft', // по умолчанию черновик
+            ]);
+
+            // Прикрепляем навыки - используем required_skills из валидации
+            if ($request->has('required_skills') && is_array($request->required_skills)) {
+                foreach ($request->required_skills as $skillId) {
+                    CaseSkill::create([
+                        'case_id' => $case->id,
+                        'skill_id' => $skillId,
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->route('admin.cases.index')
+                ->with('success', 'Кейс успешно создан!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()
+                ->with('error', 'Ошибка при создании кейса: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 }
