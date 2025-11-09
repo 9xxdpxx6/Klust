@@ -104,6 +104,9 @@ Route::prefix('admin')->middleware(['auth', 'role:admin|teacher'])->name('admin.
     Route::post('/cases', [CaseController::class, 'store'])->name('cases.store');
     Route::get('/cases', [CaseController::class, 'index'])->name('cases.index');
     Route::get('/cases/{case}', [CaseController::class, 'show'])->name('cases.show');
+    Route::get('/cases/{case}/edit', [CaseController::class, 'edit'])->name('cases.edit');
+    Route::put('/cases/{case}', [CaseController::class, 'update'])->name('cases.update');
+    Route::delete('/cases/{case}', [CaseController::class, 'destroy'])->name('cases.destroy');
 });
 
 

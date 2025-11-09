@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Requests\Cases\StoreCaseRequest;
 use Illuminate\Support\Facades\DB;
-
+use App\Http\Requests\Partner\Cases\UpdateCaseRequest;
 
 class CaseController extends Controller
 {
@@ -192,6 +192,118 @@ class CaseController extends Controller
             return redirect()->back()
                 ->with('error', 'Ошибка при создании кейса: ' . $e->getMessage())
                 ->withInput();
+        }
+    }
+
+    public function edit(CaseModel $case)
+    {
+        return Inertia::render('Admin/Cases/Edit', [
+            'case' => [
+                'id' => $case->id,
+                'title' => $case->title,
+                'description' => $case->description,
+                'partner_id' => $case->partner_id,
+                'deadline' => $case->deadline->format('Y-m-d'),
+                'reward' => $case->reward,
+                'required_team_size' => $case->required_team_size,
+                'status' => $case->status,
+                'simulator_id' => $case->simulator_id,
+                'required_skills' => $case->skills->pluck('id'),
+            ],
+            'partners' => Partner::with('user')->get()->map(function ($partner) {
+                return [
+                    'id' => $partner->id,
+                    'company_name' => $partner->company_name,
+                    'contact_person' => $partner->user->name ?? 'Без контакта',
+                ];
+            }),
+            'skills' => Skill::all()->map(function ($skill) {
+                return [
+                    'id' => $skill->id,
+                    'name' => $skill->name,
+                    'category' => $skill->category,
+                ];
+            }),
+            'statusOptions' => [
+                ['value' => 'draft', 'label' => 'Черновик'],
+                ['value' => 'active', 'label' => 'Активный'],
+                ['value' => 'completed', 'label' => 'Завершенный'],
+                ['value' => 'archived', 'label' => 'Архивный'],
+            ],
+        ]);
+    }
+
+    public function update(UpdateCaseRequest $request, CaseModel $case)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Обновляем кейс - данные уже валидированы в UpdateCaseRequest
+            $case->update([
+                'title' => $request->title,
+                'description' => $request->description,
+                'partner_id' => $request->partner_id,
+                'deadline' => $request->deadline,
+                'reward' => $request->reward,
+                'required_team_size' => $request->required_team_size,
+                'status' => $request->status,
+                'simulator_id' => $request->simulator_id,
+            ]);
+
+            // Обновляем навыки если они переданы
+            if ($request->has('required_skills')) {
+                // Удаляем старые навыки
+                $case->skills()->detach();
+
+                // Добавляем новые навыки
+                if (is_array($request->required_skills) && !empty($request->required_skills)) {
+                    foreach ($request->required_skills as $skillId) {
+                        CaseSkill::create([
+                            'case_id' => $case->id,
+                            'skill_id' => $skillId,
+                        ]);
+                    }
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->route('admin.cases.index')
+                ->with('success', 'Кейс успешно обновлен!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()
+                ->with('error', 'Ошибка при обновлении кейса: ' . $e->getMessage())
+                ->withInput();
+        }
+    }
+
+    public function destroy(CaseModel $case)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Удаляем связанные записи
+            $case->skills()->detach(); // Удаляем связи с навыками
+
+            // Если есть другие связи, добавьте их удаление здесь
+            // Например: $case->applications()->delete();
+
+            // Удаляем сам кейс
+            $case->delete();
+
+            DB::commit();
+
+            return redirect()->route('admin.cases.index')
+                ->with('success', 'Кейс успешно удален!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()
+                ->with('error', 'Ошибка при удалении кейса: ' . $e->getMessage());
         }
     }
 }

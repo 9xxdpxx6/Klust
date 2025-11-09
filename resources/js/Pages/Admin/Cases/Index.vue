@@ -1,19 +1,21 @@
 <template>
     <div class="p-6">
-        <Head title="Управление кейсами" />
+        <Head title="Управление кейсами"/>
 
-        <div class="mb-6">
-            <h1 class="text-2xl font-bold">Управление кейсами</h1>
-            <p class="text-gray-600 mt-2">Список всех кейсов в системе</p>
 
+        <div class="mb-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold">Управление кейсами</h1>
+                <p class="text-gray-600 mt-2">Список всех кейсов в системе</p>
+            </div>
             <Link
                 :href="route('admin.cases.create')"
                 class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
             >
                 + Создать кейс
             </Link>
-        </div>
 
+        </div>
 
         <!-- Фильтры -->
         <div class="bg-white rounded-lg shadow p-4 mb-6">
@@ -162,7 +164,10 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm text-gray-900">{{ caseItem.partner?.company_name || 'Не указан' }}</div>
-                        <div class="text-sm text-gray-500">{{ caseItem.partner?.user?.name || 'Без контакта' }}</div>
+                        <div class="text-sm text-gray-500">{{
+                                caseItem.partner?.user?.name || 'Без контакта'
+                            }}
+                        </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm text-gray-900">{{ formatDate(caseItem.deadline) }}</div>
@@ -176,7 +181,8 @@
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                        <span
+                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                             {{ caseItem.required_team_size }} чел.
                         </span>
                     </td>
@@ -198,12 +204,14 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {{ formatDate(caseItem.created_at) }}
                     </td>
+
                 </tr>
+
                 </tbody>
             </table>
 
             <!-- Пагинация -->
-            <Pagination v-if="casesLinks && casesLinks.length > 0" :links="casesLinks" class="mt-4" />
+            <Pagination v-if="casesLinks && casesLinks.length > 0" :links="casesLinks" class="mt-4"/>
         </div>
 
         <!-- Сообщение если нет кейсов -->
@@ -221,9 +229,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { router } from '@inertiajs/vue3'
-import { Head, Link  } from '@inertiajs/vue3'
+import {ref, computed} from 'vue'
+import {router} from '@inertiajs/vue3'
+import {Head, Link} from '@inertiajs/vue3'
 import Pagination from '@/Components/Pagination.vue'
 import {route} from "ziggy-js";
 

@@ -27,13 +27,35 @@
         <div class="bg-white shadow rounded-lg mb-6">
             <div class="px-6 py-4 border-b border-gray-200">
                 <div class="flex justify-between items-center">
-                    <h1 class="text-2xl font-bold text-gray-900">{{ caseData.title }}</h1>
-                    <span :class="[
-                        'px-3 py-1 text-sm font-medium rounded-full',
-                        getStatusBadgeClass(caseData.status)
-                    ]">
-                        {{ getStatusLabel(caseData.status) }}
-                    </span>
+                    <div class="flex items-center space-x-4">
+                        <h1 class="text-2xl font-bold text-gray-900">{{ caseData.title }}</h1>
+                        <span :class="[
+                            'px-3 py-1 text-sm font-medium rounded-full',
+                            getStatusBadgeClass(caseData.status)
+                        ]">
+                            {{ getStatusLabel(caseData.status) }}
+                        </span>
+                    </div>
+                    <div class="flex space-x-3">
+                        <Link
+                            :href="route('admin.cases.edit', caseData.id)"
+                            class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                        >
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                            Редактировать
+                        </Link>
+                        <button
+                            @click="confirmDelete"
+                            class="inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                        >
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            Удалить
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -243,11 +265,50 @@
                 </p>
             </div>
         </div>
+
+        <!-- Модальное окно подтверждения удаления -->
+        <div v-if="showDeleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <div class="mt-3 text-center">
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                        <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mt-2">Подтверждение удаления</h3>
+                    <div class="mt-2 px-7 py-3">
+                        <p class="text-sm text-gray-500">
+                            Вы уверены, что хотите удалить кейс <strong>"{{ caseData.title }}"</strong>?
+                        </p>
+                        <p class="text-sm text-red-600 mt-2">
+                            Это действие нельзя отменить. Все данные кейса будут удалены безвозвратно.
+                        </p>
+                    </div>
+                    <div class="flex justify-center space-x-4 mt-4">
+                        <button
+                            @click="showDeleteModal = false"
+                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
+                        >
+                            Отмена
+                        </button>
+                        <button
+                            @click="deleteCase"
+                            :disabled="processing"
+                            class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <span v-if="processing">Удаление...</span>
+                            <span v-else>Удалить</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
+import { router } from '@inertiajs/vue3'
 import { Link, Head } from '@inertiajs/vue3'
 import {
     ChevronRightIcon,
@@ -257,6 +318,7 @@ import {
     UserGroupIcon
 } from '@heroicons/vue/24/outline'
 import ApplicationCard from './Partials/ApplicationCard.vue'
+import { route } from "ziggy-js";
 
 const props = defineProps({
     case: {
@@ -281,6 +343,33 @@ const props = defineProps({
 const caseData = computed(() => props.case || {})
 const statistics = computed(() => props.statistics || {})
 const applicationsByStatus = computed(() => props.applicationsByStatus || {})
+
+// Удаление кейса
+const showDeleteModal = ref(false)
+const processing = ref(false)
+
+const confirmDelete = () => {
+    showDeleteModal.value = true
+}
+
+const deleteCase = () => {
+    processing.value = true
+    router.delete(route('admin.cases.destroy', caseData.value.id), {
+        preserveScroll: true,
+        onSuccess: () => {
+            showDeleteModal.value = false
+            processing.value = false
+        },
+        onError: () => {
+            alert('Произошла ошибка при удалении кейса')
+            showDeleteModal.value = false
+            processing.value = false
+        },
+        onFinish: () => {
+            processing.value = false
+        }
+    })
+}
 
 const formatDate = (date) => {
     if (!date) return ''
