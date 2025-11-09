@@ -52,8 +52,67 @@ class CaseModel extends Model
 
     public function skills(): BelongsToMany
     {
-        return $this->belongsToMany(Skill::class, 'case_skills')
-            ->withTimestamps();
+        return $this->belongsToMany(Skill::class, 'case_skills', 'case_id', 'skill_id');
     }
+
+    /**
+     * Relationship with case_skills intermediate model
+     */
+
+    // Добавить в класс CaseModel
+
+    /**
+     * Scope для фильтрации по статусу
+     */
+    public function scopeByStatus($query, $status)
+    {
+        if ($status && $status !== 'all') {
+            return $query->where('status', $status);
+        }
+        return $query;
+    }
+
+    /**
+     * Scope для поиска
+     */
+    public function scopeSearch($query, $search)
+    {
+        if ($search) {
+            return $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+        return $query;
+    }
+
+    /**
+     * Scope для партнера
+     */
+    public function scopeByPartner($query, $partnerId)
+    {
+        if ($partnerId) {
+            return $query->where('partner_id', $partnerId);
+        }
+        return $query;
+    }
+
+    /**
+     * Проверяет, активен ли кейс
+     */
+    public function isActive(): bool
+    {
+        return $this->status === 'active' && $this->deadline->isFuture();
+    }
+
+    /**
+     * Проверяет, просрочен ли кейс
+     */
+    public function isOverdue(): bool
+    {
+        return $this->deadline->isPast();
+    }
+
+
 }
 

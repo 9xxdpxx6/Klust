@@ -3,8 +3,10 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Admin\UsersController;
+use App\Http\Controllers\Admin\CaseController;
 use App\Http\Controllers\Client\Partner\AnalyticsController;
-use App\Http\Controllers\Client\Partner\CasesController;
+use App\Http\Controllers\Client\Partner\CasesController as PartnerCasesController;
 use App\Http\Controllers\Client\Partner\DashboardController;
 use App\Http\Controllers\Client\Partner\ProfileController;
 use App\Http\Controllers\Client\Partner\TeamController;
@@ -60,12 +62,6 @@ Route::middleware('auth')->group(function () {
     // Выход
     Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
 
-    // Админка (будет дополнено позже)
-    Route::prefix('admin')->middleware('role:admin|teacher')->name('admin.')->group(function () {
-        Route::get('/dashboard', function () {
-            return Inertia::render('Admin/Dashboard');
-        })->name('dashboard');
-    });
 
     // Студент (будет дополнено позже)
     Route::prefix('student')->middleware('role:student')->name('student.')->group(function () {
@@ -85,16 +81,16 @@ Route::middleware('auth')->group(function () {
         Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
         
         // Cases
-        Route::get('/cases', [CasesController::class, 'index'])->name('cases.index');
-        Route::get('/cases/create', [CasesController::class, 'create'])->name('cases.create');
-        Route::post('/cases', [CasesController::class, 'store'])->name('cases.store');
-        Route::get('/cases/{case}', [CasesController::class, 'show'])->name('cases.show');
-        Route::get('/cases/{case}/edit', [CasesController::class, 'edit'])->name('cases.edit');
-        Route::put('/cases/{case}', [CasesController::class, 'update'])->name('cases.update');
-        Route::post('/cases/{case}/archive', [CasesController::class, 'archive'])->name('cases.archive');
-        Route::get('/cases/{case}/applications', [CasesController::class, 'applications'])->name('cases.applications');
-        Route::post('/cases/{case}/applications/{application}/approve', [CasesController::class, 'approve'])->name('cases.applications.approve');
-        Route::post('/cases/{case}/applications/{application}/reject', [CasesController::class, 'reject'])->name('cases.applications.reject');
+        Route::get('/cases', [PartnerCasesController::class, 'index'])->name('cases.index');
+        Route::get('/cases/create', [PartnerCasesController::class, 'create'])->name('cases.create');
+        Route::post('/cases', [PartnerCasesController::class, 'store'])->name('cases.store');
+        Route::get('/cases/{case}', [PartnerCasesController::class, 'show'])->name('cases.show');
+        Route::get('/cases/{case}/edit', [PartnerCasesController::class, 'edit'])->name('cases.edit');
+        Route::put('/cases/{case}', [PartnerCasesController::class, 'update'])->name('cases.update');
+        Route::post('/cases/{case}/archive', [PartnerCasesController::class, 'archive'])->name('cases.archive');
+        Route::get('/cases/{case}/applications', [PartnerCasesController::class, 'applications'])->name('cases.applications');
+        Route::post('/cases/{case}/applications/{application}/approve', [PartnerCasesController::class, 'approve'])->name('cases.applications.approve');
+        Route::post('/cases/{case}/applications/{application}/reject', [PartnerCasesController::class, 'reject'])->name('cases.applications.reject');
         
         // Teams
         Route::get('/teams', [TeamController::class, 'index'])->name('teams.index');
@@ -110,6 +106,7 @@ Route::prefix('admin')->middleware(['auth', 'role:admin|teacher'])->name('admin.
         return Inertia::render('Admin/Dashboard');
     })->name('dashboard');
 
+
     // Маршруты пользователей
     Route::get('/users', [UsersController::class, 'index'])->name('users.index');
     Route::get('/users/create', [UsersController::class, 'create'])->name('users.create');
@@ -118,6 +115,15 @@ Route::prefix('admin')->middleware(['auth', 'role:admin|teacher'])->name('admin.
     Route::get('/users/{user}/edit', [UsersController::class, 'edit'])->name('users.edit');
     Route::put('/users/{user}', [UsersController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [UsersController::class, 'destroy'])->name('users.destroy');
+
+
+    Route::get('/cases/create', [CaseController::class, 'create'])->name('cases.create');
+    Route::post('/cases', [CaseController::class, 'store'])->name('cases.store');
+    Route::get('/cases', [CaseController::class, 'index'])->name('cases.index');
+    Route::get('/cases/{case}', [CaseController::class, 'show'])->name('cases.show');
+    Route::get('/cases/{case}/edit', [CaseController::class, 'edit'])->name('cases.edit');
+    Route::put('/cases/{case}', [CaseController::class, 'update'])->name('cases.update');
+    Route::delete('/cases/{case}', [CaseController::class, 'destroy'])->name('cases.destroy');
 });
 
 Route::get('/', function () {
