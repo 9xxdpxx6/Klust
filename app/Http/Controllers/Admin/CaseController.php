@@ -68,17 +68,9 @@ class CaseController extends Controller
         // Получить статистику через CaseService::getCaseStatistics($case)
         $statistics = $this->caseService->getCaseStatistics($case);
 
-        // Группируем заявки по статусу (pending, accepted, rejected)
-        $applicationsByStatus = [
-            'pending' => $case->applications->where('status', 'pending'),
-            'accepted' => $case->applications->where('status', 'accepted'),
-            'rejected' => $case->applications->where('status', 'rejected'),
-        ];
-
         return Inertia::render('Admin/Cases/Show', [
             'case' => $case,
             'statistics' => $statistics,
-            'applicationsByStatus' => $applicationsByStatus,
         ]);
     }
 
