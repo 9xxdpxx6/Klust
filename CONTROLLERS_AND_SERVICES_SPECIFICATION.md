@@ -1372,6 +1372,17 @@
 
 ---
 
+##### `notifyStudentsAboutNewCase(CaseModel $case): void`
+**Параметры:**
+- `CaseModel $case` - кейс
+
+**Что внутри:**
+- Получить студентов, у которых есть навыки, соответствующие required_skills кейса
+- Создать уведомления для этих студентов
+- Сохранить уведомления
+
+---
+
 ##### `notifyApplicationRejection(CaseApplication $application): void`
 **Параметры:**
 - `CaseApplication $application` - отклоненная заявка
@@ -1381,17 +1392,6 @@
 - Создать уведомление (AppNotification) для лидера команды
 - Установить тип уведомления 'application_rejected'
 - Сохранить уведомление с информацией о причине отклонения (если есть)
-
----
-
-##### `notifyStudentsAboutNewCase(CaseModel $case): void`
-**Параметры:**
-- `CaseModel $case` - кейс
-
-**Что внутри:**
-- Получить студентов, у которых есть навыки, соответствующие required_skills кейса
-- Создать уведомления для этих студентов
-- Сохранить уведомления
 
 ---
 
