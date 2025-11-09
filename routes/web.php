@@ -5,6 +5,11 @@ use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\CaseController;
+use App\Http\Controllers\Client\Partner\AnalyticsController;
+use App\Http\Controllers\Client\Partner\CasesController as PartnerCasesController;
+use App\Http\Controllers\Client\Partner\DashboardController;
+use App\Http\Controllers\Client\Partner\ProfileController;
+use App\Http\Controllers\Client\Partner\TeamController;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -57,17 +62,6 @@ Route::middleware('auth')->group(function () {
     // Выход
     Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
 
-    // Админка (будет дополнено позже)
-//    Route::prefix('admin')->middleware('role:admin|teacher')->name('admin.')->group(function () {
-//        Route::get('/dashboard', function () {
-//            return Inertia::render('Admin/Dashboard');
-//        })->name('dashboard');
-//
-//        Route::get('/users', [UsersController::class, 'index'])->name('users.index');
-//        Route::get('/users/{user}', [UsersController::class, 'show'])->name('users.show');
-//        Route::get('/users/create', [UsersController::class, 'create'])->name('users.create');
-//        Route::post('/users', [UsersController::class, 'store'])->name('users.store');
-//    });
 
     // Студент (будет дополнено позже)
     Route::prefix('student')->middleware('role:student')->name('student.')->group(function () {
@@ -76,11 +70,34 @@ Route::middleware('auth')->group(function () {
         })->name('dashboard');
     });
 
-    // Партнер (будет дополнено позже)
+    // Партнер
     Route::prefix('partner')->middleware('role:partner')->name('partner.')->group(function () {
-        Route::get('/dashboard', function () {
-            return Inertia::render('Client/Partner/Dashboard');
-        })->name('dashboard');
+        // Dashboard
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        
+        // Profile
+        Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+        Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        
+        // Cases
+        Route::get('/cases', [PartnerCasesController::class, 'index'])->name('cases.index');
+        Route::get('/cases/create', [PartnerCasesController::class, 'create'])->name('cases.create');
+        Route::post('/cases', [PartnerCasesController::class, 'store'])->name('cases.store');
+        Route::get('/cases/{case}', [PartnerCasesController::class, 'show'])->name('cases.show');
+        Route::get('/cases/{case}/edit', [PartnerCasesController::class, 'edit'])->name('cases.edit');
+        Route::put('/cases/{case}', [PartnerCasesController::class, 'update'])->name('cases.update');
+        Route::post('/cases/{case}/archive', [PartnerCasesController::class, 'archive'])->name('cases.archive');
+        Route::get('/cases/{case}/applications', [PartnerCasesController::class, 'applications'])->name('cases.applications');
+        Route::post('/cases/{case}/applications/{application}/approve', [PartnerCasesController::class, 'approve'])->name('cases.applications.approve');
+        Route::post('/cases/{case}/applications/{application}/reject', [PartnerCasesController::class, 'reject'])->name('cases.applications.reject');
+        
+        // Teams
+        Route::get('/teams', [TeamController::class, 'index'])->name('teams.index');
+        Route::get('/teams/{application}', [TeamController::class, 'show'])->name('teams.show');
+        
+        // Analytics
+        Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
     });
 });
 
@@ -109,11 +126,6 @@ Route::prefix('admin')->middleware(['auth', 'role:admin|teacher'])->name('admin.
     Route::delete('/cases/{case}', [CaseController::class, 'destroy'])->name('cases.destroy');
 });
 
-
-
-//Route::prefix('admin')->name('admin.')->group(function () {
-//    Route::get('/cases/create', [CaseController::class, 'create'])->name('cases.create');
-//});
 Route::get('/', function () {
     return view('welcome');
 });

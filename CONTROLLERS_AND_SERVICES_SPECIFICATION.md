@@ -950,6 +950,19 @@
 
 ---
 
+##### `getActiveCasesForPartner(User $user): Collection`
+**Параметры:**
+- `User $user` - пользователь (партнер)
+
+**Что внутри:**
+- Получить Partner через user->partner
+- Получить только активные кейсы партнера (status = 'active')
+- Применить eager loading (skills, partner)
+- Отсортировать по дате создания (новые первыми)
+- Вернуть коллекцию (без пагинации, для dashboard)
+
+---
+
 ##### `getRecommendedCases(User $user, int $limit = 5): Collection`
 **Параметры:**
 - `User $user` - студент
@@ -1129,6 +1142,8 @@
 
 ---
 
+
+
 #### `TeamService.php`
 
 ##### `getTeamProgress(CaseApplication $application): array`
@@ -1141,6 +1156,19 @@
 - Вернуть массив с прогрессом
 
 ---
+##### `getTeamActivityHistory(CaseApplication $application): Collection`
+**Параметры:**
+- `CaseApplication $application` - заявка (команда)
+
+**Что внутри:**
+- Получить всех участников команды из case_team_members
+- Получить записи ProgressLog для участников команды, связанные с кейсом
+- Получить записи о завершении симуляторов участниками команды (если симулятор связан с кейсом)
+- Объединить все активности в единую коллекцию
+- Отсортировать по дате (новые первыми)
+- Вернуть коллекцию с информацией о типе активности, участнике и дате
+
+--- 
 
 ##### `getPartnerTeams(Partner $partner, array $filters): Collection`
 **Параметры:**
@@ -1352,6 +1380,18 @@
 - Получить студентов, у которых есть навыки, соответствующие required_skills кейса
 - Создать уведомления для этих студентов
 - Сохранить уведомления
+
+---
+
+##### `notifyApplicationRejection(CaseApplication $application): void`
+**Параметры:**
+- `CaseApplication $application` - отклоненная заявка
+
+**Что внутри:**
+- Получить лидера команды из application->leader_id
+- Создать уведомление (AppNotification) для лидера команды
+- Установить тип уведомления 'application_rejected'
+- Сохранить уведомление с информацией о причине отклонения (если есть)
 
 ---
 
