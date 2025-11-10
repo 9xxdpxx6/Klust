@@ -2,6 +2,11 @@
 
 use App\Http\Controllers\Admin\CaseController;
 use App\Http\Controllers\Admin\UsersController;
+use App\Http\Controllers\Admin\BadgeController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\SkillController;
+use App\Http\Controllers\Admin\SimulatorController;
+use App\Http\Controllers\Search\SearchController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -133,11 +138,6 @@ Route::middleware('auth')->group(function () {
     });
 });
 
-use App\Http\Controllers\Admin\BadgeController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\SkillController;
-use App\Http\Controllers\Admin\SimulatorController;
-
 Route::prefix('admin')->middleware(['auth', 'role:admin|teacher'])->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -175,6 +175,9 @@ Route::prefix('admin')->middleware(['auth', 'role:admin|teacher'])->name('admin.
     Route::post('/simulators', [SimulatorController::class, 'store'])->name('simulators.store');
     Route::put('/simulators/{simulator}', [SimulatorController::class, 'update'])->name('simulators.update');
     Route::delete('/simulators/{simulator}', [SimulatorController::class, 'destroy'])->name('simulators.destroy');
+
+    // Search
+    Route::get('/search', [SearchController::class, 'index'])->name('search.index');
 });
 
 Route::get('/', function () {
