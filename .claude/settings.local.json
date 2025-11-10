@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat \"D:\\dev\\Klust\\tailwind.config.js\")",
+      "Bash(cat \"D:\\dev\\Klust\\phpunit.xml\")",
+      "Bash(mkdir:*)",
+      "Bash(git add:*)",
+      "Bash(./vendor/bin/pint:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
