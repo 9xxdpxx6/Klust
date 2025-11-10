@@ -35,27 +35,30 @@ class ProgressLogService
             $case = $simulator->cases()->first();
 
             if ($case && $case->skills->isNotEmpty()) {
-                // Award points to case-related skills
+                // Award points to case-related skills without updating total_points yet
                 foreach ($case->skills as $skill) {
-                    $this->awardSkillPoints($user, $skill, $pointsEarned, 'simulator_completion', [
-                        'simulator_id' => $simulator->id,
-                        'session_id' => $session->id,
-                        'score' => $session->score,
-                    ]);
+                    $this->awardSkillPoints(
+                        $user,
+                        $skill,
+                        $pointsEarned,
+                        'simulator_completion',
+                        [
+                            'simulator_id' => $simulator->id,
+                            'session_id' => $session->id,
+                            'score' => $session->score,
+                        ],
+                        false // Don't update total_points per skill
+                    );
                 }
-            } else {
-                // Award points to general skills or simulator-specific skills
-                // For now, we'll skip if no skills are associated
-                // This can be extended to have default skills per simulator
             }
 
-            // Update student total points
+            // Update student total points once
             $studentProfile = $user->studentProfile;
             if ($studentProfile) {
                 $studentProfile->increment('total_points', $pointsEarned);
             }
 
-            // Check for new badges
+            // Check for new badges once
             $this->checkAndAwardBadges($user);
         });
     }
@@ -68,9 +71,10 @@ class ProgressLogService
         Skill $skill,
         int $points,
         string $source = 'manual',
-        array $metadata = []
+        array $metadata = [],
+        bool $updateTotalPoints = true
     ): void {
-        DB::transaction(function () use ($user, $skill, $points, $source, $metadata) {
+        DB::transaction(function () use ($user, $skill, $points, $source, $metadata, $updateTotalPoints) {
             // Get or create user skill
             $userSkill = UserSkill::firstOrCreate(
                 [
@@ -109,14 +113,16 @@ class ProgressLogService
                 $this->notificationService->notifySkillLevelUp($user, $skill->name, $newLevel);
             }
 
-            // Update student total points
-            $studentProfile = $user->studentProfile;
-            if ($studentProfile) {
-                $studentProfile->increment('total_points', $points);
-            }
+            // Update student total points only if requested
+            if ($updateTotalPoints) {
+                $studentProfile = $user->studentProfile;
+                if ($studentProfile) {
+                    $studentProfile->increment('total_points', $points);
+                }
 
-            // Check for new badges
-            $this->checkAndAwardBadges($user);
+                // Check for new badges
+                $this->checkAndAwardBadges($user);
+            }
         });
     }
 
