@@ -1,0 +1,313 @@
+<template>
+    <PartnerLayout>
+        <template #header>
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold text-gray-900">Кейсы</h1>
+                <Link :href="route('partner.cases.create')" 
+                      class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out">
+                    Создать кейс
+                </Link>
+            </div>
+        </template>
+
+        <!-- Tabs -->
+        <div class="mb-6">
+            <div class="border-b border-gray-200">
+                <nav class="-mb-px flex space-x-8">
+                    <Link 
+                        v-for="tab in tabs" 
+                        :key="tab.key" 
+                        :href="route('partner.cases.index', { status: tab.key })"
+                        :class="[
+                            currentTab === tab.key
+                            ? 'border-blue-500 text-blue-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                            'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm'
+                        ]"
+                    >
+                        {{ tab.label }}
+                        <span 
+                            v-if="tab.count !== undefined" 
+                            class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                            :class="currentTab === tab.key ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'"
+                        >
+                            {{ tab.count }}
+                        </span>
+                    </Link>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white shadow-sm rounded-lg p-4 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="status-filter" class="block text-sm font-medium text-gray-700 mb-1">
+                        Статус
+                    </label>
+                    <select
+                        id="status-filter"
+                        v-model="filters.status"
+                        @change="applyFilters"
+                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    >
+                        <option value="">Все статусы</option>
+                        <option value="draft">Черновик</option>
+                        <option value="active">Активен</option>
+                        <option value="completed">Завершен</option>
+                        <option value="archived">Архив</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="date-filter" class="block text-sm font-medium text-gray-700 mb-1">
+                        Дата создания
+                    </label>
+                    <input
+                        type="date"
+                        id="date-filter"
+                        v-model="filters.date"
+                        @change="applyFilters"
+                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    />
+                </div>
+                
+                <div>
+                    <label for="search-filter" class="block text-sm font-medium text-gray-700 mb-1">
+                        Поиск по названию
+                    </label>
+                    <input
+                        type="text"
+                        id="search-filter"
+                        v-model="filters.search"
+                        @input="debounceSearch"
+                        placeholder="Поиск кейсов..."
+                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    />
+                </div>
+            </div>
+        </div>
+
+        <!-- Cases List -->
+        <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+            <div v-if="cases.data.length === 0" class="text-center py-12">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">Кейсы не найдены</h3>
+                <p class="mt-1 text-sm text-gray-500">
+                    {{
+                        currentTab === 'all' 
+                            ? 'Пока нет кейсов.' 
+                            : `Нет кейсов со статусом "${currentTab}".`
+                    }}
+                </p>
+                <div class="mt-6">
+                    <Link 
+                        :href="route('partner.cases.create')" 
+                        class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                        Создать кейс
+                    </Link>
+                </div>
+            </div>
+
+            <div v-else class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Название
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Статус
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Заявки
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Команды
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Дедлайн
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Создан
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Действия
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr v-for="caseItem in cases.data" :key="caseItem.id">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">{{ caseItem.title }}</div>
+                                <div class="text-sm text-gray-500 line-clamp-2">{{ caseItem.description }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span 
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                    :class="getStatusClass(caseItem.status)"
+                                >
+                                    {{ getStatusLabel(caseItem.status) }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ caseItem.applications_count }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ caseItem.teams_count }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ formatDate(caseItem.deadline) }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ formatDate(caseItem.created_at) }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div class="flex justify-end space-x-2">
+                                    <Link 
+                                        :href="route('partner.cases.show', { case: caseItem.id })" 
+                                        class="text-blue-600 hover:text-blue-900"
+                                    >
+                                        Просмотр
+                                    </Link>
+                                    <Link 
+                                        v-if="caseItem.status !== 'archived'"
+                                        :href="route('partner.cases.edit', { case: caseItem.id })" 
+                                        class="text-indigo-600 hover:text-indigo-900"
+                                    >
+                                        Редактировать
+                                    </Link>
+                                    <button 
+                                        v-if="caseItem.status !== 'archived'"
+                                        @click="archiveCase(caseItem.id)" 
+                                        class="text-gray-600 hover:text-gray-900"
+                                    >
+                                        Архивировать
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <Pagination v-if="cases.links.length > 2" :links="cases.links" class="mt-6" />
+    </PartnerLayout>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+import { Link, usePage, router } from '@inertiajs/vue3';
+import PartnerLayout from '@/Layouts/PartnerLayout.vue';
+import Pagination from '@/Components/Pagination.vue';
+import { debounce } from 'lodash';
+
+const props = defineProps({
+    cases: {
+        type: Object,
+        required: true
+    },
+    filters: {
+        type: Object,
+        default: () => ({
+            status: null,
+            search: null
+        })
+    }
+});
+
+const page = usePage();
+
+// Initialize filters with props
+const filters = ref({
+    status: props.filters.status || '',
+    search: props.filters.search || '',
+    date: ''
+});
+
+const currentTab = computed(() => {
+    return props.filters.status || 'all';
+});
+
+const tabs = computed(() => {
+    const allTabs = [
+        { key: 'all', label: 'Все кейсы' },
+        { key: 'draft', label: 'Черновики', count: props.cases.meta?.draft_count },
+        { key: 'active', label: 'Активные', count: props.cases.meta?.active_count },
+        { key: 'completed', label: 'Завершенные', count: props.cases.meta?.completed_count },
+        { key: 'archived', label: 'Архив', count: props.cases.meta?.archived_count }
+    ];
+
+    return allTabs.map(tab => ({
+        ...tab,
+        count: tab.count !== undefined ? tab.count : undefined
+    }));
+});
+
+const getStatusClass = (status) => {
+    switch (status) {
+        case 'draft':
+            return 'bg-gray-100 text-gray-800';
+        case 'active':
+            return 'bg-green-100 text-green-800';
+        case 'completed':
+            return 'bg-blue-100 text-blue-800';
+        case 'archived':
+            return 'bg-purple-100 text-purple-800';
+        default:
+            return 'bg-gray-100 text-gray-800';
+    }
+};
+
+const getStatusLabel = (status) => {
+    switch (status) {
+        case 'draft':
+            return 'Черновик';
+        case 'active':
+            return 'Активен';
+        case 'completed':
+            return 'Завершен';
+        case 'archived':
+            return 'Архив';
+        default:
+            return status;
+    }
+};
+
+const formatDate = (dateString) => {
+    if (!dateString) return 'Не указан';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ru-RU');
+};
+
+const debounceSearch = debounce(() => {
+    applyFilters();
+}, 300);
+
+const applyFilters = () => {
+    const params = {
+        status: filters.value.status || undefined,
+        search: filters.value.search || undefined,
+        date: filters.value.date || undefined
+    };
+
+    router.get(route('partner.cases.index'), params, {
+        preserveState: true,
+        replace: true
+    });
+};
+
+const archiveCase = (caseId) => {
+    if (confirm('Вы уверены, что хотите архивировать этот кейс?')) {
+        router.post(route('partner.cases.archive', { case: caseId }), {}, {
+            preserveState: true,
+            preserveScroll: true
+        });
+    }
+};
+</script>
