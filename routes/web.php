@@ -2,6 +2,11 @@
 
 use App\Http\Controllers\Admin\CaseController;
 use App\Http\Controllers\Admin\UsersController;
+use App\Http\Controllers\Admin\BadgeController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\SkillController;
+use App\Http\Controllers\Admin\SimulatorController;
+use App\Http\Controllers\Search\SearchController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -132,12 +137,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
     });
 });
-
-use App\Http\Controllers\Admin\BadgeController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\SkillController;
-use App\Http\Controllers\Admin\SimulatorController;
-use App\Http\Controllers\Search\SearchController;
 
 Route::prefix('admin')->middleware(['auth', 'role:admin|teacher'])->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
