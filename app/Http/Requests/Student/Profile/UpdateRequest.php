@@ -25,7 +25,7 @@ class UpdateRequest extends FormRequest
      */
     public function rules(): array
     {
-        $user = $this->route('user'); // Получаем пользователя для правила unique
+        $userId = auth()->id(); // Получаем ID текущего пользователя для правила unique
 
         return [
             'name' => ['required', 'string', 'max:255'],
@@ -34,9 +34,10 @@ class UpdateRequest extends FormRequest
                 'string',
                 'email',
                 'max:255',
-                Rule::unique('users')->ignore($user->id) // Исключаем текущего пользователя из проверки уникальности
+                Rule::unique('users')->ignore($userId) // Исключаем текущего пользователя из проверки уникальности
             ],
-            'course' => ['nullable', 'integer', 'between:1,6'], // Предположим, курсы от 1 до 6
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'course' => ['nullable', 'integer', 'min:1', 'max:6'], // Курсы от 1 до 6
 
             'avatar' => [
                 'nullable',
@@ -48,7 +49,7 @@ class UpdateRequest extends FormRequest
             'faculty_id' => ['nullable', 'integer', 'exists:faculties,id'],
             'group' => ['nullable', 'string', 'max:255'],
             'specialization' => ['nullable', 'string', 'max:255'],
-            'bio' => ['nullable', 'string'],
+            'bio' => ['nullable', 'string', 'max:1000'],
         ];
     }
 
@@ -63,13 +64,17 @@ class UpdateRequest extends FormRequest
             'name.required' => 'Имя обязательно для заполнения.',
             'email.required' => 'Email обязателен для заполнения.',
             'email.unique' => 'Этот email уже используется другим пользователем.',
-            'course.between' => 'Курс должен быть в диапазоне от 1 до 6.',
+            'password.min' => 'Пароль должен содержать минимум 8 символов.',
+            'password.confirmed' => 'Подтверждение пароля не совпадает.',
+            'course.min' => 'Курс должен быть не менее 1.',
+            'course.max' => 'Курс должен быть не более 6.',
             'avatar.image' => 'Файл аватара должен быть изображением.',
             'avatar.mimes' => 'Аватар должен быть в формате: jpeg, png, jpg, gif.',
             'avatar.max' => 'Максимальный размер аватара не должен превышать 2 МБ.',
             'faculty_id.exists' => 'Выбранный факультет не существует.',
             'group.max' => 'Название группы не должно превышать 255 символов.',
             'specialization.max' => 'Название специализации не должно превышать 255 символов.',
+            'bio.max' => 'Биография не должна превышать 1000 символов.',
         ];
     }
 }
