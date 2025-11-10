@@ -28,18 +28,18 @@ class StoreRequest extends FormRequest
         return [
             // 'partner_id' отсутствует, так как он берется из auth()->user()->id
             'title' => ['required', 'string', 'max:255'],
-            'description' => ['required', 'string'],
+            'description' => ['required', 'string', 'min:50', 'max:10000'],
             // Партнер может выбрать любой симулятор, проверяем только на существование
-            'simulator_id' => ['nullable', 'integer', 'exists:simulators,id'],
-            'deadline' => ['required', 'date', 'after_or_equal:today'], // Дедлайн должен быть в будущем
-            'reward' => ['required', 'string'],
-            'required_team_size' => ['required', 'integer', 'between:1,10'],
+            'simulator_id' => ['nullable', 'exists:simulators,id'],
+            'deadline' => ['required', 'date', 'after:today'], // Дедлайн должен быть в будущем
+            'reward' => ['required', 'string', 'max:1000'],
+            'required_team_size' => ['required', 'integer', 'min:1', 'max:10'],
             // Партнер может установить только 'draft' или 'active'
-            'status' => ['required', 'string', 'in:draft,active'],
+            'status' => ['nullable', 'string', 'in:draft,active'],
 
             // Валидация для навыков из pivot-таблицы
-            'skills' => ['array'],
-            'skills.*' => ['required', 'integer', 'exists:skills,id'],
+            'required_skills' => ['nullable', 'array'],
+            'required_skills.*' => ['exists:skills,id', 'distinct'],
         ];
     }
 
@@ -54,17 +54,20 @@ class StoreRequest extends FormRequest
             'title.required' => 'Название кейса обязательно для заполнения.',
             'title.max' => 'Название кейса не должно превышать 255 символов.',
             'description.required' => 'Описание кейса обязательно для заполнения.',
+            'description.min' => 'Описание кейса должно содержать минимум 50 символов.',
+            'description.max' => 'Описание кейса не должно превышать 10000 символов.',
             'simulator_id.exists' => 'Выбранный симулятор не существует.',
             'deadline.required' => 'Дедлайн обязателен для заполнения.',
-            'deadline.after_or_equal' => 'Дедлайн должен быть сегодня или в будущем.',
+            'deadline.after' => 'Дедлайн должен быть в будущем.',
             'reward.required' => 'Описание награды обязательно для заполнения.',
+            'reward.max' => 'Описание награды не должно превышать 1000 символов.',
             'required_team_size.required' => 'Размер команды обязателен для заполнения.',
-            'required_team_size.between' => 'Размер команды должен быть в диапазоне от 1 до 10 человек.',
-            'status.required' => 'Статус обязателен для заполнения.',
+            'required_team_size.min' => 'Размер команды должен быть не менее 1 человека.',
+            'required_team_size.max' => 'Размер команды должен быть не более 10 человек.',
             'status.in' => 'Можно выбрать только статус "Черновик" или "Активный".',
-            'skills.array' => 'Навыки должны быть переданы в виде массива.',
-            'skills.*.required' => 'Идентификатор навыка обязателен.',
-            'skills.*.exists' => 'Один из выбранных навыков не существует.',
+            'required_skills.array' => 'Навыки должны быть переданы в виде массива.',
+            'required_skills.*.exists' => 'Один из выбранных навыков не существует.',
+            'required_skills.*.distinct' => 'Навыки не должны повторяться.',
         ];
     }
 }

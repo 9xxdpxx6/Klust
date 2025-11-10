@@ -509,8 +509,6 @@ route('student.cases.apply', { case: caseId })
 
 Detailed specifications are in project root:
 - `ARCHITECTURE_PLAN.md` - Complete architecture overview
-- `CONTROLLERS_AND_SERVICES_SPECIFICATION.md` - Controller/Service contracts
-- `FORM_REQUESTS_SPECIFICATION.md` - Validation rules reference
 
 ## Common Patterns
 
