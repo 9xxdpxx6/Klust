@@ -14,6 +14,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Auth**: Laravel Sanctum + Spatie Laravel Permission
 - **Database**: MySQL/MariaDB (via Eloquent ORM)
 
+## ⚠️ CRITICAL RULES
+
+**IMPORTANT**: NEVER add any attribution to Claude, Anthropic, or AI-generated content in:
+- Code comments
+- Commit messages
+- Pull request descriptions
+- Documentation files
+- Code files
+- ANY project files
+
+This includes phrases like:
+- ❌ "Generated with Claude Code"
+- ❌ "Co-Authored-By: Claude"
+- ❌ "Created by Anthropic"
+- ❌ "AI-generated"
+- ❌ Any similar attributions
+
+All code and commits should appear as written by human developers only.
+
 ## Development Commands
 
 **IMPORTANT**: Do NOT run `npm run dev` or `php artisan serve` - these development servers are not available in this environment. Only run final build scripts like `npm run build` and artisan commands that don't start servers.
