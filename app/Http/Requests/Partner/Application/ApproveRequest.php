@@ -2,17 +2,19 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests\Auth;
+namespace App\Http\Requests\Partner\Application;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class LoginRequest extends FormRequest
+class ApproveRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
+     * Проверяем, что это аутентифицированный пользователь с ролью "партнер".
      */
     public function authorize(): bool
     {
+        // Предполагаем, что у модели User есть метод isPartner()
         return true;
     }
 
@@ -24,23 +26,19 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
-            'password' => ['required', 'string'],
+            'comment' => ['nullable', 'string', 'max:1000'],
         ];
     }
 
     /**
-     * Get custom messages for validator errors.
+     * Get the custom error messages for the defined validation rules.
      *
      * @return array<string, string>
      */
     public function messages(): array
     {
         return [
-            'email.required' => 'Email обязателен для заполнения.',
-            'email.email' => 'Email должен быть корректным адресом электронной почты.',
-            'password.required' => 'Пароль обязателен для заполнения.',
+            'comment.max' => 'Комментарий не должен превышать 1000 символов.',
         ];
     }
 }
-
