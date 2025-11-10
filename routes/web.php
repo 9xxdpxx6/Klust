@@ -133,10 +133,13 @@ Route::middleware('auth')->group(function () {
     });
 });
 
+use App\Http\Controllers\Admin\BadgeController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\SkillController;
+use App\Http\Controllers\Admin\SimulatorController;
+
 Route::prefix('admin')->middleware(['auth', 'role:admin|teacher'])->name('admin.')->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('Admin/Dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Маршруты пользователей
     Route::get('/users', [UsersController::class, 'index'])->name('users.index');
@@ -154,6 +157,24 @@ Route::prefix('admin')->middleware(['auth', 'role:admin|teacher'])->name('admin.
     Route::get('/cases/{case}/edit', [CaseController::class, 'edit'])->name('cases.edit');
     Route::put('/cases/{case}', [CaseController::class, 'update'])->name('cases.update');
     Route::delete('/cases/{case}', [CaseController::class, 'destroy'])->name('cases.destroy');
+
+    // Skills
+    Route::get('/skills', [SkillController::class, 'index'])->name('skills.index');
+    Route::post('/skills', [SkillController::class, 'store'])->name('skills.store');
+    Route::put('/skills/{skill}', [SkillController::class, 'update'])->name('skills.update');
+    Route::delete('/skills/{skill}', [SkillController::class, 'destroy'])->name('skills.destroy');
+
+    // Badges
+    Route::get('/badges', [BadgeController::class, 'index'])->name('badges.index');
+    Route::post('/badges', [BadgeController::class, 'store'])->name('badges.store');
+    Route::put('/badges/{badge}', [BadgeController::class, 'update'])->name('badges.update');
+    Route::delete('/badges/{badge}', [BadgeController::class, 'destroy'])->name('badges.destroy');
+
+    // Simulators
+    Route::get('/simulators', [SimulatorController::class, 'index'])->name('simulators.index');
+    Route::post('/simulators', [SimulatorController::class, 'store'])->name('simulators.store');
+    Route::put('/simulators/{simulator}', [SimulatorController::class, 'update'])->name('simulators.update');
+    Route::delete('/simulators/{simulator}', [SimulatorController::class, 'destroy'])->name('simulators.destroy');
 });
 
 Route::get('/', function () {
