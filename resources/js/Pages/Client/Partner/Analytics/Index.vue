@@ -48,12 +48,43 @@
                     />
                 </div>
                 <div class="flex items-end">
-                    <button
-                        @click="exportData"
-                        class="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out"
-                    >
-                        Экспорт данных
-                    </button>
+                    <div class="relative w-full">
+                        <button
+                            @click="showExportMenu = !showExportMenu"
+                            class="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out flex items-center justify-center gap-2"
+                        >
+                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Экспорт данных
+                        </button>
+                        <div
+                            v-if="showExportMenu"
+                            @click.stop
+                            class="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10"
+                        >
+                            <div class="py-1">
+                                <a
+                                    :href="route('partner.analytics.export.cases')"
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                >
+                                    Экспорт кейсов (Excel)
+                                </a>
+                                <a
+                                    :href="route('partner.analytics.export.applications')"
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                >
+                                    Экспорт заявок (Excel)
+                                </a>
+                                <a
+                                    :href="route('partner.analytics.export.teams')"
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                >
+                                    Экспорт команд (Excel)
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -286,6 +317,17 @@ const filters = reactive({
     period: props.filters.period || '30',
     start_date: '',
     end_date: ''
+});
+
+const showExportMenu = ref(false);
+
+// Close export menu when clicking outside
+onMounted(() => {
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.relative')) {
+            showExportMenu.value = false;
+        }
+    });
 });
 
 const barChartOptions = {

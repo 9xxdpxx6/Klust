@@ -20,7 +20,7 @@
             <td>{{ strip_tags($case->description) }}</td>
             <td>{{ $case->partner->company_name ?? 'N/A' }}</td>
             <td>{{ $case->status }}</td>
-            <td>{{ $case->team_size }}</td>
+            <td>{{ $case->required_team_size }}</td>
             <td>{{ $case->deadline->format('d.m.Y') }}</td>
             <td>{{ $case->created_at->format('d.m.Y H:i') }}</td>
             <td>{{ $case->required_skills->pluck('name')->join(', ') }}</td>

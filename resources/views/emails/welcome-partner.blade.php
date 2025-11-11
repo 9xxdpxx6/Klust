@@ -1,0 +1,36 @@
+@extends('emails.layout')
+
+@section('title', 'Добро пожаловать в Klust - Партнерская панель')
+
+@section('content')
+    <h2>Добро пожаловать в Klust, {{ $user->name }}!</h2>
+
+    <p>Благодарим вас за регистрацию на платформе <strong>Klust</strong> в качестве партнера!</p>
+
+    <p>Как партнер платформы, вы можете:</p>
+    <ul>
+        <li>Создавать кейсы для студентов</li>
+        <li>Управлять заявками от команд студентов</li>
+        <li>Взаимодействовать с командами в процессе работы</li>
+        <li>Просматривать аналитику по вашим кейсам</li>
+        <li>Находить талантливых студентов для вашей компании</li>
+    </ul>
+
+    <div class="info-box">
+        <strong>Ваши данные:</strong><br>
+        Email: {{ $user->email }}<br>
+        Компания: {{ $user->partner->company_name ?? 'Не указана' }}
+    </div>
+
+    <p style="text-align: center;">
+        <a href="{{ url('/partner/dashboard') }}" class="button">
+            Перейти в партнерскую панель
+        </a>
+    </p>
+
+    <div class="divider"></div>
+
+    <p style="font-size: 14px; color: #6c757d;">
+        Если у вас есть вопросы по работе с платформой, свяжитесь с администрацией Klust.
+    </p>
+@endsection
