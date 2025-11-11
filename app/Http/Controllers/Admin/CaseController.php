@@ -62,6 +62,7 @@ class CaseController extends Controller
             'simulator',
             'skills',
             'applications.leader',
+            'applications.status',
             'applications.teamMembers.user',
         ]);
 

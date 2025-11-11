@@ -275,13 +275,13 @@
                             <div>
                                 <div class="font-medium text-gray-900">{{ application.case.title }}</div>
                                 <div class="text-sm text-gray-500">Партнер: {{ application.case.partner.company_name }}</div>
-                                <div class="text-sm text-gray-500">Статус: {{ getStatusText(application.status) }}</div>
+                                <div class="text-sm text-gray-500">Статус: {{ application.status?.label || getStatusText(application.status?.name) }}</div>
                             </div>
                             <span
-                                :class="getStatusBadgeClass(application.status)"
+                                :class="getStatusBadgeClass(application.status?.name)"
                                 class="px-2 py-1 text-xs font-semibold rounded-full"
                             >
-                {{ getStatusText(application.status) }}
+                {{ application.status?.label || getStatusText(application.status?.name) }}
               </span>
                         </div>
                     </div>
@@ -299,7 +299,7 @@
                     >
                         <div class="font-medium text-gray-900">{{ member.application.case.title }}</div>
                         <div class="text-sm text-gray-500">Лидер: {{ member.application.leader.name }}</div>
-                        <div class="text-sm text-gray-500">Статус: {{ getStatusText(member.application.status) }}</div>
+                        <div class="text-sm text-gray-500">Статус: {{ member.application.status?.label || getStatusText(member.application.status?.name) }}</div>
                     </div>
                 </div>
             </div>

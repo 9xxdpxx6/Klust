@@ -16,12 +16,16 @@ class CaseApplication extends Model
         'case_id',
         'leader_id',
         'motivation',
-        'status',
+        'status_id',
+        'rejection_reason',
+        'partner_comment',
+        'reviewed_at',
         'submitted_at',
     ];
 
     protected $casts = [
         'submitted_at' => 'datetime',
+        'reviewed_at' => 'datetime',
     ];
 
     public function case(): BelongsTo
@@ -32,6 +36,11 @@ class CaseApplication extends Model
     public function leader(): BelongsTo
     {
         return $this->belongsTo(User::class, 'leader_id');
+    }
+
+    public function status(): BelongsTo
+    {
+        return $this->belongsTo(ApplicationStatus::class, 'status_id');
     }
 
     public function teamMembers(): HasMany
@@ -45,6 +54,15 @@ class CaseApplication extends Model
         return $this->belongsToMany(User::class, 'case_team_members')
             ->using(CaseTeamMember::class)
             ->withTimestamps();
+    }
+
+    /**
+     * История изменений статуса заявки
+     */
+    public function statusHistory(): HasMany
+    {
+        return $this->hasMany(CaseApplicationStatusHistory::class, 'case_application_id')
+            ->orderBy('changed_at', 'desc');
     }
 }
 

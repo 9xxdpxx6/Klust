@@ -13,9 +13,15 @@ return new class extends Migration
             $table->foreignId('case_id')->constrained()->cascadeOnDelete();
             $table->foreignId('leader_id')->constrained('users')->cascadeOnDelete();
             $table->text('motivation');
-            $table->enum('status', ['pending', 'accepted', 'rejected'])->default('pending');
+            $table->foreignId('status_id')->default(1)->constrained('application_statuses');
+            $table->text('rejection_reason')->nullable();
+            $table->text('partner_comment')->nullable();
+            $table->timestamp('reviewed_at')->nullable();
             $table->timestamp('submitted_at')->useCurrent();
             $table->timestamps();
+
+            $table->index(['case_id', 'status_id']);
+            $table->index('leader_id');
         });
     }
 
