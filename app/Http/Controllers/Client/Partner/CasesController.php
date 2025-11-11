@@ -137,7 +137,15 @@ class CasesController extends Controller
             $this->caseService->ensureCaseBelongsToPartner($case, $partner);
 
             // Загрузить связи
-            $case->load(['skills', 'applications.leader', 'applications.teamMembers.user']);
+            $case->load([
+                'skills',
+                'applications.leader',
+                'applications.status',
+                'applications.teamMembers.user',
+                'applications.statusHistory.changedBy',
+                'applications.statusHistory.oldStatus',
+                'applications.statusHistory.newStatus'
+            ]);
 
             // Получить статистику
             $statistics = $this->caseService->getCaseStatistics($case);
@@ -263,9 +271,20 @@ class CasesController extends Controller
             $statusFilter = $request->input('status');
             $applications = $case->applications()
                 ->when($statusFilter, function ($query) use ($statusFilter) {
-                    $query->where('status', $statusFilter);
+                    // Получить ID статуса по имени
+                    $statusId = \App\Models\ApplicationStatus::getIdByName($statusFilter);
+                    if ($statusId) {
+                        $query->where('status_id', $statusId);
+                    }
                 })
-                ->with(['leader', 'teamMembers.user'])
+                ->with([
+                    'leader',
+                    'status',
+                    'teamMembers.user',
+                    'statusHistory.changedBy',
+                    'statusHistory.oldStatus',
+                    'statusHistory.newStatus'
+                ])
                 ->orderBy('submitted_at', 'desc')
                 ->get();
 
@@ -295,7 +314,8 @@ class CasesController extends Controller
             $this->caseService->ensureCaseBelongsToPartner($case, $partner);
 
             // Проверить, что заявка имеет статус 'pending'
-            if ($application->status !== 'pending') {
+            $pendingStatusId = \App\Models\ApplicationStatus::getIdByName('pending');
+            if ($application->status_id !== $pendingStatusId) {
                 return redirect()
                     ->back()
                     ->with('error', 'Заявка уже обработана');
@@ -330,7 +350,8 @@ class CasesController extends Controller
             $this->caseService->ensureCaseBelongsToPartner($case, $partner);
 
             // Проверить статус заявки
-            if ($application->status !== 'pending') {
+            $pendingStatusId = \App\Models\ApplicationStatus::getIdByName('pending');
+            if ($application->status_id !== $pendingStatusId) {
                 return redirect()
                     ->back()
                     ->with('error', 'Заявка уже обработана');

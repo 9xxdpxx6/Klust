@@ -14,9 +14,9 @@
             </div>
             <span :class="[
                 'px-3 py-1 text-sm font-medium rounded-full',
-                getApplicationStatusBadgeClass(application.status)
+                getApplicationStatusBadgeClass(application.status?.name)
             ]">
-                {{ getApplicationStatusLabel(application.status) }}
+                {{ application.status?.label || application.status?.name }}
             </span>
         </div>
 

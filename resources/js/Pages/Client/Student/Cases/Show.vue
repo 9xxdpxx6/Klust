@@ -8,6 +8,7 @@ import Card from '@/Components/UI/Card.vue'
 import Modal from '@/Components/UI/Modal.vue'
 import Textarea from '@/Components/UI/Textarea.vue'
 import Input from '@/Components/UI/Input.vue'
+import ApplicationStatusTimeline from '@/Components/ApplicationStatusTimeline.vue'
 
 const props = defineProps({
     case: {
@@ -64,16 +65,11 @@ const statusColor = computed(() => {
         accepted: 'bg-green-100 text-green-800',
         rejected: 'bg-red-100 text-red-800'
     }
-    return colors[props.applicationStatus?.status] || ''
+    return colors[props.applicationStatus?.status?.name] || ''
 })
 
 const statusText = computed(() => {
-    const texts = {
-        pending: 'Ожидает рассмотрения',
-        accepted: 'Одобрена',
-        rejected: 'Отклонена'
-    }
-    return texts[props.applicationStatus?.status] || ''
+    return props.applicationStatus?.status?.label || ''
 })
 
 const formatDate = (dateString) => {
@@ -127,13 +123,13 @@ const formatDate = (dateString) => {
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="font-bold text-lg mb-2">Статус заявки: {{ statusText }}</h3>
-                        <p v-if="applicationStatus.status === 'pending'" class="text-sm">
+                        <p v-if="applicationStatus.status?.name === 'pending'" class="text-sm">
                             Ваша заявка ожидает рассмотрения партнером
                         </p>
-                        <p v-if="applicationStatus.status === 'accepted'" class="text-sm">
+                        <p v-if="applicationStatus.status?.name === 'accepted'" class="text-sm">
                             Поздравляем! Ваша заявка одобрена
                         </p>
-                        <p v-if="applicationStatus.status === 'rejected'" class="text-sm">
+                        <p v-if="applicationStatus.status?.name === 'rejected'" class="text-sm">
                             К сожалению, ваша заявка была отклонена
                         </p>
                         <p v-if="applicationStatus.rejection_reason" class="mt-2 text-sm">
@@ -145,14 +141,14 @@ const formatDate = (dateString) => {
                     </div>
                     <div class="flex gap-2">
                         <Button
-                            v-if="applicationStatus.status === 'accepted'"
+                            v-if="applicationStatus.status?.name === 'accepted'"
                             variant="primary"
                             @click="router.visit(route('student.team.show', applicationStatus.id))"
                         >
                             Перейти к команде
                         </Button>
                         <Button
-                            v-if="applicationStatus.status === 'pending'"
+                            v-if="applicationStatus.status?.name === 'pending'"
                             variant="danger"
                             @click="withdrawApplication"
                         >
@@ -160,6 +156,12 @@ const formatDate = (dateString) => {
                         </Button>
                     </div>
                 </div>
+            </Card>
+
+            <!-- Application Status History -->
+            <Card v-if="applicationStatus && applicationStatus.statusHistory" class="mb-6">
+                <h3 class="text-xl font-bold mb-4">История статуса заявки</h3>
+                <ApplicationStatusTimeline :history="applicationStatus.statusHistory" />
             </Card>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">

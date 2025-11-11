@@ -100,10 +100,10 @@ class UsersController extends Controller
             'badges',
             'simulatorSessions',
             'caseApplications' => function ($query) {
-                $query->with(['case', 'case.partner']);
+                $query->with(['case', 'case.partner', 'status']);
             },
             'caseTeamMembers' => function ($query) {
-                $query->with(['application', 'application.case']);
+                $query->with(['application', 'application.case', 'application.status', 'application.leader']);
             },
             'notifications',
             'progressLogs',

@@ -195,30 +195,30 @@
                                         {{ formatDate(application.created_at) }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span 
+                                        <span
                                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                                            :class="getStatusClass(application.status)"
+                                            :class="getStatusClass(application.status?.name)"
                                         >
-                                            {{ getStatusLabel(application.status) }}
+                                            {{ application.status?.label || application.status?.name }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <div class="flex justify-end space-x-2">
-                                            <Link 
-                                                :href="route('partner.cases.applications.show', { application: application.id })" 
+                                            <Link
+                                                :href="route('partner.cases.applications.show', { application: application.id })"
                                                 class="text-blue-600 hover:text-blue-900"
                                             >
                                                 Просмотреть
                                             </Link>
-                                            <button 
-                                                v-if="application.status === 'pending'"
+                                            <button
+                                                v-if="application.status?.name === 'pending'"
                                                 @click="approveApplication(application.id)"
                                                 class="text-green-600 hover:text-green-900"
                                             >
                                                 Одобрить
                                             </button>
-                                            <button 
-                                                v-if="application.status === 'pending'"
+                                            <button
+                                                v-if="application.status?.name === 'pending'"
                                                 @click="rejectApplication(application.id)"
                                                 class="text-red-600 hover:text-red-900"
                                             >

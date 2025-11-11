@@ -211,7 +211,7 @@ const skillsMatchPercentage = () => {
                         <div class="space-y-3">
                             <div>
                                 <p class="text-sm text-gray-600">Статус</p>
-                                <p class="font-semibold">{{ application.status === 'accepted' ? 'Активен' : application.status }}</p>
+                                <p class="font-semibold">{{ application.status?.name === 'accepted' ? 'Активен' : (application.status?.label || application.status?.name) }}</p>
                             </div>
                             <div v-if="application.case.deadline">
                                 <p class="text-sm text-gray-600">Дедлайн</p>

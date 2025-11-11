@@ -70,6 +70,16 @@ class CasesController extends Controller
         // Получить статус заявки студента
         $applicationStatus = $this->applicationService->getStudentApplicationStatus($user, $case);
 
+        // Загрузить историю статусов, если заявка существует
+        if ($applicationStatus) {
+            $applicationStatus->load([
+                'status',
+                'statusHistory.changedBy',
+                'statusHistory.oldStatus',
+                'statusHistory.newStatus'
+            ]);
+        }
+
         return Inertia::render('Client/Student/Cases/Show', [
             'case' => $case,
             'applicationStatus' => $applicationStatus,

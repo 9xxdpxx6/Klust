@@ -24,12 +24,13 @@ class DatabaseSeeder extends Seeder
             SimulatorSessionSeeder::class, // 9. Сессии симуляторов (80)
             CaseSeeder::class,           // 10. Кейсы (8)
             CaseSkillSeeder::class,      // 11. Навыки кейсов (pivot)
-            CaseApplicationSeeder::class, // 12. Заявки на кейсы (30)
-            UserSkillSeeder::class,      // 13. Навыки студентов (pivot)
-            UserBadgeSeeder::class,      // 14. Бейджи студентов (pivot)
-            CaseTeamMemberSeeder::class, // 15. Участники команд (pivot)
-            NotificationSeeder::class,   // 16. Уведомления (~200)
-            ProgressLogSeeder::class,    // 17. Логи прогресса (~300)
+            ApplicationStatusSeeder::class, // 12. Статусы заявок (pending, accepted, rejected)
+            CaseApplicationSeeder::class, // 13. Заявки на кейсы (30)
+            UserSkillSeeder::class,      // 14. Навыки студентов (pivot)
+            UserBadgeSeeder::class,      // 15. Бейджи студентов (pivot)
+            CaseTeamMemberSeeder::class, // 16. Участники команд (pivot)
+            NotificationSeeder::class,   // 17. Уведомления (~200)
+            ProgressLogSeeder::class,    // 18. Логи прогресса (~300)
         ]);
     }
 }
