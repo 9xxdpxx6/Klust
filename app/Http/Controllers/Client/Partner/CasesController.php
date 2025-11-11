@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Client\Partner;
 
+use App\Filters\CaseApplicationFilter;
+use App\Filters\CaseFilter;
 use App\Exports\ApplicationsExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Partner\Application\ApproveRequest;
@@ -42,14 +44,37 @@ class CasesController extends Controller
             $user = auth()->user();
             $partner = $user->partner;
 
-            // Получить фильтры
-            $filters = [
-                'status' => $request->input('status'),
-                'search' => $request->input('search'),
-            ];
+            if (!$partner) {
+                return Inertia::render('Client/Partner/Cases/Index', [
+                    'cases' => [],
+                    'filters' => [],
+                    'error' => 'Партнер не найден',
+                ]);
+            }
 
-            // Получить только кейсы партнера (getPartnerCases уже возвращает пагинированный результат)
-            $cases = $this->caseService->getPartnerCases($partner, $filters);
+            $filters = $request->only([
+                'status',
+                'search',
+                'simulator_id',
+                'deadline_from',
+                'deadline_to',
+                'sort_by',
+                'sort_order',
+                'per_page',
+            ]);
+
+            $caseFilter = new CaseFilter($filters);
+
+            $casesQuery = CaseModel::query()
+                ->where('partner_id', $partner->id)
+                ->with(['skills', 'simulator']);
+
+            $pagination = $caseFilter->getPaginationParams();
+
+            $cases = $caseFilter
+                ->apply($casesQuery)
+                ->paginate($pagination['per_page'])
+                ->withQueryString();
 
             return Inertia::render('Client/Partner/Cases/Index', [
                 'cases' => $cases,
@@ -174,6 +199,15 @@ class CasesController extends Controller
             $user = auth()->user();
             $partner = $user->partner;
 
+            if (!$partner) {
+                return Inertia::render('Client/Partner/Cases/Applications', [
+                    'case' => $case,
+                    'applications' => collect(),
+                    'filters' => [],
+                    'error' => 'Партнер не найден',
+                ]);
+            }
+
             // Проверить права
             $this->caseService->ensureCaseBelongsToPartner($case, $partner);
 
@@ -259,19 +293,33 @@ class CasesController extends Controller
             // Проверить права
             $this->caseService->ensureCaseBelongsToPartner($case, $partner);
 
-            // Получить заявки на кейс с фильтрацией по статусу
-            $statusFilter = $request->input('status');
-            $applications = $case->applications()
-                ->when($statusFilter, function ($query) use ($statusFilter) {
-                    $query->where('status', $statusFilter);
-                })
-                ->with(['leader', 'teamMembers.user'])
-                ->orderBy('submitted_at', 'desc')
-                ->get();
+            $filters = $request->only([
+                'search',
+                'status',
+                'case_id',
+                'submitted_from',
+                'submitted_to',
+                'sort_by',
+                'sort_order',
+                'per_page',
+            ]);
+
+            $applicationFilter = new CaseApplicationFilter($filters);
+
+            $applicationsQuery = $case->applications()
+                ->with(['leader', 'teamMembers.user']);
+
+            $pagination = $applicationFilter->getPaginationParams();
+
+            $applications = $applicationFilter
+                ->apply($applicationsQuery)
+                ->paginate($pagination['per_page'])
+                ->withQueryString();
 
             return Inertia::render('Client/Partner/Cases/Applications', [
                 'case' => $case,
                 'applications' => $applications,
+                'filters' => $filters,
             ]);
         } catch (\Exception $e) {
             return Inertia::render('Client/Partner/Cases/Applications', [
