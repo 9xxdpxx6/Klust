@@ -6,21 +6,24 @@ namespace App\Http\Controllers\Client\Partner;
 
 use App\Filters\CaseApplicationFilter;
 use App\Filters\CaseFilter;
+use App\Exports\ApplicationsExport;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Partner\Case\StoreRequest;
-use App\Http\Requests\Partner\Case\UpdateRequest;
 use App\Http\Requests\Partner\Application\ApproveRequest;
 use App\Http\Requests\Partner\Application\RejectRequest;
+use App\Http\Requests\Partner\Case\StoreRequest;
+use App\Http\Requests\Partner\Case\UpdateRequest;
 use App\Models\CaseApplication;
 use App\Models\CaseModel;
 use App\Models\Skill;
-use App\Services\CaseService;
 use App\Services\ApplicationService;
+use App\Services\CaseService;
 use App\Services\NotificationService;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class CasesController extends Controller
 {
@@ -81,7 +84,7 @@ class CasesController extends Controller
             return Inertia::render('Client/Partner/Cases/Index', [
                 'cases' => [],
                 'filters' => [],
-                'error' => 'Ошибка при загрузке кейсов: ' . $e->getMessage(),
+                'error' => 'Ошибка при загрузке кейсов: '.$e->getMessage(),
             ]);
         }
     }
@@ -107,7 +110,7 @@ class CasesController extends Controller
             return Inertia::render('Client/Partner/Cases/Create', [
                 'skills' => [],
                 'simulators' => collect(),
-                'error' => 'Ошибка при загрузке формы: ' . $e->getMessage(),
+                'error' => 'Ошибка при загрузке формы: '.$e->getMessage(),
             ]);
         }
     }
@@ -121,7 +124,7 @@ class CasesController extends Controller
             $user = auth()->user();
             $partner = $user->partner;
 
-            if (!$partner) {
+            if (! $partner) {
                 return redirect()
                     ->route('partner.cases.index')
                     ->with('error', 'Партнер не найден');
@@ -142,7 +145,7 @@ class CasesController extends Controller
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'Ошибка при создании кейса: ' . $e->getMessage());
+                ->with('error', 'Ошибка при создании кейса: '.$e->getMessage());
         }
     }
 
@@ -182,7 +185,7 @@ class CasesController extends Controller
                 'applications' => collect(),
                 'teams' => collect(),
                 'statistics' => [],
-                'error' => 'Ошибка при загрузке кейса: ' . $e->getMessage(),
+                'error' => 'Ошибка при загрузке кейса: '.$e->getMessage(),
             ]);
         }
     }
@@ -222,7 +225,7 @@ class CasesController extends Controller
             return Inertia::render('Client/Partner/Cases/Edit', [
                 'case' => $case,
                 'skills' => [],
-                'error' => 'Ошибка при загрузке формы: ' . $e->getMessage(),
+                'error' => 'Ошибка при загрузке формы: '.$e->getMessage(),
             ]);
         }
     }
@@ -249,7 +252,7 @@ class CasesController extends Controller
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'Ошибка при обновлении кейса: ' . $e->getMessage());
+                ->with('error', 'Ошибка при обновлении кейса: '.$e->getMessage());
         }
     }
 
@@ -274,7 +277,7 @@ class CasesController extends Controller
         } catch (\Exception $e) {
             return redirect()
                 ->back()
-                ->with('error', 'Ошибка при архивации кейса: ' . $e->getMessage());
+                ->with('error', 'Ошибка при архивации кейса: '.$e->getMessage());
         }
     }
 
@@ -322,7 +325,7 @@ class CasesController extends Controller
             return Inertia::render('Client/Partner/Cases/Applications', [
                 'case' => $case,
                 'applications' => collect(),
-                'error' => 'Ошибка при загрузке заявок: ' . $e->getMessage(),
+                'error' => 'Ошибка при загрузке заявок: '.$e->getMessage(),
             ]);
         }
     }
@@ -358,7 +361,7 @@ class CasesController extends Controller
         } catch (\Exception $e) {
             return redirect()
                 ->back()
-                ->with('error', 'Ошибка при одобрении заявки: ' . $e->getMessage());
+                ->with('error', 'Ошибка при одобрении заявки: '.$e->getMessage());
         }
     }
 
@@ -385,7 +388,7 @@ class CasesController extends Controller
             $this->applicationService->rejectApplication($application, $request->rejection_reason);
 
             // Отправить уведомление лидеру команды
-            $this->notificationService->notifyApplicationRejection($application);
+            $this->notificationService->notifyApplicationRejection($application, $request->rejection_reason);
 
             return redirect()
                 ->back()
@@ -393,8 +396,23 @@ class CasesController extends Controller
         } catch (\Exception $e) {
             return redirect()
                 ->back()
-                ->with('error', 'Ошибка при отклонении заявки: ' . $e->getMessage());
+                ->with('error', 'Ошибка при отклонении заявки: '.$e->getMessage());
         }
     }
-}
 
+    /**
+     * Экспорт заявок на кейс в Excel
+     */
+    public function exportApplications(CaseModel $case): BinaryFileResponse
+    {
+        $user = auth()->user();
+        $partner = $user->partner;
+
+        // Проверить права
+        $this->caseService->ensureCaseBelongsToPartner($case, $partner);
+
+        $filename = 'applications_case_' . $case->id . '_' . date('Y-m-d_H-i-s') . '.xlsx';
+
+        return Excel::download(new ApplicationsExport(['case_id' => $case->id]), $filename);
+    }
+}

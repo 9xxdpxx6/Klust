@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\AppNotification;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
@@ -18,7 +19,7 @@ class HandleInertiaRequests extends Middleware
     /**
      * Determine the current asset version.
      */
-    public function version(Request $request): string|null
+    public function version(Request $request): ?string
     {
         return parent::version($request);
     }
@@ -44,6 +45,13 @@ class HandleInertiaRequests extends Middleware
                 'message' => fn () => $request->session()->get('message'),
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
+            ],
+            'notifications' => [
+                'unreadCount' => fn () => $request->user()
+                    ? AppNotification::where('user_id', $request->user()->id)
+                        ->where('is_read', false)
+                        ->count()
+                    : 0,
             ],
             'ziggy' => fn () => [
                 ...(new Ziggy)->toArray(),

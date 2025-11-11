@@ -6,16 +6,16 @@ namespace App\Http\Controllers\Client\Student;
 
 use App\Filters\CaseFilter;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Student\Case\ApplyRequest;
 use App\Http\Requests\Student\Case\AddTeamMemberRequest;
+use App\Http\Requests\Student\Case\ApplyRequest;
 use App\Models\CaseApplication;
 use App\Models\CaseModel;
-use App\Services\CaseService;
 use App\Services\ApplicationService;
-use App\Services\TeamService;
+use App\Services\CaseService;
 use App\Services\NotificationService;
-use Illuminate\Http\Request;
+use App\Services\TeamService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -166,7 +166,13 @@ class CasesController extends Controller
         }
 
         // Добавить участника команды
-        $this->applicationService->addTeamMember($application, $request->user_id);
+        $teamMember = $this->applicationService->addTeamMember($application, $request->user_id);
+
+        // Отправить уведомление новому участнику
+        $this->notificationService->notifyUserAboutTeamAddition(
+            $teamMember->user,
+            $application
+        );
 
         return redirect()
             ->route('student.cases.my')
@@ -209,7 +215,7 @@ class CasesController extends Controller
         $isTeamMember = $application->leader_id === $user->id ||
             $application->teamMembers()->where('user_id', $user->id)->exists();
 
-        if (!$isTeamMember) {
+        if (! $isTeamMember) {
             abort(403);
         }
 
@@ -225,4 +231,3 @@ class CasesController extends Controller
         ]);
     }
 }
-

@@ -10,6 +10,7 @@ use App\Http\Controllers\Search\SearchController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Client\Partner\AnalyticsController;
 use App\Http\Controllers\Client\Partner\CasesController as PartnerCasesController;
 use App\Http\Controllers\Client\Partner\DashboardController as PartnerDashboardController;
@@ -73,6 +74,16 @@ Route::middleware('auth')->group(function () {
     // Выход
     Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
 
+    // Notifications (для всех авторизованных пользователей)
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::get('/recent', [NotificationController::class, 'recent'])->name('recent');
+        Route::get('/unread-count', [NotificationController::class, 'unreadCount'])->name('unreadCount');
+        Route::post('/{notification}/read', [NotificationController::class, 'markAsRead'])->name('read');
+        Route::post('/read-all', [NotificationController::class, 'markAllAsRead'])->name('readAll');
+        Route::delete('/{notification}', [NotificationController::class, 'destroy'])->name('destroy');
+    });
+
     // Студент
     Route::prefix('student')->middleware('role:student')->name('student.')->group(function () {
         // Dashboard
@@ -128,6 +139,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/cases/{case}/applications', [PartnerCasesController::class, 'applications'])->name('cases.applications');
         Route::post('/cases/{case}/applications/{application}/approve', [PartnerCasesController::class, 'approve'])->name('cases.applications.approve');
         Route::post('/cases/{case}/applications/{application}/reject', [PartnerCasesController::class, 'reject'])->name('cases.applications.reject');
+        Route::get('/cases/{case}/applications/export', [PartnerCasesController::class, 'exportApplications'])->name('cases.applications.export');
 
         // Teams
         Route::get('/teams', [TeamController::class, 'index'])->name('teams.index');
@@ -135,6 +147,9 @@ Route::middleware('auth')->group(function () {
 
         // Analytics
         Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
+        Route::get('/analytics/export/cases', [AnalyticsController::class, 'exportCases'])->name('analytics.export.cases');
+        Route::get('/analytics/export/applications', [AnalyticsController::class, 'exportApplications'])->name('analytics.export.applications');
+        Route::get('/analytics/export/teams', [AnalyticsController::class, 'exportTeams'])->name('analytics.export.teams');
     });
 });
 
