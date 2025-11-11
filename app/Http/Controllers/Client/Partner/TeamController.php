@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Client\Partner;
 
+use App\Filters\Partner\TeamFilter;
 use App\Http\Controllers\Controller;
 use App\Models\CaseApplication;
 use App\Services\TeamService;
@@ -30,20 +31,46 @@ class TeamController extends Controller
             $user = auth()->user();
             $partner = $user->partner;
 
-            // Получить фильтры
-            $filters = [
-                'case_id' => $request->input('case_id'),
-                'status' => $request->input('status'),
-            ];
+            if (!$partner) {
+                return redirect()
+                    ->route('partner.dashboard')
+                    ->with('error', 'Партнер не найден');
+            }
 
-            // Получить все команды партнера
-            $teams = $this->teamService->getPartnerTeams($partner, $filters);
+            $filters = $request->only([
+                'search',
+                'case_id',
+                'status',
+                'leader_id',
+                'submitted_from',
+                'submitted_to',
+                'sort_by',
+                'sort_order',
+                'per_page',
+            ]);
 
-            // Загрузить кейсы и участников команд
-            $teams->load(['case.partner', 'leader', 'teamMembers.user']);
+            $teamFilter = new TeamFilter($filters);
+
+            $teamsQuery = CaseApplication::query()
+                ->whereHas('case', function ($caseQuery) use ($partner): void {
+                    $caseQuery->where('partner_id', $partner->id);
+                })
+                ->with(['case.partner', 'leader', 'teamMembers.user']);
+
+            if (!$request->filled('status')) {
+                $teamsQuery->where('status', 'accepted');
+            }
+
+            $pagination = $teamFilter->getPaginationParams();
+
+            $teams = $teamFilter
+                ->apply($teamsQuery)
+                ->paginate($pagination['per_page'])
+                ->withQueryString();
 
             return Inertia::render('Client/Partner/Teams/Index', [
                 'teams' => $teams,
+                'filters' => $filters,
             ]);
         } catch (\Exception $e) {
             return redirect()

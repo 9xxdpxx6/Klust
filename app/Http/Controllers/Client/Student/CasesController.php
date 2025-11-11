@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Client\Student;
 
+use App\Filters\CaseFilter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Student\Case\ApplyRequest;
 use App\Http\Requests\Student\Case\AddTeamMemberRequest;
@@ -36,15 +37,40 @@ class CasesController extends Controller
     {
         $user = auth()->user();
 
-        // Получить фильтры
-        $filters = [
-            'skills' => $request->input('skills', []),
-            'partner_id' => $request->input('partner_id'),
-            'search' => $request->input('search'),
-        ];
+        $filters = $request->only([
+            'search',
+            'skills',
+            'partner_id',
+            'deadline_from',
+            'deadline_to',
+            'sort_by',
+            'sort_order',
+            'per_page',
+        ]);
 
-        // Получить доступные кейсы для студента (уже с пагинацией и исключением заявок)
-        $cases = $this->caseService->getAvailableCasesForStudent($user, $filters);
+        $caseFilter = new CaseFilter($filters);
+
+        // Базовый запрос: только активные кейсы
+        $casesQuery = CaseModel::query()
+            ->where('status', 'active')
+            ->where(function ($query): void {
+                $query->whereNull('deadline')
+                    ->orWhere('deadline', '>=', now());
+            })
+            ->whereNotExists(function ($query) use ($user): void {
+                $query->selectRaw(1)
+                    ->from('case_applications')
+                    ->whereColumn('case_applications.case_id', 'cases.id')
+                    ->where('case_applications.leader_id', $user->id);
+            })
+            ->with(['partner', 'skills']);
+
+        $pagination = $caseFilter->getPaginationParams();
+
+        $cases = $caseFilter
+            ->apply($casesQuery)
+            ->paginate($pagination['per_page'])
+            ->withQueryString();
 
         return Inertia::render('Client/Student/Cases/Index', [
             'cases' => $cases,

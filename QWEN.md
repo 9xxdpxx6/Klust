@@ -31,7 +31,7 @@ composer install
 npm install
 
 # Copy environment file
-cp .env.example .env
+cp .env .env
 
 # Generate application key
 php artisan key:generate
