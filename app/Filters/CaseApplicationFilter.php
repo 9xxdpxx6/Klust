@@ -81,32 +81,29 @@ final class CaseApplicationFilter extends BaseFilter
 
     private function applySubmittedAtRangeFilter(Builder $query): void
     {
-        $from = $this->getFilter('submitted_from') ?? $this->getFilter('date_from');
-        $to = $this->getFilter('submitted_to') ?? $this->getFilter('date_to');
+        // Delegate to BaseFilter's applyDateRange
+        // Support both submitted_from/to and date_from/to
+        $filters = [
+            'date_from' => $this->getFilter('submitted_from') ?? $this->getFilter('date_from'),
+            'date_to' => $this->getFilter('submitted_to') ?? $this->getFilter('date_to'),
+        ];
 
-        if ($from) {
-            $query->where('submitted_at', '>=', $from);
-        }
-
-        if ($to) {
-            $query->where('submitted_at', '<=', $to);
-        }
+        $tempFilters = $this->filters;
+        $this->filters = $filters;
+        $this->applyDateRange($query, 'submitted_at');
+        $this->filters = $tempFilters;
     }
 
     private function applySortingFilter(Builder $query): void
     {
+        // Delegate to BaseFilter's applySorting with allowed fields validation
         $sortBy = $this->getFilter('sort_by', 'submitted_at');
-        $sortOrder = strtolower((string) $this->getFilter('sort_order', 'desc'));
 
         if (!in_array($sortBy, self::ALLOWED_SORT_FIELDS, true)) {
             $sortBy = 'submitted_at';
         }
 
-        if (!in_array($sortOrder, ['asc', 'desc'], true)) {
-            $sortOrder = 'desc';
-        }
-
-        $query->orderBy($sortBy, $sortOrder);
+        $this->applySorting($query, $sortBy, 'desc');
     }
 
 }
