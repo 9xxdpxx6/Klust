@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Helpers\FilterHelper;
 use App\Models\Partner;
 use App\Models\PartnerProfile;
 use App\Models\StudentProfile;
@@ -128,33 +129,37 @@ class UserService
         $query = User::query();
 
         // Apply search filter
-        if (isset($filters['search']) && ! empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('kubgtu_id', 'like', "%{$search}%");
+        $search = FilterHelper::getStringFilter($filters['search'] ?? null);
+        if ($search) {
+            $sanitizedSearch = FilterHelper::sanitizeSearch($search);
+            $query->where(function ($q) use ($sanitizedSearch) {
+                $q->where('name', 'like', "%{$sanitizedSearch}%")
+                    ->orWhere('email', 'like', "%{$sanitizedSearch}%")
+                    ->orWhere('kubgtu_id', 'like', "%{$sanitizedSearch}%");
             });
         }
 
         // Apply role filter
-        if (isset($filters['role']) && ! empty($filters['role'])) {
-            $query->role($filters['role']);
+        $role = FilterHelper::getStringFilter($filters['role'] ?? null);
+        if ($role) {
+            $query->role($role);
         }
 
         // Apply status filter (active/inactive based on deleted_at)
-        if (isset($filters['status'])) {
-            if ($filters['status'] === 'inactive') {
-                $query->onlyTrashed();
-            } else {
-                $query->whereNull('deleted_at');
-            }
+        $status = FilterHelper::getStringFilter($filters['status'] ?? null);
+        if ($status === 'inactive') {
+            $query->onlyTrashed();
+        } elseif ($status === 'active') {
+            $query->whereNull('deleted_at');
         }
 
         // Eager load relationships
         $query->with(['studentProfile', 'partnerProfile', 'teacherProfile', 'roles']);
 
-        return $query->latest()->paginate(20);
+        // Get pagination parameters
+        $pagination = FilterHelper::getPaginationParams($filters, 20);
+
+        return $query->latest()->paginate($pagination['per_page']);
     }
 
     /**

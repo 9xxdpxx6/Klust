@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Helpers\FilterHelper;
 use App\Models\CaseApplication;
 use App\Models\Partner;
 use App\Models\ProgressLog;
@@ -123,13 +124,15 @@ class TeamService
         })->where('status', 'accepted');
 
         // Apply case filter
-        if (isset($filters['case_id']) && ! empty($filters['case_id'])) {
-            $query->where('case_id', $filters['case_id']);
+        $caseId = FilterHelper::getIntegerFilter($filters['case_id'] ?? null);
+        if ($caseId) {
+            $query->where('case_id', $caseId);
         }
 
         // Apply status filter (for future when we have team-specific statuses)
-        if (isset($filters['status']) && ! empty($filters['status'])) {
-            $query->where('status', $filters['status']);
+        $status = FilterHelper::getStringFilter($filters['status'] ?? null);
+        if ($status) {
+            $query->where('status', $status);
         }
 
         return $query->with([

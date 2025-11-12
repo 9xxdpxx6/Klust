@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filters;
 
 use App\Filters\Contracts\FilterInterface;
+use App\Helpers\FilterHelper;
 use Illuminate\Database\Eloquent\Builder;
 
 abstract class BaseFilter implements FilterInterface
@@ -20,8 +21,10 @@ abstract class BaseFilter implements FilterInterface
 
     protected function applySearch(Builder $query, string $field = 'name'): void
     {
-        if (isset($this->filters['search']) && !empty($this->filters['search'])) {
-            $query->where($field, 'like', '%' . $this->filters['search'] . '%');
+        $search = FilterHelper::getStringFilter($this->filters['search'] ?? null);
+        if ($search) {
+            $sanitizedSearch = FilterHelper::sanitizeSearch($search);
+            $query->where($field, 'like', '%' . $sanitizedSearch . '%');
         }
     }
 
@@ -188,30 +191,26 @@ abstract class BaseFilter implements FilterInterface
 
     protected function applySorting(Builder $query, string $defaultField = 'name', string $defaultOrder = 'asc'): void
     {
-        $sortBy = $this->filters['sort_by'] ?? $defaultField;
-        $sortOrder = $this->filters['sort_order'] ?? $defaultOrder;
-
-        if (!in_array(strtolower($sortOrder), ['asc', 'desc'], true)) {
-            $sortOrder = $defaultOrder;
-        }
-
-        $query->orderBy($sortBy, $sortOrder);
+        $sortParams = FilterHelper::getSortParams($this->filters, $defaultField, $defaultOrder);
+        $query->orderBy($sortParams['sort_by'], $sortParams['sort_order']);
     }
 
     protected function applyDateRange(Builder $query, string $field = 'created_at'): void
     {
-        if (isset($this->filters['date_from'])) {
-            $query->where($field, '>=', $this->filters['date_from']);
+        $dateFrom = FilterHelper::getDateFilter($this->filters['date_from'] ?? null);
+        if ($dateFrom) {
+            $query->where($field, '>=', $dateFrom);
         }
 
-        if (isset($this->filters['date_to'])) {
-            $query->where($field, '<=', $this->filters['date_to']);
+        $dateTo = FilterHelper::getDateFilter($this->filters['date_to'] ?? null);
+        if ($dateTo) {
+            $query->where($field, '<=', $dateTo);
         }
     }
 
     protected function hasFilter(string $key): bool
     {
-        return isset($this->filters[$key]) && $this->filters[$key] !== '' && $this->filters[$key] !== null;
+        return FilterHelper::hasValue($this->filters[$key] ?? null);
     }
 
     protected function getFilter(string $key, mixed $default = null): mixed
@@ -221,23 +220,12 @@ abstract class BaseFilter implements FilterInterface
 
     public function getPaginationParams(): array
     {
-        $perPage = $this->getValidatedPerPage($this->filters['per_page'] ?? $this->getDefaultPerPage());
-
-        return ['per_page' => $perPage];
+        return FilterHelper::getPaginationParams($this->filters, $this->getDefaultPerPage());
     }
 
     protected function getDefaultPerPage(): int
     {
         return 100;
-    }
-
-    private function getValidatedPerPage(mixed $perPage): int
-    {
-        $perPage = (int) $perPage;
-
-        $perPage = min($perPage, 100);
-
-        return max($perPage, 1);
     }
 
 }

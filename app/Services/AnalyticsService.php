@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Helpers\FilterHelper;
 use App\Models\Partner;
 use Illuminate\Support\Carbon;
 
@@ -14,17 +15,19 @@ class AnalyticsService
      */
     public function getPartnerAnalytics(Partner $partner, array $filters): array
     {
-        // Parse date filters
-        $dateFrom = isset($filters['date_from'])
-            ? Carbon::parse($filters['date_from'])
-            : Carbon::now()->subMonths(6);
+        // Parse date filters using FilterHelper
+        $dateFrom = FilterHelper::getDateFilter(
+            $filters['date_from'] ?? null,
+            Carbon::now()->subMonths(6)
+        );
 
-        $dateTo = isset($filters['date_to'])
-            ? Carbon::parse($filters['date_to'])
-            : Carbon::now();
+        $dateTo = FilterHelper::getDateFilter(
+            $filters['date_to'] ?? null,
+            Carbon::now()
+        );
 
         // Filter by specific case if provided
-        $caseId = $filters['case_id'] ?? null;
+        $caseId = FilterHelper::getIntegerFilter($filters['case_id'] ?? null);
 
         // Get cases query
         $casesQuery = $partner->cases()
