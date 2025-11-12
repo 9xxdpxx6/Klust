@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Helpers\FilterHelper;
 use App\Models\CaseModel;
 use App\Models\Partner;
 use App\Models\User;
@@ -118,28 +119,34 @@ class CaseService
         $query = CaseModel::query();
 
         // Apply status filter
-        if (isset($filters['status']) && ! empty($filters['status'])) {
-            $query->where('status', $filters['status']);
+        $status = FilterHelper::getStringFilter($filters['status'] ?? null);
+        if ($status) {
+            $query->where('status', $status);
         }
 
         // Apply partner filter
-        if (isset($filters['partner_id']) && ! empty($filters['partner_id'])) {
-            $query->where('partner_id', $filters['partner_id']);
+        $partnerId = FilterHelper::getIntegerFilter($filters['partner_id'] ?? null);
+        if ($partnerId) {
+            $query->where('partner_id', $partnerId);
         }
 
         // Apply search filter
-        if (isset($filters['search']) && ! empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+        $search = FilterHelper::getStringFilter($filters['search'] ?? null);
+        if ($search) {
+            $sanitizedSearch = FilterHelper::sanitizeSearch($search);
+            $query->where(function ($q) use ($sanitizedSearch) {
+                $q->where('title', 'like', "%{$sanitizedSearch}%")
+                    ->orWhere('description', 'like', "%{$sanitizedSearch}%");
             });
         }
 
         // Eager load relationships
         $query->with(['partner', 'skills']);
 
-        return $query->latest()->paginate(20);
+        // Get pagination parameters
+        $pagination = FilterHelper::getPaginationParams($filters, 20);
+
+        return $query->latest()->paginate($pagination['per_page']);
     }
 
     /**
@@ -159,30 +166,36 @@ class CaseService
         $query->whereNotIn('id', $appliedCaseIds);
 
         // Apply skill filter
-        if (isset($filters['skills']) && is_array($filters['skills']) && ! empty($filters['skills'])) {
-            $query->whereHas('skills', function ($q) use ($filters) {
-                $q->whereIn('skills.id', $filters['skills']);
+        $skills = FilterHelper::getArrayFilter($filters['skills'] ?? null);
+        if (! empty($skills)) {
+            $query->whereHas('skills', function ($q) use ($skills) {
+                $q->whereIn('skills.id', $skills);
             });
         }
 
         // Apply partner filter
-        if (isset($filters['partner_id']) && ! empty($filters['partner_id'])) {
-            $query->where('partner_id', $filters['partner_id']);
+        $partnerId = FilterHelper::getIntegerFilter($filters['partner_id'] ?? null);
+        if ($partnerId) {
+            $query->where('partner_id', $partnerId);
         }
 
         // Apply search filter
-        if (isset($filters['search']) && ! empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+        $search = FilterHelper::getStringFilter($filters['search'] ?? null);
+        if ($search) {
+            $sanitizedSearch = FilterHelper::sanitizeSearch($search);
+            $query->where(function ($q) use ($sanitizedSearch) {
+                $q->where('title', 'like', "%{$sanitizedSearch}%")
+                    ->orWhere('description', 'like', "%{$sanitizedSearch}%");
             });
         }
 
         // Eager load relationships
         $query->with(['partner', 'skills']);
 
-        return $query->latest()->paginate(12);
+        // Get pagination parameters
+        $pagination = FilterHelper::getPaginationParams($filters, 12);
+
+        return $query->latest()->paginate($pagination['per_page']);
     }
 
     /**
@@ -193,23 +206,28 @@ class CaseService
         $query = CaseModel::where('partner_id', $partner->id);
 
         // Apply status filter
-        if (isset($filters['status']) && ! empty($filters['status'])) {
-            $query->where('status', $filters['status']);
+        $status = FilterHelper::getStringFilter($filters['status'] ?? null);
+        if ($status) {
+            $query->where('status', $status);
         }
 
         // Apply search filter
-        if (isset($filters['search']) && ! empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+        $search = FilterHelper::getStringFilter($filters['search'] ?? null);
+        if ($search) {
+            $sanitizedSearch = FilterHelper::sanitizeSearch($search);
+            $query->where(function ($q) use ($sanitizedSearch) {
+                $q->where('title', 'like', "%{$sanitizedSearch}%")
+                    ->orWhere('description', 'like', "%{$sanitizedSearch}%");
             });
         }
 
         // Eager load relationships
         $query->with(['skills', 'simulator']);
 
-        return $query->latest()->paginate(15);
+        // Get pagination parameters
+        $pagination = FilterHelper::getPaginationParams($filters, 15);
+
+        return $query->latest()->paginate($pagination['per_page']);
     }
 
     /**
