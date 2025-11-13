@@ -10,6 +10,7 @@ use App\Http\Controllers\Search\SearchController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\GuestController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Client\Partner\AnalyticsController;
 use App\Http\Controllers\Client\Partner\CasesController as PartnerCasesController;
@@ -38,7 +39,12 @@ use Inertia\Inertia;
 |
 */
 
-// Гость
+// Публичные страницы (без авторизации)
+Route::get('/', [GuestController::class, 'home'])->name('guest.home');
+Route::get('/about', [GuestController::class, 'about'])->name('guest.about');
+Route::get('/cases', [GuestController::class, 'cases'])->name('guest.cases');
+
+// Гость (аутентификация)
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'show'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
@@ -193,8 +199,4 @@ Route::prefix('admin')->middleware(['auth', 'role:admin|teacher'])->name('admin.
 
     // Search
     Route::get('/search', [SearchController::class, 'index'])->name('search.index');
-});
-
-Route::get('/', function () {
-    return view('welcome');
 });
