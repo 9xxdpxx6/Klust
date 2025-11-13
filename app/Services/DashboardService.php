@@ -38,8 +38,8 @@ class DashboardService
         $totalCases = CaseModel::count();
 
         // Count applications
-        $pendingApplications = CaseApplication::where('status', 'pending')->count();
-        $acceptedApplications = CaseApplication::where('status', 'accepted')->count();
+        $pendingApplications = CaseApplication::pending()->count();
+        $acceptedApplications = CaseApplication::accepted()->count();
         $totalApplications = CaseApplication::count();
 
         // Recent activity
@@ -97,7 +97,7 @@ class DashboardService
                 'applications_by_status' => [
                     'pending' => $pendingApplications,
                     'accepted' => $acceptedApplications,
-                    'rejected' => CaseApplication::where('status', 'rejected')->count(),
+                    'rejected' => CaseApplication::rejected()->count(),
                 ],
             ],
         ];

@@ -37,13 +37,13 @@ class PartnerService
             'archived_cases' => (clone $cases)->where('status', 'archived')->count(),
             'total_teams' => $partner->cases()
                 ->withCount(['applications' => function ($q) {
-                    $q->where('status', 'accepted');
+                    $q->accepted();
                 }])
                 ->get()
                 ->sum('applications_count'),
             'pending_applications' => $partner->cases()
                 ->withCount(['applications' => function ($q) {
-                    $q->where('status', 'pending');
+                    $q->pending();
                 }])
                 ->get()
                 ->sum('applications_count'),

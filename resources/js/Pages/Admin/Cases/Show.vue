@@ -321,7 +321,7 @@ import ApplicationCard from './Partials/ApplicationCard.vue'
 import { route } from "ziggy-js";
 
 const props = defineProps({
-    case: {
+    caseData: {
         type: Object,
         default: () => ({})
     },
@@ -340,7 +340,7 @@ const props = defineProps({
 })
 
 // Computed свойства для безопасного доступа
-const caseData = computed(() => props.case || {})
+const caseData = computed(() => props.caseData || {})
 const statistics = computed(() => props.statistics || {})
 const applicationsByStatus = computed(() => props.applicationsByStatus || {})
 

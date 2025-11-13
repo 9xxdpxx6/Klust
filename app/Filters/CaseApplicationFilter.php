@@ -60,9 +60,15 @@ final class CaseApplicationFilter extends BaseFilter
         }
 
         if (is_array($statuses)) {
-            $query->whereIn('status', $statuses);
+            $query->where(function ($q) use ($statuses) {
+                foreach ($statuses as $status) {
+                    $q->orWhereHas('status', function ($statusQuery) use ($status) {
+                        $statusQuery->where('name', $status);
+                    });
+                }
+            });
         } else {
-            $query->where('status', $statuses);
+            $query->withStatus($statuses);
         }
     }
 

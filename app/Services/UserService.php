@@ -97,7 +97,11 @@ class UserService
         // Check for active dependencies
         if ($user->hasRole('student')) {
             $activeCases = $user->caseApplicationsAsLeader()
-                ->whereIn('status', ['pending', 'accepted'])
+                ->where(function ($q) {
+                    $q->pending()->orWhere(function ($subQ) {
+                        $subQ->accepted();
+                    });
+                })
                 ->count();
 
             if ($activeCases > 0) {
@@ -183,10 +187,10 @@ class UserService
             $statistics = [
                 'total_points' => $user->studentProfile?->total_points ?? 0,
                 'active_cases' => $user->caseApplicationsAsLeader()
-                    ->where('status', 'accepted')
+                    ->accepted()
                     ->count(),
                 'completed_cases' => $user->caseApplicationsAsLeader()
-                    ->where('status', 'completed')
+                    ->completed()
                     ->count(),
                 'skills_count' => $user->skills()->count(),
                 'badges_count' => $user->badges()->count(),

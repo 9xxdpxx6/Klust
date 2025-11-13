@@ -85,7 +85,11 @@ class CaseService
     {
         // Check for active applications
         $activeApplications = $case->applications()
-            ->whereIn('status', ['pending', 'accepted'])
+            ->where(function ($q) {
+                $q->pending()->orWhere(function ($subQ) {
+                    $subQ->accepted();
+                });
+            })
             ->count();
 
         if ($activeApplications > 0) {
@@ -297,10 +301,10 @@ class CaseService
 
         return [
             'total_applications' => $applications->count(),
-            'pending_applications' => $applications->where('status', 'pending')->count(),
-            'accepted_applications' => $applications->where('status', 'accepted')->count(),
-            'rejected_applications' => $applications->where('status', 'rejected')->count(),
-            'total_teams' => $applications->where('status', 'accepted')->count(),
+            'pending_applications' => (clone $applications)->pending()->count(),
+            'accepted_applications' => (clone $applications)->accepted()->count(),
+            'rejected_applications' => (clone $applications)->rejected()->count(),
+            'total_teams' => (clone $applications)->accepted()->count(),
             'average_team_size' => $this->calculateAverageTeamSize($case),
         ];
     }
@@ -323,7 +327,7 @@ class CaseService
     private function calculateAverageTeamSize(CaseModel $case): float
     {
         $acceptedApplications = $case->applications()
-            ->where('status', 'accepted')
+            ->accepted()
             ->with('teamMembers')
             ->get();
 

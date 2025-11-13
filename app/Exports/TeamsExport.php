@@ -28,7 +28,7 @@ class TeamsExport implements FromCollection, WithHeadings, WithMapping, WithStyl
         return CaseApplication::whereHas('case', function ($query) {
             $query->where('partner_id', $this->partnerId);
         })
-            ->where('status', 'accepted')
+            ->accepted()
             ->with(['leader', 'case', 'teamMembers.user'])
             ->orderBy('created_at', 'desc')
             ->get();

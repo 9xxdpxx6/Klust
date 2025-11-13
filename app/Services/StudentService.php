@@ -18,29 +18,29 @@ class StudentService
 
         // Get active cases (as leader or team member)
         $activeAsLeader = $user->caseApplicationsAsLeader()
-            ->where('status', 'accepted')
+            ->accepted()
             ->count();
 
         $activeAsTeamMember = CaseTeamMember::where('user_id', $user->id)
             ->whereHas('application', function ($q) {
-                $q->where('status', 'accepted');
+                $q->accepted();
             })
             ->count();
 
         // Get completed cases
         $completedAsLeader = $user->caseApplicationsAsLeader()
-            ->where('status', 'completed')
+            ->completed()
             ->count();
 
         $completedAsTeamMember = CaseTeamMember::where('user_id', $user->id)
             ->whereHas('application', function ($q) {
-                $q->where('status', 'completed');
+                $q->completed();
             })
             ->count();
 
         // Get pending applications
         $pendingApplications = $user->caseApplicationsAsLeader()
-            ->where('status', 'pending')
+            ->pending()
             ->count();
 
         return [

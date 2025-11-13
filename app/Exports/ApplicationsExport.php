@@ -26,7 +26,7 @@ class ApplicationsExport implements FromView, ShouldAutoSize, WithStyles
 
         // Apply filters if provided
         if (!empty($this->filters['status'])) {
-            $query->where('status', $this->filters['status']);
+            $query->withStatus($this->filters['status']);
         }
 
         if (!empty($this->filters['case_id'])) {

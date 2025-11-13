@@ -11,7 +11,7 @@ import Input from '@/Components/UI/Input.vue'
 import ApplicationStatusTimeline from '@/Components/ApplicationStatusTimeline.vue'
 
 const props = defineProps({
-    case: {
+    caseData: {
         type: Object,
         required: true
     },
@@ -31,7 +31,7 @@ const applyForm = useForm({
 const newMemberEmail = ref('')
 
 const addTeamMember = () => {
-    if (newMemberEmail.value && applyForm.team_members.length < props.case.required_team_size - 1) {
+    if (newMemberEmail.value && applyForm.team_members.length < props.caseData.required_team_size - 1) {
         applyForm.team_members.push(newMemberEmail.value)
         newMemberEmail.value = ''
     }
@@ -42,7 +42,7 @@ const removeMember = (index) => {
 }
 
 const submitApplication = () => {
-    applyForm.post(route('student.cases.apply', props.case.id), {
+    applyForm.post(route('student.cases.apply', props.caseData.id), {
         onSuccess: () => {
             showApplyModal.value = false
         }
@@ -56,7 +56,7 @@ const withdrawApplication = () => {
 }
 
 const canApply = computed(() => {
-    return !props.applicationStatus && props.case.status === 'active'
+    return !props.applicationStatus && props.caseData.status === 'active'
 })
 
 const statusColor = computed(() => {
@@ -88,19 +88,19 @@ const formatDate = (dateString) => {
             <nav class="mb-6 text-sm">
                 <a :href="route('student.cases.index')" class="text-blue-600 hover:underline">Каталог кейсов</a>
                 <span class="mx-2">/</span>
-                <span class="text-gray-600">{{ case.title }}</span>
+                <span class="text-gray-600">{{ caseData.title }}</span>
             </nav>
 
             <!-- Case Header -->
             <Card class="mb-6">
                 <div class="flex items-start justify-between">
                     <div class="flex-1">
-                        <h1 class="text-3xl font-bold mb-4">{{ case.title }}</h1>
+                        <h1 class="text-3xl font-bold mb-4">{{ caseData.title }}</h1>
                         <div class="flex items-center gap-4">
                             <img
-                                v-if="case.partner.logo"
-                                :src="case.partner.logo"
-                                :alt="case.partner.company_name"
+                                v-if="caseData.partner.logo"
+                                :src="caseData.partner.logo"
+                                :alt="caseData.partner.company_name"
                                 class="w-16 h-16 rounded-lg object-cover"
                             />
                             <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center" v-else>
@@ -108,11 +108,11 @@ const formatDate = (dateString) => {
                             </div>
                             <div>
                                 <p class="text-sm text-gray-600">Партнер</p>
-                                <p class="text-lg font-semibold">{{ case.partner.company_name }}</p>
+                                <p class="text-lg font-semibold">{{ caseData.partner.company_name }}</p>
                             </div>
                         </div>
                     </div>
-                    <div v-if="case.status === 'active'" class="text-green-600 font-semibold">
+                    <div v-if="caseData.status === 'active'" class="text-green-600 font-semibold">
                         Активен
                     </div>
                 </div>
@@ -170,7 +170,7 @@ const formatDate = (dateString) => {
                     <!-- Description -->
                     <Card class="mb-6">
                         <h2 class="text-xl font-bold mb-4">Описание кейса</h2>
-                        <div class="prose max-w-none" v-html="case.description"></div>
+                        <div class="prose max-w-none" v-html="caseData.description"></div>
                     </Card>
 
                     <!-- Requirements -->
@@ -179,11 +179,11 @@ const formatDate = (dateString) => {
                         <div class="space-y-4">
                             <div>
                                 <p class="text-sm text-gray-600">Размер команды</p>
-                                <p class="text-lg font-semibold">{{ case.required_team_size }} человек</p>
+                                <p class="text-lg font-semibold">{{ caseData.required_team_size }} человек</p>
                             </div>
-                            <div v-if="case.deadline">
+                            <div v-if="caseData.deadline">
                                 <p class="text-sm text-gray-600">Дедлайн</p>
-                                <p class="text-lg font-semibold">{{ formatDate(case.deadline) }}</p>
+                                <p class="text-lg font-semibold">{{ formatDate(caseData.deadline) }}</p>
                             </div>
                         </div>
                     </Card>
@@ -196,7 +196,7 @@ const formatDate = (dateString) => {
                         <h3 class="text-lg font-bold mb-3">Требуемые навыки</h3>
                         <div class="flex flex-wrap gap-2">
                             <Badge
-                                v-for="skill in case.skills"
+                                v-for="skill in caseData.skills"
                                 :key="skill.id"
                                 variant="primary"
                             >
@@ -235,9 +235,9 @@ const formatDate = (dateString) => {
                         />
                     </div>
 
-                    <div v-if="case.required_team_size > 1">
+                    <div v-if="caseData.required_team_size > 1">
                         <label class="block text-sm font-medium mb-2">
-                            Члены команды ({{ applyForm.team_members.length }}/{{ case.required_team_size - 1 }})
+                            Члены команды ({{ applyForm.team_members.length }}/{{ caseData.required_team_size - 1 }})
                         </label>
                         <div class="space-y-2 mb-3">
                             <div
@@ -260,7 +260,7 @@ const formatDate = (dateString) => {
                                 </Button>
                             </div>
                         </div>
-                        <div class="flex gap-2" v-if="applyForm.team_members.length < case.required_team_size - 1">
+                        <div class="flex gap-2" v-if="applyForm.team_members.length < caseData.required_team_size - 1">
                             <Input
                                 v-model="newMemberEmail"
                                 type="email"

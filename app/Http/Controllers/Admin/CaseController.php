@@ -70,7 +70,7 @@ class CaseController extends Controller
         $statistics = $this->caseService->getCaseStatistics($case);
 
         return Inertia::render('Admin/Cases/Show', [
-            'case' => $case,
+            'caseData' => $case,
             'statistics' => $statistics,
         ]);
     }

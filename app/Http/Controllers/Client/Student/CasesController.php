@@ -107,7 +107,7 @@ class CasesController extends Controller
         }
 
         return Inertia::render('Client/Student/Cases/Show', [
-            'case' => $case,
+            'caseData' => $case,
             'applicationStatus' => $applicationStatus,
         ]);
     }
@@ -171,7 +171,7 @@ class CasesController extends Controller
         $user = auth()->user();
 
         // Проверить, что заявка принадлежит студенту и имеет статус 'pending'
-        if ($application->leader_id !== $user->id || $application->status !== 'pending') {
+        if ($application->leader_id !== $user->id || $application->status->name !== 'pending') {
             abort(403);
         }
 
@@ -217,7 +217,7 @@ class CasesController extends Controller
         $user = auth()->user();
 
         // Проверить, что заявка принята
-        if ($application->status !== 'accepted') {
+        if ($application->status->name !== 'accepted') {
             abort(404);
         }
 
