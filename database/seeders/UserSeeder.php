@@ -36,10 +36,22 @@ class UserSeeder extends Seeder
         // 1 админ
         $admin = User::factory()->create([
             'name' => 'Администратор',
+            'email' => 'asd@asd.asd',
+            'password' => bcrypt('asd'),
+        ]);
+        $admin->assignRole($adminRole);
+        
+        // 1 суперпользователь (имеет все права и роли)
+        $superUser = User::factory()->create([
+            'name' => 'Суперпользователь',
             'email' => 'qwe@qwe.qwe',
             'password' => bcrypt('qwe'),
         ]);
-        $admin->assignRole($adminRole);
+        // Назначаем все доступные роли
+        $allRoles = Role::all();
+        foreach ($allRoles as $role) {
+            $superUser->assignRole($role);
+        }
     }
 }
 

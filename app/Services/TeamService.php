@@ -121,7 +121,7 @@ class TeamService
     {
         $query = CaseApplication::whereHas('case', function ($q) use ($partner) {
             $q->where('partner_id', $partner->id);
-        })->where('status', 'accepted');
+        })->accepted();
 
         // Apply case filter
         $caseId = FilterHelper::getIntegerFilter($filters['case_id'] ?? null);
@@ -132,7 +132,7 @@ class TeamService
         // Apply status filter (for future when we have team-specific statuses)
         $status = FilterHelper::getStringFilter($filters['status'] ?? null);
         if ($status) {
-            $query->where('status', $status);
+            $query->withStatus($status);
         }
 
         return $query->with([

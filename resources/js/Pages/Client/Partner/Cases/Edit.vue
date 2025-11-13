@@ -1,7 +1,7 @@
 <template>
     <PartnerLayout>
         <template #header>
-            <h1 class="text-2xl font-bold text-gray-900">Редактировать кейс: {{ case.title }}</h1>
+            <h1 class="text-2xl font-bold text-gray-900">Редактировать кейс: {{ caseData.title }}</h1>
         </template>
 
         <div class="bg-white shadow-sm rounded-lg p-6">
@@ -141,16 +141,16 @@
                 <!-- Action Buttons -->
                 <div class="mt-8 flex justify-between">
                     <button
-                        v-if="case.status !== 'archived' && !processing"
+                        v-if="caseData.status !== 'archived' && !processing"
                         @click="archiveCase"
                         class="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     >
                         Архивировать кейс
                     </button>
-                    
+
                     <div class="flex space-x-4">
-                        <Link 
-                            :href="route('partner.cases.show', { case: case.id })" 
+                        <Link
+                            :href="route('partner.cases.show', { case: caseData.id })"
                             class="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                         >
                             Отмена
@@ -182,7 +182,7 @@ import { Link, router } from '@inertiajs/vue3';
 import PartnerLayout from '@/Layouts/PartnerLayout.vue';
 
 const props = defineProps({
-    case: {
+    caseData: {
         type: Object,
         required: true
     },
@@ -194,12 +194,12 @@ const props = defineProps({
 
 // Initialize form data with case data
 const form = reactive({
-    title: props.case.title,
-    description: props.case.description,
-    team_size: props.case.team_size,
-    required_skills: props.case.required_skills.map(skill => skill.id),
-    deadline: props.case.deadline || '',
-    status: props.case.status
+    title: props.caseData.title,
+    description: props.caseData.description,
+    team_size: props.caseData.team_size,
+    required_skills: props.caseData.required_skills.map(skill => skill.id),
+    deadline: props.caseData.deadline || '',
+    status: props.caseData.status
 });
 
 // For handling form errors and processing state
@@ -210,7 +210,7 @@ const submitForm = () => {
     processing.value = true;
     errors.value = {};
 
-    router.put(route('partner.cases.update', { case: props.case.id }), form, {
+    router.put(route('partner.cases.update', { case: props.caseData.id }), form, {
         preserveState: true,
         preserveScroll: true,
         onSuccess: () => {
@@ -225,7 +225,7 @@ const submitForm = () => {
 
 const archiveCase = () => {
     if (confirm('Вы уверены, что хотите архивировать этот кейс?')) {
-        router.post(route('partner.cases.archive', { case: props.case.id }), {}, {
+        router.post(route('partner.cases.archive', { case: props.caseData.id }), {}, {
             preserveState: true,
             preserveScroll: true
         });

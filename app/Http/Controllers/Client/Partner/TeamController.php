@@ -58,7 +58,7 @@ class TeamController extends Controller
                 ->with(['case.partner', 'leader', 'teamMembers.user']);
 
             if (!$request->filled('status')) {
-                $teamsQuery->where('status', 'accepted');
+                $teamsQuery->accepted();
             }
 
             $pagination = $teamFilter->getPaginationParams();

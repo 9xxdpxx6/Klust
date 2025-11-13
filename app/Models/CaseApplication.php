@@ -64,5 +64,47 @@ class CaseApplication extends Model
         return $this->hasMany(CaseApplicationStatusHistory::class, 'case_application_id')
             ->orderBy('changed_at', 'desc');
     }
+
+    /**
+     * Scope: фильтр по названию статуса через отношение
+     */
+    public function scopeWithStatus($query, string $statusName)
+    {
+        return $query->whereHas('status', function ($q) use ($statusName) {
+            $q->where('name', $statusName);
+        });
+    }
+
+    /**
+     * Scope: только ожидающие заявки
+     */
+    public function scopePending($query)
+    {
+        return $query->withStatus('pending');
+    }
+
+    /**
+     * Scope: только принятые заявки
+     */
+    public function scopeAccepted($query)
+    {
+        return $query->withStatus('accepted');
+    }
+
+    /**
+     * Scope: только отклоненные заявки
+     */
+    public function scopeRejected($query)
+    {
+        return $query->withStatus('rejected');
+    }
+
+    /**
+     * Scope: только завершенные заявки
+     */
+    public function scopeCompleted($query)
+    {
+        return $query->withStatus('completed');
+    }
 }
 

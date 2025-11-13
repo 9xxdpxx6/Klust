@@ -183,14 +183,14 @@ class CasesController extends Controller
                 ->get();
 
             return Inertia::render('Client/Partner/Cases/Show', [
-                'case' => $case,
+                'caseData' => $case,
                 'applications' => $case->applications,
                 'teams' => $teams,
                 'statistics' => $statistics,
             ]);
         } catch (\Exception $e) {
             return Inertia::render('Client/Partner/Cases/Show', [
-                'case' => $case,
+                'caseData' => $case,
                 'applications' => collect(),
                 'teams' => collect(),
                 'statistics' => [],
@@ -227,12 +227,12 @@ class CasesController extends Controller
             $skills = Skill::all();
 
             return Inertia::render('Client/Partner/Cases/Edit', [
-                'case' => $case,
+                'caseData' => $case,
                 'skills' => $skills,
             ]);
         } catch (\Exception $e) {
             return Inertia::render('Client/Partner/Cases/Edit', [
-                'case' => $case,
+                'caseData' => $case,
                 'skills' => [],
                 'error' => 'Ошибка при загрузке формы: '.$e->getMessage(),
             ]);

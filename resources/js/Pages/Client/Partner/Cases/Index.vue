@@ -203,9 +203,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { Link, usePage, router } from '@inertiajs/vue3';
+import { useDebounceFn } from '@vueuse/core';
 import PartnerLayout from '@/Layouts/PartnerLayout.vue';
 import Pagination from '@/Components/Pagination.vue';
-import { debounce } from 'lodash';
 
 const props = defineProps({
     cases: {
@@ -285,7 +285,7 @@ const formatDate = (dateString) => {
     return date.toLocaleDateString('ru-RU');
 };
 
-const debounceSearch = debounce(() => {
+const debounceSearch = useDebounceFn(() => {
     applyFilters();
 }, 300);
 

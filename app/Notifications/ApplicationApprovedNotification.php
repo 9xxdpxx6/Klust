@@ -34,7 +34,7 @@ class ApplicationApprovedNotification extends Notification implements ShouldQueu
         return (new MailMessage)
             ->subject('Заявка одобрена')
             ->line("Ваша заявка на кейс '{$this->application->case->title}' была одобрена!")
-            ->line("Статус: {$this->application->status}")
+            ->line("Статус: {$this->application->status->name}")
             ->action('Перейти к команде', url("/student/team/{$this->application->id}"))
             ->line('Поздравляем и удачи в выполнении кейса!');
     }
@@ -50,7 +50,7 @@ class ApplicationApprovedNotification extends Notification implements ShouldQueu
             'link' => "/student/team/{$this->application->id}",
             'case_id' => $this->application->case->id,
             'application_id' => $this->application->id,
-            'status' => $this->application->status,
+            'status' => $this->application->status->name,
         ];
     }
 

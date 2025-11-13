@@ -2,23 +2,23 @@
     <PartnerLayout>
         <template #header>
             <div class="flex justify-between items-center">
-                <h1 class="text-2xl font-bold text-gray-900">{{ case.title }}</h1>
+                <h1 class="text-2xl font-bold text-gray-900">{{ caseData.title }}</h1>
                 <div class="flex space-x-3">
-                    <Link 
-                        :href="route('partner.cases.edit', { case: case.id })" 
+                    <Link
+                        :href="route('partner.cases.edit', { case: caseData.id })"
                         class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out"
                     >
                         Редактировать
                     </Link>
                     <button
-                        v-if="case.status !== 'archived'"
+                        v-if="caseData.status !== 'archived'"
                         @click="archiveCase"
                         class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out"
                     >
                         Архивировать
                     </button>
                     <button
-                        v-if="case.status !== 'archived'"
+                        v-if="caseData.status !== 'archived'"
                         @click="deleteCase"
                         class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out"
                     >
@@ -36,24 +36,24 @@
                     <div class="space-y-4">
                         <div>
                             <p class="text-sm font-medium text-gray-500">Описание</p>
-                            <p class="mt-1 text-gray-900 whitespace-pre-line">{{ case.description || 'Не указано' }}</p>
+                            <p class="mt-1 text-gray-900 whitespace-pre-line">{{ caseData.description || 'Не указано' }}</p>
                         </div>
                         <div>
                             <p class="text-sm font-medium text-gray-500">Требуемый размер команды</p>
-                            <p class="mt-1 text-gray-900">{{ case.team_size }} человек</p>
+                            <p class="mt-1 text-gray-900">{{ caseData.team_size }} человек</p>
                         </div>
                         <div>
                             <p class="text-sm font-medium text-gray-500">Дедлайн</p>
-                            <p class="mt-1 text-gray-900">{{ formatDate(case.deadline) || 'Не указан' }}</p>
+                            <p class="mt-1 text-gray-900">{{ formatDate(caseData.deadline) || 'Не указан' }}</p>
                         </div>
                         <div>
                             <p class="text-sm font-medium text-gray-500">Статус</p>
                             <p class="mt-1">
-                                <span 
+                                <span
                                     class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                                    :class="getStatusClass(case.status)"
+                                    :class="getStatusClass(caseData.status)"
                                 >
-                                    {{ getStatusLabel(case.status) }}
+                                    {{ getStatusLabel(caseData.status) }}
                                 </span>
                             </p>
                         </div>
@@ -62,14 +62,14 @@
                 <div>
                     <h2 class="text-lg font-medium text-gray-900 mb-4">Требуемые навыки</h2>
                     <div class="flex flex-wrap gap-2">
-                        <span 
-                            v-for="skill in case.required_skills" 
+                        <span
+                            v-for="skill in caseData.required_skills"
                             :key="skill.id"
                             class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
                         >
                             {{ skill.name }}
                         </span>
-                        <span v-if="case.required_skills.length === 0" class="text-gray-500 italic">Навыки не указаны</span>
+                        <span v-if="caseData.required_skills.length === 0" class="text-gray-500 italic">Навыки не указаны</span>
                     </div>
                 </div>
             </div>
@@ -79,10 +79,10 @@
         <div class="bg-white shadow-sm rounded-lg overflow-hidden">
             <div class="border-b border-gray-200">
                 <nav class="-mb-px flex space-x-8 px-6">
-                    <Link 
-                        v-for="tab in tabs" 
-                        :key="tab.key" 
-                        :href="route('partner.cases.show', { case: case.id, tab: tab.key })"
+                    <Link
+                        v-for="tab in tabs"
+                        :key="tab.key"
+                        :href="route('partner.cases.show', { case: caseData.id, tab: tab.key })"
                         :class="[
                             currentTab === tab.key
                             ? 'border-blue-500 text-blue-600'
@@ -91,8 +91,8 @@
                         ]"
                     >
                         {{ tab.label }}
-                        <span 
-                            v-if="tab.count !== undefined" 
+                        <span
+                            v-if="tab.count !== undefined"
                             class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                             :class="currentTab === tab.key ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'"
                         >
@@ -120,7 +120,7 @@
                                     <option value="rejected">Отклонено</option>
                                 </select>
                                 <a
-                                    :href="route('partner.cases.applications.export', { case: case.id })"
+                                    :href="route('partner.cases.applications.export', { case: caseData.id })"
                                     class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                                 >
                                     <svg class="h-5 w-5 mr-2 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -333,7 +333,7 @@ import PartnerLayout from '@/Layouts/PartnerLayout.vue';
 import Pagination from '@/Components/Pagination.vue';
 
 const props = defineProps({
-    case: {
+    caseData: {
         type: Object,
         required: true
     },
@@ -417,7 +417,7 @@ const formatDate = (dateString) => {
 
 const archiveCase = () => {
     if (confirm('Вы уверены, что хотите архивировать этот кейс?')) {
-        router.post(route('partner.cases.archive', { case: props.case.id }), {}, {
+        router.post(route('partner.cases.archive', { case: props.caseData.id }), {}, {
             preserveState: true,
             preserveScroll: true
         });
@@ -425,13 +425,13 @@ const archiveCase = () => {
 };
 
 const deleteCase = () => {
-    if (props.case.applications_count > 0) {
+    if (props.caseData.applications_count > 0) {
         alert('Нельзя удалить кейс, если на него есть заявки или команды.');
         return;
     }
 
     if (confirm('Вы уверены, что хотите удалить этот кейс? Это действие нельзя отменить.')) {
-        router.delete(route('partner.cases.destroy', { case: props.case.id }), {
+        router.delete(route('partner.cases.destroy', { case: props.caseData.id }), {
             preserveState: true,
             preserveScroll: true
         });
@@ -440,7 +440,7 @@ const deleteCase = () => {
 
 const approveApplication = (applicationId) => {
     if (confirm('Вы уверены, что хотите одобрить эту заявку?')) {
-        router.post(route('partner.cases.applications.approve', { case: props.case.id, application: applicationId }), {}, {
+        router.post(route('partner.cases.applications.approve', { case: props.caseData.id, application: applicationId }), {}, {
             preserveState: true,
             preserveScroll: true
         });
@@ -449,7 +449,7 @@ const approveApplication = (applicationId) => {
 
 const rejectApplication = (applicationId) => {
     if (confirm('Вы уверены, что хотите отклонить эту заявку?')) {
-        router.post(route('partner.cases.applications.reject', { case: props.case.id, application: applicationId }), {}, {
+        router.post(route('partner.cases.applications.reject', { case: props.caseData.id, application: applicationId }), {}, {
             preserveState: true,
             preserveScroll: true
         });
@@ -458,8 +458,8 @@ const rejectApplication = (applicationId) => {
 
 const loadApplications = () => {
     router.get(
-        route('partner.cases.show', { 
-            case: props.case.id, 
+        route('partner.cases.show', {
+            case: props.caseData.id,
             tab: 'applications',
             status: applicationFilters.value.status || undefined
         }),

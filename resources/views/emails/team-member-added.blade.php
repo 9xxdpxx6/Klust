@@ -17,10 +17,10 @@
         @if($application->case->deadline)
             Дедлайн: {{ $application->case->deadline->format('d.m.Y') }}<br>
         @endif
-        Статус заявки: {{ $application->status === 'pending' ? 'Ожидает одобрения' : 'Одобрена' }}
+        Статус заявки: {{ $application->status->name === 'pending' ? 'Ожидает одобрения' : 'Одобрена' }}
     </div>
 
-    @if($application->status === 'pending')
+    @if($application->status->name === 'pending')
         <p><strong>Обратите внимание:</strong> Заявка команды еще не одобрена партнером. Вы получите дополнительное уведомление после рассмотрения заявки.</p>
     @else
         <p><strong>Что дальше?</strong></p>
