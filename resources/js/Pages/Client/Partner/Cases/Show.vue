@@ -109,16 +109,15 @@
                         <div class="flex justify-between items-center">
                             <h3 class="text-lg font-medium text-gray-900">Заявки на кейс</h3>
                             <div class="flex space-x-2">
-                                <select
+                                <Select
                                     v-model="applicationFilters.status"
-                                    @change="loadApplications"
-                                    class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                >
-                                    <option value="">Все статусы</option>
-                                    <option value="pending">Ожидает</option>
-                                    <option value="accepted">Принято</option>
-                                    <option value="rejected">Отклонено</option>
-                                </select>
+                                    label="Статус"
+                                    :options="statusFilterOptions"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    placeholder="Все статусы"
+                                    @update:modelValue="loadApplications"
+                                />
                                 <a
                                     :href="route('partner.cases.applications.export', { case: caseData.id })"
                                     class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -331,6 +330,7 @@ import { computed, ref } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import PartnerLayout from '@/Layouts/PartnerLayout.vue';
 import Pagination from '@/Components/Pagination.vue';
+import Select from '@/Components/UI/Select.vue';
 
 const props = defineProps({
     caseData: {
@@ -455,6 +455,13 @@ const rejectApplication = (applicationId) => {
         });
     }
 };
+
+const statusFilterOptions = computed(() => [
+    { label: 'Все статусы', value: '' },
+    { label: 'Ожидает', value: 'pending' },
+    { label: 'Принято', value: 'accepted' },
+    { label: 'Отклонено', value: 'rejected' },
+])
 
 const loadApplications = () => {
     router.get(

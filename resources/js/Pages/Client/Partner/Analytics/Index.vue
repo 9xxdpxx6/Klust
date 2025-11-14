@@ -8,20 +8,15 @@
         <div class="bg-white shadow-sm rounded-lg p-4 mb-6">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                    <label for="period-filter" class="block text-sm font-medium text-gray-700 mb-1">
-                        Период
-                    </label>
-                    <select
-                        id="period-filter"
+                    <Select
                         v-model="filters.period"
-                        @change="applyFilters"
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                    >
-                        <option value="7">Последние 7 дней</option>
-                        <option value="30">Последние 30 дней</option>
-                        <option value="90">Последние 90 дней</option>
-                        <option value="all">Весь период</option>
-                    </select>
+                        label="Период"
+                        :options="periodOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Выберите период"
+                        @update:modelValue="applyFilters"
+                    />
                 </div>
                 <div>
                     <DatePicker
@@ -260,6 +255,7 @@ import { ref, reactive, onMounted } from 'vue';
 import { router } from '@inertiajs/vue3';
 import PartnerLayout from '@/Layouts/PartnerLayout.vue';
 import DatePicker from '@/Components/UI/DatePicker.vue';
+import Select from '@/Components/UI/Select.vue';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -311,6 +307,13 @@ const filters = reactive({
     start_date: props.filters.start_date ? new Date(props.filters.start_date) : null,
     end_date: props.filters.end_date ? new Date(props.filters.end_date) : null
 });
+
+const periodOptions = computed(() => [
+    { label: 'Последние 7 дней', value: '7' },
+    { label: 'Последние 30 дней', value: '30' },
+    { label: 'Последние 90 дней', value: '90' },
+    { label: 'Весь период', value: 'all' },
+]);
 
 const showExportMenu = ref(false);
 

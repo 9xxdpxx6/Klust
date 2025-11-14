@@ -9,21 +9,16 @@
       <span v-if="required" class="text-red-500">*</span>
     </label>
     
-    <textarea
+    <PrimeTextarea
       :id="textareaId"
-      :value="modelValue"
+      :modelValue="modelValue"
       :placeholder="placeholder"
       :required="required"
       :disabled="disabled"
       :rows="rows"
-      :class="[
-        'textarea',
-        {
-          'textarea-error': error,
-          'textarea-disabled': disabled,
-        }
-      ]"
-      @input="$emit('update:modelValue', $event.target.value)"
+      :invalid="!!error"
+      class="w-full"
+      @update:modelValue="$emit('update:modelValue', $event)"
       @blur="$emit('blur', $event)"
       @focus="$emit('focus', $event)"
     />
@@ -39,6 +34,7 @@
 
 <script setup>
 import { computed } from 'vue';
+import PrimeTextarea from 'primevue/textarea';
 
 const props = defineProps({
   modelValue: {
@@ -81,17 +77,14 @@ const textareaId = computed(() => `textarea-${Math.random().toString(36).substr(
 </script>
 
 <style scoped>
-.textarea {
-  /* Базовые стили наследуются от глобальных стилей textarea */
-  @apply sm:text-sm;
+:deep(.p-inputtextarea) {
+  @apply w-full;
+  /* Textarea имеет свою высоту из-за rows, но min-height для первой строки */
+  min-height: 2.5rem;
 }
 
-.textarea-error {
-  @apply border-red-500 focus:ring-red-500 focus:border-red-500;
-}
-
-.textarea-disabled {
-  @apply bg-surface cursor-not-allowed opacity-60;
+:deep(.p-inputtextarea.p-invalid) {
+  @apply border-red-500;
 }
 </style>
 

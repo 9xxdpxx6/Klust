@@ -12,31 +12,30 @@
     <div class="relative">
       <i
         v-if="leftIcon"
-        :class="['absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted', leftIcon]"
+        :class="['absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted z-10', leftIcon]"
       />
-      <input
+      <PrimeInputText
         :id="inputId"
         :type="type"
-        :value="modelValue"
+        :modelValue="modelValue"
         :placeholder="placeholder"
         :required="required"
         :disabled="disabled"
+        :invalid="!!error"
         :class="[
-          'input',
+          'w-full',
           {
-            'input-error': error,
-            'input-disabled': disabled,
             'pl-10': leftIcon,
             'pr-10': rightIcon,
           }
         ]"
-        @input="$emit('update:modelValue', $event.target.value)"
+        @update:modelValue="$emit('update:modelValue', $event)"
         @blur="$emit('blur', $event)"
         @focus="$emit('focus', $event)"
       />
       <i
         v-if="rightIcon"
-        :class="['absolute right-3 top-1/2 transform -translate-y-1/2 text-text-muted', rightIcon]"
+        :class="['absolute right-3 top-1/2 transform -translate-y-1/2 text-text-muted z-10', rightIcon]"
       />
     </div>
     
@@ -51,6 +50,7 @@
 
 <script setup>
 import { computed } from 'vue';
+import PrimeInputText from 'primevue/inputtext';
 
 const props = defineProps({
   modelValue: {
@@ -101,17 +101,12 @@ const inputId = computed(() => `input-${Math.random().toString(36).substr(2, 9)}
 </script>
 
 <style scoped>
-.input {
-  /* Базовые стили наследуются от глобальных стилей input */
-  @apply sm:text-sm;
+:deep(.p-inputtext) {
+  @apply w-full;
 }
 
-.input-error {
-  @apply border-red-500 focus:ring-red-500 focus:border-red-500;
-}
-
-.input-disabled {
-  @apply bg-surface cursor-not-allowed opacity-60;
+:deep(.p-inputtext.p-invalid) {
+  @apply border-red-500;
 }
 </style>
 

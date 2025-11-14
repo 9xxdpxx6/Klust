@@ -42,52 +42,28 @@
                         </div>
 
                         <!-- Партнер -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Партнер *
-                            </label>
-                            <select
-                                v-model="form.partner_id"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                :class="{ 'border-red-300': form.errors.partner_id }"
-                                required
-                            >
-                                <option value="">Выберите партнера</option>
-                                <option
-                                    v-for="partner in partners"
-                                    :key="partner.id"
-                                    :value="partner.id"
-                                >
-                                    {{ partner.company_name }} ({{ partner.contact_person }})
-                                </option>
-                            </select>
-                            <div v-if="form.errors.partner_id" class="text-red-500 text-sm mt-1">
-                                {{ form.errors.partner_id }}
-                            </div>
-                        </div>
+                        <Select
+                            v-model="form.partner_id"
+                            label="Партнер"
+                            :options="partnerOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Выберите партнера"
+                            :error="form.errors.partner_id"
+                            required
+                        />
 
                         <!-- Размер команды -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Размер команды *
-                            </label>
-                            <select
-                                v-model="form.required_team_size"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                :class="{ 'border-red-300': form.errors.required_team_size }"
-                                required
-                            >
-                                <option value="">Выберите размер</option>
-                                <option value="1">1 человек</option>
-                                <option value="2">2 человека</option>
-                                <option value="3">3 человека</option>
-                                <option value="4">4 человека</option>
-                                <option value="5">5+ человек</option>
-                            </select>
-                            <div v-if="form.errors.required_team_size" class="text-red-500 text-sm mt-1">
-                                {{ form.errors.required_team_size }}
-                            </div>
-                        </div>
+                        <Select
+                            v-model="form.required_team_size"
+                            label="Размер команды"
+                            :options="teamSizeOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Выберите размер"
+                            :error="form.errors.required_team_size"
+                            required
+                        />
 
                         <!-- Дедлайн -->
                         <DatePicker
@@ -99,29 +75,16 @@
                         />
 
                         <!-- Статус -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Статус *
-                            </label>
-                            <select
-                                v-model="form.status"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                :class="{ 'border-red-300': form.errors.status }"
-                                required
-                            >
-                                <option value="">Выберите статус</option>
-                                <option
-                                    v-for="status in statusOptions"
-                                    :key="status.value"
-                                    :value="status.value"
-                                >
-                                    {{ status.label }}
-                                </option>
-                            </select>
-                            <div v-if="form.errors.status" class="text-red-500 text-sm mt-1">
-                                {{ form.errors.status }}
-                            </div>
-                        </div>
+                        <Select
+                            v-model="form.status"
+                            label="Статус"
+                            :options="statusOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Выберите статус"
+                            :error="form.errors.status"
+                            required
+                        />
 
                         <!-- Награда -->
                         <div class="md:col-span-2">
@@ -220,6 +183,7 @@ import { useForm } from '@inertiajs/vue3'
 import { Head, Link } from '@inertiajs/vue3'
 import { route } from "ziggy-js";
 import DatePicker from '@/Components/UI/DatePicker.vue';
+import Select from '@/Components/UI/Select.vue';
 
 const props = defineProps({
     case: Object,

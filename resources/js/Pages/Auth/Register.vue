@@ -92,26 +92,16 @@
                 </div>
 
                 <!-- Курс -->
-                <div>
-                    <label for="course" class="block text-sm font-medium text-gray-700">
-                        Курс *
-                    </label>
-                    <div class="mt-1">
-                        <select
-                            id="course"
-                            v-model="studentForm.course"
-                            required
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            :class="{ 'border-red-500': studentForm.errors.course }"
-                        >
-                            <option value="">Выберите курс</option>
-                            <option v-for="i in 6" :key="i" :value="i">{{ i }}</option>
-                        </select>
-                        <p v-if="studentForm.errors.course" class="mt-2 text-sm text-red-600">
-                            {{ studentForm.errors.course }}
-                        </p>
-                    </div>
-                </div>
+                <Select
+                    v-model="studentForm.course"
+                    label="Курс"
+                    :options="courseOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Выберите курс"
+                    :error="studentForm.errors.course"
+                    required
+                />
 
                 <!-- Пароль -->
                 <div>
@@ -324,9 +314,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useForm, Link } from '@inertiajs/vue3';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
+import Select from '@/Components/UI/Select.vue';
+import { route } from 'ziggy-js';
 
 const registrationType = ref('student');
 
@@ -364,5 +356,13 @@ const submitPartner = () => {
         },
     });
 };
+
+const courseOptions = computed(() => [
+    { label: 'Выберите курс', value: '' },
+    ...Array.from({ length: 6 }, (_, i) => ({
+        label: `${i + 1}`,
+        value: i + 1
+    }))
+]);
 </script>
 

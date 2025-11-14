@@ -42,52 +42,28 @@
                         </div>
 
                         <!-- Партнер -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Партнер *
-                            </label>
-                            <select
-                                v-model="form.partner_id"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                :class="{ 'border-red-300': errors.partner_id }"
-                                required
-                            >
-                                <option value="">Выберите партнера</option>
-                                <option
-                                    v-for="partner in partners"
-                                    :key="partner.id"
-                                    :value="partner.id"
-                                >
-                                    {{ partner.company_name }} ({{ partner.contact_person }})
-                                </option>
-                            </select>
-                            <div v-if="errors.partner_id" class="text-red-500 text-sm mt-1">
-                                {{ errors.partner_id }}
-                            </div>
-                        </div>
+                        <Select
+                            v-model="form.partner_id"
+                            label="Партнер"
+                            :options="partnerOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Выберите партнера"
+                            :error="errors.partner_id"
+                            required
+                        />
 
                         <!-- Размер команды -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Размер команды *
-                            </label>
-                            <select
-                                v-model="form.required_team_size"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                :class="{ 'border-red-300': errors.required_team_size }"
-                                required
-                            >
-                                <option value="">Выберите размер</option>
-                                <option value="1">1 человек</option>
-                                <option value="2">2 человека</option>
-                                <option value="3">3 человека</option>
-                                <option value="4">4 человека</option>
-                                <option value="5">5+ человек</option>
-                            </select>
-                            <div v-if="errors.required_team_size" class="text-red-500 text-sm mt-1">
-                                {{ errors.required_team_size }}
-                            </div>
-                        </div>
+                        <Select
+                            v-model="form.required_team_size"
+                            label="Размер команды"
+                            :options="teamSizeOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Выберите размер"
+                            :error="errors.required_team_size"
+                            required
+                        />
 
                         <!-- Дедлайн -->
                         <DatePicker
@@ -99,29 +75,16 @@
                         />
 
                         <!-- Статус -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Статус *
-                            </label>
-                            <select
-                                v-model="form.status"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                :class="{ 'border-red-300': errors.status }"
-                                required
-                            >
-                                <option value="">Выберите статус</option>
-                                <option
-                                    v-for="status in statusOptions"
-                                    :key="status.value"
-                                    :value="status.value"
-                                >
-                                    {{ status.label }}
-                                </option>
-                            </select>
-                            <div v-if="errors.status" class="text-red-500 text-sm mt-1">
-                                {{ errors.status }}
-                            </div>
-                        </div>
+                        <Select
+                            v-model="form.status"
+                            label="Статус"
+                            :options="statusOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Выберите статус"
+                            :error="errors.status"
+                            required
+                        />
 
                         <!-- Награда -->
                         <div>
@@ -215,25 +178,18 @@
                                 </label>
                             </div>
                         </div>
+                    </div>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Симулятор
-                            </label>
-                            <select
-                                v-model="form.simulator_id"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            >
-                                <option value="">Без симулятора</option>
-                                <option
-                                    v-for="simulator in simulators"
-                                    :key="simulator.id"
-                                    :value="simulator.id"
-                                >
-                                    {{ simulator.name }}
-                                </option>
-                            </select>
-                        </div>
+                    <!-- Симулятор -->
+                    <div class="md:col-span-2">
+                        <Select
+                            v-model="form.simulator_id"
+                            label="Симулятор"
+                            :options="simulatorOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Без симулятора"
+                        />
                     </div>
 
                     <!-- Кнопки -->
@@ -265,6 +221,7 @@ import {useForm} from '@inertiajs/vue3'
 import {Head, Link} from '@inertiajs/vue3'
 import {route} from "ziggy-js";
 import DatePicker from '@/Components/UI/DatePicker.vue';
+import Select from '@/Components/UI/Select.vue';
 
 const props = defineProps({
     partners: Array,
@@ -289,6 +246,30 @@ const form = useForm({
 const minDate = computed(() => {
     return new Date()
 })
+
+const partnerOptions = computed(() => [
+    { label: 'Выберите партнера', value: '' },
+    ...props.partners.map(partner => ({
+        label: `${partner.company_name} (${partner.contact_person})`,
+        value: partner.id
+    }))
+])
+
+const teamSizeOptions = computed(() => [
+    { label: '1 человек', value: '1' },
+    { label: '2 человека', value: '2' },
+    { label: '3 человека', value: '3' },
+    { label: '4 человека', value: '4' },
+    { label: '5+ человек', value: '5' },
+])
+
+const simulatorOptions = computed(() => [
+    { label: 'Без симулятора', value: '' },
+    ...props.simulators.map(simulator => ({
+        label: simulator.name,
+        value: simulator.id
+    }))
+])
 
 const submitForm = () => {
     processing.value = true

@@ -34,69 +34,54 @@
 
                 <!-- Фильтр по статусу -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Статус</label>
-                    <select
+                    <Select
                         v-model="filters.status"
-                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        @change="updateFilters"
-                    >
-                        <option value="">Все статусы</option>
-                        <option value="draft">Черновик</option>
-                        <option value="active">Активные</option>
-                        <option value="completed">Завершенные</option>
-                        <option value="archived">Архивные</option>
-                    </select>
+                        label="Статус"
+                        :options="statusFilterOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Все статусы"
+                        @update:modelValue="updateFilters"
+                    />
                 </div>
 
                 <!-- Фильтр по партнеру -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Партнер</label>
-                    <select
+                    <Select
                         v-model="filters.partner_id"
-                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        @change="updateFilters"
-                    >
-                        <option value="">Все партнеры</option>
-                        <option
-                            v-for="partner in partners"
-                            :key="partner.id"
-                            :value="partner.id"
-                        >
-                            {{ getPartnerDisplayName(partner) }}
-                        </option>
-                    </select>
+                        label="Партнер"
+                        :options="partnerFilterOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Все партнеры"
+                        @update:modelValue="updateFilters"
+                    />
                 </div>
 
                 <!-- Фильтр по размеру команды -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Размер команды</label>
-                    <select
+                    <Select
                         v-model="filters.team_size"
-                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        @change="updateFilters"
-                    >
-                        <option value="">Любой</option>
-                        <option value="1">1 человек</option>
-                        <option value="2">2 человека</option>
-                        <option value="3">3 человека</option>
-                        <option value="4">4 человека</option>
-                        <option value="5">5+ человек</option>
-                    </select>
+                        label="Размер команды"
+                        :options="teamSizeFilterOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Любой"
+                        @update:modelValue="updateFilters"
+                    />
                 </div>
 
                 <!-- Количество на странице -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">На странице</label>
-                    <select
+                    <Select
                         v-model="filters.perPage"
-                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        @change="updateFilters"
-                    >
-                        <option value="10">10</option>
-                        <option value="15">15</option>
-                        <option value="25">25</option>
-                        <option value="50">50</option>
-                    </select>
+                        label="На странице"
+                        :options="perPageOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Выберите количество"
+                        @update:modelValue="updateFilters"
+                    />
                 </div>
             </div>
 
@@ -233,6 +218,7 @@ import {ref, computed} from 'vue'
 import {router} from '@inertiajs/vue3'
 import {Head, Link} from '@inertiajs/vue3'
 import Pagination from '@/Components/Pagination.vue'
+import Select from '@/Components/UI/Select.vue'
 import {route} from "ziggy-js";
 
 
@@ -311,6 +297,38 @@ const updateFilters = () => {
         replace: true,
     })
 }
+
+const statusFilterOptions = computed(() => [
+    { label: 'Все статусы', value: '' },
+    { label: 'Черновик', value: 'draft' },
+    { label: 'Активные', value: 'active' },
+    { label: 'Завершенные', value: 'completed' },
+    { label: 'Архивные', value: 'archived' },
+])
+
+const partnerFilterOptions = computed(() => [
+    { label: 'Все партнеры', value: '' },
+    ...props.partners.map(partner => ({
+        label: getPartnerDisplayName(partner),
+        value: partner.id
+    }))
+])
+
+const teamSizeFilterOptions = computed(() => [
+    { label: 'Любой', value: '' },
+    { label: '1 человек', value: '1' },
+    { label: '2 человека', value: '2' },
+    { label: '3 человека', value: '3' },
+    { label: '4 человека', value: '4' },
+    { label: '5+ человек', value: '5' },
+])
+
+const perPageOptions = computed(() => [
+    { label: '10', value: '10' },
+    { label: '15', value: '15' },
+    { label: '25', value: '25' },
+    { label: '50', value: '50' },
+])
 
 const resetFilters = () => {
     filters.value = {
