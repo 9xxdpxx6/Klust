@@ -64,18 +64,31 @@
 
                     <!-- Auth Links -->
                     <div class="flex items-center gap-4">
-                        <Link
-                            :href="route('login')"
-                            class="text-sm font-medium text-text-primary hover:text-primary transition-colors"
-                        >
-                            Войти
-                        </Link>
-                        <Link
-                            :href="route('register')"
-                            class="px-4 py-2 text-sm font-medium text-kubgtu-white bg-primary rounded-lg hover:bg-primary-light transition-colors shadow-sm"
-                        >
-                            Регистрация
-                        </Link>
+                        <!-- Авторизован -->
+                        <template v-if="isAuthenticated">
+                            <Link
+                                :href="dashboardRoute"
+                                class="px-4 py-2 text-sm font-medium text-kubgtu-white bg-primary rounded-lg hover:bg-primary-light transition-colors shadow-sm"
+                            >
+                                Личный кабинет
+                            </Link>
+                        </template>
+
+                        <!-- Не авторизован -->
+                        <template v-else>
+                            <Link
+                                :href="route('login')"
+                                class="text-sm font-medium text-text-primary hover:text-primary transition-colors"
+                            >
+                                Войти
+                            </Link>
+                            <Link
+                                :href="route('register')"
+                                class="px-4 py-2 text-sm font-medium text-kubgtu-white bg-primary rounded-lg hover:bg-primary-light transition-colors shadow-sm"
+                            >
+                                Регистрация
+                            </Link>
+                        </template>
                     </div>
 
                     <!-- Mobile Menu Button -->
@@ -129,6 +142,35 @@
                         >
                             Кейсы
                         </Link>
+
+                        <!-- Auth Links Mobile -->
+                        <div class="pt-4 border-t border-border-light">
+                            <template v-if="isAuthenticated">
+                                <Link
+                                    :href="dashboardRoute"
+                                    class="block px-4 py-2 text-sm font-medium text-center text-kubgtu-white bg-primary rounded-lg hover:bg-primary-light transition-colors"
+                                    @click="mobileMenuOpen = false"
+                                >
+                                    Личный кабинет
+                                </Link>
+                            </template>
+                            <template v-else>
+                                <Link
+                                    :href="route('login')"
+                                    class="block text-sm font-medium text-text-primary hover:text-primary transition-colors mb-2"
+                                    @click="mobileMenuOpen = false"
+                                >
+                                    Войти
+                                </Link>
+                                <Link
+                                    :href="route('register')"
+                                    class="block px-4 py-2 text-sm font-medium text-center text-kubgtu-white bg-primary rounded-lg hover:bg-primary-light transition-colors"
+                                    @click="mobileMenuOpen = false"
+                                >
+                                    Регистрация
+                                </Link>
+                            </template>
+                        </div>
                     </nav>
                 </div>
             </div>
@@ -175,18 +217,27 @@
 
                     <!-- Auth -->
                     <div>
-                        <h3 class="text-sm font-semibold text-text-primary mb-3">Начать работу</h3>
+                        <h3 class="text-sm font-semibold text-text-primary mb-3">
+                            {{ isAuthenticated ? 'Аккаунт' : 'Начать работу' }}
+                        </h3>
                         <ul class="space-y-2">
-                            <li>
-                                <Link :href="route('login')" class="text-sm text-text-secondary hover:text-primary transition-colors">
-                                    Войти
+                            <li v-if="isAuthenticated">
+                                <Link :href="dashboardRoute" class="text-sm text-text-secondary hover:text-primary transition-colors">
+                                    Личный кабинет
                                 </Link>
                             </li>
-                            <li>
-                                <Link :href="route('register')" class="text-sm text-text-secondary hover:text-primary transition-colors">
-                                    Регистрация
-                                </Link>
-                            </li>
+                            <template v-else>
+                                <li>
+                                    <Link :href="route('login')" class="text-sm text-text-secondary hover:text-primary transition-colors">
+                                        Войти
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link :href="route('register')" class="text-sm text-text-secondary hover:text-primary transition-colors">
+                                        Регистрация
+                                    </Link>
+                                </li>
+                            </template>
                         </ul>
                     </div>
                 </div>
@@ -224,4 +275,28 @@ const currentYear = computed(() => new Date().getFullYear())
 const isCurrentRoute = (routeName) => {
     return page.url.startsWith(route(routeName))
 }
+
+// Проверка авторизации
+const isAuthenticated = computed(() => {
+    return page.props.auth?.user !== null && page.props.auth?.user !== undefined
+})
+
+// Определение роута dashboard в зависимости от роли
+const dashboardRoute = computed(() => {
+    if (!isAuthenticated.value) {
+        return route('login')
+    }
+
+    const roles = page.props.auth.user.roles || []
+
+    if (roles.includes('admin') || roles.includes('teacher')) {
+        return route('admin.dashboard')
+    } else if (roles.includes('student')) {
+        return route('student.dashboard')
+    } else if (roles.includes('partner')) {
+        return route('partner.dashboard')
+    }
+
+    return route('login')
+})
 </script>
