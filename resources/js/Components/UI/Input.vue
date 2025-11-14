@@ -102,7 +102,8 @@ const inputId = computed(() => `input-${Math.random().toString(36).substr(2, 9)}
 
 <style scoped>
 .input {
-  @apply appearance-none block w-full px-3 py-2 border border-border rounded-md shadow-sm placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm;
+  /* Базовые стили наследуются от глобальных стилей input */
+  @apply sm:text-sm;
 }
 
 .input-error {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\CaseApplication;
 use App\Models\User;
 
 class PartnerService
@@ -47,6 +48,96 @@ class PartnerService
                 }])
                 ->get()
                 ->sum('applications_count'),
+        ];
+    }
+
+    /**
+     * Get recent activities for partner dashboard
+     * Returns new applications, completed cases, and new teams
+     */
+    public function getRecentActivities(User $user): array
+    {
+        $partner = $user->partner;
+
+        if (! $partner) {
+            return [
+                'newApplications' => [],
+                'completedCases' => [],
+                'newTeams' => [],
+            ];
+        }
+
+        // Новые заявки (pending applications) за последние 7 дней
+        $newApplications = CaseApplication::query()
+            ->whereHas('case', function ($query) use ($partner) {
+                $query->where('partner_id', $partner->id);
+            })
+            ->pending()
+            ->with(['case', 'leader'])
+            ->where('created_at', '>=', now()->subDays(7))
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get()
+            ->map(function ($application) {
+                return [
+                    'id' => $application->id,
+                    'case_id' => $application->case_id,
+                    'case' => $application->case ? [
+                        'id' => $application->case->id,
+                        'title' => $application->case->title,
+                    ] : null,
+                    'leader' => $application->leader ? [
+                        'id' => $application->leader->id,
+                        'name' => $application->leader->name,
+                    ] : null,
+                    'created_at' => $application->created_at,
+                ];
+            });
+
+        // Завершенные кейсы за последние 7 дней
+        $completedCases = $partner->cases()
+            ->where('status', 'completed')
+            ->where('updated_at', '>=', now()->subDays(7))
+            ->orderBy('updated_at', 'desc')
+            ->limit(10)
+            ->get()
+            ->map(function ($case) {
+                return [
+                    'id' => $case->id,
+                    'title' => $case->title,
+                    'completed_at' => $case->updated_at,
+                    'updated_at' => $case->updated_at,
+                ];
+            });
+
+        // Новые команды (accepted applications) за последние 7 дней
+        $newTeams = CaseApplication::query()
+            ->whereHas('case', function ($query) use ($partner) {
+                $query->where('partner_id', $partner->id);
+            })
+            ->accepted()
+            ->with(['case', 'teamMembers'])
+            ->where('created_at', '>=', now()->subDays(7))
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get()
+            ->map(function ($application) {
+                return [
+                    'id' => $application->id,
+                    'case_id' => $application->case_id,
+                    'case' => $application->case ? [
+                        'id' => $application->case->id,
+                        'title' => $application->case->title,
+                    ] : null,
+                    'members_count' => $application->teamMembers->count() + 1, // +1 для лидера
+                    'created_at' => $application->created_at,
+                ];
+            });
+
+        return [
+            'newApplications' => $newApplications->values()->toArray(),
+            'completedCases' => $completedCases->values()->toArray(),
+            'newTeams' => $newTeams->values()->toArray(),
         ];
     }
 }

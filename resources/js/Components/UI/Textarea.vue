@@ -82,7 +82,8 @@ const textareaId = computed(() => `textarea-${Math.random().toString(36).substr(
 
 <style scoped>
 .textarea {
-  @apply appearance-none block w-full px-3 py-2 border border-border rounded-md shadow-sm placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm resize-y;
+  /* Базовые стили наследуются от глобальных стилей textarea */
+  @apply sm:text-sm;
 }
 
 .textarea-error {
