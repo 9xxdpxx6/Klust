@@ -87,19 +87,12 @@
                     </div>
 
                     <!-- Дедлайн -->
-                    <div>
-                        <label for="deadline" class="block text-sm font-medium text-gray-700 mb-1">
-                            Дедлайн
-                        </label>
-                        <input
-                            type="date"
-                            id="deadline"
-                            v-model="form.deadline"
-                            :disabled="processing"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:opacity-50"
-                        />
-                        <div v-if="errors.deadline" class="mt-1 text-sm text-red-600">{{ errors.deadline }}</div>
-                    </div>
+                    <DatePicker
+                        v-model="form.deadline"
+                        label="Дедлайн"
+                        :disabled="processing"
+                        :error="errors.deadline"
+                    />
 
                     <!-- Статус -->
                     <div>
@@ -180,6 +173,7 @@
 import { ref, reactive, onMounted } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import PartnerLayout from '@/Layouts/PartnerLayout.vue';
+import DatePicker from '@/Components/UI/DatePicker.vue';
 
 const props = defineProps({
     caseData: {
@@ -198,7 +192,7 @@ const form = reactive({
     description: props.caseData.description,
     team_size: props.caseData.team_size,
     required_skills: props.caseData.required_skills.map(skill => skill.id),
-    deadline: props.caseData.deadline || '',
+    deadline: props.caseData.deadline ? new Date(props.caseData.deadline) : null,
     status: props.caseData.status
 });
 
@@ -206,11 +200,24 @@ const form = reactive({
 const processing = ref(false);
 const errors = ref({});
 
+const formatDateForServer = (date) => {
+    if (!date) return null;
+    if (date instanceof Date) {
+        return date.toISOString().split('T')[0];
+    }
+    return date;
+};
+
 const submitForm = () => {
     processing.value = true;
     errors.value = {};
 
-    router.put(route('partner.cases.update', { case: props.caseData.id }), form, {
+    const formData = {
+        ...form,
+        deadline: formatDateForServer(form.deadline)
+    };
+
+    router.put(route('partner.cases.update', { case: props.caseData.id }), formData, {
         preserveState: true,
         preserveScroll: true,
         onSuccess: () => {

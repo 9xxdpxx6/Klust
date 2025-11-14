@@ -24,27 +24,19 @@
                     </select>
                 </div>
                 <div>
-                    <label for="start-date" class="block text-sm font-medium text-gray-700 mb-1">
-                        Начало
-                    </label>
-                    <input
-                        type="date"
-                        id="start-date"
+                    <DatePicker
                         v-model="filters.start_date"
-                        @change="applyFilters"
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        label="Начало"
+                        placeholder="Выберите дату"
+                        @date-select="applyFilters"
                     />
                 </div>
                 <div>
-                    <label for="end-date" class="block text-sm font-medium text-gray-700 mb-1">
-                        Конец
-                    </label>
-                    <input
-                        type="date"
-                        id="end-date"
+                    <DatePicker
                         v-model="filters.end_date"
-                        @change="applyFilters"
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        label="Конец"
+                        placeholder="Выберите дату"
+                        @date-select="applyFilters"
                     />
                 </div>
                 <div class="flex items-end">
@@ -267,6 +259,7 @@
 import { ref, reactive, onMounted } from 'vue';
 import { router } from '@inertiajs/vue3';
 import PartnerLayout from '@/Layouts/PartnerLayout.vue';
+import DatePicker from '@/Components/UI/DatePicker.vue';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -315,8 +308,8 @@ const props = defineProps({
 
 const filters = reactive({
     period: props.filters.period || '30',
-    start_date: '',
-    end_date: ''
+    start_date: props.filters.start_date ? new Date(props.filters.start_date) : null,
+    end_date: props.filters.end_date ? new Date(props.filters.end_date) : null
 });
 
 const showExportMenu = ref(false);
@@ -370,11 +363,19 @@ const doughnutChartOptions = {
     }
 };
 
+const formatDateForServer = (date) => {
+    if (!date) return null;
+    if (date instanceof Date) {
+        return date.toISOString().split('T')[0];
+    }
+    return date;
+};
+
 const applyFilters = () => {
     const params = {
         period: filters.period || undefined,
-        start_date: filters.start_date || undefined,
-        end_date: filters.end_date || undefined
+        start_date: formatDateForServer(filters.start_date) || undefined,
+        end_date: formatDateForServer(filters.end_date) || undefined
     };
 
     router.get(route('partner.analytics.index'), params, {

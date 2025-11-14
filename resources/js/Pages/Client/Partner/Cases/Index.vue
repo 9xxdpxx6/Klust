@@ -60,15 +60,11 @@
                 </div>
                 
                 <div>
-                    <label for="date-filter" class="block text-sm font-medium text-gray-700 mb-1">
-                        Дата создания
-                    </label>
-                    <input
-                        type="date"
-                        id="date-filter"
+                    <DatePicker
                         v-model="filters.date"
-                        @change="applyFilters"
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        label="Дата создания"
+                        placeholder="Выберите дату"
+                        @date-select="applyFilters"
                     />
                 </div>
                 
@@ -206,6 +202,7 @@ import { Link, usePage, router } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import PartnerLayout from '@/Layouts/PartnerLayout.vue';
 import Pagination from '@/Components/Pagination.vue';
+import DatePicker from '@/Components/UI/DatePicker.vue';
 
 const props = defineProps({
     cases: {
@@ -227,7 +224,7 @@ const page = usePage();
 const filters = ref({
     status: props.filters.status || '',
     search: props.filters.search || '',
-    date: ''
+    date: props.filters.date ? new Date(props.filters.date) : null
 });
 
 const currentTab = computed(() => {
@@ -289,11 +286,19 @@ const debounceSearch = useDebounceFn(() => {
     applyFilters();
 }, 300);
 
+const formatDateForServer = (date) => {
+    if (!date) return null;
+    if (date instanceof Date) {
+        return date.toISOString().split('T')[0];
+    }
+    return date;
+};
+
 const applyFilters = () => {
     const params = {
         status: filters.value.status || undefined,
         search: filters.value.search || undefined,
-        date: filters.value.date || undefined
+        date: formatDateForServer(filters.value.date) || undefined
     };
 
     router.get(route('partner.cases.index'), params, {

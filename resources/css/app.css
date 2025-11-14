@@ -149,3 +149,145 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  /* Стили для классов компонентов - наследуют базовые стили из @layer base */
+  .input,
+  input.input {
+    /* Базовые стили уже применены глобально к input элементам */
+    /* Здесь только дополнительные стили, если нужны */
+  }
+
+  .textarea,
+  textarea.textarea {
+    /* Базовые стили уже применены глобально к textarea элементам */
+    /* Здесь только дополнительные стили, если нужны */
+  }
+}
+
+@layer base {
+  /* Глобальные стили для всех элементов форм */
+  
+  /* Базовые input поля */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="search"] {
+    @apply w-full px-3 py-2 border border-border rounded-md shadow-sm;
+    @apply bg-white text-text-primary;
+    @apply placeholder:text-text-muted;
+    @apply transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:border-primary;
+    @apply active:border-primary active:ring-2 active:ring-primary active:ring-opacity-50;
+    @apply disabled:bg-surface disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  /* Textarea */
+  textarea {
+    @apply w-full px-3 py-2 border border-border rounded-md shadow-sm;
+    @apply bg-white text-text-primary;
+    @apply placeholder:text-text-muted;
+    @apply transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:border-primary;
+    @apply active:border-primary active:ring-2 active:ring-primary active:ring-opacity-50;
+    @apply disabled:bg-surface disabled:cursor-not-allowed disabled:opacity-60;
+    @apply resize-y;
+  }
+
+  /* Date, datetime, time inputs */
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="time"],
+  input[type="month"],
+  input[type="week"] {
+    @apply w-full px-3 py-2 border border-border rounded-md shadow-sm;
+    @apply bg-white text-text-primary;
+    @apply transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:border-primary;
+    @apply active:border-primary active:ring-2 active:ring-primary active:ring-opacity-50;
+    @apply disabled:bg-surface disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  /* Select */
+  select {
+    @apply w-full px-3 py-2 border border-border rounded-md shadow-sm;
+    @apply bg-white text-text-primary;
+    @apply transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:border-primary;
+    @apply active:border-primary active:ring-2 active:ring-primary active:ring-opacity-50;
+    @apply disabled:bg-surface disabled:cursor-not-allowed disabled:opacity-60;
+    @apply appearance-none bg-no-repeat pr-10;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+    background-position: right 0.5rem center;
+    background-size: 1.5em 1.5em;
+  }
+
+  /* Checkbox */
+  input[type="checkbox"] {
+    @apply h-4 w-4 text-primary border-border rounded;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50;
+    @apply active:ring-2 active:ring-primary active:ring-opacity-50;
+    @apply disabled:opacity-60 disabled:cursor-not-allowed;
+    @apply transition-all duration-200;
+    @apply cursor-pointer;
+  }
+
+  /* Radio */
+  input[type="radio"] {
+    @apply h-4 w-4 text-primary border-border;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50;
+    @apply active:ring-2 active:ring-primary active:ring-opacity-50;
+    @apply disabled:opacity-60 disabled:cursor-not-allowed;
+    @apply transition-all duration-200;
+    @apply cursor-pointer;
+  }
+
+  /* Range slider */
+  input[type="range"] {
+    @apply w-full h-2 bg-surface rounded-lg appearance-none cursor-pointer;
+    @apply focus:outline-none;
+    @apply disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    @apply appearance-none w-4 h-4 bg-primary rounded-full cursor-pointer;
+    @apply transition-all duration-200;
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    @apply w-4 h-4 bg-primary rounded-full border-0 cursor-pointer;
+    @apply transition-all duration-200;
+  }
+
+  input[type="range"]:focus::-webkit-slider-thumb {
+    @apply ring-2 ring-primary ring-opacity-50;
+  }
+
+  input[type="range"]:focus::-moz-range-thumb {
+    @apply ring-2 ring-primary ring-opacity-50;
+  }
+
+  /* File input */
+  input[type="file"] {
+    @apply w-full px-3 py-2 border border-border rounded-md shadow-sm;
+    @apply bg-white text-text-primary;
+    @apply transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:border-primary;
+    @apply active:border-primary active:ring-2 active:ring-primary active:ring-opacity-50;
+    @apply disabled:bg-surface disabled:cursor-not-allowed disabled:opacity-60;
+    @apply file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-white file:cursor-pointer hover:file:bg-primary-light;
+  }
+
+  /* Color input */
+  input[type="color"] {
+    @apply h-10 w-full border border-border rounded-md cursor-pointer;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:border-primary;
+    @apply active:border-primary active:ring-2 active:ring-primary active:ring-opacity-50;
+    @apply disabled:opacity-60 disabled:cursor-not-allowed;
+    @apply transition-all duration-200;
+  }
+
+}
+

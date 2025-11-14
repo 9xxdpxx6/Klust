@@ -28,8 +28,6 @@
       <main class="flex-1 p-6 bg-surface">
         <slot />
       </main>
-      
-      <BaseFooter />
     </div>
     
     <MobileMenu
@@ -45,7 +43,6 @@
 import { ref, computed, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import BaseHeader from '@/Components/Layout/BaseHeader.vue';
-import BaseFooter from '@/Components/Layout/BaseFooter.vue';
 import BaseSidebar from '@/Components/Layout/BaseSidebar.vue';
 import MobileMenu from '@/Components/Layout/MobileMenu.vue';
 import { getMenuItemsForRole } from '@/Utils/navigation';
