@@ -90,22 +90,13 @@
                         </div>
 
                         <!-- Дедлайн -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Дедлайн *
-                            </label>
-                            <input
-                                v-model="form.deadline"
-                                type="date"
-                                :min="minDate"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                :class="{ 'border-red-300': form.errors.deadline }"
-                                required
-                            />
-                            <div v-if="form.errors.deadline" class="text-red-500 text-sm mt-1">
-                                {{ form.errors.deadline }}
-                            </div>
-                        </div>
+                        <DatePicker
+                            v-model="form.deadline"
+                            label="Дедлайн"
+                            :minDate="minDate"
+                            :error="form.errors.deadline"
+                            required
+                        />
 
                         <!-- Статус -->
                         <div>
@@ -228,6 +219,7 @@ import { computed } from 'vue'
 import { useForm } from '@inertiajs/vue3'
 import { Head, Link } from '@inertiajs/vue3'
 import { route } from "ziggy-js";
+import DatePicker from '@/Components/UI/DatePicker.vue';
 
 const props = defineProps({
     case: Object,
@@ -241,7 +233,7 @@ const form = useForm({
     title: props.case?.title || '',
     description: props.case?.description || '',
     partner_id: props.case?.partner_id || '',
-    deadline: props.case?.deadline ? formatDateForInput(props.case.deadline) : '',
+    deadline: props.case?.deadline ? new Date(props.case.deadline) : null,
     required_team_size: props.case?.required_team_size?.toString() || '',
     status: props.case?.status || '',
     reward: props.case?.reward || '',
@@ -249,21 +241,14 @@ const form = useForm({
 })
 
 const minDate = computed(() => {
-    const today = new Date()
-    return today.toISOString().split('T')[0]
+    return new Date()
 })
-
-// Функция для форматирования даты в формат input[type="date"]
-function formatDateForInput(dateString) {
-    if (!dateString) return ''
-    const date = new Date(dateString)
-    return date.toISOString().split('T')[0]
-}
 
 const submitForm = () => {
     // Используем transform для преобразования данных если нужно
     form.transform((data) => ({
         ...data,
+        deadline: data.deadline ? formatDateForServer(data.deadline) : null,
         required_team_size: parseInt(data.required_team_size),
         required_skills: data.required_skills.map(id => parseInt(id)),
     })).put(route('admin.cases.update', props.case.id), {
@@ -275,5 +260,13 @@ const submitForm = () => {
             console.log('Ошибки формы:', errors)
         },
     })
+}
+
+const formatDateForServer = (date) => {
+    if (!date) return null
+    if (date instanceof Date) {
+        return date.toISOString().split('T')[0]
+    }
+    return date
 }
 </script>

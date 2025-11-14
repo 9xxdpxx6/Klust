@@ -90,22 +90,13 @@
                         </div>
 
                         <!-- Дедлайн -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Дедлайн *
-                            </label>
-                            <input
-                                v-model="form.deadline"
-                                type="date"
-                                :min="minDate"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                :class="{ 'border-red-300': errors.deadline }"
-                                required
-                            />
-                            <div v-if="errors.deadline" class="text-red-500 text-sm mt-1">
-                                {{ errors.deadline }}
-                            </div>
-                        </div>
+                        <DatePicker
+                            v-model="form.deadline"
+                            label="Дедлайн"
+                            :minDate="minDate"
+                            :error="errors.deadline"
+                            required
+                        />
 
                         <!-- Статус -->
                         <div>
@@ -273,6 +264,7 @@ import {ref, computed} from 'vue'
 import {useForm} from '@inertiajs/vue3'
 import {Head, Link} from '@inertiajs/vue3'
 import {route} from "ziggy-js";
+import DatePicker from '@/Components/UI/DatePicker.vue';
 
 const props = defineProps({
     partners: Array,
@@ -295,13 +287,15 @@ const form = useForm({
 })
 
 const minDate = computed(() => {
-    const today = new Date()
-    return today.toISOString().split('T')[0]
+    return new Date()
 })
 
 const submitForm = () => {
     processing.value = true
-    form.post(route('admin.cases.store'), {
+    form.transform((data) => ({
+        ...data,
+        deadline: data.deadline ? formatDateForServer(data.deadline) : null,
+    })).post(route('admin.cases.store'), {
         preserveScroll: true,
         onSuccess: () => {
             processing.value = false
@@ -313,5 +307,13 @@ const submitForm = () => {
             processing.value = false
         },
     })
+}
+
+const formatDateForServer = (date) => {
+    if (!date) return null
+    if (date instanceof Date) {
+        return date.toISOString().split('T')[0]
+    }
+    return date
 }
 </script>
