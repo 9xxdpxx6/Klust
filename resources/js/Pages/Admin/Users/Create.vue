@@ -62,18 +62,15 @@
                             </div>
 
                             <!-- Курс -->
-                            <div>
-                                <label for="course" class="block text-sm font-medium text-gray-700">Курс</label>
-                                <select
-                                    id="course"
-                                    v-model="form.course"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                >
-                                    <option :value="null">Не указан</option>
-                                    <option v-for="i in 6" :key="i" :value="i">{{ i }} курс</option>
-                                </select>
-                                <div v-if="errors.course" class="text-red-500 text-sm mt-1">{{ errors.course }}</div>
-                            </div>
+                            <Select
+                                v-model="form.course"
+                                label="Курс"
+                                :options="courseOptions"
+                                optionLabel="label"
+                                optionValue="value"
+                                placeholder="Не указан"
+                                :error="errors.course"
+                            />
 
                             <!-- Пароль -->
                             <div>
@@ -100,21 +97,16 @@
                             </div>
 
                             <!-- Роль -->
-                            <div>
-                                <label for="role" class="block text-sm font-medium text-gray-700">Роль *</label>
-                                <select
-                                    id="role"
-                                    v-model="form.role"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    :class="{ 'border-red-300': errors.role }"
-                                >
-                                    <option value="">Выберите роль</option>
-                                    <option v-for="role in roles" :key="role" :value="role">
-                                        {{ getRoleDisplayName(role) }}
-                                    </option>
-                                </select>
-                                <div v-if="errors.role" class="text-red-500 text-sm mt-1">{{ errors.role }}</div>
-                            </div>
+                            <Select
+                                v-model="form.role"
+                                label="Роль"
+                                :options="roleOptions"
+                                optionLabel="label"
+                                optionValue="value"
+                                placeholder="Выберите роль"
+                                :error="errors.role"
+                                required
+                            />
                         </div>
 
                         <!-- Кнопки -->
@@ -145,6 +137,9 @@
 import { useForm } from '@inertiajs/vue3'
 import { Link } from '@inertiajs/vue3'
 import { Head } from '@inertiajs/vue3'
+import { computed } from 'vue'
+import Select from '@/Components/UI/Select.vue'
+import { route } from 'ziggy-js'
 
 const props = defineProps({
     roles: Array,
@@ -174,4 +169,20 @@ const getRoleDisplayName = (role) => {
     }
     return roleNames[role] || role
 }
+
+const courseOptions = computed(() => [
+    { label: 'Не указан', value: null },
+    ...Array.from({ length: 6 }, (_, i) => ({
+        label: `${i + 1} курс`,
+        value: i + 1
+    }))
+])
+
+const roleOptions = computed(() => [
+    { label: 'Выберите роль', value: '' },
+    ...props.roles.map(role => ({
+        label: getRoleDisplayName(role),
+        value: role
+    }))
+])
 </script>

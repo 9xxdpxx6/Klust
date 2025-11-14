@@ -73,5 +73,34 @@
   color: var(--color-kubgtu-blue);
 }
 
+/* Выравнивание высоты всех PrimeVue полей ввода */
+.p-inputtext,
+.p-inputtextarea,
+.p-select-label,
+.p-datepicker-input {
+  box-sizing: border-box !important;
+  min-height: 2.5rem !important;
+  height: 2.5rem !important;
+  line-height: 1.5 !important;
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+}
+
+/* Для Select - внутренний label должен быть выровнен */
+.p-select {
+  min-height: 2.5rem !important;
+}
+
+.p-select .p-select-label {
+  box-sizing: border-box !important;
+  min-height: 2.5rem !important;
+  height: 2.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  line-height: 1.5 !important;
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+}
+
 
 

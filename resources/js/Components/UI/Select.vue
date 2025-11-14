@@ -9,7 +9,7 @@
       <span v-if="required" class="text-red-500">*</span>
     </label>
     
-    <Dropdown
+    <PrimeSelect
       :id="selectId"
       :modelValue="modelValue"
       :options="options"
@@ -40,7 +40,7 @@
 
 <script setup>
 import { computed } from 'vue';
-import Dropdown from 'primevue/dropdown';
+import PrimeSelect from 'primevue/select';
 
 const props = defineProps({
   modelValue: {
@@ -89,7 +89,7 @@ const props = defineProps({
   },
   searchable: {
     type: Boolean,
-    default: false,
+    default: true,
   },
 });
 
@@ -99,11 +99,11 @@ const selectId = computed(() => `select-${Math.random().toString(36).substr(2, 9
 </script>
 
 <style scoped>
-:deep(.p-dropdown) {
+:deep(.p-select) {
   @apply w-full;
 }
 
-:deep(.p-dropdown.p-invalid) {
+:deep(.p-select.p-invalid) {
   @apply border-red-500;
 }
 </style>

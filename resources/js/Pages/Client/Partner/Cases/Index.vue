@@ -42,21 +42,15 @@
         <div class="bg-white shadow-sm rounded-lg p-4 mb-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                    <label for="status-filter" class="block text-sm font-medium text-gray-700 mb-1">
-                        Статус
-                    </label>
-                    <select
-                        id="status-filter"
+                    <Select
                         v-model="filters.status"
-                        @change="applyFilters"
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                    >
-                        <option value="">Все статусы</option>
-                        <option value="draft">Черновик</option>
-                        <option value="active">Активен</option>
-                        <option value="completed">Завершен</option>
-                        <option value="archived">Архив</option>
-                    </select>
+                        label="Статус"
+                        :options="statusFilterOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Все статусы"
+                        @update:modelValue="applyFilters"
+                    />
                 </div>
                 
                 <div>
@@ -203,6 +197,7 @@ import { useDebounceFn } from '@vueuse/core';
 import PartnerLayout from '@/Layouts/PartnerLayout.vue';
 import Pagination from '@/Components/Pagination.vue';
 import DatePicker from '@/Components/UI/DatePicker.vue';
+import Select from '@/Components/UI/Select.vue';
 
 const props = defineProps({
     cases: {
@@ -245,6 +240,14 @@ const tabs = computed(() => {
         count: tab.count !== undefined ? tab.count : undefined
     }));
 });
+
+const statusFilterOptions = computed(() => [
+    { label: 'Все статусы', value: '' },
+    { label: 'Черновик', value: 'draft' },
+    { label: 'Активен', value: 'active' },
+    { label: 'Завершен', value: 'completed' },
+    { label: 'Архив', value: 'archived' },
+]);
 
 const getStatusClass = (status) => {
     switch (status) {

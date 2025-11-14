@@ -37,7 +37,7 @@ class AnalyticsService
             $casesQuery->where('id', $caseId);
         }
 
-        $cases = $casesQuery->with(['applications.status', 'skills'])->get();
+        $cases = $casesQuery->with(['applications', 'skills'])->get();
 
         // Calculate overview statistics
         $overview = $this->calculateOverviewStatistics($cases);
@@ -80,9 +80,7 @@ class AnalyticsService
         });
 
         $acceptedApplications = $cases->sum(function ($case) {
-            return $case->applications->filter(function ($app) {
-                return $app->status && $app->status->name === 'accepted';
-            })->count();
+            return $case->applications->where('status', 'accepted')->count();
         });
 
         $conversionRate = $totalApplications > 0
@@ -115,17 +113,15 @@ class AnalyticsService
             });
 
         $avgTeamSize = $allApplications
-            ->filter(function ($app) {
-                return $app->status && $app->status->name === 'accepted';
-            })
+            ->where('status', 'accepted')
             ->avg(function ($app) {
                 return $app->teamMembers()->count() + 1; // +1 for leader
             });
 
         return [
-            'pending' => $allApplications->filter(fn ($app) => $app->status && $app->status->name === 'pending')->count(),
-            'accepted' => $allApplications->filter(fn ($app) => $app->status && $app->status->name === 'accepted')->count(),
-            'rejected' => $allApplications->filter(fn ($app) => $app->status && $app->status->name === 'rejected')->count(),
+            'pending' => $allApplications->where('status', 'pending')->count(),
+            'accepted' => $allApplications->where('status', 'accepted')->count(),
+            'rejected' => $allApplications->where('status', 'rejected')->count(),
             'avg_response_time_hours' => round($avgResponseTime ?? 0, 2),
             'avg_team_size' => round($avgTeamSize ?? 0, 2),
         ];
@@ -191,9 +187,9 @@ class AnalyticsService
     {
         $allApplications = $cases->flatMap(fn ($case) => $case->applications);
 
-        $pending = $allApplications->filter(fn ($app) => $app->status && $app->status->name === 'pending')->count();
-        $accepted = $allApplications->filter(fn ($app) => $app->status && $app->status->name === 'accepted')->count();
-        $rejected = $allApplications->filter(fn ($app) => $app->status && $app->status->name === 'rejected')->count();
+        $pending = $allApplications->where('status', 'pending')->count();
+        $accepted = $allApplications->where('status', 'accepted')->count();
+        $rejected = $allApplications->where('status', 'rejected')->count();
 
         return [
             'labels' => ['Pending', 'Accepted', 'Rejected'],

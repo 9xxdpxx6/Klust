@@ -23,61 +23,54 @@
 
                 <!-- Фильтр по ролям -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Роль</label>
-                    <select
+                    <Select
                         v-model="filters.role"
-                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        @change="updateFilters"
-                    >
-                        <option value="">Все роли</option>
-                        <option v-for="role in roles" :key="role" :value="role">
-                            {{ role }}
-                        </option>
-                    </select>
+                        label="Роль"
+                        :options="roleFilterOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Все роли"
+                        @update:modelValue="updateFilters"
+                    />
                 </div>
 
                 <!-- Фильтр по статусу -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Статус</label>
-                    <select
+                    <Select
                         v-model="filters.status"
-                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        @change="updateFilters"
-                    >
-                        <option value="">Все</option>
-                        <option value="verified">Верифицирован</option>
-                        <option value="unverified">Не верифицирован</option>
-                    </select>
+                        label="Статус"
+                        :options="statusFilterOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Все"
+                        @update:modelValue="updateFilters"
+                    />
                 </div>
 
                 <!-- Фильтр по курсу -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Курс</label>
-                    <select
+                    <Select
                         v-model="filters.course"
-                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        @change="updateFilters"
-                    >
-                        <option value="">Все курсы</option>
-                        <option v-for="course in courses" :key="course" :value="course">
-                            {{ course }} курс
-                        </option>
-                    </select>
+                        label="Курс"
+                        :options="courseFilterOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Все курсы"
+                        @update:modelValue="updateFilters"
+                    />
                 </div>
 
                 <!-- Количество на странице -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">На странице</label>
-                    <select
+                    <Select
                         v-model="filters.perPage"
-                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        @change="updateFilters"
-                    >
-                        <option value="10">10</option>
-                        <option value="15">15</option>
-                        <option value="25">25</option>
-                        <option value="50">50</option>
-                    </select>
+                        label="На странице"
+                        :options="perPageOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Выберите количество"
+                        @update:modelValue="updateFilters"
+                    />
                 </div>
             </div>
 
@@ -224,6 +217,7 @@ import { ref, computed } from 'vue'
 import { router, Link } from '@inertiajs/vue3'
 import { Head } from '@inertiajs/vue3'
 import Pagination from '@/Components/Pagination.vue'
+import Select from '@/Components/UI/Select.vue'
 
 const props = defineProps({
     users: {
@@ -285,6 +279,35 @@ const formatDate = (date) => {
     if (!date) return ''
     return new Date(date).toLocaleDateString('ru-RU')
 }
+
+const roleFilterOptions = computed(() => [
+    { label: 'Все роли', value: '' },
+    ...props.roles.map(role => ({
+        label: role,
+        value: role
+    }))
+])
+
+const statusFilterOptions = computed(() => [
+    { label: 'Все', value: '' },
+    { label: 'Верифицирован', value: 'verified' },
+    { label: 'Не верифицирован', value: 'unverified' },
+])
+
+const courseFilterOptions = computed(() => [
+    { label: 'Все курсы', value: '' },
+    ...props.courses.map(course => ({
+        label: `${course} курс`,
+        value: course
+    }))
+])
+
+const perPageOptions = computed(() => [
+    { label: '10', value: '10' },
+    { label: '15', value: '15' },
+    { label: '25', value: '25' },
+    { label: '50', value: '50' },
+])
 
 const getUserInitials = (name) => {
     if (!name) return '??'

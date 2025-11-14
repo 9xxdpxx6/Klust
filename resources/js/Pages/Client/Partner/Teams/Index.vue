@@ -8,36 +8,27 @@
         <div class="bg-white shadow-sm rounded-lg p-4 mb-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label for="case-filter" class="block text-sm font-medium text-gray-700 mb-1">
-                        Кейс
-                    </label>
-                    <select
-                        id="case-filter"
+                    <Select
                         v-model="filters.case_id"
-                        @change="applyFilters"
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                    >
-                        <option value="">Все кейсы</option>
-                        <option v-for="caseItem in availableCases" :key="caseItem.id" :value="caseItem.id">
-                            {{ caseItem.title }}
-                        </option>
-                    </select>
+                        label="Кейс"
+                        :options="caseFilterOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Все кейсы"
+                        @update:modelValue="applyFilters"
+                    />
                 </div>
 
                 <div>
-                    <label for="status-filter" class="block text-sm font-medium text-gray-700 mb-1">
-                        Статус
-                    </label>
-                    <select
-                        id="status-filter"
+                    <Select
                         v-model="filters.status"
-                        @change="applyFilters"
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                    >
-                        <option value="">Все статусы</option>
-                        <option value="accepted">Активные</option>
-                        <option value="completed">Завершенные</option>
-                    </select>
+                        label="Статус"
+                        :options="statusFilterOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Все статусы"
+                        @update:modelValue="applyFilters"
+                    />
                 </div>
             </div>
         </div>
@@ -119,6 +110,7 @@
 import { ref, computed } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import PartnerLayout from '@/Layouts/PartnerLayout.vue';
+import Select from '@/Components/UI/Select.vue';
 
 const props = defineProps({
     teams: {
@@ -186,4 +178,18 @@ const applyFilters = () => {
         replace: true
     });
 };
+
+const caseFilterOptions = computed(() => [
+    { label: 'Все кейсы', value: '' },
+    ...availableCases.value.map(caseItem => ({
+        label: caseItem.title,
+        value: caseItem.id
+    }))
+])
+
+const statusFilterOptions = computed(() => [
+    { label: 'Все статусы', value: '' },
+    { label: 'Активные', value: 'accepted' },
+    { label: 'Завершенные', value: 'completed' },
+])
 </script>
