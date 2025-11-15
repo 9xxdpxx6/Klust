@@ -39,7 +39,7 @@
                             id="kubgtu_id"
                             v-model="studentForm.kubgtu_id"
                             type="text"
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500 sm:text-sm"
                             :class="{ 'border-red-500': studentForm.errors.kubgtu_id }"
                             placeholder="Введите ID КубГТУ"
                         />
@@ -60,7 +60,7 @@
                             v-model="studentForm.name"
                             type="text"
                             required
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500 sm:text-sm"
                             :class="{ 'border-red-500': studentForm.errors.name }"
                             placeholder="Введите ФИО"
                         />
@@ -81,7 +81,7 @@
                             v-model="studentForm.email"
                             type="email"
                             required
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500 sm:text-sm"
                             :class="{ 'border-red-500': studentForm.errors.email }"
                             placeholder="Введите email"
                         />
@@ -114,7 +114,7 @@
                             v-model="studentForm.password"
                             type="password"
                             required
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500 sm:text-sm"
                             :class="{ 'border-red-500': studentForm.errors.password }"
                             placeholder="Минимум 8 символов"
                         />
@@ -135,7 +135,7 @@
                             v-model="studentForm.password_confirmation"
                             type="password"
                             required
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500 sm:text-sm"
                         />
                     </div>
                 </div>
@@ -143,7 +143,7 @@
                 <button
                     type="submit"
                     :disabled="studentForm.processing"
-                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <span v-if="studentForm.processing">Регистрация...</span>
                     <span v-else>Зарегистрироваться</span>
@@ -163,7 +163,7 @@
                             v-model="partnerForm.company_name"
                             type="text"
                             required
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500 sm:text-sm"
                             :class="{ 'border-red-500': partnerForm.errors.company_name }"
                             placeholder="Введите название компании"
                         />
@@ -184,7 +184,7 @@
                             v-model="partnerForm.contact_person"
                             type="text"
                             required
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500 sm:text-sm"
                             :class="{ 'border-red-500': partnerForm.errors.contact_person }"
                             placeholder="Введите ФИО контактного лица"
                         />
@@ -205,7 +205,7 @@
                             v-model="partnerForm.email"
                             type="email"
                             required
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500 sm:text-sm"
                             :class="{ 'border-red-500': partnerForm.errors.email }"
                             placeholder="Введите email"
                         />
@@ -226,7 +226,7 @@
                             v-model="partnerForm.contact_phone"
                             type="tel"
                             required
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500 sm:text-sm"
                             :class="{ 'border-red-500': partnerForm.errors.contact_phone }"
                             placeholder="Введите телефон"
                         />
@@ -246,7 +246,7 @@
                             id="description"
                             v-model="partnerForm.description"
                             rows="3"
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500 sm:text-sm"
                             :class="{ 'border-red-500': partnerForm.errors.description }"
                             placeholder="Краткое описание компании (необязательно)"
                         />
@@ -267,7 +267,7 @@
                             v-model="partnerForm.password"
                             type="password"
                             required
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500 sm:text-sm"
                             :class="{ 'border-red-500': partnerForm.errors.password }"
                             placeholder="Минимум 8 символов"
                         />
@@ -288,7 +288,7 @@
                             v-model="partnerForm.password_confirmation"
                             type="password"
                             required
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500 sm:text-sm"
                         />
                     </div>
                 </div>
@@ -296,7 +296,7 @@
                 <button
                     type="submit"
                     :disabled="partnerForm.processing"
-                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <span v-if="partnerForm.processing">Регистрация...</span>
                     <span v-else>Зарегистрироваться</span>

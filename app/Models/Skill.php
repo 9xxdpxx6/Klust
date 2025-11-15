@@ -26,8 +26,7 @@ class Skill extends Model
 
     public function cases(): BelongsToMany
     {
-        return $this->belongsToMany(CaseModel::class, 'case_skills')
-            ->withTimestamps();
+        return $this->belongsToMany(CaseModel::class, 'case_skills', 'skill_id', 'case_id')->withTimestamps();
     }
 }
 

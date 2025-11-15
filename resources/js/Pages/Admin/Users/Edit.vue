@@ -66,7 +66,7 @@
                                     type="text"
                                     id="name"
                                     v-model="form.name"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
                                     :class="{ 'border-red-300': errors.name }"
                                 />
                                 <div v-if="errors.name" class="text-red-500 text-sm mt-1">{{ errors.name }}</div>
@@ -79,7 +79,7 @@
                                     type="email"
                                     id="email"
                                     v-model="form.email"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
                                     :class="{ 'border-red-300': errors.email }"
                                 />
                                 <div v-if="errors.email" class="text-red-500 text-sm mt-1">{{ errors.email }}</div>
@@ -123,7 +123,7 @@
                                     type="password"
                                     id="password"
                                     v-model="form.password"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
                                     :class="{ 'border-red-300': errors.password }"
                                 />
                                 <div v-if="errors.password" class="text-red-500 text-sm mt-1">{{ errors.password }}</div>
@@ -136,7 +136,7 @@
                                     type="password"
                                     id="password_confirmation"
                                     v-model="form.password_confirmation"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
                                 />
                             </div>
                         </div>
@@ -147,7 +147,7 @@
                                 <button
                                     type="button"
                                     @click="confirmDelete"
-                                    class="px-4 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                    class="px-4 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50"
                                     :disabled="form.processing"
                                 >
                                     Удалить пользователя
@@ -156,14 +156,14 @@
                             <div class="flex space-x-3">
                                 <Link
                                     :href="route('admin.users.show', user.id)"
-                                    class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                    class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
                                 >
                                     Отмена
                                 </Link>
                                 <button
                                     type="submit"
                                     :disabled="form.processing"
-                                    class="inline-flex justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                                    class="inline-flex justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none disabled:opacity-50"
                                 >
                                     <span v-if="form.processing">Сохранение...</span>
                                     <span v-else>Сохранить изменения</span>

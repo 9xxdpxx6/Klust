@@ -31,7 +31,7 @@
                             <input
                                 v-model="form.title"
                                 type="text"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
                                 :class="{ 'border-red-300': form.errors.title }"
                                 placeholder="Введите название кейса"
                                 required
@@ -94,7 +94,7 @@
                             <input
                                 v-model="form.reward"
                                 type="text"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
                                 :class="{ 'border-red-300': form.errors.reward }"
                                 placeholder="Опишите награду за выполнение кейса"
                                 required
@@ -113,7 +113,7 @@
                         <textarea
                             v-model="form.description"
                             rows="6"
-                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
                             :class="{ 'border-red-300': form.errors.description }"
                             placeholder="Подробно опишите задачу, цели и ожидаемые результаты..."
                             required
@@ -139,7 +139,7 @@
                                     v-model="form.required_skills"
                                     type="checkbox"
                                     :value="skill.id"
-                                    class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                    class="rounded border-gray-300 text-indigo-600"
                                 />
                                 <label
                                     :for="`skill-${skill.id}`"

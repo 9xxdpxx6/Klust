@@ -57,7 +57,7 @@ const checkboxId = computed(() => `checkbox-${Math.random().toString(36).substr(
 
 <style scoped>
 .checkbox {
-  @apply h-4 w-4 text-primary focus:ring-primary border-border rounded cursor-pointer;
+  @apply h-4 w-4 text-primary border-border rounded cursor-pointer focus:outline-none;
 }
 
 .checkbox-error {

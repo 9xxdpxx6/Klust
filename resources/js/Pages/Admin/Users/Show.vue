@@ -44,9 +44,10 @@
                 <h1 class="text-2xl font-bold text-gray-900">Профиль пользователя: {{ user.name }}</h1>
                 <Link
                     :href="route('admin.users.edit', user.id)"
-                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                    class="inline-flex items-center justify-center p-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none transition-colors"
+                    title="Редактировать"
                 >
-                    Редактировать
+                    <i class="pi pi-pencil text-sm"></i>
                 </Link>
             </div>
             <div class="border-t border-gray-200">

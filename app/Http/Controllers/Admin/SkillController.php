@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\Skill\StoreRequest;
+use App\Http\Requests\Admin\Skill\UpdateRequest;
 use App\Models\Skill;
 use App\Services\SkillService;
 use Illuminate\Http\RedirectResponse;
@@ -26,56 +28,55 @@ class SkillController extends Controller
         // TODO: Создать Policy и раскомментировать
         // $this->authorize('viewAny', Skill::class);
 
-        $skills = Skill::query()
-            ->when($request->input('search'), function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%");
-            })
-            ->orderBy('name')
-            ->paginate(15)
-            ->withQueryString();
+        $filters = $request->only(['search', 'category', 'perPage', 'per_page', 'page']);
+        
+        // Нормализуем perPage -> per_page для совместимости с FilterHelper
+        if (isset($filters['perPage'])) {
+            $filters['per_page'] = $filters['perPage'];
+            unset($filters['perPage']);
+        }
+
+        $skills = $this->skillService->getFilteredSkills($filters);
+
+        // Возвращаем filters с perPage для фронтенда
+        $frontendFilters = [
+            'search' => $filters['search'] ?? '',
+            'category' => $filters['category'] ?? '',
+            'perPage' => $filters['per_page'] ?? 15,
+        ];
 
         return Inertia::render('Admin/Skills/Index', [
             'skills' => $skills,
-            'filters' => $request->only(['search']),
+            'filters' => $frontendFilters,
         ]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StoreRequest $request): RedirectResponse
     {
         // TODO: Создать Policy и раскомментировать
         // $this->authorize('create', Skill::class);
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
-        ]);
-
-        $this->skillService->createSkill($validated);
+        $this->skillService->createSkill($request->validated());
 
         return redirect()->route('admin.skills.index')
-            ->with('success', 'Skill created successfully.');
+            ->with('success', 'Навык успешно создан.');
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Skill $skill): RedirectResponse
+    public function update(UpdateRequest $request, Skill $skill): RedirectResponse
     {
         // TODO: Создать Policy и раскомментировать
         // $this->authorize('update', $skill);
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
-        ]);
-
-        $this->skillService->updateSkill($skill, $validated);
+        $this->skillService->updateSkill($skill, $request->validated());
 
         return redirect()->route('admin.skills.index')
-            ->with('success', 'Skill updated successfully.');
+            ->with('success', 'Навык успешно обновлен.');
     }
 
     /**
@@ -90,7 +91,7 @@ class SkillController extends Controller
             $this->skillService->deleteSkill($skill);
 
             return redirect()->route('admin.skills.index')
-                ->with('success', 'Skill deleted successfully.');
+                ->with('success', 'Навык успешно удален.');
         } catch (\Exception $e) {
             return redirect()->route('admin.skills.index')
                 ->with('error', $e->getMessage());

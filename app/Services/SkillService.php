@@ -17,7 +17,8 @@ class SkillService
     {
         return Skill::create([
             'name' => $data['name'],
-            'description' => $data['description'] ?? null,
+            'category' => $data['category'],
+            'max_level' => $data['max_level'],
         ]);
     }
 
@@ -28,7 +29,8 @@ class SkillService
     {
         $skill->update([
             'name' => $data['name'] ?? $skill->name,
-            'description' => $data['description'] ?? $skill->description,
+            'category' => $data['category'] ?? $skill->category,
+            'max_level' => $data['max_level'] ?? $skill->max_level,
         ]);
 
         return $skill->fresh();
@@ -68,12 +70,30 @@ class SkillService
                 return [
                     'id' => $skill->id,
                     'name' => $skill->name,
-                    'description' => $skill->description,
+                    'category' => $skill->category,
+                    'max_level' => $skill->max_level,
                     'level' => $skill->pivot->level,
                     'points' => $skill->pivot->points,
                     'progress_to_next_level' => $this->calculateProgressToNextLevel($skill->pivot->points, $skill->pivot->level),
                 ];
             });
+    }
+
+    /**
+     * Get filtered skills with pagination
+     */
+    public function getFilteredSkills(array $filters): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        $skillFilter = new \App\Filters\SkillFilter($filters);
+        
+        $query = Skill::query()
+            ->withCount(['users', 'cases']);
+        
+        $query = $skillFilter->apply($query);
+        
+        $pagination = $skillFilter->getPaginationParams();
+        
+        return $query->paginate($pagination['per_page']);
     }
 
     /**

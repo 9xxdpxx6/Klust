@@ -136,6 +136,29 @@ class BadgeService
     }
 
     /**
+     * Get filtered badges with pagination
+     */
+    public function getFilteredBadges(array $filters): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        $query = Badge::query();
+
+        // Apply search filter
+        $search = \App\Helpers\FilterHelper::getStringFilter($filters['search'] ?? null);
+        if ($search) {
+            $sanitizedSearch = \App\Helpers\FilterHelper::sanitizeSearch($search);
+            $query->where('name', 'like', "%{$sanitizedSearch}%");
+        }
+
+        // Get pagination parameters
+        $pagination = \App\Helpers\FilterHelper::getPaginationParams($filters, 15);
+
+        return $query->orderBy('required_points')
+            ->orderBy('name')
+            ->paginate($pagination['per_page'])
+            ->withQueryString();
+    }
+
+    /**
      * Get upcoming badges for student (not yet earned)
      */
     public function getUpcomingBadges(User $user, int $limit = 5): Collection
