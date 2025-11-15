@@ -1,6 +1,5 @@
 <template>
-    <AdminLayout>
-        <div class="space-y-6">
+    <div class="space-y-6">
             <div>
                 <h1 class="text-3xl font-bold text-text-primary mb-2">Панель управления</h1>
                 <p class="text-text-secondary">Обзор системы и статистика</p>
@@ -170,13 +169,11 @@
                 </div>
             </Card>
         </div>
-    </AdminLayout>
 </template>
 
 <script setup>
 import { computed } from 'vue';
 import { router } from '@inertiajs/vue3';
-import AdminLayout from '@/Layouts/AdminLayout.vue';
 import FlashMessage from '@/Components/Shared/FlashMessage.vue';
 import StatsWidget from '@/Components/UI/StatsWidget.vue';
 import Card from '@/Components/UI/Card.vue';

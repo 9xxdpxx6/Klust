@@ -1,5 +1,5 @@
 <template>
-    <div class="p-6">
+    <div>
         <Head :title="`Редактирование пользователя - ${user.name}`" />
 
         <!-- Хлебные крошки -->

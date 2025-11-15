@@ -1,5 +1,5 @@
 <template>
-    <div class="p-6">
+    <div>
         <Head title="Пользователи" />
 
         <div class="mb-6">
@@ -229,11 +229,11 @@ const props = defineProps({
         default: () => ({})
     },
     roles: {
-        type: Array,
+        type: [Array, Object],
         default: () => []
     },
     courses: {
-        type: Array,
+        type: [Array, Object],
         default: () => []
     },
 })
@@ -280,13 +280,20 @@ const formatDate = (date) => {
     return new Date(date).toLocaleDateString('ru-RU')
 }
 
-const roleFilterOptions = computed(() => [
-    { label: 'Все роли', value: '' },
-    ...props.roles.map(role => ({
-        label: role,
-        value: role
-    }))
-])
+const roleFilterOptions = computed(() => {
+    // Безопасная обработка roles - может быть массивом или объектом
+    const rolesArray = Array.isArray(props.roles) 
+        ? props.roles 
+        : (props.roles ? Object.values(props.roles) : []);
+    
+    return [
+        { label: 'Все роли', value: '' },
+        ...rolesArray.map(role => ({
+            label: role,
+            value: role
+        }))
+    ];
+})
 
 const statusFilterOptions = computed(() => [
     { label: 'Все', value: '' },
@@ -294,13 +301,20 @@ const statusFilterOptions = computed(() => [
     { label: 'Не верифицирован', value: 'unverified' },
 ])
 
-const courseFilterOptions = computed(() => [
-    { label: 'Все курсы', value: '' },
-    ...props.courses.map(course => ({
-        label: `${course} курс`,
-        value: course
-    }))
-])
+const courseFilterOptions = computed(() => {
+    // Безопасная обработка courses - может быть массивом или объектом
+    const coursesArray = Array.isArray(props.courses) 
+        ? props.courses 
+        : (props.courses ? Object.values(props.courses) : []);
+    
+    return [
+        { label: 'Все курсы', value: '' },
+        ...coursesArray.map(course => ({
+            label: `${course} курс`,
+            value: course
+        }))
+    ];
+})
 
 const perPageOptions = computed(() => [
     { label: '10', value: '10' },

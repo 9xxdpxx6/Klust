@@ -1,20 +1,19 @@
 <template>
   <div class="relative">
-    <div class="relative">
-      <input
-        v-model="searchQuery"
-        type="text"
-        placeholder="Поиск кейсов, пользователей, навыков..."
-        class="w-full py-2 pl-10 pr-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-        @focus="showResults = true"
-        @input="debouncedSearch"
-      >
-      <div class="absolute left-3 top-2.5 text-gray-400">
+    <IconField>
+      <InputIcon>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
-      </div>
-    </div>
+      </InputIcon>
+      <InputText
+        v-model="searchQuery"
+        type="text"
+        placeholder="Поиск кейсов, пользователей, навыков..."
+        @focus="showResults = true"
+        @input="debouncedSearch"
+      />
+    </IconField>
     
     <div 
       v-if="showResults && searchQuery && results"
@@ -75,6 +74,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { router } from '@inertiajs/vue3';
+import IconField from 'primevue/iconfield';
+import InputIcon from 'primevue/inputicon';
+import InputText from 'primevue/inputtext';
 
 interface SearchResult {
   cases: Array<{

@@ -9,11 +9,8 @@
       <span v-if="required" class="text-red-500">*</span>
     </label>
     
-    <div class="relative">
-      <i
-        v-if="leftIcon"
-        :class="['absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted z-10', leftIcon]"
-      />
+    <PrimeIconField v-if="leftIcon || rightIcon">
+      <PrimeInputIcon v-if="leftIcon" :class="leftIcon" />
       <PrimeInputText
         :id="inputId"
         :type="type"
@@ -22,22 +19,28 @@
         :required="required"
         :disabled="disabled"
         :invalid="!!error"
-        :class="[
-          'w-full',
-          {
-            'pl-10': leftIcon,
-            'pr-10': rightIcon,
-          }
-        ]"
+        class="w-full"
         @update:modelValue="$emit('update:modelValue', $event)"
         @blur="$emit('blur', $event)"
         @focus="$emit('focus', $event)"
       />
-      <i
-        v-if="rightIcon"
-        :class="['absolute right-3 top-1/2 transform -translate-y-1/2 text-text-muted z-10', rightIcon]"
-      />
-    </div>
+      <PrimeInputIcon v-if="rightIcon" :class="rightIcon" />
+    </PrimeIconField>
+    
+    <PrimeInputText
+      v-else
+      :id="inputId"
+      :type="type"
+      :modelValue="modelValue"
+      :placeholder="placeholder"
+      :required="required"
+      :disabled="disabled"
+      :invalid="!!error"
+      class="w-full"
+      @update:modelValue="$emit('update:modelValue', $event)"
+      @blur="$emit('blur', $event)"
+      @focus="$emit('focus', $event)"
+    />
     
     <p v-if="error" class="mt-1 text-sm text-red-600">
       {{ error }}
@@ -51,6 +54,8 @@
 <script setup>
 import { computed } from 'vue';
 import PrimeInputText from 'primevue/inputtext';
+import PrimeIconField from 'primevue/iconfield';
+import PrimeInputIcon from 'primevue/inputicon';
 
 const props = defineProps({
   modelValue: {

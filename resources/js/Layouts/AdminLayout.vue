@@ -2,13 +2,15 @@
   <div
     :class="[
       'layout-with-sidebar',
-      { 'collapsed': sidebarState.isCollapsed && !sidebarState.isMobile }
+      { 'collapsed': isCollapsed }
     ]"
   >
     <BaseSidebar
       :items="menuItems"
       title="Админ панель"
-      :initial-collapsed="false"
+      :is-collapsed="sidebarState.isCollapsed.value"
+      :is-mobile="sidebarState.isMobile.value"
+      @toggle-collapse="sidebarState.toggleCollapse"
       class="layout-with-sidebar__sidebar"
     />
     
@@ -29,7 +31,12 @@
     
     <MobileMenu
       v-if="sidebarState.isMobile"
-      v-model="mobileMenuOpen"
+      :model-value="sidebarState.isMobileOpen.value"
+      @update:model-value="(value) => {
+        if (value !== sidebarState.isMobileOpen.value) {
+          sidebarState.toggleMobile();
+        }
+      }"
       :items="menuItems"
       title="Админ панель"
     />
@@ -37,7 +44,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import BaseHeader from '@/Components/Layout/BaseHeader.vue';
 import BaseSidebar from '@/Components/Layout/BaseSidebar.vue';
@@ -50,22 +57,19 @@ const sidebarState = useSidebar(false);
 
 const userRoles = computed(() => page.props.auth?.user?.roles || []);
 const menuItems = computed(() => {
-  const role = userRoles.value[0] || 'admin';
+  // Ищем роль admin или teacher, иначе используем первую роль или admin по умолчанию
+  const role = userRoles.value.find(r => r === 'admin' || r === 'teacher') 
+    || userRoles.value[0] 
+    || 'admin';
   return getMenuItemsForRole(role);
 });
 
-const mobileMenuOpen = ref(false);
-
-// Синхронизация с sidebar состоянием
-watch(() => sidebarState.isMobileOpen, (value) => {
-  mobileMenuOpen.value = value;
+const isCollapsed = computed(() => {
+  const collapsed = sidebarState.isCollapsed.value;
+  const mobile = sidebarState.isMobile.value;
+  return collapsed && !mobile;
 });
 
-watch(mobileMenuOpen, (value) => {
-  if (value !== sidebarState.isMobileOpen) {
-    sidebarState.toggleMobile();
-  }
-});
 </script>
 
 <style scoped>

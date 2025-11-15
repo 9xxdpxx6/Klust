@@ -43,15 +43,15 @@
       <!-- Поиск (для админки) -->
       <div v-if="showSearch" class="base-header__search">
         <slot name="search">
-          <div class="relative">
-            <input
+          <IconField>
+            <InputIcon class="pi pi-search" />
+            <InputText
+              v-model="searchValue"
               type="text"
               placeholder="Поиск..."
-              class="pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              @input="handleSearch"
+              @update:modelValue="handleSearchInput"
             />
-            <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"></i>
-          </div>
+          </IconField>
         </slot>
       </div>
       
@@ -76,9 +76,14 @@
 
 <script setup>
 import { ref } from 'vue';
+import IconField from 'primevue/iconfield';
+import InputIcon from 'primevue/inputicon';
+import InputText from 'primevue/inputtext';
 import UserDropdown from '@/Components/Navigation/UserDropdown.vue';
 import NotificationBell from '@/Components/Navigation/NotificationBell.vue';
 import { useAuth } from '@/Composables/useAuth';
+
+const searchValue = ref('');
 
 const props = defineProps({
   logoText: {
@@ -137,8 +142,8 @@ const handleImageError = (type) => {
   // Если изображение не загрузилось, показываем текстовое лого
 };
 
-const handleSearch = (event) => {
-  emit('search', event.target.value);
+const handleSearchInput = (value) => {
+  emit('search', value);
 };
 </script>
 
