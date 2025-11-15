@@ -23,7 +23,7 @@
                     <button
                         @click="submitForm"
                         :disabled="processing"
-                        class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                        class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none disabled:opacity-50"
                     >
                         <span v-if="processing">
                             <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -102,7 +102,7 @@
                                     v-model="form.company_name"
                                     :readonly="!isEditing"
                                     :disabled="!isEditing || processing"
-                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm read-only:bg-gray-50 read-only:text-gray-700 read-only:border-gray-200 disabled:opacity-50"
+                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 sm:text-sm read-only:bg-gray-50 read-only:text-gray-700 read-only:border-gray-200 disabled:opacity-50"
                                     placeholder="Например: ООО 'ТехноИнновации'"
                                 />
                                 <div v-if="errors.company_name" class="mt-1 text-sm text-red-600">{{ errors.company_name }}</div>
@@ -118,7 +118,7 @@
                                     rows="3"
                                     :readonly="!isEditing"
                                     :disabled="!isEditing || processing"
-                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm read-only:bg-gray-50 read-only:text-gray-700 read-only:border-gray-200 disabled:opacity-50"
+                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 sm:text-sm read-only:bg-gray-50 read-only:text-gray-700 read-only:border-gray-200 disabled:opacity-50"
                                     placeholder="Опишите вашу компанию, сферу деятельности и цели..."
                                 ></textarea>
                                 <div v-if="errors.company_description" class="mt-1 text-sm text-red-600">{{ errors.company_description }}</div>
@@ -134,7 +134,7 @@
                                     v-model="form.company_website"
                                     :readonly="!isEditing"
                                     :disabled="!isEditing || processing"
-                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm read-only:bg-gray-50 read-only:text-gray-700 read-only:border-gray-200 disabled:opacity-50"
+                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 sm:text-sm read-only:bg-gray-50 read-only:text-gray-700 read-only:border-gray-200 disabled:opacity-50"
                                     placeholder="https://example.com"
                                 />
                                 <div v-if="errors.company_website" class="mt-1 text-sm text-red-600">{{ errors.company_website }}</div>
@@ -150,7 +150,7 @@
                                     v-model="form.company_address"
                                     :readonly="!isEditing"
                                     :disabled="!isEditing || processing"
-                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm read-only:bg-gray-50 read-only:text-gray-700 read-only:border-gray-200 disabled:opacity-50"
+                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 sm:text-sm read-only:bg-gray-50 read-only:text-gray-700 read-only:border-gray-200 disabled:opacity-50"
                                     placeholder="Полный адрес компании"
                                 />
                                 <div v-if="errors.company_address" class="mt-1 text-sm text-red-600">{{ errors.company_address }}</div>
@@ -177,7 +177,7 @@
                                     v-model="form.contact_name"
                                     :readonly="!isEditing"
                                     :disabled="!isEditing || processing"
-                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm read-only:bg-gray-50 read-only:text-gray-700 read-only:border-gray-200 disabled:opacity-50"
+                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 sm:text-sm read-only:bg-gray-50 read-only:text-gray-700 read-only:border-gray-200 disabled:opacity-50"
                                     placeholder="ФИО контактного лица"
                                 />
                                 <div v-if="errors.contact_name" class="mt-1 text-sm text-red-600">{{ errors.contact_name }}</div>
@@ -193,7 +193,7 @@
                                     v-model="form.contact_email"
                                     :readonly="!isEditing"
                                     :disabled="!isEditing || processing"
-                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm read-only:bg-gray-50 read-only:text-gray-700 read-only:border-gray-200 disabled:opacity-50"
+                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 sm:text-sm read-only:bg-gray-50 read-only:text-gray-700 read-only:border-gray-200 disabled:opacity-50"
                                     placeholder="email@example.com"
                                 />
                                 <div v-if="errors.contact_email" class="mt-1 text-sm text-red-600">{{ errors.contact_email }}</div>
@@ -209,7 +209,7 @@
                                     v-model="form.contact_phone"
                                     :readonly="!isEditing"
                                     :disabled="!isEditing || processing"
-                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm read-only:bg-gray-50 read-only:text-gray-700 read-only:border-gray-200 disabled:opacity-50"
+                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 sm:text-sm read-only:bg-gray-50 read-only:text-gray-700 read-only:border-gray-200 disabled:opacity-50"
                                     placeholder="+7 (XXX) XXX-XX-XX"
                                 />
                                 <div v-if="errors.contact_phone" class="mt-1 text-sm text-red-600">{{ errors.contact_phone }}</div>
@@ -225,7 +225,7 @@
                                     v-model="form.contact_telegram"
                                     :readonly="!isEditing"
                                     :disabled="!isEditing || processing"
-                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm read-only:bg-gray-50 read-only:text-gray-700 read-only:border-gray-200 disabled:opacity-50"
+                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 sm:text-sm read-only:bg-gray-50 read-only:text-gray-700 read-only:border-gray-200 disabled:opacity-50"
                                     placeholder="@username или +7XXXXXXXXXX"
                                 />
                                 <div v-if="errors.contact_telegram" class="mt-1 text-sm text-red-600">{{ errors.contact_telegram }}</div>

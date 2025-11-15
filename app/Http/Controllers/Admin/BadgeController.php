@@ -26,18 +26,25 @@ class BadgeController extends Controller
         // TODO: Создать Policy и раскомментировать
         // $this->authorize('viewAny', Badge::class);
 
-        $badges = Badge::query()
-            ->when($request->input('search'), function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%");
-            })
-            ->orderBy('required_points')
-            ->orderBy('name')
-            ->paginate(15)
-            ->withQueryString();
+        $filters = $request->only(['search', 'perPage', 'per_page', 'page']);
+        
+        // Нормализуем perPage -> per_page для совместимости с FilterHelper
+        if (isset($filters['perPage'])) {
+            $filters['per_page'] = $filters['perPage'];
+            unset($filters['perPage']);
+        }
+
+        $badges = $this->badgeService->getFilteredBadges($filters);
+
+        // Возвращаем filters с perPage для фронтенда
+        $frontendFilters = [
+            'search' => $filters['search'] ?? '',
+            'perPage' => $filters['per_page'] ?? 15,
+        ];
 
         return Inertia::render('Admin/Badges/Index', [
             'badges' => $badges,
-            'filters' => $request->only(['search']),
+            'filters' => $frontendFilters,
         ]);
     }
 

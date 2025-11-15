@@ -78,7 +78,7 @@ const textareaId = computed(() => `textarea-${Math.random().toString(36).substr(
 
 <style scoped>
 :deep(.p-inputtextarea) {
-  @apply w-full;
+  @apply w-full focus:outline-none;
   /* Textarea имеет свою высоту из-за rows, но min-height для первой строки */
   min-height: 2.5rem;
 }

@@ -115,6 +115,36 @@ class SimulatorService
     }
 
     /**
+     * Get filtered simulators with pagination
+     */
+    public function getFilteredSimulators(array $filters): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        $query = Simulator::query();
+
+        // Apply search filter
+        $search = \App\Helpers\FilterHelper::getStringFilter($filters['search'] ?? null);
+        if ($search) {
+            $sanitizedSearch = \App\Helpers\FilterHelper::sanitizeSearch($search);
+            $query->where('title', 'like', "%{$sanitizedSearch}%");
+        }
+
+        // Apply status filter
+        $status = \App\Helpers\FilterHelper::getStringFilter($filters['status'] ?? null);
+        if ($status === 'active') {
+            $query->where('is_active', true);
+        } elseif ($status === 'inactive') {
+            $query->where('is_active', false);
+        }
+
+        // Get pagination parameters
+        $pagination = \App\Helpers\FilterHelper::getPaginationParams($filters, 15);
+
+        return $query->orderBy('title')
+            ->paginate($pagination['per_page'])
+            ->withQueryString();
+    }
+
+    /**
      * Complete simulator session
      */
     public function completeSession(SimulatorSession $session, array $data): SimulatorSession

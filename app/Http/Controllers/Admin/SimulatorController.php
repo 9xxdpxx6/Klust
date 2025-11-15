@@ -26,20 +26,26 @@ class SimulatorController extends Controller
         // TODO: Создать Policy и раскомментировать
         // $this->authorize('viewAny', Simulator::class);
 
-        $simulators = Simulator::query()
-            ->when($request->input('search'), function ($query, $search) {
-                $query->where('title', 'like', "%{$search}%");
-            })
-            ->when($request->input('status'), function ($query, $status) {
-                $query->where('is_active', $status === 'active');
-            })
-            ->orderBy('title')
-            ->paginate(15)
-            ->withQueryString();
+        $filters = $request->only(['search', 'status', 'perPage', 'per_page', 'page']);
+        
+        // Нормализуем perPage -> per_page для совместимости с FilterHelper
+        if (isset($filters['perPage'])) {
+            $filters['per_page'] = $filters['perPage'];
+            unset($filters['perPage']);
+        }
+
+        $simulators = $this->simulatorService->getFilteredSimulators($filters);
+
+        // Возвращаем filters с perPage для фронтенда
+        $frontendFilters = [
+            'search' => $filters['search'] ?? '',
+            'status' => $filters['status'] ?? '',
+            'perPage' => $filters['per_page'] ?? 15,
+        ];
 
         return Inertia::render('Admin/Simulators/Index', [
             'simulators' => $simulators,
-            'filters' => $request->only(['search', 'status']),
+            'filters' => $frontendFilters,
         ]);
     }
 

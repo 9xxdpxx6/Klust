@@ -18,7 +18,7 @@
                             v-model="form.title"
                             required
                             :disabled="processing"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:opacity-50"
+                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 sm:text-sm disabled:opacity-50"
                             placeholder="Введите название кейса"
                         />
                         <div v-if="errors.title" class="mt-1 text-sm text-red-600">{{ errors.title }}</div>
@@ -34,7 +34,7 @@
                             v-model="form.description"
                             rows="6"
                             :disabled="processing"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:opacity-50"
+                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 sm:text-sm disabled:opacity-50"
                             placeholder="Подробное описание кейса..."
                         ></textarea>
                         <div v-if="errors.description" class="mt-1 text-sm text-red-600">{{ errors.description }}</div>
@@ -52,7 +52,7 @@
                             min="1"
                             required
                             :disabled="processing"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:opacity-50"
+                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 sm:text-sm disabled:opacity-50"
                             placeholder="Например: 3"
                         />
                         <div v-if="errors.team_size" class="mt-1 text-sm text-red-600">{{ errors.team_size }}</div>
@@ -78,7 +78,7 @@
                                     :value="skill.id"
                                     v-model="form.required_skills"
                                     :disabled="processing"
-                                    class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                    class="h-4 w-4 text-blue-600 border-gray-300 rounded"
                                 />
                                 <span class="ml-3 text-sm font-medium text-gray-900">{{ skill.name }}</span>
                             </label>
@@ -106,7 +106,7 @@
                                     value="draft"
                                     v-model="form.status"
                                     :disabled="processing"
-                                    class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                                    class="h-4 w-4 text-blue-600 border-gray-300"
                                 />
                                 <div class="ml-3">
                                     <span class="block text-sm font-medium text-gray-900">Черновик</span>
@@ -119,7 +119,7 @@
                                     value="active"
                                     v-model="form.status"
                                     :disabled="processing"
-                                    class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                                    class="h-4 w-4 text-blue-600 border-gray-300"
                                 />
                                 <div class="ml-3">
                                     <span class="block text-sm font-medium text-gray-900">Активен</span>
@@ -136,7 +136,7 @@
                     <button
                         v-if="caseData.status !== 'archived' && !processing"
                         @click="archiveCase"
-                        class="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        class="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
                     >
                         Архивировать кейс
                     </button>
@@ -144,14 +144,14 @@
                     <div class="flex space-x-4">
                         <Link
                             :href="route('partner.cases.show', { case: caseData.id })"
-                            class="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            class="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
                         >
                             Отмена
                         </Link>
                         <button
                             type="submit"
                             :disabled="processing"
-                            class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                            class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none disabled:opacity-50"
                         >
                             <span v-if="processing">
                                 <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

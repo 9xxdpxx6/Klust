@@ -72,7 +72,7 @@
                         v-model="filters.search"
                         @input="debounceSearch"
                         placeholder="Поиск кейсов..."
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 sm:text-sm"
                     />
                 </div>
             </div>
@@ -95,7 +95,7 @@
                 <div class="mt-6">
                     <Link 
                         :href="route('partner.cases.create')" 
-                        class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
                     >
                         Создать кейс
                     </Link>
@@ -156,26 +156,29 @@
                                 {{ formatDate(caseItem.created_at) }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <div class="flex justify-end space-x-2">
+                                <div class="flex justify-end gap-2">
                                     <Link 
                                         :href="route('partner.cases.show', { case: caseItem.id })" 
-                                        class="text-blue-600 hover:text-blue-900"
+                                        class="p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-md transition-colors focus:outline-none"
+                                        title="Просмотр"
                                     >
-                                        Просмотр
+                                        <i class="pi pi-eye text-sm"></i>
                                     </Link>
                                     <Link 
                                         v-if="caseItem.status !== 'archived'"
                                         :href="route('partner.cases.edit', { case: caseItem.id })" 
-                                        class="text-indigo-600 hover:text-indigo-900"
+                                        class="p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-md transition-colors focus:outline-none"
+                                        title="Редактировать"
                                     >
-                                        Редактировать
+                                        <i class="pi pi-pencil text-sm"></i>
                                     </Link>
                                     <button 
                                         v-if="caseItem.status !== 'archived'"
-                                        @click="archiveCase(caseItem.id)" 
-                                        class="text-gray-600 hover:text-gray-900"
+                                        @click.stop="archiveCase(caseItem.id)" 
+                                        class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors focus:outline-none"
+                                        title="Архивировать"
                                     >
-                                        Архивировать
+                                        <i class="pi pi-archive text-sm"></i>
                                     </button>
                                 </div>
                             </td>

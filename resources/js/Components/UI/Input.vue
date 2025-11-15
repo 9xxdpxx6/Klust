@@ -107,7 +107,7 @@ const inputId = computed(() => `input-${Math.random().toString(36).substr(2, 9)}
 
 <style scoped>
 :deep(.p-inputtext) {
-  @apply w-full;
+  @apply w-full focus:outline-none;
 }
 
 :deep(.p-inputtext.p-invalid) {

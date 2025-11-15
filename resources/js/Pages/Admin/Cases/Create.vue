@@ -31,7 +31,7 @@
                             <input
                                 v-model="form.title"
                                 type="text"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
                                 :class="{ 'border-red-300': errors.title }"
                                 placeholder="Введите название кейса"
                                 required
@@ -94,7 +94,7 @@
                             <input
                                 v-model="form.reward"
                                 type="text"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
                                 :class="{ 'border-red-300': errors.reward }"
                                 placeholder="Например: сертификат, призы, деньги"
                                 required
@@ -113,7 +113,7 @@
                                 v-model="form.project_duration"
                                 type="number"
                                 min="1"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
                                 placeholder="Например: 4"
                             />
                         </div>
@@ -128,7 +128,7 @@
                                 type="number"
                                 min="0"
                                 step="0.01"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
                                 placeholder="Например: 50000"
                             />
                         </div>
@@ -142,7 +142,7 @@
                         <textarea
                             v-model="form.description"
                             rows="6"
-                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
                             :class="{ 'border-red-300': errors.description }"
                             placeholder="Подробно опишите задачу, цели и ожидаемые результаты..."
                             required
@@ -168,7 +168,7 @@
                                     v-model="form.required_skills"
                                 type="checkbox"
                                 :value="skill.id"
-                                class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                class="rounded border-gray-300 text-indigo-600"
                                 />
                                 <label
                                     :for="`skill-${skill.id}`"

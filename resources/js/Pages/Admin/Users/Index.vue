@@ -16,7 +16,7 @@
                         v-model="filters.search"
                         type="text"
                         placeholder="Имя, email или ID"
-                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
                         @change="updateFilters"
                     />
                 </div>

@@ -54,27 +54,27 @@ defineEmits(['click']);
 
 <style scoped>
 .btn {
-  @apply inline-flex items-center justify-center font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2;
+  @apply inline-flex items-center justify-center font-medium rounded-md transition-colors focus:outline-none;
 }
 
 .btn-primary {
-  @apply bg-primary text-kubgtu-white hover:bg-primary-light focus:ring-primary;
+  @apply bg-primary text-kubgtu-white hover:bg-primary-light;
 }
 
 .btn-secondary {
-  @apply bg-surface text-text-primary hover:bg-surface-hover focus:ring-border;
+  @apply bg-surface text-text-primary hover:bg-surface-hover;
 }
 
 .btn-danger {
-  @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+  @apply bg-red-600 text-white hover:bg-red-700;
 }
 
 .btn-success {
-  @apply bg-green-600 text-white hover:bg-green-700 focus:ring-green-500;
+  @apply bg-green-600 text-white hover:bg-green-700;
 }
 
 .btn-outline {
-  @apply border-2 border-primary text-primary bg-transparent hover:bg-primary hover:text-kubgtu-white focus:ring-primary;
+  @apply border-2 border-primary text-primary bg-transparent hover:bg-primary hover:text-kubgtu-white;
 }
 
 .btn-sm {

@@ -100,11 +100,15 @@ const selectId = computed(() => `select-${Math.random().toString(36).substr(2, 9
 
 <style scoped>
 :deep(.p-select) {
-  @apply w-full;
+  @apply w-full focus:outline-none;
 }
 
 :deep(.p-select.p-invalid) {
   @apply border-red-500;
+}
+
+:deep(.p-select:focus) {
+  @apply outline-none;
 }
 </style>
 
