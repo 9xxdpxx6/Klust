@@ -9,12 +9,50 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from 'ziggy-js';
 import { setupPrimeVue } from '@/plugins/primevue';
+import AdminLayout from '@/Layouts/AdminLayout.vue';
+import StudentLayout from '@/Layouts/StudentLayout.vue';
+import PartnerLayout from '@/Layouts/PartnerLayout.vue';
+import GuestLayout from '@/Layouts/GuestLayout.vue';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Klust';
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
-    resolve: (name) => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
+    resolve: (name) => {
+        const page = resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue'));
+        
+        // Автоматически применяем layout в зависимости от пути страницы
+        if (page && typeof page.then === 'function') {
+            return page.then(module => {
+                if (module.default && !module.default.layout) {
+                    if (name.startsWith('Admin/')) {
+                        module.default.layout = AdminLayout;
+                    } else if (name.startsWith('Client/Student/')) {
+                        module.default.layout = StudentLayout;
+                    } else if (name.startsWith('Client/Partner/')) {
+                        module.default.layout = PartnerLayout;
+                    } else if (name.startsWith('Auth/')) {
+                        module.default.layout = GuestLayout;
+                    }
+                }
+                return module;
+            });
+        } else if (page && page.default) {
+            if (!page.default.layout) {
+                if (name.startsWith('Admin/')) {
+                    page.default.layout = AdminLayout;
+                } else if (name.startsWith('Client/Student/')) {
+                    page.default.layout = StudentLayout;
+                } else if (name.startsWith('Client/Partner/')) {
+                    page.default.layout = PartnerLayout;
+                } else if (name.startsWith('Auth/')) {
+                    page.default.layout = GuestLayout;
+                }
+            }
+        }
+        
+        return page;
+    },
     setup({ el, App, props, plugin }) {
         const app = createApp({ render: () => h(App, props) });
         

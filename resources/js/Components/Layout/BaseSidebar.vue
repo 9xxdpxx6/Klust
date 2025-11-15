@@ -95,14 +95,44 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  isCollapsed: {
+    type: Boolean,
+    default: null,
+  },
+  isMobile: {
+    type: Boolean,
+    default: null,
+  },
   showToggle: {
     type: Boolean,
     default: true,
   },
 });
 
+const emit = defineEmits(['toggle-collapse']);
+
 const { isActive } = useNavigation();
-const { isCollapsed, isMobile, isOpen, toggleCollapse } = useSidebar(props.initialCollapsed);
+
+// Используем переданные props или создаем локальное состояние
+const localSidebar = props.isCollapsed !== null ? null : useSidebar(props.initialCollapsed);
+const isCollapsed = computed(() => props.isCollapsed !== null ? props.isCollapsed : localSidebar?.isCollapsed.value ?? false);
+const isMobile = computed(() => props.isMobile !== null ? props.isMobile : localSidebar?.isMobile.value ?? false);
+const isOpen = computed(() => {
+  if (isMobile.value) {
+    return localSidebar?.isMobileOpen.value ?? false;
+  }
+  return !isCollapsed.value;
+});
+
+const toggleCollapse = () => {
+  if (props.isCollapsed !== null) {
+    // Если состояние управляется извне, эмитим событие
+    emit('toggle-collapse');
+  } else {
+    // Иначе используем локальное состояние
+    localSidebar?.toggleCollapse();
+  }
+};
 </script>
 
 <style scoped>

@@ -1,5 +1,5 @@
 <template>
-    <div class="p-6">
+    <div>
         <Head title="Создание кейса"/>
 
         <div class="max-w-4xl mx-auto">

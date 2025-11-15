@@ -1,5 +1,5 @@
 <template>
-    <div class="p-6">
+    <div>
         <Head :title="`Пользователь: ${user.name}`" />
 
         <!-- Хлебные крошки -->

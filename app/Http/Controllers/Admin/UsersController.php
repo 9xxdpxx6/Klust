@@ -70,13 +70,15 @@ class UsersController extends Controller
             ->withQueryString();
 
         // Получаем список ролей для фильтра
-        $roles = Role::pluck('name');
+        $roles = Role::pluck('name')->toArray();
 
         // Получаем список курсов для фильтра
         $courses = User::whereNotNull('course')
             ->distinct()
             ->pluck('course')
-            ->sort();
+            ->sort()
+            ->values()
+            ->toArray();
 
         return Inertia::render('Admin/Users/Index', [
             'users' => $users,
@@ -127,7 +129,7 @@ class UsersController extends Controller
 
     public function create()
     {
-        $roles = Role::pluck('name');
+        $roles = Role::pluck('name')->toArray();
 
         return Inertia::render('Admin/Users/Create', [
             'roles' => $roles,
@@ -187,7 +189,7 @@ class UsersController extends Controller
 
     public function edit(User $user)
     {
-        $roles = Role::pluck('name');
+        $roles = Role::pluck('name')->toArray();
 
         // Загружаем текущую роль пользователя
         $user->load('roles');

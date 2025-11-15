@@ -186,6 +186,7 @@
 .layout-with-sidebar {
   display: flex;
   min-height: 100vh;
+  position: relative;
 }
 
 .layout-with-sidebar__sidebar {
@@ -197,16 +198,24 @@
   display: flex;
   flex-direction: column;
   margin-left: 16rem;
-  transition: margin-left 0.3s ease;
+  transition: margin-left 0.3s ease, width 0.3s ease;
+  min-width: 0;
+  width: calc(100% - 16rem);
 }
 
 .layout-with-sidebar.collapsed .layout-with-sidebar__content {
-  margin-left: 4rem;
+  margin-left: 4rem !important;
+  width: calc(100% - 4rem) !important;
 }
 
 @media (max-width: 1023px) {
   .layout-with-sidebar__content {
     margin-left: 0;
+    width: 100%;
+  }
+  
+  .base-sidebar {
+    z-index: 50;
   }
 }
 
