@@ -31,8 +31,9 @@ class BadgesController extends Controller
         $upcoming = $this->badgeService->getUpcomingBadges($user);
 
         return Inertia::render('Client/Student/Badges/Index', [
-            'badges' => $badges,
-            'upcoming' => $upcoming,
+            'earnedBadges' => $badges,
+            'upcomingBadges' => $upcoming,
+            'currentPoints' => $user->studentProfile?->total_points ?? 0,
         ]);
     }
 }

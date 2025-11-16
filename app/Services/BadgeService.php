@@ -88,11 +88,18 @@ class BadgeService
             ->orderByDesc('pivot_earned_at')
             ->get()
             ->map(function ($badge) {
+                // If icon starts with 'pi-' or 'fa-', it's an icon class, not a file path
+                $iconPath = null;
+                if ($badge->icon && !str_starts_with($badge->icon, 'pi-') && !str_starts_with($badge->icon, 'fa-')) {
+                    $iconPath = '/storage/' . $badge->icon;
+                }
+
                 return [
                     'id' => $badge->id,
                     'name' => $badge->name,
                     'description' => $badge->description,
                     'icon' => $badge->icon,
+                    'icon_path' => $iconPath,
                     'required_points' => $badge->required_points,
                     'earned_at' => $badge->pivot->earned_at,
                 ];
@@ -152,10 +159,28 @@ class BadgeService
         // Get pagination parameters
         $pagination = \App\Helpers\FilterHelper::getPaginationParams($filters, 15);
 
-        return $query->orderBy('required_points')
+        $badges = $query->orderBy('required_points')
             ->orderBy('name')
             ->paginate($pagination['per_page'])
             ->withQueryString();
+
+        // Transform badges to include icon_path
+        $badges->setCollection(
+            $badges->getCollection()->map(function ($badge) {
+                return [
+                    'id' => $badge->id,
+                    'name' => $badge->name,
+                    'description' => $badge->description,
+                    'icon' => $badge->icon,
+                    'icon_path' => $badge->icon_path,
+                    'required_points' => $badge->required_points,
+                    'created_at' => $badge->created_at,
+                    'updated_at' => $badge->updated_at,
+                ];
+            })
+        );
+
+        return $badges;
     }
 
     /**
@@ -178,11 +203,18 @@ class BadgeService
             ->limit($limit)
             ->get()
             ->map(function ($badge) use ($totalPoints) {
+                // If icon starts with 'pi-' or 'fa-', it's an icon class, not a file path
+                $iconPath = null;
+                if ($badge->icon && !str_starts_with($badge->icon, 'pi-') && !str_starts_with($badge->icon, 'fa-')) {
+                    $iconPath = '/storage/' . $badge->icon;
+                }
+
                 return [
                     'id' => $badge->id,
                     'name' => $badge->name,
                     'description' => $badge->description,
                     'icon' => $badge->icon,
+                    'icon_path' => $iconPath,
                     'required_points' => $badge->required_points,
                     'points_needed' => $badge->required_points - $totalPoints,
                     'progress_percentage' => round(($totalPoints / $badge->required_points) * 100, 2),

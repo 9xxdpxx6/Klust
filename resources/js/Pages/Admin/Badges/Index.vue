@@ -95,8 +95,11 @@
                     class="hover:bg-gray-50 transition-colors"
                 >
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div v-if="badge.icon" class="w-12 h-12 flex items-center justify-center">
-                            <img :src="`/storage/${badge.icon}`" :alt="badge.name" class="max-w-full max-h-full object-contain"/>
+                        <div v-if="badge.icon_path" class="w-12 h-12 flex items-center justify-center">
+                            <img :src="badge.icon_path" :alt="badge.name" class="max-w-full max-h-full object-contain"/>
+                        </div>
+                        <div v-else-if="badge.icon && (badge.icon.startsWith('pi-') || badge.icon.startsWith('fa-'))" class="w-12 h-12 flex items-center justify-center bg-gray-200 rounded">
+                            <i :class="['text-gray-600 text-3xl', badge.icon.startsWith('fa-') ? `pi pi-${badge.icon.replace('fa-', '')}` : `pi ${badge.icon}`]"></i>
                         </div>
                         <div v-else class="w-12 h-12 flex items-center justify-center bg-gray-200 rounded">
                             <i class="pi pi-star text-gray-400 text-xl"></i>
@@ -201,10 +204,17 @@
                         </label>
                         <div v-if="iconPreview || editingBadge?.icon" class="mb-3 flex items-center gap-4">
                             <img
-                                :src="iconPreview || `/storage/${editingBadge.icon}`"
+                                v-if="iconPreview || editingBadge?.icon_path"
+                                :src="iconPreview || editingBadge.icon_path"
                                 alt="Preview"
                                 class="w-20 h-20 object-contain border border-gray-300 rounded p-2"
                             />
+                            <div
+                                v-else-if="editingBadge?.icon && (editingBadge.icon.startsWith('pi-') || editingBadge.icon.startsWith('fa-'))"
+                                class="w-20 h-20 flex items-center justify-center border border-gray-300 rounded p-2 bg-gray-50"
+                            >
+                                <i :class="['text-[48px] text-gray-600', editingBadge.icon.startsWith('fa-') ? `pi pi-${editingBadge.icon.replace('fa-', '')}` : `pi ${editingBadge.icon}`]"></i>
+                            </div>
                             <button
                                 v-if="iconPreview"
                                 type="button"

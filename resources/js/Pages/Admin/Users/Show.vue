@@ -248,7 +248,19 @@
                         :key="badge.id"
                         class="text-center p-3 bg-gray-50 rounded-lg"
                     >
-                        <div class="text-lg mb-2">{{ badge.icon || '🏆' }}</div>
+                        <div class="flex justify-center mb-2">
+                            <img
+                                v-if="badge.icon_path"
+                                :src="badge.icon_path"
+                                :alt="badge.name"
+                                class="w-12 h-12 object-contain"
+                            />
+                            <i
+                                v-else-if="badge.icon && (badge.icon.startsWith('pi-') || badge.icon.startsWith('fa-'))"
+                                :class="['text-[48px] text-yellow-600', badge.icon.startsWith('fa-') ? `pi pi-${badge.icon.replace('fa-', '')}` : `pi ${badge.icon}`]"
+                            ></i>
+                            <span v-else class="text-2xl">🏆</span>
+                        </div>
                         <div class="font-medium text-gray-900">{{ badge.name }}</div>
                         <div class="text-sm text-gray-500">{{ formatDate(badge.pivot.earned_at) }}</div>
                     </div>
