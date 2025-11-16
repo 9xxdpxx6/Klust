@@ -121,6 +121,19 @@ class UsersController extends Controller
             'notifications_count' => $user->notifications->count(),
         ];
 
+        // Transform badges to include icon_path
+        $user->badges->transform(function ($badge) {
+            return [
+                'id' => $badge->id,
+                'name' => $badge->name,
+                'description' => $badge->description,
+                'icon' => $badge->icon,
+                'icon_path' => $badge->icon_path,
+                'required_points' => $badge->required_points,
+                'pivot' => $badge->pivot,
+            ];
+        });
+
         return Inertia::render('Admin/Users/Show', [
             'user' => $user,
             'stats' => $stats,

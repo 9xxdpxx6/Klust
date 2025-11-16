@@ -159,10 +159,28 @@ class BadgeService
         // Get pagination parameters
         $pagination = \App\Helpers\FilterHelper::getPaginationParams($filters, 15);
 
-        return $query->orderBy('required_points')
+        $badges = $query->orderBy('required_points')
             ->orderBy('name')
             ->paginate($pagination['per_page'])
             ->withQueryString();
+
+        // Transform badges to include icon_path
+        $badges->setCollection(
+            $badges->getCollection()->map(function ($badge) {
+                return [
+                    'id' => $badge->id,
+                    'name' => $badge->name,
+                    'description' => $badge->description,
+                    'icon' => $badge->icon,
+                    'icon_path' => $badge->icon_path,
+                    'required_points' => $badge->required_points,
+                    'created_at' => $badge->created_at,
+                    'updated_at' => $badge->updated_at,
+                ];
+            })
+        );
+
+        return $badges;
     }
 
     /**
