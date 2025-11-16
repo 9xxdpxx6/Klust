@@ -66,7 +66,7 @@ const recentBadge = computed(() => {
                         />
                         <i
                             v-else-if="recentBadge.icon && (recentBadge.icon.startsWith('pi-') || recentBadge.icon.startsWith('fa-'))"
-                            :class="['text-4xl text-yellow-600', recentBadge.icon.startsWith('fa-') ? recentBadge.icon.replace('fa-', 'pi-') : recentBadge.icon]"
+                            :class="['text-4xl text-yellow-600', recentBadge.icon.startsWith('fa-') ? `pi pi-${recentBadge.icon.replace('fa-', '')}` : `pi ${recentBadge.icon}`]"
                         ></i>
                         <div v-else class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
                             <span class="text-2xl">🏆</span>
@@ -111,7 +111,7 @@ const recentBadge = computed(() => {
                                             v-else-if="badge.icon && (badge.icon.startsWith('pi-') || badge.icon.startsWith('fa-'))"
                                             class="w-24 h-24 bg-yellow-200 rounded-full flex items-center justify-center mx-auto"
                                         >
-                                            <i :class="['text-5xl text-yellow-700', badge.icon.startsWith('fa-') ? badge.icon.replace('fa-', 'pi-') : badge.icon]"></i>
+                                            <i :class="['text-5xl text-yellow-700', badge.icon.startsWith('fa-') ? `pi pi-${badge.icon.replace('fa-', '')}` : `pi ${badge.icon}`]"></i>
                                         </div>
                                         <div v-else class="w-24 h-24 bg-yellow-200 rounded-full flex items-center justify-center mx-auto">
                                             <span class="text-4xl">🏆</span>
@@ -158,7 +158,7 @@ const recentBadge = computed(() => {
                                         v-else-if="badge.icon && (badge.icon.startsWith('pi-') || badge.icon.startsWith('fa-'))"
                                         class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center opacity-50"
                                     >
-                                        <i :class="['text-2xl text-gray-600', badge.icon.startsWith('fa-') ? badge.icon.replace('fa-', 'pi-') : badge.icon]"></i>
+                                        <i :class="['text-2xl text-gray-600', badge.icon.startsWith('fa-') ? `pi pi-${badge.icon.replace('fa-', '')}` : `pi ${badge.icon}`]"></i>
                                     </div>
                                     <div v-else class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center opacity-50">
                                         <span class="text-2xl">🏆</span>

@@ -33,6 +33,7 @@ class Badge extends Model
                 }
 
                 // If icon starts with 'pi-' or 'fa-', it's an icon class, not a file path
+                // PrimeIcons format: 'pi pi-icon-name', stored as 'pi-icon-name' in DB
                 if (str_starts_with($icon, 'pi-') || str_starts_with($icon, 'fa-')) {
                     return null;
                 }
