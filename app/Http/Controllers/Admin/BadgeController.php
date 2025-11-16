@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\Badge\StoreRequest;
+use App\Http\Requests\Admin\Badge\UpdateRequest;
 use App\Models\Badge;
 use App\Services\BadgeService;
 use Illuminate\Http\RedirectResponse;
@@ -23,8 +25,7 @@ class BadgeController extends Controller
      */
     public function index(Request $request): Response
     {
-        // TODO: Создать Policy и раскомментировать
-        // $this->authorize('viewAny', Badge::class);
+        $this->authorize('viewAny', Badge::class);
 
         $filters = $request->only(['search', 'perPage', 'per_page', 'page']);
         
@@ -51,19 +52,11 @@ class BadgeController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StoreRequest $request): RedirectResponse
     {
-        // TODO: Создать Policy и раскомментировать
-        // $this->authorize('create', Badge::class);
+        $this->authorize('create', Badge::class);
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
-            'required_points' => 'required|integer|min:0',
-            'icon' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-        ]);
-
-        $data = $validated;
+        $data = $request->validated();
         if ($request->hasFile('icon')) {
             $data['icon'] = $request->file('icon');
         }
@@ -77,19 +70,11 @@ class BadgeController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Badge $badge): RedirectResponse
+    public function update(UpdateRequest $request, Badge $badge): RedirectResponse
     {
-        // TODO: Создать Policy и раскомментировать
-        // $this->authorize('update', $badge);
+        $this->authorize('update', $badge);
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
-            'required_points' => 'required|integer|min:0',
-            'icon' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-        ]);
-
-        $data = $validated;
+        $data = $request->validated();
         if ($request->hasFile('icon')) {
             $data['icon'] = $request->file('icon');
         }
@@ -105,8 +90,7 @@ class BadgeController extends Controller
      */
     public function destroy(Badge $badge): RedirectResponse
     {
-        // TODO: Создать Policy и раскомментировать
-        // $this->authorize('delete', $badge);
+        $this->authorize('delete', $badge);
 
         try {
             $this->badgeService->deleteBadge($badge);
