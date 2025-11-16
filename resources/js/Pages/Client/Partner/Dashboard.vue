@@ -6,8 +6,6 @@
                 <p class="text-text-secondary">Управление кейсами и аналитика</p>
             </div>
 
-            <FlashMessage />
-
             <!-- Статистика компании -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <StatsWidget
@@ -133,7 +131,6 @@
 import { computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 import PartnerLayout from '@/Layouts/PartnerLayout.vue';
-import FlashMessage from '@/Components/Shared/FlashMessage.vue';
 import StatsWidget from '@/Components/UI/StatsWidget.vue';
 import Card from '@/Components/UI/Card.vue';
 import Badge from '@/Components/UI/Badge.vue';

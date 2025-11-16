@@ -111,6 +111,6 @@ class NotificationController extends Controller
 
         $notification->delete();
 
-        return redirect()->back()->with('success', 'Notification deleted successfully');
+        return redirect()->back()->with('success', 'Уведомление успешно удалено');
     }
 }

@@ -20,17 +20,10 @@ class BadgeService
      */
     public function createBadge(array $data): Badge
     {
-        $iconPath = null;
-
-        // Handle icon upload
-        if (isset($data['icon'])) {
-            $iconPath = $this->fileService->storeBadgeIcon($data['icon']);
-        }
-
         return Badge::create([
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
-            'icon' => $iconPath,
+            'icon' => $data['icon'] ?? null,
             'required_points' => $data['required_points'] ?? 0,
         ]);
     }
@@ -40,20 +33,16 @@ class BadgeService
      */
     public function updateBadge(Badge $badge, array $data): Badge
     {
-        // Handle icon update
-        if (isset($data['icon'])) {
-            // Delete old icon if exists
-            if ($badge->icon) {
+        // Handle icon update - delete old file if it was a file path
+        if (isset($data['icon']) && $badge->icon && !$badge->isPrimeIcon()) {
+            // Old icon was a file, delete it
                 $this->fileService->deleteFile($badge->icon);
-            }
-
-            $badge->icon = $this->fileService->storeBadgeIcon($data['icon']);
         }
 
         $badge->update([
             'name' => $data['name'] ?? $badge->name,
             'description' => $data['description'] ?? $badge->description,
-            'icon' => $badge->icon,
+            'icon' => $data['icon'] ?? $badge->icon,
             'required_points' => $data['required_points'] ?? $badge->required_points,
         ]);
 
@@ -66,8 +55,8 @@ class BadgeService
     public function deleteBadge(Badge $badge): bool
     {
         return DB::transaction(function () use ($badge) {
-            // Delete icon file if exists
-            if ($badge->icon) {
+            // Delete icon file if exists and it's not a PrimeIcon class
+            if ($badge->icon && !$badge->isPrimeIcon()) {
                 $this->fileService->deleteFile($badge->icon);
             }
 
