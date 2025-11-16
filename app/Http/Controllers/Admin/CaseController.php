@@ -24,6 +24,7 @@ class CaseController extends Controller
     ) {
         $this->middleware(['auth', 'role:admin|teacher']);
     }
+
     public function index(Request $request): Response
     {
         // Получить фильтры (status, partner_id, search)
@@ -95,10 +96,18 @@ class CaseController extends Controller
             ];
         });
 
+        $statusOptions = [
+            ['label' => 'Черновик', 'value' => 'draft'],
+            ['label' => 'Активный', 'value' => 'active'],
+            ['label' => 'Завершенный', 'value' => 'completed'],
+            ['label' => 'Архивный', 'value' => 'archived'],
+        ];
+
         return Inertia::render('Admin/Cases/Create', [
             'partners' => $partners,
             'skills' => $skills,
             'simulators' => Simulator::all(),
+            'statusOptions' => $statusOptions,
         ]);
     }
 
@@ -116,7 +125,7 @@ class CaseController extends Controller
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'Ошибка при создании кейса: ' . $e->getMessage());
+                ->with('error', 'Ошибка при создании кейса: '.$e->getMessage());
         }
     }
 
@@ -142,11 +151,23 @@ class CaseController extends Controller
             ];
         });
 
+        $statusOptions = [
+            ['label' => 'Черновик', 'value' => 'draft'],
+            ['label' => 'Активный', 'value' => 'active'],
+            ['label' => 'Завершенный', 'value' => 'completed'],
+            ['label' => 'Архивный', 'value' => 'archived'],
+        ];
+
+        // Подготовить данные кейса с required_skills как массив ID
+        $caseData = $case->toArray();
+        $caseData['required_skills'] = $case->skills->pluck('id')->toArray();
+
         return Inertia::render('Admin/Cases/Edit', [
-            'case' => $case,
+            'case' => $caseData,
             'partners' => $partners,
             'skills' => $skills,
             'simulators' => Simulator::all(),
+            'statusOptions' => $statusOptions,
         ]);
     }
 
@@ -164,7 +185,7 @@ class CaseController extends Controller
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'Ошибка при обновлении кейса: ' . $e->getMessage());
+                ->with('error', 'Ошибка при обновлении кейса: '.$e->getMessage());
         }
     }
 
@@ -181,7 +202,7 @@ class CaseController extends Controller
         } catch (\Exception $e) {
             return redirect()
                 ->back()
-                ->with('error', 'Ошибка при удалении кейса: ' . $e->getMessage());
+                ->with('error', 'Ошибка при удалении кейса: '.$e->getMessage());
         }
     }
 }

@@ -208,6 +208,22 @@ const minDate = computed(() => {
     return new Date()
 })
 
+const partnerOptions = computed(() => [
+    { label: 'Выберите партнера', value: '' },
+    ...props.partners.map(partner => ({
+        label: `${partner.company_name} (${partner.contact_person})`,
+        value: partner.id
+    }))
+])
+
+const teamSizeOptions = computed(() => [
+    { label: '1 человек', value: 1 },
+    { label: '2 человека', value: 2 },
+    { label: '3 человека', value: 3 },
+    { label: '4 человека', value: 4 },
+    { label: '5+ человек', value: 5 },
+])
+
 const submitForm = () => {
     // Используем transform для преобразования данных если нужно
     form.transform((data) => ({

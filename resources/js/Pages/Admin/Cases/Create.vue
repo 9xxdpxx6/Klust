@@ -226,6 +226,7 @@ import Select from '@/Components/UI/Select.vue';
 const props = defineProps({
     partners: Array,
     skills: Array,
+    simulators: Array,
     statusOptions: Array,
     errors: Object,
 })
