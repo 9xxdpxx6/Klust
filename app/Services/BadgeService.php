@@ -88,11 +88,18 @@ class BadgeService
             ->orderByDesc('pivot_earned_at')
             ->get()
             ->map(function ($badge) {
+                // If icon starts with 'pi-', it's a PrimeIcon class, not a file path
+                $iconPath = null;
+                if ($badge->icon && !str_starts_with($badge->icon, 'pi-')) {
+                    $iconPath = '/storage/' . $badge->icon;
+                }
+
                 return [
                     'id' => $badge->id,
                     'name' => $badge->name,
                     'description' => $badge->description,
                     'icon' => $badge->icon,
+                    'icon_path' => $iconPath,
                     'required_points' => $badge->required_points,
                     'earned_at' => $badge->pivot->earned_at,
                 ];
@@ -178,11 +185,18 @@ class BadgeService
             ->limit($limit)
             ->get()
             ->map(function ($badge) use ($totalPoints) {
+                // If icon starts with 'pi-', it's a PrimeIcon class, not a file path
+                $iconPath = null;
+                if ($badge->icon && !str_starts_with($badge->icon, 'pi-')) {
+                    $iconPath = '/storage/' . $badge->icon;
+                }
+
                 return [
                     'id' => $badge->id,
                     'name' => $badge->name,
                     'description' => $badge->description,
                     'icon' => $badge->icon,
+                    'icon_path' => $iconPath,
                     'required_points' => $badge->required_points,
                     'points_needed' => $badge->required_points - $totalPoints,
                     'progress_percentage' => round(($totalPoints / $badge->required_points) * 100, 2),

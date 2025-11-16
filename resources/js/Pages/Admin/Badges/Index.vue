@@ -95,7 +95,10 @@
                     class="hover:bg-gray-50 transition-colors"
                 >
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div v-if="badge.icon" class="w-12 h-12 flex items-center justify-center">
+                        <div v-if="badge.icon && badge.icon.startsWith('pi-')" class="w-12 h-12 flex items-center justify-center bg-gray-200 rounded">
+                            <i :class="['text-gray-600 text-2xl', badge.icon]"></i>
+                        </div>
+                        <div v-else-if="badge.icon" class="w-12 h-12 flex items-center justify-center">
                             <img :src="`/storage/${badge.icon}`" :alt="badge.name" class="max-w-full max-h-full object-contain"/>
                         </div>
                         <div v-else class="w-12 h-12 flex items-center justify-center bg-gray-200 rounded">
@@ -201,10 +204,17 @@
                         </label>
                         <div v-if="iconPreview || editingBadge?.icon" class="mb-3 flex items-center gap-4">
                             <img
+                                v-if="iconPreview || (editingBadge?.icon && !editingBadge.icon.startsWith('pi-'))"
                                 :src="iconPreview || `/storage/${editingBadge.icon}`"
                                 alt="Preview"
                                 class="w-20 h-20 object-contain border border-gray-300 rounded p-2"
                             />
+                            <div
+                                v-else-if="editingBadge?.icon && editingBadge.icon.startsWith('pi-')"
+                                class="w-20 h-20 flex items-center justify-center border border-gray-300 rounded p-2 bg-gray-50"
+                            >
+                                <i :class="['text-4xl text-gray-600', editingBadge.icon]"></i>
+                            </div>
                             <button
                                 v-if="iconPreview"
                                 type="button"
