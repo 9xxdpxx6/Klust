@@ -7,12 +7,13 @@
                 <h1 class="text-2xl font-bold">Управление бейджами</h1>
                 <p class="text-gray-600 mt-2">Список всех бейджей в системе</p>
             </div>
-            <button
+            <Button
                 @click="openCreateModal"
-                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
-            >
-                + Создать бейдж
-            </button>
+                label="Создать бейдж"
+                icon="pi pi-plus"
+                unstyled
+                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors inline-flex items-center justify-center gap-2"
+            />
         </div>
 
         <!-- Фильтры -->
@@ -291,7 +292,7 @@ import Input from '@/Components/UI/Input.vue'
 import Textarea from '@/Components/UI/Textarea.vue'
 import IconPicker from '@/Components/UI/IconPicker.vue'
 import Modal from '@/Components/UI/Modal.vue'
-import Button from '@/Components/UI/Button.vue'
+import Button from 'primevue/button'
 import {route} from "ziggy-js"
 
 const props = defineProps({
@@ -312,13 +313,13 @@ const badgesLinks = computed(() => props.badges?.links || [])
 
 // Проверка активных фильтров
 const hasActiveFilters = computed(() => {
-    return filters.value.search !== '' || filters.value.perPage !== 15
+    return filters.value.search !== '' || filters.value.perPage !== '25'
 })
 
 // Безопасная инициализация filters
 const filters = ref({
     search: props.filters?.search || '',
-    perPage: props.filters?.perPage || 15,
+    perPage: props.filters?.perPage ? String(props.filters.perPage) : '25',
 })
 
 // Модальные окна
@@ -339,10 +340,10 @@ const form = useForm({
 const deleteForm = useForm({})
 
 const perPageOptions = computed(() => [
-    { label: '10', value: '10' },
-    { label: '15', value: '15' },
-    { label: '25', value: '25' },
-    { label: '50', value: '50' },
+    { label: 'Отображать по 10', value: '10' },
+    { label: 'Отображать по 15', value: '15' },
+    { label: 'Отображать по 25', value: '25' },
+    { label: 'Отображать по 50', value: '50' },
 ])
 
 // Таймер для дебаунса
@@ -368,7 +369,7 @@ const updateFilters = () => {
 const resetFilters = () => {
     filters.value = {
         search: '',
-        perPage: 15,
+        perPage: '25',
     }
     updateFilters()
 }

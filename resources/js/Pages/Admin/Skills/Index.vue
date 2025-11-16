@@ -7,12 +7,13 @@
                 <h1 class="text-2xl font-bold">Управление навыками</h1>
                 <p class="text-gray-600 mt-2">Список всех навыков в системе</p>
             </div>
-            <button
+            <Button
                 @click="openCreateModal"
-                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
-            >
-                + Создать навык
-            </button>
+                label="Создать навык"
+                icon="pi pi-plus"
+                unstyled
+                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors inline-flex items-center justify-center gap-2"
+            />
         </div>
 
         <!-- Фильтры -->
@@ -300,7 +301,7 @@ import Pagination from '@/Components/Pagination.vue'
 import Select from '@/Components/UI/Select.vue'
 import Input from '@/Components/UI/Input.vue'
 import Modal from '@/Components/UI/Modal.vue'
-import Button from '@/Components/UI/Button.vue'
+import Button from 'primevue/button'
 import {route} from "ziggy-js";
 
 const props = defineProps({
@@ -323,14 +324,14 @@ const skillsLinks = computed(() => props.skills?.links || [])
 const hasActiveFilters = computed(() => {
     return filters.value.search !== '' ||
         filters.value.category !== '' ||
-        filters.value.perPage !== 15
+        filters.value.perPage !== '25'
 })
 
 // Безопасная инициализация filters
 const filters = ref({
     search: props.filters?.search || '',
     category: props.filters?.category || '',
-    perPage: props.filters?.perPage || 15,
+    perPage: props.filters?.perPage ? String(props.filters.perPage) : '25',
 })
 
 // Модальные окна
@@ -363,10 +364,10 @@ const categoryFilterOptions = computed(() => [
 ])
 
 const perPageOptions = computed(() => [
-    { label: '10', value: '10' },
-    { label: '15', value: '15' },
-    { label: '25', value: '25' },
-    { label: '50', value: '50' },
+    { label: 'Отображать по 10', value: '10' },
+    { label: 'Отображать по 15', value: '15' },
+    { label: 'Отображать по 25', value: '25' },
+    { label: 'Отображать по 50', value: '50' },
 ])
 
 // Таймер для дебаунса
@@ -393,7 +394,7 @@ const resetFilters = () => {
     filters.value = {
         search: '',
         category: '',
-        perPage: 15,
+        perPage: '25',
     }
     updateFilters()
 }

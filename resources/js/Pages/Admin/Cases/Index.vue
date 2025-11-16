@@ -8,12 +8,13 @@
                 <h1 class="text-2xl font-bold">Управление кейсами</h1>
                 <p class="text-gray-600 mt-2">Список всех кейсов в системе</p>
             </div>
-            <Link
-                :href="route('admin.cases.create')"
-                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
-            >
-                + Создать кейс
-            </Link>
+            <Button
+                @click="router.visit(route('admin.cases.create'))"
+                label="Создать кейс"
+                icon="pi pi-plus"
+                unstyled
+                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors inline-flex items-center justify-center gap-2"
+            />
 
         </div>
 
@@ -216,9 +217,10 @@
 <script setup>
 import {ref, computed} from 'vue'
 import {router} from '@inertiajs/vue3'
-import {Head, Link} from '@inertiajs/vue3'
+import {Head} from '@inertiajs/vue3'
 import Pagination from '@/Components/Pagination.vue'
 import Select from '@/Components/UI/Select.vue'
+import Button from 'primevue/button'
 import {route} from "ziggy-js";
 
 
@@ -251,7 +253,7 @@ const hasActiveFilters = computed(() => {
         filters.value.status !== '' ||
         filters.value.partner_id !== '' ||
         filters.value.team_size !== '' ||
-        filters.value.perPage !== 15
+        filters.value.perPage !== '25'
 })
 
 // Безопасная инициализация filters
@@ -260,7 +262,7 @@ const filters = ref({
     status: props.filters?.status || '',
     partner_id: props.filters?.partner_id || '',
     team_size: props.filters?.team_size || '',
-    perPage: props.filters?.perPage || 15,
+    perPage: props.filters?.perPage ? String(props.filters.perPage) : '25',
 })
 
 // Функция перехода к конкретному кейсу
@@ -324,10 +326,10 @@ const teamSizeFilterOptions = computed(() => [
 ])
 
 const perPageOptions = computed(() => [
-    { label: '10', value: '10' },
-    { label: '15', value: '15' },
-    { label: '25', value: '25' },
-    { label: '50', value: '50' },
+    { label: 'Отображать по 10', value: '10' },
+    { label: 'Отображать по 15', value: '15' },
+    { label: 'Отображать по 25', value: '25' },
+    { label: 'Отображать по 50', value: '50' },
 ])
 
 const resetFilters = () => {
@@ -336,7 +338,7 @@ const resetFilters = () => {
         status: '',
         partner_id: '',
         team_size: '',
-        perPage: 15,
+        perPage: '25',
     }
     updateFilters()
 }

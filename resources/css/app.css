@@ -162,6 +162,11 @@
     /* Базовые стили уже применены глобально к textarea элементам */
     /* Здесь только дополнительные стили, если нужны */
   }
+
+  /* PrimeVue Button icon size - match font size */
+  .p-button .p-button-icon {
+    font-size: 1em;
+  }
 }
 
 @layer base {

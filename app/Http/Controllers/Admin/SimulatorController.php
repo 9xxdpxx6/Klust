@@ -52,7 +52,7 @@ class SimulatorController extends Controller
         $frontendFilters = [
             'search' => $filters['search'] ?? '',
             'status' => $filters['status'] ?? '',
-            'perPage' => $filters['per_page'] ?? 15,
+            'perPage' => $filters['per_page'] ?? 25,
         ];
 
         return Inertia::render('Admin/Simulators/Index', [

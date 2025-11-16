@@ -3,10 +3,13 @@
         <template #header>
             <div class="flex justify-between items-center">
                 <h1 class="text-2xl font-bold text-gray-900">Кейсы</h1>
-                <Link :href="route('partner.cases.create')" 
-                      class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out">
-                    Создать кейс
-                </Link>
+                <Button
+                    @click="router.visit(route('partner.cases.create'))"
+                    label="Создать кейс"
+                    icon="pi pi-plus"
+                    unstyled
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out inline-flex items-center justify-center gap-2"
+                />
             </div>
         </template>
 
@@ -93,12 +96,13 @@
                     }}
                 </p>
                 <div class="mt-6">
-                    <Link 
-                        :href="route('partner.cases.create')" 
-                        class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                    >
-                        Создать кейс
-                    </Link>
+                    <Button
+                        @click="router.visit(route('partner.cases.create'))"
+                        label="Создать кейс"
+                        icon="pi pi-plus"
+                        unstyled
+                        class="inline-flex items-center justify-center gap-2 px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                    />
                 </div>
             </div>
 
@@ -195,12 +199,14 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { Link, usePage, router } from '@inertiajs/vue3';
+import { usePage, router } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import PartnerLayout from '@/Layouts/PartnerLayout.vue';
 import Pagination from '@/Components/Pagination.vue';
 import DatePicker from '@/Components/UI/DatePicker.vue';
 import Select from '@/Components/UI/Select.vue';
+import Button from 'primevue/button';
+import { route } from 'ziggy-js';
 
 const props = defineProps({
     cases: {

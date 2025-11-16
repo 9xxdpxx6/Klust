@@ -148,7 +148,7 @@ class CaseService
         $query->with(['partner', 'skills']);
 
         // Get pagination parameters
-        $pagination = FilterHelper::getPaginationParams($filters, 20);
+        $pagination = FilterHelper::getPaginationParams($filters, 25);
 
         return $query->latest()->paginate($pagination['per_page']);
     }
