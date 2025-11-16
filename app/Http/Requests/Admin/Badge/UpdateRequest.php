@@ -37,12 +37,11 @@ class UpdateRequest extends FormRequest
             'description' => ['required', 'string'],
             'required_points' => ['required', 'integer', 'min:1'],
 
-            // Иконка по правилам для "иконок бейджей"
+            // Иконка - строка с именем PrimeIcon (например, 'pi-star', 'pi-trophy')
             'icon' => [
                 'nullable',
-                'image',
-                'mimes:jpeg,png,jpg,gif,svg',
-                'max:2048', // 2MB
+                'string',
+                'max:255',
             ],
         ];
     }
@@ -61,9 +60,8 @@ class UpdateRequest extends FormRequest
             'required_points.required' => 'Необходимо указать количество очков для получения.',
             'required_points.integer' => 'Количество очков должно быть числом.',
             'required_points.min' => 'Количество очков должно быть не меньше 1.',
-            'icon.image' => 'Файл иконки должен быть изображением.',
-            'icon.mimes' => 'Иконка должна быть в формате: jpeg, png, jpg, gif или svg.',
-            'icon.max' => 'Максимальный размер иконки не должен превышать 2 МБ.',
+            'icon.string' => 'Иконка должна быть строкой.',
+            'icon.max' => 'Название иконки не должно превышать 255 символов.',
         ];
     }
 }

@@ -2,8 +2,6 @@
     <div>
         <Head title="Управление симуляторами"/>
 
-        <FlashMessage/>
-
         <div class="mb-6 flex justify-between items-center">
             <div>
                 <h1 class="text-2xl font-bold">Управление симуляторами</h1>
@@ -434,7 +432,6 @@ import Select from '@/Components/UI/Select.vue'
 import Input from '@/Components/UI/Input.vue'
 import Modal from '@/Components/UI/Modal.vue'
 import Button from '@/Components/UI/Button.vue'
-import FlashMessage from '@/Components/Shared/FlashMessage.vue'
 import {route} from "ziggy-js";
 
 const props = defineProps({

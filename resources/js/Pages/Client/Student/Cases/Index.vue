@@ -6,8 +6,6 @@
                 <p class="text-text-secondary">Выберите кейс для подачи заявки</p>
             </div>
 
-            <FlashMessage />
-
             <!-- Фильтры -->
             <Card>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -85,7 +83,6 @@
 import { ref } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import StudentLayout from '@/Layouts/StudentLayout.vue';
-import FlashMessage from '@/Components/Shared/FlashMessage.vue';
 import Card from '@/Components/UI/Card.vue';
 import Input from '@/Components/UI/Input.vue';
 import Select from '@/Components/UI/Select.vue';

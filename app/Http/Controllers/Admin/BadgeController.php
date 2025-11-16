@@ -57,14 +57,11 @@ class BadgeController extends Controller
         $this->authorize('create', Badge::class);
 
         $data = $request->validated();
-        if ($request->hasFile('icon')) {
-            $data['icon'] = $request->file('icon');
-        }
 
         $this->badgeService->createBadge($data);
 
         return redirect()->route('admin.badges.index')
-            ->with('success', 'Badge created successfully.');
+            ->with('success', 'Бейдж успешно создан.');
     }
 
     /**
@@ -75,14 +72,11 @@ class BadgeController extends Controller
         $this->authorize('update', $badge);
 
         $data = $request->validated();
-        if ($request->hasFile('icon')) {
-            $data['icon'] = $request->file('icon');
-        }
 
         $this->badgeService->updateBadge($badge, $data);
 
         return redirect()->route('admin.badges.index')
-            ->with('success', 'Badge updated successfully.');
+            ->with('success', 'Бейдж успешно обновлен.');
     }
 
     /**
@@ -96,7 +90,7 @@ class BadgeController extends Controller
             $this->badgeService->deleteBadge($badge);
 
             return redirect()->route('admin.badges.index')
-                ->with('success', 'Badge deleted successfully.');
+                ->with('success', 'Бейдж успешно удален.');
         } catch (\Exception $e) {
             return redirect()->route('admin.badges.index')
                 ->with('error', $e->getMessage());

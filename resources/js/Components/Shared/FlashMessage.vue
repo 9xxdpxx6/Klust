@@ -8,7 +8,7 @@
     leave-to-class="opacity-0"
   >
     <div
-      v-if="message"
+      v-if="message && isVisible"
       :class="[
         'flash-message',
         `flash-message-${type}`,
@@ -24,15 +24,23 @@
           <i class="pi pi-times" />
         </button>
       </div>
+      <!-- Полоска обратного прогресс-бара -->
+      <div 
+        v-if="showProgress"
+        class="flash-progress-bar"
+        :class="`flash-progress-bar-${type}`"
+      ></div>
     </div>
   </Transition>
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, watch } from 'vue';
+import { computed, ref, onUnmounted, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
 const page = usePage();
+const isVisible = ref(true);
+const showProgress = ref(false);
 
 const message = computed(() => {
   return page.props.flash?.message ||
@@ -67,15 +75,37 @@ const close = () => {
     clearTimeout(autoCloseTimer);
     autoCloseTimer = null;
   }
+  showProgress.value = false;
+  isVisible.value = false;
 };
 
+// Автоматическое закрытие через 3.5 секунды
 watch(message, (newMessage) => {
   if (newMessage) {
+    // Сбрасываем видимость при новом сообщении
+    isVisible.value = true;
+    showProgress.value = false;
+    
+    // Очищаем предыдущий таймер, если есть
+    if (autoCloseTimer) {
+      clearTimeout(autoCloseTimer);
+    }
+    
+    // Небольшая задержка перед началом анимации для плавности
+    setTimeout(() => {
+      showProgress.value = true;
+    }, 50);
+    
+    // Устанавливаем новый таймер на 3.5 секунды (3500ms)
     autoCloseTimer = setTimeout(() => {
       close();
-    }, 5000);
+    }, 3500);
+  } else {
+    // Если сообщение исчезло, скрываем компонент
+    isVisible.value = false;
+    showProgress.value = false;
   }
-});
+}, { immediate: true });
 
 onUnmounted(() => {
   close();
@@ -101,6 +131,58 @@ onUnmounted(() => {
 
 .flash-message-info {
   @apply bg-blue-50 border border-blue-200 text-blue-800;
+}
+
+/* Полоска обратного прогресс-бара */
+.flash-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 0 0 0.375rem 0.375rem;
+  overflow: hidden;
+}
+
+.flash-progress-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  animation: progress-shrink 3.5s linear forwards;
+}
+
+.flash-progress-bar-success::after {
+  background: rgb(34, 197, 94); /* green-500 */
+}
+
+.flash-progress-bar-error::after {
+  background: rgb(239, 68, 68); /* red-500 */
+}
+
+.flash-progress-bar-warning::after {
+  background: rgb(234, 179, 8); /* yellow-500 */
+}
+
+.flash-progress-bar-info::after {
+  background: rgb(59, 130, 246); /* blue-500 */
+}
+
+@keyframes progress-shrink {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+.flash-message {
+  position: relative;
+  overflow: hidden;
 }
 </style>
 

@@ -28,6 +28,7 @@
       </BaseHeader>
       
       <main class="flex-1 p-6 bg-surface">
+        <FlashMessage />
         <slot />
       </main>
       
@@ -55,6 +56,7 @@ import BaseHeader from '@/Components/Layout/BaseHeader.vue';
 import BaseFooter from '@/Components/Layout/BaseFooter.vue';
 import BaseSidebar from '@/Components/Layout/BaseSidebar.vue';
 import MobileMenu from '@/Components/Layout/MobileMenu.vue';
+import FlashMessage from '@/Components/Shared/FlashMessage.vue';
 import { getMenuItemsForRole } from '@/Utils/navigation';
 import { useSidebar } from '@/Composables/useSidebar';
 

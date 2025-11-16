@@ -53,6 +53,7 @@
                     </h2>
                 </div>
                 
+                <FlashMessage />
                 <div class="bg-kubgtu-white py-8 px-6 shadow-lg rounded-xl border border-border-light">
                     <slot />
                 </div>
@@ -63,6 +64,7 @@
 
 <script setup>
 import { Link } from '@inertiajs/vue3';
+import FlashMessage from '@/Components/Shared/FlashMessage.vue';
 import { routeExists } from '@/Utils/routes';
 
 defineProps({

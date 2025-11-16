@@ -5,8 +5,6 @@
                 <p class="text-text-secondary">Обзор системы и статистика</p>
             </div>
 
-            <FlashMessage />
-
             <!-- Статистика -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <StatsWidget
@@ -174,7 +172,6 @@
 <script setup>
 import { computed } from 'vue';
 import { router } from '@inertiajs/vue3';
-import FlashMessage from '@/Components/Shared/FlashMessage.vue';
 import StatsWidget from '@/Components/UI/StatsWidget.vue';
 import Card from '@/Components/UI/Card.vue';
 import Badge from '@/Components/UI/Badge.vue';
