@@ -28,9 +28,10 @@ class SimulatorService
         }
 
         return Simulator::create([
+            'partner_id' => $data['partner_id'],
             'title' => $data['title'],
-            'description' => $data['description'] ?? null,
-            'url' => $data['url'],
+            'slug' => $data['slug'],
+            'description' => $data['description'],
             'preview_image' => $previewImagePath,
             'is_active' => $data['is_active'] ?? true,
         ]);
@@ -52,9 +53,10 @@ class SimulatorService
         }
 
         $simulator->update([
+            'partner_id' => $data['partner_id'] ?? $simulator->partner_id,
             'title' => $data['title'] ?? $simulator->title,
+            'slug' => $data['slug'] ?? $simulator->slug,
             'description' => $data['description'] ?? $simulator->description,
-            'url' => $data['url'] ?? $simulator->url,
             'preview_image' => $simulator->preview_image,
             'is_active' => $data['is_active'] ?? $simulator->is_active,
         ]);
@@ -119,13 +121,17 @@ class SimulatorService
      */
     public function getFilteredSimulators(array $filters): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        $query = Simulator::query();
+        $query = Simulator::with(['partner.user']);
 
         // Apply search filter
         $search = \App\Helpers\FilterHelper::getStringFilter($filters['search'] ?? null);
         if ($search) {
             $sanitizedSearch = \App\Helpers\FilterHelper::sanitizeSearch($search);
-            $query->where('title', 'like', "%{$sanitizedSearch}%");
+            $query->where(function ($q) use ($sanitizedSearch) {
+                $q->where('title', 'like', "%{$sanitizedSearch}%")
+                    ->orWhere('slug', 'like', "%{$sanitizedSearch}%")
+                    ->orWhere('description', 'like', "%{$sanitizedSearch}%");
+            });
         }
 
         // Apply status filter
@@ -139,9 +145,42 @@ class SimulatorService
         // Get pagination parameters
         $pagination = \App\Helpers\FilterHelper::getPaginationParams($filters, 15);
 
-        return $query->orderBy('title')
+        $paginator = $query->orderBy('title')
             ->paginate($pagination['per_page'])
             ->withQueryString();
+
+        // Transform data to include partner contact person
+        $paginator->getCollection()->transform(function ($simulator) {
+            if ($simulator->partner && $simulator->partner->user) {
+                $simulator->partner->contact_person = $simulator->partner->user->name;
+            }
+            return $simulator;
+        });
+
+        return $paginator;
+    }
+
+    /**
+     * Get available simulators (active only)
+     */
+    public function getAvailableSimulators(): \Illuminate\Database\Eloquent\Collection
+    {
+        return Simulator::with('partner')
+            ->where('is_active', true)
+            ->orderBy('title')
+            ->get();
+    }
+
+    /**
+     * Get student sessions
+     */
+    public function getStudentSessions(User $user): \Illuminate\Database\Eloquent\Collection
+    {
+        return SimulatorSession::with('simulator')
+            ->where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
     }
 
     /**

@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\Simulator\StoreRequest;
+use App\Http\Requests\Admin\Simulator\UpdateRequest;
+use App\Models\Partner;
 use App\Models\Simulator;
 use App\Services\SimulatorService;
 use Illuminate\Http\RedirectResponse;
@@ -36,6 +39,15 @@ class SimulatorController extends Controller
 
         $simulators = $this->simulatorService->getFilteredSimulators($filters);
 
+        // Получить список партнеров для формы
+        $partners = Partner::with('user')->get()->map(function ($partner) {
+            return [
+                'id' => $partner->id,
+                'name' => $partner->name,
+                'contact_person' => $partner->user->name ?? 'Без контакта',
+            ];
+        });
+
         // Возвращаем filters с perPage для фронтенда
         $frontendFilters = [
             'search' => $filters['search'] ?? '',
@@ -46,26 +58,19 @@ class SimulatorController extends Controller
         return Inertia::render('Admin/Simulators/Index', [
             'simulators' => $simulators,
             'filters' => $frontendFilters,
+            'partners' => $partners,
         ]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StoreRequest $request): RedirectResponse
     {
         // TODO: Создать Policy и раскомментировать
         // $this->authorize('create', Simulator::class);
 
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
-            'url' => 'required|url|max:500',
-            'preview_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'is_active' => 'boolean',
-        ]);
-
-        $data = $validated;
+        $data = $request->validated();
         if ($request->hasFile('preview_image')) {
             $data['preview_image'] = $request->file('preview_image');
         }
@@ -73,26 +78,18 @@ class SimulatorController extends Controller
         $this->simulatorService->createSimulator($data);
 
         return redirect()->route('admin.simulators.index')
-            ->with('success', 'Simulator created successfully.');
+            ->with('success', 'Симулятор успешно создан.');
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Simulator $simulator): RedirectResponse
+    public function update(UpdateRequest $request, Simulator $simulator): RedirectResponse
     {
         // TODO: Создать Policy и раскомментировать
         // $this->authorize('update', $simulator);
 
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
-            'url' => 'required|url|max:500',
-            'preview_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'is_active' => 'boolean',
-        ]);
-
-        $data = $validated;
+        $data = $request->validated();
         if ($request->hasFile('preview_image')) {
             $data['preview_image'] = $request->file('preview_image');
         }
@@ -100,7 +97,7 @@ class SimulatorController extends Controller
         $this->simulatorService->updateSimulator($simulator, $data);
 
         return redirect()->route('admin.simulators.index')
-            ->with('success', 'Simulator updated successfully.');
+            ->with('success', 'Симулятор успешно обновлен.');
     }
 
     /**
@@ -115,7 +112,7 @@ class SimulatorController extends Controller
             $this->simulatorService->deleteSimulator($simulator);
 
             return redirect()->route('admin.simulators.index')
-                ->with('success', 'Simulator deleted successfully.');
+                ->with('success', 'Симулятор успешно удален.');
         } catch (\Exception $e) {
             return redirect()->route('admin.simulators.index')
                 ->with('error', $e->getMessage());

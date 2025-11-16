@@ -1,10 +1,655 @@
 <template>
-  <div>
-    <h1>Simulators Management</h1>
-    <p>This is the simulators management page.</p>
-  </div>
+    <div>
+        <Head title="Управление симуляторами"/>
+
+        <FlashMessage/>
+
+        <div class="mb-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold">Управление симуляторами</h1>
+                <p class="text-gray-600 mt-2">Список всех симуляторов в системе</p>
+            </div>
+            <button
+                @click="openCreateModal"
+                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+            >
+                + Создать симулятор
+            </button>
+        </div>
+
+        <!-- Фильтры -->
+        <div class="bg-white rounded-lg shadow p-4 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Поиск -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Поиск</label>
+                    <input
+                        v-model="filters.search"
+                        type="text"
+                        placeholder="Название, slug или описание"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
+                        @input="handleSearch"
+                    />
+                </div>
+
+                <!-- Фильтр по статусу -->
+                <div>
+                    <Select
+                        v-model="filters.status"
+                        label="Статус"
+                        :options="statusFilterOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Все статусы"
+                        @update:modelValue="updateFilters"
+                    />
+                </div>
+
+                <!-- Количество на странице -->
+                <div>
+                    <Select
+                        v-model="filters.perPage"
+                        label="На странице"
+                        :options="perPageOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Выберите количество"
+                        @update:modelValue="updateFilters"
+                    />
+                </div>
+            </div>
+
+            <!-- Кнопка сброса фильтров -->
+            <div class="mt-4 flex justify-end">
+                <button
+                    @click="resetFilters"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                >
+                    Сбросить фильтры
+                </button>
+            </div>
+        </div>
+
+        <!-- Таблица симуляторов -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="text-sm text-gray-600">
+                    Всего симуляторов: {{ simulatorsTotal }}
+                </div>
+            </div>
+
+            <!-- Десктопная таблица -->
+            <div class="hidden md:block overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Симулятор
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Партнер
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Статус
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Создан
+                        </th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Действия
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tr
+                        v-for="simulator in simulatorsData"
+                        :key="simulator.id"
+                        class="hover:bg-gray-50 transition-colors"
+                    >
+                        <td class="px-6 py-4">
+                            <div class="flex items-start gap-3">
+                                <img
+                                    v-if="simulator.preview_image_url"
+                                    :src="simulator.preview_image_url"
+                                    :alt="simulator.title"
+                                    class="w-[50px] h-[50px] object-cover rounded flex-shrink-0"
+                                />
+                                <div v-else class="w-[50px] h-[50px] bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
+                                    <i class="pi pi-image text-gray-400"></i>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="text-sm font-medium text-gray-900 break-words">
+                                        {{ simulator.title }}
+                                    </div>
+                                    <div v-if="simulator.description" class="text-xs text-gray-500 break-words mt-1">
+                                        {{ simulator.description }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">
+                                {{ simulator.partner?.name || 'Не указан' }}
+                            </div>
+                            <div v-if="simulator.partner?.contact_person" class="text-xs text-gray-500">
+                                {{ simulator.partner.contact_person }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span
+                                :class="[
+                                    'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
+                                    simulator.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                ]"
+                            >
+                                {{ simulator.is_active ? 'Активен' : 'Неактивен' }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ formatDate(simulator.created_at) }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end gap-2">
+                                <button
+                                    @click.stop="openEditModal(simulator)"
+                                    class="p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-md transition-colors focus:outline-none"
+                                    title="Редактировать"
+                                >
+                                    <i class="pi pi-pencil text-sm"></i>
+                                </button>
+                                <button
+                                    @click.stop="confirmDelete(simulator)"
+                                    class="p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-md transition-colors focus:outline-none"
+                                    title="Удалить"
+                                >
+                                    <i class="pi pi-trash text-sm"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Мобильные карточки -->
+            <div class="md:hidden space-y-4">
+                <div
+                    v-for="simulator in simulatorsData"
+                    :key="simulator.id"
+                    class="bg-white border border-gray-200 rounded-lg p-4"
+                >
+                    <div class="flex items-start gap-3 mb-3">
+                        <img
+                            v-if="simulator.preview_image_url"
+                            :src="simulator.preview_image_url"
+                            :alt="simulator.title"
+                            class="w-16 h-16 object-cover rounded flex-shrink-0"
+                        />
+                        <div v-else class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
+                            <i class="pi pi-image text-gray-400"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="text-sm font-medium text-gray-900 mb-1">
+                                {{ simulator.title }}
+                            </h3>
+                            <div v-if="simulator.description" class="text-xs text-gray-500 line-clamp-2 mb-2">
+                                {{ simulator.description }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-500">Партнер:</span>
+                            <span class="text-gray-900 font-medium">
+                                {{ simulator.partner?.name || 'Не указан' }}
+                            </span>
+                        </div>
+                        <div v-if="simulator.partner?.contact_person" class="flex items-center justify-between">
+                            <span class="text-gray-500">Контакт:</span>
+                            <span class="text-gray-600">{{ simulator.partner.contact_person }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-500">Статус:</span>
+                            <span
+                                :class="[
+                                    'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
+                                    simulator.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                ]"
+                            >
+                                {{ simulator.is_active ? 'Активен' : 'Неактивен' }}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-500">Создан:</span>
+                            <span class="text-gray-600">{{ formatDate(simulator.created_at) }}</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 flex justify-end gap-2 pt-3 border-t border-gray-200">
+                        <button
+                            @click="openEditModal(simulator)"
+                            class="p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-md transition-colors"
+                            title="Редактировать"
+                        >
+                            <i class="pi pi-pencil"></i>
+                        </button>
+                        <button
+                            @click="confirmDelete(simulator)"
+                            class="p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-md transition-colors"
+                            title="Удалить"
+                        >
+                            <i class="pi pi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Пагинация -->
+            <Pagination v-if="simulatorsLinks && simulatorsLinks.length > 0" :links="simulatorsLinks" class="mt-4"/>
+        </div>
+
+        <!-- Сообщение если нет симуляторов -->
+        <div v-if="!simulatorsData || simulatorsData.length === 0" class="bg-white rounded-lg shadow p-8 text-center">
+            <p class="text-gray-500">Симуляторы не найдены</p>
+            <button
+                v-if="hasActiveFilters"
+                @click="resetFilters"
+                class="mt-4 px-4 py-2 text-sm font-medium text-indigo-700 bg-indigo-100 hover:bg-indigo-200 rounded-md transition-colors"
+            >
+                Сбросить фильтры
+            </button>
+        </div>
+
+        <!-- Модальное окно создания/редактирования -->
+        <Modal
+            :visible="modalVisible"
+            :title="editingSimulator ? 'Редактировать симулятор' : 'Создать симулятор'"
+            @update:visible="modalVisible = $event"
+            @close="closeModal"
+            size="lg"
+        >
+            <form @submit.prevent="submitForm">
+                <div class="space-y-4">
+                    <Select
+                        v-model="form.partner_id"
+                        label="Партнер"
+                        :options="partnerOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Выберите партнера"
+                        :error="form.errors.partner_id"
+                        required
+                    />
+
+                    <Input
+                        v-model="form.title"
+                        label="Название"
+                        placeholder="Введите название симулятора"
+                        :error="form.errors.title"
+                        required
+                    />
+
+                    <Input
+                        v-model="form.slug"
+                        label="URL-идентификатор (slug)"
+                        placeholder="url-friendly-identifier"
+                        :error="form.errors.slug"
+                        :hint="`Только строчные буквы, цифры, дефис и подчеркивание`"
+                        required
+                    />
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Описание
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <textarea
+                            v-model="form.description"
+                            rows="4"
+                            placeholder="Введите описание симулятора"
+                            :class="[
+                                'w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500',
+                                form.errors.description ? 'border-red-500' : ''
+                            ]"
+                        ></textarea>
+                        <p v-if="form.errors.description" class="mt-1 text-sm text-red-600">
+                            {{ form.errors.description }}
+                        </p>
+                    </div>
+
+                    <!-- Загрузка превью изображения -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Превью изображение
+                        </label>
+                        <div class="flex items-center gap-4">
+                            <div v-if="previewImageUrl || (editingSimulator && editingSimulator.preview_image_url)" class="w-32 h-32 border rounded overflow-hidden">
+                                <img
+                                    :src="previewImageUrl || editingSimulator?.preview_image_url"
+                                    alt="Preview"
+                                    class="w-full h-full object-cover"
+                                />
+                            </div>
+                            <div class="flex-1">
+                                <input
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/jpg,image/gif"
+                                    @change="handleImageChange"
+                                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                                />
+                                <p class="mt-1 text-xs text-gray-500">
+                                    JPG, PNG, GIF. Макс. 5 МБ
+                                </p>
+                                <p v-if="form.errors.preview_image" class="mt-1 text-sm text-red-600">
+                                    {{ form.errors.preview_image }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center">
+                        <input
+                            v-model="form.is_active"
+                            type="checkbox"
+                            id="is_active"
+                            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        />
+                        <label for="is_active" class="ml-2 block text-sm text-gray-900">
+                            Активен
+                        </label>
+                    </div>
+                </div>
+            </form>
+            
+            <template #footer>
+                <div class="flex justify-end gap-2">
+                    <Button
+                        variant="secondary"
+                        type="button"
+                        @click="closeModal"
+                        :disabled="form.processing"
+                    >
+                        Отмена
+                    </Button>
+                    <button
+                        type="button"
+                        @click="submitForm"
+                        :disabled="form.processing"
+                        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                    >
+                        {{ editingSimulator ? 'Сохранить' : 'Создать' }}
+                    </button>
+                </div>
+            </template>
+        </Modal>
+
+        <!-- Модальное окно подтверждения удаления -->
+        <Modal
+            :visible="deleteModalVisible"
+            title="Подтверждение удаления"
+            @update:visible="deleteModalVisible = $event"
+            @close="closeDeleteModal"
+            size="sm"
+        >
+            <div v-if="simulatorToDelete">
+                <p class="text-gray-700 mb-4">
+                    Вы уверены, что хотите удалить симулятор <strong>{{ simulatorToDelete.title }}</strong>?
+                </p>
+                <p class="text-sm text-yellow-600 mb-4">
+                    Внимание! Если у симулятора есть активные сессии, удаление будет невозможно.
+                </p>
+            </div>
+
+            <template #footer>
+                <div class="flex justify-end gap-2">
+                    <Button
+                        variant="secondary"
+                        type="button"
+                        @click="closeDeleteModal"
+                        :disabled="deleteForm.processing"
+                    >
+                        Отмена
+                    </Button>
+                    <Button
+                        variant="danger"
+                        type="button"
+                        @click="deleteSimulator"
+                        :disabled="deleteForm.processing"
+                    >
+                        Удалить
+                    </Button>
+                </div>
+            </template>
+        </Modal>
+    </div>
 </template>
 
 <script setup>
-// Simulators Index page
+import {ref, computed} from 'vue'
+import {router, useForm} from '@inertiajs/vue3'
+import {Head} from '@inertiajs/vue3'
+import Pagination from '@/Components/Pagination.vue'
+import Select from '@/Components/UI/Select.vue'
+import Input from '@/Components/UI/Input.vue'
+import Modal from '@/Components/UI/Modal.vue'
+import Button from '@/Components/UI/Button.vue'
+import FlashMessage from '@/Components/Shared/FlashMessage.vue'
+import {route} from "ziggy-js";
+
+const props = defineProps({
+    simulators: {
+        type: Object,
+        default: () => ({})
+    },
+    filters: {
+        type: Object,
+        default: () => ({})
+    },
+    partners: {
+        type: Array,
+        default: () => []
+    }
+})
+
+// Computed свойства для безопасного доступа
+const simulatorsData = computed(() => props.simulators?.data || [])
+const simulatorsTotal = computed(() => props.simulators?.total || 0)
+const simulatorsLinks = computed(() => props.simulators?.links || [])
+
+// Проверка активных фильтров
+const hasActiveFilters = computed(() => {
+    return filters.value.search !== '' ||
+        filters.value.status !== '' ||
+        filters.value.perPage !== 15
+})
+
+// Безопасная инициализация filters
+const filters = ref({
+    search: props.filters?.search || '',
+    status: props.filters?.status || '',
+    perPage: props.filters?.perPage || 15,
+})
+
+// Модальные окна
+const modalVisible = ref(false)
+const deleteModalVisible = ref(false)
+const editingSimulator = ref(null)
+const simulatorToDelete = ref(null)
+const previewImageUrl = ref(null)
+
+// Форма создания/редактирования
+const form = useForm({
+    partner_id: null,
+    title: '',
+    slug: '',
+    description: '',
+    preview_image: null,
+    is_active: true,
+})
+
+// Форма удаления
+const deleteForm = useForm({})
+
+// Опции партнеров
+const partnerOptions = computed(() => {
+    return props.partners.map(partner => ({
+        label: `${partner.name}${partner.contact_person ? ` (${partner.contact_person})` : ''}`,
+        value: partner.id
+    }))
+})
+
+const statusFilterOptions = computed(() => [
+    { label: 'Все статусы', value: '' },
+    { label: 'Активные', value: 'active' },
+    { label: 'Неактивные', value: 'inactive' },
+])
+
+const perPageOptions = computed(() => [
+    { label: '10', value: '10' },
+    { label: '15', value: '15' },
+    { label: '25', value: '25' },
+    { label: '50', value: '50' },
+])
+
+// Таймер для дебаунса
+let searchTimeout = null
+
+// Обработчик поиска с дебаунсом
+const handleSearch = () => {
+    if (searchTimeout) {
+        clearTimeout(searchTimeout)
+    }
+    searchTimeout = setTimeout(() => {
+        updateFilters()
+    }, 500)
+}
+
+const updateFilters = () => {
+    router.get(route('admin.simulators.index'), filters.value, {
+        preserveState: true,
+        replace: true,
+    })
+}
+
+const resetFilters = () => {
+    filters.value = {
+        search: '',
+        status: '',
+        perPage: 15,
+    }
+    updateFilters()
+}
+
+// Обработчик изменения изображения
+const handleImageChange = (event) => {
+    const file = event.target.files[0]
+    if (file) {
+        form.preview_image = file
+        const reader = new FileReader()
+        reader.onload = (e) => {
+            previewImageUrl.value = e.target.result
+        }
+        reader.readAsDataURL(file)
+    }
+}
+
+// Функции модального окна
+const openCreateModal = () => {
+    editingSimulator.value = null
+    previewImageUrl.value = null
+    form.reset()
+    form.clearErrors()
+    form.is_active = true
+    modalVisible.value = true
+}
+
+const openEditModal = (simulator) => {
+    editingSimulator.value = simulator
+    previewImageUrl.value = null
+    form.partner_id = simulator.partner_id
+    form.title = simulator.title
+    form.slug = simulator.slug
+    form.description = simulator.description
+    form.is_active = simulator.is_active
+    form.preview_image = null
+    form.clearErrors()
+    modalVisible.value = true
+}
+
+const closeModal = () => {
+    modalVisible.value = false
+    editingSimulator.value = null
+    previewImageUrl.value = null
+    form.reset()
+    form.clearErrors()
+}
+
+const submitForm = () => {
+    if (editingSimulator.value) {
+        form.put(route('admin.simulators.update', editingSimulator.value.id), {
+            preserveScroll: true,
+            forceFormData: true,
+            onSuccess: () => {
+                closeModal()
+            },
+        })
+    } else {
+        form.post(route('admin.simulators.store'), {
+            preserveScroll: true,
+            forceFormData: true,
+            onSuccess: () => {
+                closeModal()
+            },
+        })
+    }
+}
+
+// Функции удаления
+const confirmDelete = (simulator) => {
+    simulatorToDelete.value = simulator
+    deleteModalVisible.value = true
+}
+
+const closeDeleteModal = () => {
+    deleteModalVisible.value = false
+    simulatorToDelete.value = null
+    deleteForm.reset()
+    deleteForm.clearErrors()
+}
+
+const deleteSimulator = () => {
+    if (!simulatorToDelete.value) return
+
+    deleteForm.delete(route('admin.simulators.destroy', simulatorToDelete.value.id), {
+        preserveScroll: true,
+        onSuccess: () => {
+            closeDeleteModal()
+        },
+    })
+}
+
+// Вспомогательные функции
+const formatDate = (date) => {
+    if (!date) return ''
+    return new Date(date).toLocaleDateString('ru-RU')
+}
 </script>
+
+<style scoped>
+.line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+</style>

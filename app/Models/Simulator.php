@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Simulator extends Model
 {
@@ -24,6 +26,10 @@ class Simulator extends Model
         'is_active' => 'boolean',
     ];
 
+    protected $appends = [
+        'preview_image_url',
+    ];
+
     public function partner(): BelongsTo
     {
         return $this->belongsTo(Partner::class);
@@ -37,6 +43,15 @@ class Simulator extends Model
     public function cases(): HasMany
     {
         return $this->hasMany(CaseModel::class);
+    }
+
+    protected function previewImageUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->preview_image
+                ? Storage::disk('public')->url($this->preview_image)
+                : null,
+        );
     }
 }
 
