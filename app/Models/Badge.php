@@ -20,7 +20,7 @@ class Badge extends Model
 
     /**
      * Get icon path attribute
-     * Returns storage path if icon is a file, null if it's a PrimeIcon class
+     * Returns storage path if icon is a file, null if it's a PrimeIcon class or old Font Awesome icon
      */
     protected function iconPath(): Attribute
     {
@@ -32,8 +32,8 @@ class Badge extends Model
                     return null;
                 }
 
-                // If icon starts with 'pi-', it's a PrimeIcon class, not a file path
-                if (str_starts_with($icon, 'pi-')) {
+                // If icon starts with 'pi-' or 'fa-', it's an icon class, not a file path
+                if (str_starts_with($icon, 'pi-') || str_starts_with($icon, 'fa-')) {
                     return null;
                 }
 
@@ -48,7 +48,7 @@ class Badge extends Model
      */
     public function isPrimeIcon(): bool
     {
-        return $this->icon && str_starts_with($this->icon, 'pi-');
+        return $this->icon && (str_starts_with($this->icon, 'pi-') || str_starts_with($this->icon, 'fa-'));
     }
 
     public function users(): BelongsToMany

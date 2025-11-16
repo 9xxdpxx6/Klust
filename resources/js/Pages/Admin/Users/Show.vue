@@ -256,8 +256,8 @@
                                 class="w-12 h-12 object-contain"
                             />
                             <i
-                                v-else-if="badge.icon && badge.icon.startsWith('pi-')"
-                                :class="['text-4xl text-yellow-600', badge.icon]"
+                                v-else-if="badge.icon && (badge.icon.startsWith('pi-') || badge.icon.startsWith('fa-'))"
+                                :class="['text-4xl text-yellow-600', badge.icon.startsWith('fa-') ? badge.icon.replace('fa-', 'pi-') : badge.icon]"
                             ></i>
                             <span v-else class="text-2xl">🏆</span>
                         </div>

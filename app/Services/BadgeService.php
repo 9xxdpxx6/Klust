@@ -88,9 +88,9 @@ class BadgeService
             ->orderByDesc('pivot_earned_at')
             ->get()
             ->map(function ($badge) {
-                // If icon starts with 'pi-', it's a PrimeIcon class, not a file path
+                // If icon starts with 'pi-' or 'fa-', it's an icon class, not a file path
                 $iconPath = null;
-                if ($badge->icon && !str_starts_with($badge->icon, 'pi-')) {
+                if ($badge->icon && !str_starts_with($badge->icon, 'pi-') && !str_starts_with($badge->icon, 'fa-')) {
                     $iconPath = '/storage/' . $badge->icon;
                 }
 
@@ -203,9 +203,9 @@ class BadgeService
             ->limit($limit)
             ->get()
             ->map(function ($badge) use ($totalPoints) {
-                // If icon starts with 'pi-', it's a PrimeIcon class, not a file path
+                // If icon starts with 'pi-' or 'fa-', it's an icon class, not a file path
                 $iconPath = null;
-                if ($badge->icon && !str_starts_with($badge->icon, 'pi-')) {
+                if ($badge->icon && !str_starts_with($badge->icon, 'pi-') && !str_starts_with($badge->icon, 'fa-')) {
                     $iconPath = '/storage/' . $badge->icon;
                 }
 
