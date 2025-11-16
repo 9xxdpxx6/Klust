@@ -40,7 +40,7 @@ class BadgeController extends Controller
         // Возвращаем filters с perPage для фронтенда
         $frontendFilters = [
             'search' => $filters['search'] ?? '',
-            'perPage' => $filters['per_page'] ?? 15,
+            'perPage' => $filters['per_page'] ?? 25,
         ];
 
         return Inertia::render('Admin/Badges/Index', [

@@ -26,7 +26,7 @@ class UsersController extends Controller
             'role' => $request->input('role', ''),
             'status' => $request->input('status', ''),
             'course' => $request->input('course', ''),
-            'perPage' => $request->input('perPage', 15),
+            'perPage' => $request->input('perPage', 25),
         ];
 
         // Строим запрос
