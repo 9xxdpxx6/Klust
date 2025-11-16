@@ -11,7 +11,7 @@
 
 @font-face {
   font-family: 'Cygre';
-  src: url('../fonts/Cygre-Thinlt.ttf') format('truetype');
+  src: url('../fonts/Cygre-ThinIt.ttf') format('truetype');
   font-weight: 100;
   font-style: italic;
   font-display: swap;
@@ -27,7 +27,7 @@
 
 @font-face {
   font-family: 'Cygre';
-  src: url('../fonts/Cygre-Lightlt.ttf') format('truetype');
+  src: url('../fonts/Cygre-LightIt.ttf') format('truetype');
   font-weight: 300;
   font-style: italic;
   font-display: swap;
@@ -43,7 +43,7 @@
 
 @font-face {
   font-family: 'Cygre';
-  src: url('../fonts/Cygre-Regularlt.ttf') format('truetype');
+  src: url('../fonts/Cygre-RegularIt.ttf') format('truetype');
   font-weight: 400;
   font-style: italic;
   font-display: swap;
@@ -59,7 +59,7 @@
 
 @font-face {
   font-family: 'Cygre';
-  src: url('../fonts/Cygre-Booklt.ttf') format('truetype');
+  src: url('../fonts/Cygre-BookIt.ttf') format('truetype');
   font-weight: 450;
   font-style: italic;
   font-display: swap;
@@ -75,7 +75,7 @@
 
 @font-face {
   font-family: 'Cygre';
-  src: url('../fonts/Cygre-Mediumlt.ttf') format('truetype');
+  src: url('../fonts/Cygre-MediumIt.ttf') format('truetype');
   font-weight: 500;
   font-style: italic;
   font-display: swap;
@@ -91,7 +91,7 @@
 
 @font-face {
   font-family: 'Cygre';
-  src: url('../fonts/Cygre-SemiBoldlt.ttf') format('truetype');
+  src: url('../fonts/Cygre-SemiBoldIt.ttf') format('truetype');
   font-weight: 600;
   font-style: italic;
   font-display: swap;
@@ -107,7 +107,7 @@
 
 @font-face {
   font-family: 'Cygre';
-  src: url('../fonts/Cygre-Boldlt.ttf') format('truetype');
+  src: url('../fonts/Cygre-BoldIt.ttf') format('truetype');
   font-weight: 700;
   font-style: italic;
   font-display: swap;
@@ -123,7 +123,7 @@
 
 @font-face {
   font-family: 'Cygre';
-  src: url('../fonts/Cygre-ExtraBoldlt.ttf') format('truetype');
+  src: url('../fonts/Cygre-ExtraBoldIt.ttf') format('truetype');
   font-weight: 800;
   font-style: italic;
   font-display: swap;
@@ -139,7 +139,7 @@
 
 @font-face {
   font-family: 'Cygre';
-  src: url('../fonts/Cygre-Blacklt.ttf') format('truetype');
+  src: url('../fonts/Cygre-BlackIt.ttf') format('truetype');
   font-weight: 900;
   font-style: italic;
   font-display: swap;

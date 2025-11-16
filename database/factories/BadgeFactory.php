@@ -9,20 +9,20 @@ class BadgeFactory extends Factory
     public function definition(): array
     {
         $badges = [
-            ['name' => 'Логист-новичок', 'description' => 'Первый шаг в логистике', 'points' => 50, 'icon' => 'pi-map'],
+            ['name' => 'Логист-новичок', 'description' => 'Первый шаг в логистике', 'points' => 50, 'icon' => 'pi-map-marker'],
             ['name' => 'Программист-начинающий', 'description' => 'Освоил основы программирования', 'points' => 100, 'icon' => 'pi-code'],
-            ['name' => 'Аналитик данных', 'description' => 'Успешно проанализировал данные', 'points' => 150, 'icon' => 'pi-chart-line'],
+            ['name' => 'Аналитик данных', 'description' => 'Успешно проанализировал данные', 'points' => 150, 'icon' => 'pi-chart-bar'],
             ['name' => 'Командный игрок', 'description' => 'Эффективно работал в команде', 'points' => 75, 'icon' => 'pi-users'],
             ['name' => 'Решение задач', 'description' => 'Решил 10 сложных задач', 'points' => 200, 'icon' => 'pi-lightbulb'],
             ['name' => 'Первый кейс', 'description' => 'Успешно прошёл первый кейс', 'points' => 250, 'icon' => 'pi-trophy'],
-            ['name' => 'Мастер симуляторов', 'description' => 'Прошёл все симуляторы', 'points' => 500, 'icon' => 'pi-gamepad'],
-            ['name' => 'Лидер команды', 'description' => 'Возглавил команду на кейсе', 'points' => 300, 'icon' => 'pi-star-fill'],
+            ['name' => 'Мастер симуляторов', 'description' => 'Прошёл все симуляторы', 'points' => 500, 'icon' => 'pi-cog'],
+            ['name' => 'Лидер команды', 'description' => 'Возглавил команду на кейсе', 'points' => 300, 'icon' => 'pi-star'],
             ['name' => 'Стратег', 'description' => 'Разработал эффективную стратегию', 'points' => 400, 'icon' => 'pi-th-large'],
-            ['name' => 'Эксперт по оптимизации', 'description' => 'Оптимизировал процессы', 'points' => 350, 'icon' => 'pi-rocket'],
-            ['name' => 'Неутомимый', 'description' => 'Провёл 20+ часов в симуляторах', 'points' => 450, 'icon' => 'pi-power-off'],
-            ['name' => 'Быстрый старт', 'description' => 'Получил первый бейдж за первую неделю', 'points' => 100, 'icon' => 'pi-bolt'],
-            ['name' => 'Специалист по финансам', 'description' => 'Успешно решил финансовые задачи', 'points' => 200, 'icon' => 'pi-money'],
-            ['name' => 'Коммуникатор', 'description' => 'Эффективно общался с командой', 'points' => 150, 'icon' => 'pi-comments'],
+            ['name' => 'Эксперт по оптимизации', 'description' => 'Оптимизировал процессы', 'points' => 350, 'icon' => 'pi-arrow-up'],
+            ['name' => 'Неутомимый', 'description' => 'Провёл 20+ часов в симуляторах', 'points' => 450, 'icon' => 'pi-circle'],
+            ['name' => 'Быстрый старт', 'description' => 'Получил первый бейдж за первую неделю', 'points' => 100, 'icon' => 'pi-check-circle'],
+            ['name' => 'Специалист по финансам', 'description' => 'Успешно решил финансовые задачи', 'points' => 200, 'icon' => 'pi-dollar'],
+            ['name' => 'Коммуникатор', 'description' => 'Эффективно общался с командой', 'points' => 150, 'icon' => 'pi-comment'],
             ['name' => 'Настойчивый', 'description' => 'Не сдался после 5 неудач', 'points' => 300, 'icon' => 'pi-thumbs-up'],
         ];
 
