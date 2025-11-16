@@ -68,7 +68,7 @@ import { routeExists } from '@/Utils/routes';
 defineProps({
     title: {
         type: String,
-        required: true,
+        default: 'Klust',
     },
     logoIcon: {
         type: String,
