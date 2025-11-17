@@ -43,7 +43,7 @@ class CaseController extends Controller
             ->map(function ($partner) {
                 return [
                     'id' => $partner->id,
-                    'company_name' => $partner->company_name,
+                    'name' => $partner->name ?? 'Без названия',
                     'contact_person' => $partner->user->name ?? 'Без контакта',
                 ];
             });
@@ -82,7 +82,7 @@ class CaseController extends Controller
         $partners = Partner::with('user')->get()->map(function ($partner) {
             return [
                 'id' => $partner->id,
-                'company_name' => $partner->company_name,
+                'name' => $partner->name ?? 'Без названия',
                 'contact_person' => $partner->user->name ?? 'Без контакта',
             ];
         });
@@ -138,7 +138,7 @@ class CaseController extends Controller
         $partners = Partner::with('user')->get()->map(function ($partner) {
             return [
                 'id' => $partner->id,
-                'company_name' => $partner->company_name,
+                'name' => $partner->name ?? 'Без названия',
                 'contact_person' => $partner->user->name ?? 'Без контакта',
             ];
         });

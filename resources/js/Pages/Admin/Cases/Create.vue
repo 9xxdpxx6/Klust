@@ -104,34 +104,6 @@
                             </div>
                         </div>
 
-                        <!-- Длительность проекта -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Длительность проекта (недель)
-                            </label>
-                            <input
-                                v-model="form.project_duration"
-                                type="number"
-                                min="1"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
-                                placeholder="Например: 4"
-                            />
-                        </div>
-
-                        <!-- Бюджет -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Бюджет (руб.)
-                            </label>
-                            <input
-                                v-model="form.budget"
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
-                                placeholder="Например: 50000"
-                            />
-                        </div>
                     </div>
 
                     <!-- Описание -->
@@ -241,7 +213,8 @@ const form = useForm({
     required_team_size: '',
     status: 'draft',
     reward: '',
-    required_skills: [], // измените на required_skills
+    simulator_id: null,
+    required_skills: [],
 })
 
 const minDate = computed(() => {
@@ -251,17 +224,22 @@ const minDate = computed(() => {
 const partnerOptions = computed(() => [
     { label: 'Выберите партнера', value: '' },
     ...props.partners.map(partner => ({
-        label: `${partner.company_name} (${partner.contact_person})`,
+        label: `${partner.name} (${partner.contact_person})`,
         value: partner.id
     }))
 ])
 
 const teamSizeOptions = computed(() => [
-    { label: '1 человек', value: '1' },
-    { label: '2 человека', value: '2' },
-    { label: '3 человека', value: '3' },
-    { label: '4 человека', value: '4' },
-    { label: '5+ человек', value: '5' },
+    { label: '1 человек', value: 1 },
+    { label: '2 человека', value: 2 },
+    { label: '3 человека', value: 3 },
+    { label: '4 человека', value: 4 },
+    { label: '5 человек', value: 5 },
+    { label: '6 человек', value: 6 },
+    { label: '7 человек', value: 7 },
+    { label: '8 человек', value: 8 },
+    { label: '9 человек', value: 9 },
+    { label: '10 человек', value: 10 },
 ])
 
 const simulatorOptions = computed(() => [

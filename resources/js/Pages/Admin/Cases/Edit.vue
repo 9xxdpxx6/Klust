@@ -154,6 +154,18 @@
                         </div>
                     </div>
 
+                    <!-- Симулятор -->
+                    <div class="mb-6">
+                        <Select
+                            v-model="form.simulator_id"
+                            label="Симулятор"
+                            :options="simulatorOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Без симулятора"
+                        />
+                    </div>
+
                     <!-- Кнопки -->
                     <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
                         <Link
@@ -189,6 +201,7 @@ const props = defineProps({
     case: Object,
     partners: Array,
     skills: Array,
+    simulators: Array,
     statusOptions: Array,
 })
 
@@ -198,9 +211,10 @@ const form = useForm({
     description: props.case?.description || '',
     partner_id: props.case?.partner_id || '',
     deadline: props.case?.deadline ? new Date(props.case.deadline) : null,
-    required_team_size: props.case?.required_team_size?.toString() || '',
+    required_team_size: props.case?.required_team_size || '',
     status: props.case?.status || '',
     reward: props.case?.reward || '',
+    simulator_id: props.case?.simulator_id || null,
     required_skills: props.case?.required_skills || [],
 })
 
@@ -211,7 +225,7 @@ const minDate = computed(() => {
 const partnerOptions = computed(() => [
     { label: 'Выберите партнера', value: '' },
     ...props.partners.map(partner => ({
-        label: `${partner.company_name} (${partner.contact_person})`,
+        label: `${partner.name} (${partner.contact_person})`,
         value: partner.id
     }))
 ])
@@ -221,7 +235,20 @@ const teamSizeOptions = computed(() => [
     { label: '2 человека', value: 2 },
     { label: '3 человека', value: 3 },
     { label: '4 человека', value: 4 },
-    { label: '5+ человек', value: 5 },
+    { label: '5 человек', value: 5 },
+    { label: '6 человек', value: 6 },
+    { label: '7 человек', value: 7 },
+    { label: '8 человек', value: 8 },
+    { label: '9 человек', value: 9 },
+    { label: '10 человек', value: 10 },
+])
+
+const simulatorOptions = computed(() => [
+    { label: 'Без симулятора', value: null },
+    ...props.simulators.map(simulator => ({
+        label: simulator.name,
+        value: simulator.id
+    }))
 ])
 
 const submitForm = () => {
