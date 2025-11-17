@@ -75,17 +75,16 @@
                 </div>
             </div>
 
-                    <!-- Кнопка сброса фильтров -->
-                    <div class="mt-4 flex justify-end">
-                        <button
-                            @click="resetFilters"
-                            :disabled="!hasActiveFilters"
-                            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <i class="pi pi-refresh"></i>
-                            Сбросить фильтры
-                        </button>
-                    </div>
+                <!-- Кнопка сброса фильтров -->
+                <div class="mt-4 flex justify-end">
+                    <button
+                        @click="resetFilters"
+                        :disabled="!hasActiveFilters"
+                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <i class="pi pi-refresh"></i>
+                        Сбросить фильтры
+                    </button>
                 </div>
             </div>
         </div>
@@ -219,42 +218,6 @@
                 </table>
             </div>
 
-            <!-- Пагинация -->
-            <div v-if="simulatorsLinks && simulatorsLinks.length > 0" class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                <Pagination :links="simulatorsLinks" />
-            </div>
-        </div>
-
-        <!-- Сообщение если нет симуляторов -->
-        <div v-if="!simulatorsData || simulatorsData.length === 0" class="bg-white rounded-xl shadow-md border border-gray-200 p-12 text-center">
-            <div class="max-w-md mx-auto">
-                <div class="mx-auto w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-4">
-                    <i class="pi pi-desktop text-4xl text-gray-400"></i>
-                </div>
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">Симуляторы не найдены</h3>
-                <p class="text-sm text-gray-500 mb-6">
-                    <span v-if="hasActiveFilters">Попробуйте изменить параметры фильтрации</span>
-                    <span v-else>Создайте первый симулятор, чтобы начать работу</span>
-                </p>
-                <div class="flex gap-3 justify-center">
-                    <button
-                        v-if="hasActiveFilters"
-                        @click="resetFilters"
-                        class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                    >
-                        Сбросить фильтры
-                    </button>
-                    <button
-                        v-else
-                        @click="openCreateModal"
-                        class="px-6 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
-                    >
-                        Создать симулятор
-                    </button>
-                </div>
-            </div>
-        </div>
-
             <!-- Мобильные карточки -->
             <div v-if="simulatorsData && simulatorsData.length > 0" class="md:hidden space-y-4 p-6">
                 <div
@@ -334,6 +297,36 @@
             <!-- Пагинация -->
             <div v-if="simulatorsLinks && simulatorsLinks.length > 0" class="px-6 py-4 border-t border-gray-200 bg-gray-50">
                 <Pagination :links="simulatorsLinks" />
+            </div>
+        </div>
+
+        <!-- Сообщение если нет симуляторов -->
+        <div v-if="!simulatorsData || simulatorsData.length === 0" class="bg-white rounded-xl shadow-md border border-gray-200 p-12 text-center">
+            <div class="max-w-md mx-auto">
+                <div class="mx-auto w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-4">
+                    <i class="pi pi-desktop text-4xl text-gray-400"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Симуляторы не найдены</h3>
+                <p class="text-sm text-gray-500 mb-6">
+                    <span v-if="hasActiveFilters">Попробуйте изменить параметры фильтрации</span>
+                    <span v-else>Создайте первый симулятор, чтобы начать работу</span>
+                </p>
+                <div class="flex gap-3 justify-center">
+                    <button
+                        v-if="hasActiveFilters"
+                        @click="resetFilters"
+                        class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                    >
+                        Сбросить фильтры
+                    </button>
+                    <button
+                        v-else
+                        @click="openCreateModal"
+                        class="px-6 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
+                    >
+                        Создать симулятор
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -505,6 +498,7 @@
 import {ref, computed} from 'vue'
 import {router, useForm} from '@inertiajs/vue3'
 import {Head} from '@inertiajs/vue3'
+import FlashMessage from '@/Components/Shared/FlashMessage.vue'
 import Pagination from '@/Components/Pagination.vue'
 import Select from '@/Components/UI/Select.vue'
 import Input from '@/Components/UI/Input.vue'
