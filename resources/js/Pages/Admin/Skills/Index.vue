@@ -397,6 +397,7 @@
 import {ref, computed} from 'vue'
 import {router, useForm} from '@inertiajs/vue3'
 import {Head} from '@inertiajs/vue3'
+import FlashMessage from '@/Components/Shared/FlashMessage.vue'
 import Pagination from '@/Components/Pagination.vue'
 import Select from '@/Components/UI/Select.vue'
 import Input from '@/Components/UI/Input.vue'

@@ -306,14 +306,11 @@
 <script setup>
 import { computed } from 'vue';
 import { router } from '@inertiajs/vue3';
-<<<<<<< HEAD
 import FlashMessage from '@/Components/Shared/FlashMessage.vue';
-=======
 import StatsWidget from '@/Components/UI/StatsWidget.vue';
 import Card from '@/Components/UI/Card.vue';
 import Badge from '@/Components/UI/Badge.vue';
 import Button from '@/Components/UI/Button.vue';
->>>>>>> origin/main
 import Chart from 'primevue/chart';
 import UserAvatar from '@/Components/Shared/UserAvatar.vue';
 import { routeExists } from '@/Utils/routes';
