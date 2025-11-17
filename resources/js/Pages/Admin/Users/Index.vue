@@ -330,7 +330,7 @@ const filters = ref({
     role: props.filters?.role || '',
     status: props.filters?.status || '',
     course: props.filters?.course || '',
-    perPage: props.filters?.perPage || 15,
+    perPage: props.filters?.perPage ? String(props.filters.perPage) : '25',
 })
 
 // Обновление фильтров с debounce для поиска
@@ -351,7 +351,7 @@ const resetFilters = () => {
         role: '',
         status: '',
         course: '',
-        perPage: 15,
+        perPage: '25',
     }
     updateFilters()
 }
@@ -396,10 +396,10 @@ const courseFilterOptions = computed(() => {
 })
 
 const perPageOptions = computed(() => [
-    { label: '10', value: '10' },
-    { label: '15', value: '15' },
-    { label: '25', value: '25' },
-    { label: '50', value: '50' },
+    { label: 'Отображать по 10', value: '10' },
+    { label: 'Отображать по 15', value: '15' },
+    { label: 'Отображать по 25', value: '25' },
+    { label: 'Отображать по 50', value: '50' },
 ])
 
 const getUserInitials = (name) => {

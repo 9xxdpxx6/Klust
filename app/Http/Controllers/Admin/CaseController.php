@@ -27,11 +27,12 @@ class CaseController extends Controller
 
     public function index(Request $request): Response
     {
-        // Получить фильтры (status, partner_id, search)
+        // Получить фильтры (status, partner_id, search, perPage)
         $filters = [
             'status' => $request->input('status'),
             'partner_id' => $request->input('partner_id'),
             'search' => $request->input('search'),
+            'per_page' => $request->input('perPage') ?? $request->input('per_page'),
         ];
 
         // Получить кейсы через CaseService::getFilteredCases($filters)
@@ -48,9 +49,18 @@ class CaseController extends Controller
                 ];
             });
 
+        // Возвращаем filters с perPage для фронтенда
+        $frontendFilters = [
+            'search' => $filters['search'] ?? '',
+            'status' => $filters['status'] ?? '',
+            'partner_id' => $filters['partner_id'] ?? '',
+            'team_size' => $request->input('team_size', ''),
+            'perPage' => $filters['per_page'] ?? 25,
+        ];
+
         return Inertia::render('Admin/Cases/Index', [
             'cases' => $cases,
-            'filters' => $filters,
+            'filters' => $frontendFilters,
             'partners' => $partners,
         ]);
     }

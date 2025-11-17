@@ -311,9 +311,10 @@
 <script setup>
 import {ref, computed} from 'vue'
 import {router} from '@inertiajs/vue3'
-import {Head, Link} from '@inertiajs/vue3'
+import {Head} from '@inertiajs/vue3'
 import Pagination from '@/Components/Pagination.vue'
 import Select from '@/Components/UI/Select.vue'
+import Button from 'primevue/button'
 import {route} from "ziggy-js";
 
 const props = defineProps({
@@ -341,7 +342,12 @@ const hasActiveFilters = computed(() => {
     return filters.value.search !== '' ||
         filters.value.status !== '' ||
         filters.value.partner_id !== '' ||
+<<<<<<< HEAD
         filters.value.perPage !== 15
+=======
+        filters.value.team_size !== '' ||
+        filters.value.perPage !== '25'
+>>>>>>> origin/main
 })
 
 // Безопасная инициализация filters
@@ -349,7 +355,12 @@ const filters = ref({
     search: props.filters?.search || '',
     status: props.filters?.status || '',
     partner_id: props.filters?.partner_id || '',
+<<<<<<< HEAD
     perPage: props.filters?.perPage || 15,
+=======
+    team_size: props.filters?.team_size || '',
+    perPage: props.filters?.perPage ? String(props.filters.perPage) : '25',
+>>>>>>> origin/main
 })
 
 // Функция перехода к конкретному кейсу
@@ -404,10 +415,10 @@ const partnerFilterOptions = computed(() => [
 ])
 
 const perPageOptions = computed(() => [
-    { label: '10', value: '10' },
-    { label: '15', value: '15' },
-    { label: '25', value: '25' },
-    { label: '50', value: '50' },
+    { label: 'Отображать по 10', value: '10' },
+    { label: 'Отображать по 15', value: '15' },
+    { label: 'Отображать по 25', value: '25' },
+    { label: 'Отображать по 50', value: '50' },
 ])
 
 const resetFilters = () => {
@@ -415,7 +426,12 @@ const resetFilters = () => {
         search: '',
         status: '',
         partner_id: '',
+<<<<<<< HEAD
         perPage: 15,
+=======
+        team_size: '',
+        perPage: '25',
+>>>>>>> origin/main
     }
     updateFilters()
 }

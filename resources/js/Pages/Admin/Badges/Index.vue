@@ -251,7 +251,7 @@
                         label="Описание"
                         placeholder="Введите описание бейджа"
                         :error="form.errors.description"
-                        rows="3"
+                        :rows="3"
                         required
                     />
 
@@ -266,41 +266,20 @@
                     />
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
                             Иконка бейджа
                         </label>
-                        <div v-if="iconPreview || editingBadge?.icon" class="mb-3 flex items-center gap-4">
-                            <img
-                                v-if="iconPreview || editingBadge?.icon_path"
-                                :src="iconPreview || editingBadge.icon_path"
-                                alt="Preview"
-                                class="w-20 h-20 object-contain border border-gray-300 rounded p-2"
-                            />
+                        <div v-if="form.icon || editingBadge?.icon" class="mb-3 flex items-center gap-4">
                             <div
-                                v-else-if="editingBadge?.icon && (editingBadge.icon.startsWith('pi-') || editingBadge.icon.startsWith('fa-'))"
                                 class="w-20 h-20 flex items-center justify-center border border-gray-300 rounded p-2 bg-gray-50"
                             >
-                                <i :class="['text-[48px] text-gray-600', editingBadge.icon.startsWith('fa-') ? `pi pi-${editingBadge.icon.replace('fa-', '')}` : `pi ${editingBadge.icon}`]"></i>
+                                <i :class="['text-[48px] text-gray-600', `pi ${form.icon || editingBadge.icon}`]"></i>
                             </div>
-                            <button
-                                v-if="iconPreview"
-                                type="button"
-                                @click="clearIcon"
-                                class="text-sm text-red-600 hover:text-red-800"
-                            >
-                                Удалить
-                            </button>
                         </div>
-                        <input
-                            ref="iconInput"
-                            type="file"
-                            accept="image/jpeg,image/png,image/jpg,image/gif,image/svg+xml"
-                            @change="handleIconChange"
-                            class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                        <IconPicker
+                            v-model="form.icon"
+                            :error="form.errors.icon"
                         />
-                        <p class="mt-1 text-xs text-gray-500">
-                            Форматы: JPEG, PNG, JPG, GIF, SVG. Максимальный размер: 2 МБ.
-                        </p>
                         <div v-if="form.errors.icon" class="mt-1 text-sm text-red-600">
                             {{ form.errors.icon }}
                         </div>
@@ -379,9 +358,9 @@ import Pagination from '@/Components/Pagination.vue'
 import Select from '@/Components/UI/Select.vue'
 import Input from '@/Components/UI/Input.vue'
 import Textarea from '@/Components/UI/Textarea.vue'
+import IconPicker from '@/Components/UI/IconPicker.vue'
 import Modal from '@/Components/UI/Modal.vue'
-import Button from '@/Components/UI/Button.vue'
-import FlashMessage from '@/Components/Shared/FlashMessage.vue'
+import Button from 'primevue/button'
 import {route} from "ziggy-js"
 
 const props = defineProps({
@@ -402,13 +381,13 @@ const badgesLinks = computed(() => props.badges?.links || [])
 
 // Проверка активных фильтров
 const hasActiveFilters = computed(() => {
-    return filters.value.search !== '' || filters.value.perPage !== 15
+    return filters.value.search !== '' || filters.value.perPage !== '25'
 })
 
 // Безопасная инициализация filters
 const filters = ref({
     search: props.filters?.search || '',
-    perPage: props.filters?.perPage || 15,
+    perPage: props.filters?.perPage ? String(props.filters.perPage) : '25',
 })
 
 // Модальные окна
@@ -416,8 +395,6 @@ const modalVisible = ref(false)
 const deleteModalVisible = ref(false)
 const editingBadge = ref(null)
 const badgeToDelete = ref(null)
-const iconPreview = ref(null)
-const iconInput = ref(null)
 
 // Форма создания/редактирования
 const form = useForm({
@@ -431,10 +408,10 @@ const form = useForm({
 const deleteForm = useForm({})
 
 const perPageOptions = computed(() => [
-    { label: '10', value: '10' },
-    { label: '15', value: '15' },
-    { label: '25', value: '25' },
-    { label: '50', value: '50' },
+    { label: 'Отображать по 10', value: '10' },
+    { label: 'Отображать по 15', value: '15' },
+    { label: 'Отображать по 25', value: '25' },
+    { label: 'Отображать по 50', value: '50' },
 ])
 
 // Таймер для дебаунса
@@ -460,38 +437,17 @@ const updateFilters = () => {
 const resetFilters = () => {
     filters.value = {
         search: '',
-        perPage: 15,
+        perPage: '25',
     }
     updateFilters()
 }
 
-// Обработка загрузки иконки
-const handleIconChange = (event) => {
-    const file = event.target.files[0]
-    if (file) {
-        form.icon = file
-        const reader = new FileReader()
-        reader.onload = (e) => {
-            iconPreview.value = e.target.result
-        }
-        reader.readAsDataURL(file)
-    }
-}
-
-const clearIcon = () => {
-    form.icon = null
-    iconPreview.value = null
-    if (iconInput.value) {
-        iconInput.value.value = ''
-    }
-}
 
 // Функции модального окна
 const openCreateModal = () => {
     editingBadge.value = null
     form.reset()
     form.clearErrors()
-    iconPreview.value = null
     modalVisible.value = true
 }
 
@@ -500,9 +456,8 @@ const openEditModal = (badge) => {
     form.name = badge.name
     form.description = badge.description || ''
     form.required_points = badge.required_points
-    form.icon = null
+    form.icon = badge.icon || null
     form.clearErrors()
-    iconPreview.value = null
     modalVisible.value = true
 }
 
@@ -511,13 +466,11 @@ const closeModal = () => {
     editingBadge.value = null
     form.reset()
     form.clearErrors()
-    iconPreview.value = null
 }
 
 const submitForm = () => {
     if (editingBadge.value) {
-        form.post(route('admin.badges.update', editingBadge.value.id), {
-            _method: 'put',
+        form.put(route('admin.badges.update', editingBadge.value.id), {
             preserveScroll: true,
             onSuccess: () => {
                 closeModal()

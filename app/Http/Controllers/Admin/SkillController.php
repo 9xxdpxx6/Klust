@@ -42,7 +42,7 @@ class SkillController extends Controller
         $frontendFilters = [
             'search' => $filters['search'] ?? '',
             'category' => $filters['category'] ?? '',
-            'perPage' => $filters['per_page'] ?? 15,
+            'perPage' => $filters['per_page'] ?? 25,
         ];
 
         return Inertia::render('Admin/Skills/Index', [

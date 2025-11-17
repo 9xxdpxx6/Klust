@@ -509,8 +509,7 @@ import Pagination from '@/Components/Pagination.vue'
 import Select from '@/Components/UI/Select.vue'
 import Input from '@/Components/UI/Input.vue'
 import Modal from '@/Components/UI/Modal.vue'
-import Button from '@/Components/UI/Button.vue'
-import FlashMessage from '@/Components/Shared/FlashMessage.vue'
+import Button from 'primevue/button'
 import {route} from "ziggy-js";
 
 const props = defineProps({
@@ -537,14 +536,14 @@ const simulatorsLinks = computed(() => props.simulators?.links || [])
 const hasActiveFilters = computed(() => {
     return filters.value.search !== '' ||
         filters.value.status !== '' ||
-        filters.value.perPage !== 15
+        filters.value.perPage !== '25'
 })
 
 // Безопасная инициализация filters
 const filters = ref({
     search: props.filters?.search || '',
     status: props.filters?.status || '',
-    perPage: props.filters?.perPage || 15,
+    perPage: props.filters?.perPage ? String(props.filters.perPage) : '25',
 })
 
 // Модальные окна
@@ -582,10 +581,10 @@ const statusFilterOptions = computed(() => [
 ])
 
 const perPageOptions = computed(() => [
-    { label: '10', value: '10' },
-    { label: '15', value: '15' },
-    { label: '25', value: '25' },
-    { label: '50', value: '50' },
+    { label: 'Отображать по 10', value: '10' },
+    { label: 'Отображать по 15', value: '15' },
+    { label: 'Отображать по 25', value: '25' },
+    { label: 'Отображать по 50', value: '50' },
 ])
 
 // Таймер для дебаунса
@@ -612,7 +611,7 @@ const resetFilters = () => {
     filters.value = {
         search: '',
         status: '',
-        perPage: 15,
+        perPage: '25',
     }
     updateFilters()
 }
