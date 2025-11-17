@@ -169,8 +169,8 @@
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Партнер</p>
-                                    <p class="text-sm font-medium text-gray-900 truncate">{{ caseData.partner?.company_name || 'Не указан' }}</p>
-                                    <p class="text-xs text-gray-500 mt-1">{{ caseData.partner?.user?.name || '' }}</p>
+                                    <p class="text-sm font-medium text-gray-900 truncate">{{ caseData.partner?.company_name || caseData.partner?.name || 'Не указан' }}</p>
+                                    <p class="text-xs text-gray-500 mt-1">{{ caseData.partner?.contact_person || caseData.partner?.user?.name || '' }}</p>
                                 </div>
                             </div>
                         </div>

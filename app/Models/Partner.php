@@ -37,5 +37,21 @@ class Partner extends Model
     {
         return $this->hasMany(CaseModel::class);
     }
+
+    /**
+     * Accessor for company_name from partnerProfile
+     */
+    public function getCompanyNameAttribute(): ?string
+    {
+        return $this->user?->partnerProfile?->company_name ?? $this->name ?? null;
+    }
+
+    /**
+     * Accessor for contact_person from partnerProfile
+     */
+    public function getContactPersonAttribute(): ?string
+    {
+        return $this->user?->partnerProfile?->contact_person ?? $this->user?->name ?? null;
+    }
 }
 

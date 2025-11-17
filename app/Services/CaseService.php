@@ -147,7 +147,7 @@ class CaseService
         }
 
         // Eager load relationships
-        $query->with(['partner', 'skills']);
+        $query->with(['partner.user.partnerProfile', 'skills']);
 
         // Get pagination parameters
         $pagination = FilterHelper::getPaginationParams($filters, 25);
@@ -196,7 +196,7 @@ class CaseService
         }
 
         // Eager load relationships
-        $query->with(['partner', 'skills']);
+        $query->with(['partner.user.partnerProfile', 'skills']);
 
         // Get pagination parameters
         $pagination = FilterHelper::getPaginationParams($filters, 12);
