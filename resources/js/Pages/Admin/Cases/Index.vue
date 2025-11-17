@@ -1,215 +1,309 @@
 <template>
-    <div>
+    <div class="space-y-6">
         <Head title="Управление кейсами"/>
 
-
-        <div class="mb-6 flex justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-bold">Управление кейсами</h1>
-                <p class="text-gray-600 mt-2">Список всех кейсов в системе</p>
+        <!-- Заголовок с градиентом -->
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg overflow-hidden">
+            <div class="px-6 py-8">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold text-white mb-2">Управление кейсами</h1>
+                        <p class="text-indigo-100">Список всех кейсов в системе</p>
+                    </div>
+                    <Link
+                        :href="route('admin.cases.create')"
+                        class="inline-flex items-center gap-2 px-6 py-3 bg-white/10 backdrop-blur-sm text-white rounded-lg hover:bg-white/20 focus:outline-none transition-all shadow-lg border border-white/20 font-medium"
+                    >
+                        <i class="pi pi-plus"></i>
+                        Создать кейс
+                    </Link>
+                </div>
             </div>
-            <Button
-                @click="router.visit(route('admin.cases.create'))"
-                label="Создать кейс"
-                icon="pi pi-plus"
-                unstyled
-                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors inline-flex items-center justify-center gap-2"
-            />
-
         </div>
 
         <!-- Фильтры -->
-        <div class="bg-white rounded-lg shadow p-4 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                <!-- Поиск -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Поиск</label>
-                    <input
-                        v-model="filters.search"
-                        type="text"
-                        placeholder="Название или описание"
-                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
-                        @input="handleSearch"
-                    />
+        <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <i class="pi pi-filter text-indigo-600"></i>
+                    Фильтры поиска
+                </h2>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <!-- Поиск -->
+                    <div class="lg:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Поиск</label>
+                        <div class="relative">
+                            <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <input
+                                v-model="filters.search"
+                                type="text"
+                                placeholder="Название или описание"
+                                class="w-full pl-10 pr-4 py-2.5 rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+                                @input="handleSearch"
+                            />
+                        </div>
+                    </div>
+
+                    <!-- Фильтр по статусу -->
+                    <div>
+                        <Select
+                            v-model="filters.status"
+                            label="Статус"
+                            :options="statusFilterOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Все статусы"
+                            @update:modelValue="updateFilters"
+                        />
+                    </div>
+
+                    <!-- Фильтр по партнеру -->
+                    <div>
+                        <Select
+                            v-model="filters.partner_id"
+                            label="Партнер"
+                            :options="partnerFilterOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Все партнеры"
+                            @update:modelValue="updateFilters"
+                        />
+                    </div>
+
+                    <!-- Количество на странице -->
+                    <div>
+                        <Select
+                            v-model="filters.perPage"
+                            label="На странице"
+                            :options="perPageOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Выберите количество"
+                            @update:modelValue="updateFilters"
+                        />
+                    </div>
                 </div>
 
-                <!-- Фильтр по статусу -->
-                <div>
-                    <Select
-                        v-model="filters.status"
-                        label="Статус"
-                        :options="statusFilterOptions"
-                        optionLabel="label"
-                        optionValue="value"
-                        placeholder="Все статусы"
-                        @update:modelValue="updateFilters"
-                    />
-                </div>
-
-                <!-- Фильтр по партнеру -->
-                <div>
-                    <Select
-                        v-model="filters.partner_id"
-                        label="Партнер"
-                        :options="partnerFilterOptions"
-                        optionLabel="label"
-                        optionValue="value"
-                        placeholder="Все партнеры"
-                        @update:modelValue="updateFilters"
-                    />
-                </div>
-
-                <!-- Фильтр по размеру команды -->
-                <div>
-                    <Select
-                        v-model="filters.team_size"
-                        label="Размер команды"
-                        :options="teamSizeFilterOptions"
-                        optionLabel="label"
-                        optionValue="value"
-                        placeholder="Любой"
-                        @update:modelValue="updateFilters"
-                    />
-                </div>
-
-                <!-- Количество на странице -->
-                <div>
-                    <Select
-                        v-model="filters.perPage"
-                        label="На странице"
-                        :options="perPageOptions"
-                        optionLabel="label"
-                        optionValue="value"
-                        placeholder="Выберите количество"
-                        @update:modelValue="updateFilters"
-                    />
+                <!-- Кнопка сброса фильтров -->
+                <div class="mt-4 flex justify-end">
+                    <button
+                        @click="resetFilters"
+                        :disabled="!hasActiveFilters"
+                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <i class="pi pi-refresh"></i>
+                        Сбросить фильтры
+                    </button>
                 </div>
             </div>
+        </div>
 
-            <!-- Кнопка сброса фильтров -->
-            <div class="mt-4 flex justify-end">
-                <button
-                    @click="resetFilters"
-                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                >
-                    Сбросить фильтры
-                </button>
+        <!-- Статистика -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 shadow-md border border-blue-200/50">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-blue-600 mb-1">Всего кейсов</p>
+                        <p class="text-2xl font-bold text-blue-900">{{ casesTotal }}</p>
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-blue-500 rounded-xl">
+                        <i class="pi pi-briefcase text-white text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-5 shadow-md border border-green-200/50">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-green-600 mb-1">Активных</p>
+                        <p class="text-2xl font-bold text-green-900">
+                            {{ casesData.filter(c => c.status === 'active').length }}
+                        </p>
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-green-500 rounded-xl">
+                        <i class="pi pi-check-circle text-white text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-5 shadow-md border border-amber-200/50">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-amber-600 mb-1">Черновиков</p>
+                        <p class="text-2xl font-bold text-amber-900">
+                            {{ casesData.filter(c => c.status === 'draft').length }}
+                        </p>
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-amber-500 rounded-xl">
+                        <i class="pi pi-file text-white text-xl"></i>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Таблица кейсов -->
-        <div class="bg-white rounded-lg shadow overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <div class="text-sm text-gray-600">
-                    Всего кейсов: {{ casesTotal }}
+        <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <i class="pi pi-list text-indigo-600"></i>
+                        Список кейсов
+                    </h2>
+                    <span class="text-sm text-gray-600 bg-white px-3 py-1 rounded-lg border border-gray-200">
+                        Всего: {{ casesTotal }}
+                    </span>
                 </div>
             </div>
 
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Кейс
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Партнер
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Дедлайн
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Команда
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Статус
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Заявки
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Создан
-                    </th>
-                </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                <tr
-                    v-for="caseItem in casesData"
-                    :key="caseItem.id"
-                    class="hover:bg-gray-50 cursor-pointer transition-colors"
-                    @click="goToCase(caseItem.id)"
-                >
-                    <td class="px-6 py-4">
-                        <div>
-                            <div class="text-sm font-medium text-gray-900 hover:text-indigo-600 transition-colors">
-                                {{ caseItem.title }}
+            <div v-if="casesData && casesData.length > 0" class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                            Кейс
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                            Партнер
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                            Дедлайн
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                            Команда
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                            Статус
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                            Заявки
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                            Создан
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-100">
+                    <tr
+                        v-for="caseItem in casesData"
+                        :key="caseItem.id"
+                        class="hover:bg-indigo-50/50 cursor-pointer transition-all group"
+                        @click="goToCase(caseItem.id)"
+                    >
+                        <td class="px-6 py-4">
+                            <div class="flex items-start gap-3">
+                                <div class="p-2 bg-indigo-100 rounded-lg group-hover:bg-indigo-200 transition-colors">
+                                    <i class="pi pi-briefcase text-indigo-600"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                                        {{ caseItem.title }}
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1 line-clamp-2">
+                                        {{ caseItem.description }}
+                                    </div>
+                                </div>
                             </div>
-                            <div class="text-sm text-gray-500 mt-1 line-clamp-2">
-                                {{ caseItem.description }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center gap-2">
+                                <div class="p-1.5 bg-gray-100 rounded-lg">
+                                    <i class="pi pi-building text-gray-600 text-xs"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900">{{ caseItem.partner?.company_name || 'Не указан' }}</div>
+                                    <div class="text-xs text-gray-500">{{
+                                            caseItem.partner?.user?.name || 'Без контакта'
+                                        }}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">{{ caseItem.partner?.company_name || 'Не указан' }}</div>
-                        <div class="text-sm text-gray-500">{{
-                                caseItem.partner?.user?.name || 'Без контакта'
-                            }}
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">{{ formatDate(caseItem.deadline) }}</div>
-                        <div
-                            :class="[
-                                'text-xs font-medium mt-1',
-                                isDeadlineSoon(caseItem.deadline) ? 'text-red-600' : 'text-gray-500'
-                            ]"
-                        >
-                            {{ daysUntilDeadline(caseItem.deadline) }}
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span
-                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                            {{ caseItem.required_team_size }} чел.
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span
-                            :class="[
-                                'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
-                                getStatusBadgeClass(caseItem.status)
-                            ]"
-                        >
-                            {{ getStatusLabel(caseItem.status) }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="text-sm text-gray-900">
-                            {{ caseItem.applications_count }} заявок
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ formatDate(caseItem.created_at) }}
-                    </td>
-
-                </tr>
-
-                </tbody>
-            </table>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center gap-2">
+                                <div class="p-1.5 bg-red-100 rounded-lg">
+                                    <i class="pi pi-calendar text-red-600 text-xs"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900">{{ formatDate(caseItem.deadline) }}</div>
+                                    <div
+                                        :class="[
+                                            'text-xs font-medium mt-0.5',
+                                            isDeadlineSoon(caseItem.deadline) ? 'text-red-600' : 'text-gray-500'
+                                        ]"
+                                    >
+                                        {{ daysUntilDeadline(caseItem.deadline) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-100 text-blue-800 border border-blue-200">
+                                <i class="pi pi-users text-xs"></i>
+                                {{ caseItem.required_team_size }} чел.
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span
+                                :class="[
+                                    'px-3 py-1.5 inline-flex text-xs font-semibold rounded-lg border',
+                                    getStatusBadgeClass(caseItem.status)
+                                ]"
+                            >
+                                {{ getStatusLabel(caseItem.status) }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center gap-2">
+                                <div class="p-1.5 bg-purple-100 rounded-lg">
+                                    <i class="pi pi-file-edit text-purple-600 text-xs"></i>
+                                </div>
+                                <span class="text-sm font-medium text-gray-900">
+                                    {{ caseItem.applications_count || 0 }} заявок
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-500">{{ formatDate(caseItem.created_at) }}</div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
 
             <!-- Пагинация -->
-            <Pagination v-if="casesLinks && casesLinks.length > 0" :links="casesLinks" class="mt-4"/>
+            <div v-if="casesLinks && casesLinks.length > 0" class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                <Pagination :links="casesLinks" />
+            </div>
         </div>
 
         <!-- Сообщение если нет кейсов -->
-        <div v-if="!casesData || casesData.length === 0" class="bg-white rounded-lg shadow p-8 text-center">
-            <p class="text-gray-500">Кейсы не найдены</p>
-            <button
-                v-if="hasActiveFilters"
-                @click="resetFilters"
-                class="mt-4 px-4 py-2 text-sm font-medium text-indigo-700 bg-indigo-100 hover:bg-indigo-200 rounded-md transition-colors"
-            >
-                Сбросить фильтры
-            </button>
+        <div v-if="!casesData || casesData.length === 0" class="bg-white rounded-xl shadow-md border border-gray-200 p-12 text-center">
+            <div class="max-w-md mx-auto">
+                <div class="mx-auto w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-4">
+                    <i class="pi pi-inbox text-4xl text-gray-400"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Кейсы не найдены</h3>
+                <p class="text-sm text-gray-500 mb-6">
+                    <span v-if="hasActiveFilters">Попробуйте изменить параметры фильтрации</span>
+                    <span v-else>Создайте первый кейс, чтобы начать работу</span>
+                </p>
+                <div class="flex gap-3 justify-center">
+                    <button
+                        v-if="hasActiveFilters"
+                        @click="resetFilters"
+                        class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                    >
+                        Сбросить фильтры
+                    </button>
+                    <Link
+                        v-else
+                        :href="route('admin.cases.create')"
+                        class="px-6 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
+                    >
+                        Создать кейс
+                    </Link>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -222,7 +316,6 @@ import Pagination from '@/Components/Pagination.vue'
 import Select from '@/Components/UI/Select.vue'
 import Button from 'primevue/button'
 import {route} from "ziggy-js";
-
 
 const props = defineProps({
     cases: {
@@ -239,9 +332,6 @@ const props = defineProps({
     },
 })
 
-// Включить отладку
-const debug = ref(import.meta.env.DEV)
-
 // Computed свойства для безопасного доступа
 const casesData = computed(() => props.cases?.data || [])
 const casesTotal = computed(() => props.cases?.total || 0)
@@ -252,8 +342,12 @@ const hasActiveFilters = computed(() => {
     return filters.value.search !== '' ||
         filters.value.status !== '' ||
         filters.value.partner_id !== '' ||
+<<<<<<< HEAD
+        filters.value.perPage !== 15
+=======
         filters.value.team_size !== '' ||
         filters.value.perPage !== '25'
+>>>>>>> origin/main
 })
 
 // Безопасная инициализация filters
@@ -261,8 +355,12 @@ const filters = ref({
     search: props.filters?.search || '',
     status: props.filters?.status || '',
     partner_id: props.filters?.partner_id || '',
+<<<<<<< HEAD
+    perPage: props.filters?.perPage || 15,
+=======
     team_size: props.filters?.team_size || '',
     perPage: props.filters?.perPage ? String(props.filters.perPage) : '25',
+>>>>>>> origin/main
 })
 
 // Функция перехода к конкретному кейсу
@@ -316,15 +414,6 @@ const partnerFilterOptions = computed(() => [
     }))
 ])
 
-const teamSizeFilterOptions = computed(() => [
-    { label: 'Любой', value: '' },
-    { label: '1 человек', value: '1' },
-    { label: '2 человека', value: '2' },
-    { label: '3 человека', value: '3' },
-    { label: '4 человека', value: '4' },
-    { label: '5+ человек', value: '5' },
-])
-
 const perPageOptions = computed(() => [
     { label: 'Отображать по 10', value: '10' },
     { label: 'Отображать по 15', value: '15' },
@@ -337,8 +426,12 @@ const resetFilters = () => {
         search: '',
         status: '',
         partner_id: '',
+<<<<<<< HEAD
+        perPage: 15,
+=======
         team_size: '',
         perPage: '25',
+>>>>>>> origin/main
     }
     updateFilters()
 }
@@ -388,12 +481,12 @@ const getStatusLabel = (status) => {
 
 const getStatusBadgeClass = (status) => {
     const classMap = {
-        draft: 'bg-gray-100 text-gray-800',
-        active: 'bg-green-100 text-green-800',
-        completed: 'bg-blue-100 text-blue-800',
-        archived: 'bg-red-100 text-red-800',
+        draft: 'bg-gray-100 text-gray-800 border-gray-200',
+        active: 'bg-green-100 text-green-800 border-green-200',
+        completed: 'bg-blue-100 text-blue-800 border-blue-200',
+        archived: 'bg-red-100 text-red-800 border-red-200',
     }
-    return classMap[status] || 'bg-gray-100 text-gray-800'
+    return classMap[status] || 'bg-gray-100 text-gray-800 border-gray-200'
 }
 </script>
 

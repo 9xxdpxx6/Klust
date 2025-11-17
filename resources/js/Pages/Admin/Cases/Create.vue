@@ -32,58 +32,57 @@
                                 v-model="form.title"
                                 type="text"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
-                                :class="{ 'border-red-300': errors.title }"
+                                :class="{ 'border-red-300 focus:border-red-500': form.errors.title }"
                                 placeholder="Введите название кейса"
-                                required
                             />
-                            <div v-if="errors.title" class="text-red-500 text-sm mt-1">
-                                {{ errors.title }}
+                            <div v-if="form.errors.title" class="text-red-500 text-sm mt-1">
+                                {{ form.errors.title }}
                             </div>
                         </div>
 
                         <!-- Партнер -->
                         <Select
                             v-model="form.partner_id"
-                            label="Партнер"
+                            label="Партнер *"
                             :options="partnerOptions"
                             optionLabel="label"
                             optionValue="value"
                             placeholder="Выберите партнера"
-                            :error="errors.partner_id"
-                            required
+                            :error="form.errors.partner_id"
+                            :required="true"
                         />
 
                         <!-- Размер команды -->
                         <Select
                             v-model="form.required_team_size"
-                            label="Размер команды"
+                            label="Размер команды *"
                             :options="teamSizeOptions"
                             optionLabel="label"
                             optionValue="value"
                             placeholder="Выберите размер"
-                            :error="errors.required_team_size"
-                            required
+                            :error="form.errors.required_team_size"
+                            :required="true"
                         />
 
                         <!-- Дедлайн -->
                         <DatePicker
                             v-model="form.deadline"
-                            label="Дедлайн"
+                            label="Дедлайн *"
                             :minDate="minDate"
-                            :error="errors.deadline"
-                            required
+                            :error="form.errors.deadline"
+                            :required="true"
                         />
 
                         <!-- Статус -->
                         <Select
                             v-model="form.status"
-                            label="Статус"
+                            label="Статус *"
                             :options="statusOptions"
                             optionLabel="label"
                             optionValue="value"
                             placeholder="Выберите статус"
-                            :error="errors.status"
-                            required
+                            :error="form.errors.status"
+                            :required="true"
                         />
 
                         <!-- Награда -->
@@ -95,43 +94,14 @@
                                 v-model="form.reward"
                                 type="text"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
-                                :class="{ 'border-red-300': errors.reward }"
+                                :class="{ 'border-red-300 focus:border-red-500': form.errors.reward }"
                                 placeholder="Например: сертификат, призы, деньги"
-                                required
                             />
-                            <div v-if="errors.reward" class="text-red-500 text-sm mt-1">
-                                {{ errors.reward }}
+                            <div v-if="form.errors.reward" class="text-red-500 text-sm mt-1">
+                                {{ form.errors.reward }}
                             </div>
                         </div>
 
-                        <!-- Длительность проекта -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Длительность проекта (недель)
-                            </label>
-                            <input
-                                v-model="form.project_duration"
-                                type="number"
-                                min="1"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
-                                placeholder="Например: 4"
-                            />
-                        </div>
-
-                        <!-- Бюджет -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Бюджет (руб.)
-                            </label>
-                            <input
-                                v-model="form.budget"
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
-                                placeholder="Например: 50000"
-                            />
-                        </div>
                     </div>
 
                     <!-- Описание -->
@@ -143,12 +113,11 @@
                             v-model="form.description"
                             rows="6"
                             class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
-                            :class="{ 'border-red-300': errors.description }"
+                            :class="{ 'border-red-300 focus:border-red-500': form.errors.description }"
                             placeholder="Подробно опишите задачу, цели и ожидаемые результаты..."
-                            required
                         ></textarea>
-                        <div v-if="errors.description" class="text-red-500 text-sm mt-1">
-                            {{ errors.description }}
+                        <div v-if="form.errors.description" class="text-red-500 text-sm mt-1">
+                            {{ form.errors.description }}
                         </div>
                     </div>
 
@@ -226,8 +195,8 @@ import Select from '@/Components/UI/Select.vue';
 const props = defineProps({
     partners: Array,
     skills: Array,
+    simulators: Array,
     statusOptions: Array,
-    errors: Object,
 })
 
 const processing = ref(false)
@@ -240,7 +209,8 @@ const form = useForm({
     required_team_size: '',
     status: 'draft',
     reward: '',
-    required_skills: [], // измените на required_skills
+    simulator_id: null,
+    required_skills: [],
 })
 
 const minDate = computed(() => {
@@ -250,17 +220,22 @@ const minDate = computed(() => {
 const partnerOptions = computed(() => [
     { label: 'Выберите партнера', value: '' },
     ...props.partners.map(partner => ({
-        label: `${partner.company_name} (${partner.contact_person})`,
+        label: `${partner.name} (${partner.contact_person})`,
         value: partner.id
     }))
 ])
 
 const teamSizeOptions = computed(() => [
-    { label: '1 человек', value: '1' },
-    { label: '2 человека', value: '2' },
-    { label: '3 человека', value: '3' },
-    { label: '4 человека', value: '4' },
-    { label: '5+ человек', value: '5' },
+    { label: '1 человек', value: 1 },
+    { label: '2 человека', value: 2 },
+    { label: '3 человека', value: 3 },
+    { label: '4 человека', value: 4 },
+    { label: '5 человек', value: 5 },
+    { label: '6 человек', value: 6 },
+    { label: '7 человек', value: 7 },
+    { label: '8 человек', value: 8 },
+    { label: '9 человек', value: 9 },
+    { label: '10 человек', value: 10 },
 ])
 
 const simulatorOptions = computed(() => [

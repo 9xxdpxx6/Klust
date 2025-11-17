@@ -24,6 +24,7 @@ class CaseController extends Controller
     ) {
         $this->middleware(['auth', 'role:admin|teacher']);
     }
+
     public function index(Request $request): Response
     {
         // Получить фильтры (status, partner_id, search, perPage)
@@ -43,7 +44,7 @@ class CaseController extends Controller
             ->map(function ($partner) {
                 return [
                     'id' => $partner->id,
-                    'company_name' => $partner->company_name,
+                    'name' => $partner->name ?? 'Без названия',
                     'contact_person' => $partner->user->name ?? 'Без контакта',
                 ];
             });
@@ -79,9 +80,23 @@ class CaseController extends Controller
         // Получить статистику через CaseService::getCaseStatistics($case)
         $statistics = $this->caseService->getCaseStatistics($case);
 
+        // Группировать заявки по статусам
+        $applicationsByStatus = [
+            'pending' => $case->applications->filter(function ($app) {
+                return $app->status && $app->status->name === 'pending';
+            })->values(),
+            'approved' => $case->applications->filter(function ($app) {
+                return $app->status && $app->status->name === 'accepted';
+            })->values(),
+            'rejected' => $case->applications->filter(function ($app) {
+                return $app->status && $app->status->name === 'rejected';
+            })->values(),
+        ];
+
         return Inertia::render('Admin/Cases/Show', [
             'caseData' => $case,
             'statistics' => $statistics,
+            'applicationsByStatus' => $applicationsByStatus,
         ]);
     }
 
@@ -91,7 +106,7 @@ class CaseController extends Controller
         $partners = Partner::with('user')->get()->map(function ($partner) {
             return [
                 'id' => $partner->id,
-                'company_name' => $partner->company_name,
+                'name' => $partner->name ?? 'Без названия',
                 'contact_person' => $partner->user->name ?? 'Без контакта',
             ];
         });
@@ -105,10 +120,18 @@ class CaseController extends Controller
             ];
         });
 
+        $statusOptions = [
+            ['label' => 'Черновик', 'value' => 'draft'],
+            ['label' => 'Активный', 'value' => 'active'],
+            ['label' => 'Завершенный', 'value' => 'completed'],
+            ['label' => 'Архивный', 'value' => 'archived'],
+        ];
+
         return Inertia::render('Admin/Cases/Create', [
             'partners' => $partners,
             'skills' => $skills,
             'simulators' => Simulator::all(),
+            'statusOptions' => $statusOptions,
         ]);
     }
 
@@ -126,7 +149,7 @@ class CaseController extends Controller
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'Ошибка при создании кейса: ' . $e->getMessage());
+                ->with('error', 'Ошибка при создании кейса: '.$e->getMessage());
         }
     }
 
@@ -139,7 +162,7 @@ class CaseController extends Controller
         $partners = Partner::with('user')->get()->map(function ($partner) {
             return [
                 'id' => $partner->id,
-                'company_name' => $partner->company_name,
+                'name' => $partner->name ?? 'Без названия',
                 'contact_person' => $partner->user->name ?? 'Без контакта',
             ];
         });
@@ -152,11 +175,23 @@ class CaseController extends Controller
             ];
         });
 
+        $statusOptions = [
+            ['label' => 'Черновик', 'value' => 'draft'],
+            ['label' => 'Активный', 'value' => 'active'],
+            ['label' => 'Завершенный', 'value' => 'completed'],
+            ['label' => 'Архивный', 'value' => 'archived'],
+        ];
+
+        // Подготовить данные кейса с required_skills как массив ID
+        $caseData = $case->toArray();
+        $caseData['required_skills'] = $case->skills->pluck('id')->toArray();
+
         return Inertia::render('Admin/Cases/Edit', [
-            'case' => $case,
+            'case' => $caseData,
             'partners' => $partners,
             'skills' => $skills,
             'simulators' => Simulator::all(),
+            'statusOptions' => $statusOptions,
         ]);
     }
 
@@ -174,7 +209,7 @@ class CaseController extends Controller
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'Ошибка при обновлении кейса: ' . $e->getMessage());
+                ->with('error', 'Ошибка при обновлении кейса: '.$e->getMessage());
         }
     }
 
@@ -191,7 +226,7 @@ class CaseController extends Controller
         } catch (\Exception $e) {
             return redirect()
                 ->back()
-                ->with('error', 'Ошибка при удалении кейса: ' . $e->getMessage());
+                ->with('error', 'Ошибка при удалении кейса: '.$e->getMessage());
         }
     }
 }

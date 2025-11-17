@@ -1,212 +1,271 @@
 <template>
-    <div>
+    <div class="space-y-6">
         <Head :title="`Кейс: ${caseData.title}`" />
 
-        <!-- Хлебные крошки -->
-        <div class="mb-6">
-            <nav class="flex" aria-label="Breadcrumb">
-                <ol class="flex items-center space-x-4">
-                    <li>
-                        <div>
-                            <Link :href="route('admin.cases.index')" class="text-gray-400 hover:text-gray-500">
-                                <span class="text-sm font-medium">Кейсы</span>
-                            </Link>
+        <!-- Заголовок с действиями -->
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg overflow-hidden">
+            <div class="px-6 py-8">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <nav class="flex mb-4" aria-label="Breadcrumb">
+                            <ol class="flex items-center space-x-2">
+                                <li>
+                                    <Link :href="route('admin.cases.index')" class="text-indigo-200 hover:text-white transition-colors">
+                                        <span class="text-sm font-medium">Кейсы</span>
+                                    </Link>
+                                </li>
+                                <li>
+                                    <ChevronRightIcon class="h-4 w-4 text-indigo-300" />
+                                </li>
+                                <li>
+                                    <span class="text-sm font-medium text-white">{{ caseData.title }}</span>
+                                </li>
+                            </ol>
+                        </nav>
+                        <h1 class="text-3xl font-bold text-white mb-3">{{ caseData.title }}</h1>
+                        <div class="flex items-center gap-3">
+                            <span :class="[
+                                'px-4 py-1.5 text-sm font-semibold rounded-full shadow-sm',
+                                getStatusBadgeClass(caseData.status)
+                            ]">
+                                {{ getStatusLabel(caseData.status) }}
+                            </span>
+                            <span class="text-indigo-100 text-sm">
+                                Создан {{ formatDate(caseData.created_at) }}
+                            </span>
                         </div>
-                    </li>
-                    <li>
-                        <div class="flex items-center">
-                            <ChevronRightIcon class="h-5 w-5 flex-shrink-0 text-gray-400" />
-                            <span class="ml-4 text-sm font-medium text-gray-500">{{ caseData.title }}</span>
-                        </div>
-                    </li>
-                </ol>
-            </nav>
-        </div>
-
-        <!-- Основная информация о кейсе -->
-        <div class="bg-white shadow rounded-lg mb-6">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <div class="flex justify-between items-center">
-                    <div class="flex items-center space-x-4">
-                        <h1 class="text-2xl font-bold text-gray-900">{{ caseData.title }}</h1>
-                        <span :class="[
-                            'px-3 py-1 text-sm font-medium rounded-full',
-                            getStatusBadgeClass(caseData.status)
-                        ]">
-                            {{ getStatusLabel(caseData.status) }}
-                        </span>
                     </div>
-                    <div class="flex space-x-3">
+                    <div class="flex gap-2 ml-4">
                         <Link
                             :href="route('admin.cases.edit', caseData.id)"
-                            class="inline-flex items-center justify-center p-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none transition-colors"
+                            class="inline-flex items-center justify-center p-3 bg-white/10 backdrop-blur-sm text-white rounded-lg hover:bg-white/20 focus:outline-none transition-all shadow-lg border border-white/20"
                             title="Редактировать"
                         >
-                            <i class="pi pi-pencil text-sm"></i>
+                            <i class="pi pi-pencil text-lg"></i>
                         </Link>
                         <button
                             @click="confirmDelete"
-                            class="inline-flex items-center justify-center p-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none transition-colors"
+                            class="inline-flex items-center justify-center p-3 bg-red-500/20 backdrop-blur-sm text-white rounded-lg hover:bg-red-500/30 focus:outline-none transition-all shadow-lg border border-red-300/30"
                             title="Удалить"
                         >
-                            <i class="pi pi-trash text-sm"></i>
+                            <i class="pi pi-trash text-lg"></i>
                         </button>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="px-6 py-4">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Информация о кейсе -->
-                    <div class="lg:col-span-2">
-                        <h2 class="text-lg font-medium text-gray-900 mb-4">Описание кейса</h2>
-                        <p class="text-gray-700 whitespace-pre-line">{{ caseData.description }}</p>
+        <!-- Статистика - карточки с градиентами -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 shadow-md border border-blue-200/50 hover:shadow-lg transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-blue-600 mb-1">Всего заявок</p>
+                        <p class="text-3xl font-bold text-blue-900">{{ statistics.total_applications || 0 }}</p>
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-blue-500 rounded-xl">
+                        <DocumentTextIcon class="h-8 w-8 text-white" />
+                    </div>
+                </div>
+            </div>
 
-                        <!-- Навыки -->
-                        <div class="mt-6">
-                            <h3 class="text-md font-medium text-gray-900 mb-2">Требуемые навыки</h3>
-                            <div class="flex flex-wrap gap-2">
-                                <span
-                                    v-for="skill in caseData.skills"
-                                    :key="skill.id"
-                                    class="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
-                                >
-                                    {{ skill.name }}
-                                </span>
-                                <span
-                                    v-if="!caseData.skills || caseData.skills.length === 0"
-                                    class="text-gray-500 text-sm"
-                                >
-                                    Навыки не указаны
-                                </span>
+            <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-6 shadow-md border border-amber-200/50 hover:shadow-lg transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-amber-600 mb-1">На рассмотрении</p>
+                        <p class="text-3xl font-bold text-amber-900">{{ statistics.pending_applications || 0 }}</p>
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-amber-500 rounded-xl">
+                        <ClockIcon class="h-8 w-8 text-white" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 shadow-md border border-green-200/50 hover:shadow-lg transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-green-600 mb-1">Одобрено</p>
+                        <p class="text-3xl font-bold text-green-900">{{ statistics.approved_applications || 0 }}</p>
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-green-500 rounded-xl">
+                        <CheckCircleIcon class="h-8 w-8 text-white" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 shadow-md border border-purple-200/50 hover:shadow-lg transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-purple-600 mb-1">Средний размер команды</p>
+                        <p class="text-3xl font-bold text-purple-900">
+                            {{ Math.round(statistics.average_team_size * 10) / 10 || 0 }}
+                        </p>
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-purple-500 rounded-xl">
+                        <UserGroupIcon class="h-8 w-8 text-white" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Основной контент -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Описание и навыки -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Описание кейса -->
+                <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                        <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                            <i class="pi pi-file-edit text-indigo-600"></i>
+                            Описание кейса
+                        </h2>
+                    </div>
+                    <div class="px-6 py-6">
+                        <p class="text-gray-700 leading-relaxed whitespace-pre-line">{{ caseData.description || 'Описание не указано' }}</p>
+                    </div>
+                </div>
+
+                <!-- Требуемые навыки -->
+                <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                        <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                            <i class="pi pi-star text-amber-500"></i>
+                            Требуемые навыки
+                        </h2>
+                    </div>
+                    <div class="px-6 py-6">
+                        <div v-if="caseData.skills && caseData.skills.length > 0" class="flex flex-wrap gap-3">
+                            <span
+                                v-for="skill in caseData.skills"
+                                :key="skill.id"
+                                class="px-4 py-2 bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 text-sm font-medium rounded-lg border border-indigo-200 shadow-sm"
+                            >
+                                {{ skill.name }}
+                            </span>
+                        </div>
+                        <div v-else class="text-center py-8">
+                            <i class="pi pi-info-circle text-4xl text-gray-300 mb-3"></i>
+                            <p class="text-gray-500 text-sm">Навыки не указаны</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Детали кейса - боковая панель -->
+            <div class="space-y-6">
+                <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden sticky top-6">
+                    <div class="px-6 py-4 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-200">
+                        <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                            <i class="pi pi-info-circle text-indigo-600"></i>
+                            Детали кейса
+                        </h2>
+                    </div>
+                    <div class="px-6 py-6 space-y-5">
+                        <!-- Партнер -->
+                        <div class="pb-5 border-b border-gray-100">
+                            <div class="flex items-start gap-3">
+                                <div class="p-2 bg-indigo-100 rounded-lg">
+                                    <i class="pi pi-building text-indigo-600"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Партнер</p>
+                                    <p class="text-sm font-medium text-gray-900 truncate">{{ caseData.partner?.company_name || 'Не указан' }}</p>
+                                    <p class="text-xs text-gray-500 mt-1">{{ caseData.partner?.user?.name || '' }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Дедлайн -->
+                        <div class="pb-5 border-b border-gray-100">
+                            <div class="flex items-start gap-3">
+                                <div class="p-2 bg-red-100 rounded-lg">
+                                    <i class="pi pi-calendar text-red-600"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Дедлайн</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ formatDate(caseData.deadline) || 'Не указан' }}</p>
+                                    <p :class="[
+                                        'text-xs font-medium mt-1',
+                                        isDeadlineSoon(caseData.deadline) ? 'text-red-600' : 'text-gray-500'
+                                    ]">
+                                        {{ daysUntilDeadline(caseData.deadline) }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Размер команды -->
+                        <div class="pb-5 border-b border-gray-100">
+                            <div class="flex items-start gap-3">
+                                <div class="p-2 bg-blue-100 rounded-lg">
+                                    <i class="pi pi-users text-blue-600"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Размер команды</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ caseData.required_team_size || 1 }} человек</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Награда -->
+                        <div class="pb-5 border-b border-gray-100">
+                            <div class="flex items-start gap-3">
+                                <div class="p-2 bg-amber-100 rounded-lg">
+                                    <i class="pi pi-gift text-amber-600"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Награда</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ caseData.reward || 'Не указана' }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Симулятор -->
+                        <div class="pb-5 border-b border-gray-100">
+                            <div class="flex items-start gap-3">
+                                <div class="p-2 bg-purple-100 rounded-lg">
+                                    <i class="pi pi-desktop text-purple-600"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Симулятор</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ caseData.simulator?.title || 'Не указан' }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Дата создания -->
+                        <div>
+                            <div class="flex items-start gap-3">
+                                <div class="p-2 bg-gray-100 rounded-lg">
+                                    <i class="pi pi-clock text-gray-600"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Дата создания</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ formatDate(caseData.created_at) }}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Детали кейса -->
-                    <div class="space-y-4">
-                        <div>
-                            <h3 class="text-md font-medium text-gray-900 mb-3">Детали кейса</h3>
-                            <dl class="space-y-3">
-                                <div>
-                                    <dt class="text-sm font-medium text-gray-500">Партнер</dt>
-                                    <dd class="text-sm text-gray-900">
-                                        {{ caseData.partner?.company_name }}
-                                        <span class="text-gray-500 block">{{ caseData.partner?.user?.name }}</span>
-                                    </dd>
-                                </div>
-                                <div>
-                                    <dt class="text-sm font-medium text-gray-500">Дедлайн</dt>
-                                    <dd class="text-sm text-gray-900">
-                                        {{ formatDate(caseData.deadline) }}
-                                        <span :class="[
-                                            'block text-xs font-medium',
-                                            isDeadlineSoon(caseData.deadline) ? 'text-red-600' : 'text-gray-500'
-                                        ]">
-                                            {{ daysUntilDeadline(caseData.deadline) }}
-                                        </span>
-                                    </dd>
-                                </div>
-                                <div>
-                                    <dt class="text-sm font-medium text-gray-500">Размер команды</dt>
-                                    <dd class="text-sm text-gray-900">{{ caseData.required_team_size }} человек</dd>
-                                </div>
-                                <div>
-                                    <dt class="text-sm font-medium text-gray-500">Награда</dt>
-                                    <dd class="text-sm text-gray-900">{{ caseData.reward }}</dd>
-                                </div>
-                                <div>
-                                    <dt class="text-sm font-medium text-gray-500">Симулятор</dt>
-                                    <dd class="text-sm text-gray-900">
-                                        {{ caseData.simulator?.title || 'Не указан' }}
-                                    </dd>
-                                </div>
-                                <div>
-                                    <dt class="text-sm font-medium text-gray-500">Дата создания</dt>
-                                    <dd class="text-sm text-gray-900">{{ formatDate(caseData.created_at) }}</dd>
-                                </div>
-                            </dl>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Статистика -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-            <div class="bg-white shadow rounded-lg p-6">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <DocumentTextIcon class="h-8 w-8 text-blue-600" />
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Всего заявок</dt>
-                            <dd class="text-lg font-medium text-gray-900">{{ statistics.total_applications }}</dd>
-                        </dl>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white shadow rounded-lg p-6">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <ClockIcon class="h-8 w-8 text-yellow-600" />
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">На рассмотрении</dt>
-                            <dd class="text-lg font-medium text-gray-900">{{ statistics.pending_applications }}</dd>
-                        </dl>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white shadow rounded-lg p-6">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <CheckCircleIcon class="h-8 w-8 text-green-600" />
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Одобрено</dt>
-                            <dd class="text-lg font-medium text-gray-900">{{ statistics.approved_applications }}</dd>
-                        </dl>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white shadow rounded-lg p-6">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <UserGroupIcon class="h-8 w-8 text-purple-600" />
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Средний размер команды</dt>
-                            <dd class="text-lg font-medium text-gray-900">
-                                {{ Math.round(statistics.average_team_size * 10) / 10 || 0 }}
-                            </dd>
-                        </dl>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Заявки по статусам -->
+        <!-- Заявки -->
         <div class="space-y-6">
             <!-- Одобренные заявки -->
-            <div v-if="applicationsByStatus.approved.length > 0">
-                <h2 class="text-xl font-bold text-gray-900 mb-4">Одобренные команды</h2>
-                <div class="bg-white shadow rounded-lg overflow-hidden">
-                    <div class="px-6 py-4 border-b border-gray-200 bg-green-50">
-                        <h3 class="text-lg font-medium text-green-900">Одобренные заявки ({{ applicationsByStatus.approved.length }})</h3>
+            <div v-if="applicationsByStatus.approved && applicationsByStatus.approved.length > 0">
+                <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-200">
+                        <h2 class="text-xl font-bold text-green-900 flex items-center gap-2">
+                            <CheckCircleIcon class="h-6 w-6" />
+                            Одобренные команды ({{ applicationsByStatus.approved.length }})
+                        </h2>
                     </div>
-                    <div class="divide-y divide-gray-200">
+                    <div class="divide-y divide-gray-100">
                         <div
                             v-for="application in applicationsByStatus.approved"
                             :key="application.id"
-                            class="px-6 py-4"
+                            class="px-6 py-5 hover:bg-gray-50 transition-colors"
                         >
                             <ApplicationCard :application="application" />
                         </div>
@@ -215,17 +274,19 @@
             </div>
 
             <!-- Заявки на рассмотрении -->
-            <div v-if="applicationsByStatus.pending.length > 0">
-                <h2 class="text-xl font-bold text-gray-900 mb-4">Заявки на рассмотрении</h2>
-                <div class="bg-white shadow rounded-lg overflow-hidden">
-                    <div class="px-6 py-4 border-b border-gray-200 bg-yellow-50">
-                        <h3 class="text-lg font-medium text-yellow-900">На рассмотрении ({{ applicationsByStatus.pending.length }})</h3>
+            <div v-if="applicationsByStatus.pending && applicationsByStatus.pending.length > 0">
+                <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-200">
+                        <h2 class="text-xl font-bold text-amber-900 flex items-center gap-2">
+                            <ClockIcon class="h-6 w-6" />
+                            Заявки на рассмотрении ({{ applicationsByStatus.pending.length }})
+                        </h2>
                     </div>
-                    <div class="divide-y divide-gray-200">
+                    <div class="divide-y divide-gray-100">
                         <div
                             v-for="application in applicationsByStatus.pending"
                             :key="application.id"
-                            class="px-6 py-4"
+                            class="px-6 py-5 hover:bg-gray-50 transition-colors"
                         >
                             <ApplicationCard :application="application" />
                         </div>
@@ -234,17 +295,19 @@
             </div>
 
             <!-- Отклоненные заявки -->
-            <div v-if="applicationsByStatus.rejected.length > 0">
-                <h2 class="text-xl font-bold text-gray-900 mb-4">Отклоненные заявки</h2>
-                <div class="bg-white shadow rounded-lg overflow-hidden">
-                    <div class="px-6 py-4 border-b border-gray-200 bg-red-50">
-                        <h3 class="text-lg font-medium text-red-900">Отклоненные ({{ applicationsByStatus.rejected.length }})</h3>
+            <div v-if="applicationsByStatus.rejected && applicationsByStatus.rejected.length > 0">
+                <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 bg-gradient-to-r from-red-50 to-rose-50 border-b border-red-200">
+                        <h2 class="text-xl font-bold text-red-900 flex items-center gap-2">
+                            <i class="pi pi-times-circle text-xl"></i>
+                            Отклоненные заявки ({{ applicationsByStatus.rejected.length }})
+                        </h2>
                     </div>
-                    <div class="divide-y divide-gray-200">
+                    <div class="divide-y divide-gray-100">
                         <div
                             v-for="application in applicationsByStatus.rejected"
                             :key="application.id"
-                            class="px-6 py-4"
+                            class="px-6 py-5 hover:bg-gray-50 transition-colors"
                         >
                             <ApplicationCard :application="application" />
                         </div>
@@ -253,44 +316,47 @@
             </div>
 
             <!-- Сообщение если нет заявок -->
-            <div v-if="statistics.total_applications === 0" class="bg-white shadow rounded-lg p-8 text-center">
-                <DocumentTextIcon class="mx-auto h-12 w-12 text-gray-400" />
-                <h3 class="mt-2 text-sm font-medium text-gray-900">Заявок пока нет</h3>
-                <p class="mt-1 text-sm text-gray-500">
-                    На этот кейс еще не было подано заявок от студентов.
-                </p>
+            <div v-if="statistics.total_applications === 0" class="bg-white rounded-xl shadow-md border border-gray-200 p-12 text-center">
+                <div class="max-w-md mx-auto">
+                    <div class="mx-auto w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-4">
+                        <DocumentTextIcon class="h-10 w-10 text-gray-400" />
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Заявок пока нет</h3>
+                    <p class="text-sm text-gray-500">
+                        На этот кейс еще не было подано заявок от студентов.
+                    </p>
+                </div>
             </div>
         </div>
 
         <!-- Модальное окно подтверждения удаления -->
-        <div v-if="showDeleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-                <div class="mt-3 text-center">
-                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                        <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                        </svg>
+        <div v-if="showDeleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+            <div class="relative bg-white rounded-xl shadow-2xl max-w-md w-full border border-gray-200">
+                <div class="p-6">
+                    <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+                        <i class="pi pi-exclamation-triangle text-3xl text-red-600"></i>
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 mt-2">Подтверждение удаления</h3>
-                    <div class="mt-2 px-7 py-3">
-                        <p class="text-sm text-gray-500">
-                            Вы уверены, что хотите удалить кейс <strong>"{{ caseData.title }}"</strong>?
+                    <h3 class="text-xl font-bold text-gray-900 text-center mb-2">Подтверждение удаления</h3>
+                    <div class="mt-4 text-center">
+                        <p class="text-sm text-gray-600 mb-2">
+                            Вы уверены, что хотите удалить кейс
                         </p>
-                        <p class="text-sm text-red-600 mt-2">
+                        <p class="text-sm font-semibold text-gray-900 mb-4">"{{ caseData.title }}"?</p>
+                        <p class="text-xs text-red-600 bg-red-50 rounded-lg p-3">
                             Это действие нельзя отменить. Все данные кейса будут удалены безвозвратно.
                         </p>
                     </div>
-                    <div class="flex justify-center space-x-4 mt-4">
+                    <div class="flex justify-center gap-3 mt-6">
                         <button
                             @click="showDeleteModal = false"
-                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
+                            class="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
                         >
                             Отмена
                         </button>
                         <button
                             @click="deleteCase"
                             :disabled="processing"
-                            class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            class="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                         >
                             <span v-if="processing">Удаление...</span>
                             <span v-else>Удалить</span>
@@ -412,11 +478,11 @@ const getStatusLabel = (status) => {
 
 const getStatusBadgeClass = (status) => {
     const classMap = {
-        draft: 'bg-gray-100 text-gray-800',
-        active: 'bg-green-100 text-green-800',
-        completed: 'bg-blue-100 text-blue-800',
-        archived: 'bg-red-100 text-red-800',
+        draft: 'bg-gray-100 text-gray-800 border border-gray-200',
+        active: 'bg-green-100 text-green-800 border border-green-200',
+        completed: 'bg-blue-100 text-blue-800 border border-blue-200',
+        archived: 'bg-red-100 text-red-800 border border-red-200',
     }
-    return classMap[status] || 'bg-gray-100 text-gray-800'
+    return classMap[status] || 'bg-gray-100 text-gray-800 border border-gray-200'
 }
 </script>

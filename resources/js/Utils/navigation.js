@@ -30,7 +30,7 @@ export const adminMenuItems = [
   {
     label: 'Бейджи',
     route: 'admin.badges.index',
-    icon: 'pi pi-tag',
+    icon: 'pi pi-trophy',
   },
   {
     label: 'Симуляторы',

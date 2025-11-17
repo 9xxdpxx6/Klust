@@ -1,35 +1,52 @@
 <template>
-    <div>
+    <div class="space-y-6">
         <Head title="Управление симуляторами"/>
 
-        <div class="mb-6 flex justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-bold">Управление симуляторами</h1>
-                <p class="text-gray-600 mt-2">Список всех симуляторов в системе</p>
+        <FlashMessage/>
+
+        <!-- Заголовок с градиентом -->
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg overflow-hidden">
+            <div class="px-6 py-8">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold text-white mb-2">Управление симуляторами</h1>
+                        <p class="text-indigo-100">Список всех симуляторов в системе</p>
+                    </div>
+                    <button
+                        @click="openCreateModal"
+                        class="inline-flex items-center gap-2 px-6 py-3 bg-white/10 backdrop-blur-sm text-white rounded-lg hover:bg-white/20 focus:outline-none transition-all shadow-lg border border-white/20 font-medium"
+                    >
+                        <i class="pi pi-plus"></i>
+                        Создать симулятор
+                    </button>
+                </div>
             </div>
-            <Button
-                @click="openCreateModal"
-                label="Создать симулятор"
-                icon="pi pi-plus"
-                unstyled
-                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors inline-flex items-center justify-center gap-2"
-            />
         </div>
 
         <!-- Фильтры -->
-        <div class="bg-white rounded-lg shadow p-4 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Поиск -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Поиск</label>
-                    <input
-                        v-model="filters.search"
-                        type="text"
-                        placeholder="Название, slug или описание"
-                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
-                        @input="handleSearch"
-                    />
-                </div>
+        <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <i class="pi pi-filter text-indigo-600"></i>
+                    Фильтры поиска
+                </h2>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Поиск -->
+                    <div class="lg:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Поиск</label>
+                        <div class="relative">
+                            <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <input
+                                v-model="filters.search"
+                                type="text"
+                                placeholder="Название, slug или описание"
+                                class="w-full pl-10 pr-4 py-2.5 rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+                                @input="handleSearch"
+                            />
+                        </div>
+                    </div>
 
                 <!-- Фильтр по статусу -->
                 <div>
@@ -58,107 +75,139 @@
                 </div>
             </div>
 
-            <!-- Кнопка сброса фильтров -->
-            <div class="mt-4 flex justify-end">
-                <button
-                    @click="resetFilters"
-                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                >
-                    Сбросить фильтры
-                </button>
+                    <!-- Кнопка сброса фильтров -->
+                    <div class="mt-4 flex justify-end">
+                        <button
+                            @click="resetFilters"
+                            :disabled="!hasActiveFilters"
+                            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <i class="pi pi-refresh"></i>
+                            Сбросить фильтры
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Статистика -->
+        <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-5 shadow-md border border-purple-200/50">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-purple-600 mb-1">Всего симуляторов</p>
+                    <p class="text-2xl font-bold text-purple-900">{{ simulatorsTotal }}</p>
+                </div>
+                <div class="w-12 h-12 flex items-center justify-center bg-purple-500 rounded-xl">
+                    <i class="pi pi-desktop text-white text-xl"></i>
+                </div>
             </div>
         </div>
 
         <!-- Таблица симуляторов -->
-        <div class="bg-white rounded-lg shadow overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <div class="text-sm text-gray-600">
-                    Всего симуляторов: {{ simulatorsTotal }}
+        <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <i class="pi pi-list text-indigo-600"></i>
+                        Список симуляторов
+                    </h2>
+                    <span class="text-sm text-gray-600 bg-white px-3 py-1 rounded-lg border border-gray-200">
+                        Всего: {{ simulatorsTotal }}
+                    </span>
                 </div>
             </div>
 
             <!-- Десктопная таблица -->
-            <div class="hidden md:block overflow-x-auto">
+            <div v-if="simulatorsData && simulatorsData.length > 0" class="hidden md:block overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Симулятор
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Партнер
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Статус
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Создан
                         </th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Действия
                         </th>
                     </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="bg-white divide-y divide-gray-100">
                     <tr
                         v-for="simulator in simulatorsData"
                         :key="simulator.id"
-                        class="hover:bg-gray-50 transition-colors"
+                        class="hover:bg-indigo-50/50 transition-all group"
                     >
                         <td class="px-6 py-4">
                             <div class="flex items-start gap-3">
-                                <img
-                                    v-if="simulator.preview_image_url"
-                                    :src="simulator.preview_image_url"
-                                    :alt="simulator.title"
-                                    class="w-[50px] h-[50px] object-cover rounded flex-shrink-0"
-                                />
-                                <div v-else class="w-[50px] h-[50px] bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
-                                    <i class="pi pi-image text-gray-400"></i>
+                                <div class="p-2 bg-purple-100 rounded-lg group-hover:bg-purple-200 transition-colors flex-shrink-0">
+                                    <img
+                                        v-if="simulator.preview_image_url"
+                                        :src="simulator.preview_image_url"
+                                        :alt="simulator.title"
+                                        class="w-10 h-10 object-cover rounded"
+                                    />
+                                    <div v-else class="w-10 h-10 flex items-center justify-center">
+                                        <i class="pi pi-desktop text-purple-600"></i>
+                                    </div>
                                 </div>
                                 <div class="min-w-0 flex-1">
-                                    <div class="text-sm font-medium text-gray-900 break-words">
+                                    <div class="text-sm font-semibold text-gray-900 break-words">
                                         {{ simulator.title }}
                                     </div>
-                                    <div v-if="simulator.description" class="text-xs text-gray-500 break-words mt-1">
+                                    <div v-if="simulator.description" class="text-xs text-gray-500 break-words mt-1 line-clamp-2">
                                         {{ simulator.description }}
                                     </div>
                                 </div>
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900">
-                                {{ simulator.partner?.name || 'Не указан' }}
-                            </div>
-                            <div v-if="simulator.partner?.contact_person" class="text-xs text-gray-500">
-                                {{ simulator.partner.contact_person }}
+                            <div class="flex items-center gap-2">
+                                <div class="p-1.5 bg-blue-100 rounded-lg">
+                                    <i class="pi pi-building text-blue-600 text-xs"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900">
+                                        {{ simulator.partner?.name || 'Не указан' }}
+                                    </div>
+                                    <div v-if="simulator.partner?.contact_person" class="text-xs text-gray-500">
+                                        {{ simulator.partner.contact_person }}
+                                    </div>
+                                </div>
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span
                                 :class="[
-                                    'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
-                                    simulator.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                    'px-3 py-1.5 inline-flex text-xs font-semibold rounded-lg border',
+                                    simulator.is_active ? 'bg-green-100 text-green-800 border-green-200' : 'bg-gray-100 text-gray-800 border-gray-200'
                                 ]"
                             >
                                 {{ simulator.is_active ? 'Активен' : 'Неактивен' }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ formatDate(simulator.created_at) }}
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-500">{{ formatDate(simulator.created_at) }}</div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <td class="px-6 py-4 whitespace-nowrap text-right">
                             <div class="flex justify-end gap-2">
                                 <button
                                     @click.stop="openEditModal(simulator)"
-                                    class="p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-md transition-colors focus:outline-none"
+                                    class="p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-lg transition-colors focus:outline-none border border-transparent hover:border-indigo-200"
                                     title="Редактировать"
                                 >
                                     <i class="pi pi-pencil text-sm"></i>
                                 </button>
                                 <button
                                     @click.stop="confirmDelete(simulator)"
-                                    class="p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-md transition-colors focus:outline-none"
+                                    class="p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-lg transition-colors focus:outline-none border border-transparent hover:border-red-200"
                                     title="Удалить"
                                 >
                                     <i class="pi pi-trash text-sm"></i>
@@ -170,22 +219,60 @@
                 </table>
             </div>
 
+            <!-- Пагинация -->
+            <div v-if="simulatorsLinks && simulatorsLinks.length > 0" class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                <Pagination :links="simulatorsLinks" />
+            </div>
+        </div>
+
+        <!-- Сообщение если нет симуляторов -->
+        <div v-if="!simulatorsData || simulatorsData.length === 0" class="bg-white rounded-xl shadow-md border border-gray-200 p-12 text-center">
+            <div class="max-w-md mx-auto">
+                <div class="mx-auto w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-4">
+                    <i class="pi pi-desktop text-4xl text-gray-400"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Симуляторы не найдены</h3>
+                <p class="text-sm text-gray-500 mb-6">
+                    <span v-if="hasActiveFilters">Попробуйте изменить параметры фильтрации</span>
+                    <span v-else>Создайте первый симулятор, чтобы начать работу</span>
+                </p>
+                <div class="flex gap-3 justify-center">
+                    <button
+                        v-if="hasActiveFilters"
+                        @click="resetFilters"
+                        class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                    >
+                        Сбросить фильтры
+                    </button>
+                    <button
+                        v-else
+                        @click="openCreateModal"
+                        class="px-6 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
+                    >
+                        Создать симулятор
+                    </button>
+                </div>
+            </div>
+        </div>
+
             <!-- Мобильные карточки -->
-            <div class="md:hidden space-y-4">
+            <div v-if="simulatorsData && simulatorsData.length > 0" class="md:hidden space-y-4 p-6">
                 <div
                     v-for="simulator in simulatorsData"
                     :key="simulator.id"
-                    class="bg-white border border-gray-200 rounded-lg p-4"
+                    class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
                 >
                     <div class="flex items-start gap-3 mb-3">
-                        <img
-                            v-if="simulator.preview_image_url"
-                            :src="simulator.preview_image_url"
-                            :alt="simulator.title"
-                            class="w-16 h-16 object-cover rounded flex-shrink-0"
-                        />
-                        <div v-else class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
-                            <i class="pi pi-image text-gray-400"></i>
+                        <div class="p-2 bg-purple-100 rounded-lg flex-shrink-0">
+                            <img
+                                v-if="simulator.preview_image_url"
+                                :src="simulator.preview_image_url"
+                                :alt="simulator.title"
+                                class="w-12 h-12 object-cover rounded"
+                            />
+                            <div v-else class="w-12 h-12 flex items-center justify-center">
+                                <i class="pi pi-desktop text-purple-600 text-xl"></i>
+                            </div>
                         </div>
                         <div class="flex-1 min-w-0">
                             <h3 class="text-sm font-medium text-gray-900 mb-1">
@@ -212,8 +299,8 @@
                             <span class="text-gray-500">Статус:</span>
                             <span
                                 :class="[
-                                    'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
-                                    simulator.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                    'px-3 py-1.5 inline-flex text-xs font-semibold rounded-lg border',
+                                    simulator.is_active ? 'bg-green-100 text-green-800 border-green-200' : 'bg-gray-100 text-gray-800 border-gray-200'
                                 ]"
                             >
                                 {{ simulator.is_active ? 'Активен' : 'Неактивен' }}
@@ -228,14 +315,14 @@
                     <div class="mt-4 flex justify-end gap-2 pt-3 border-t border-gray-200">
                         <button
                             @click="openEditModal(simulator)"
-                            class="p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-md transition-colors"
+                            class="p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-lg transition-colors border border-transparent hover:border-indigo-200"
                             title="Редактировать"
                         >
                             <i class="pi pi-pencil"></i>
                         </button>
                         <button
                             @click="confirmDelete(simulator)"
-                            class="p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-md transition-colors"
+                            class="p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-200"
                             title="Удалить"
                         >
                             <i class="pi pi-trash"></i>
@@ -245,19 +332,9 @@
             </div>
 
             <!-- Пагинация -->
-            <Pagination v-if="simulatorsLinks && simulatorsLinks.length > 0" :links="simulatorsLinks" class="mt-4"/>
-        </div>
-
-        <!-- Сообщение если нет симуляторов -->
-        <div v-if="!simulatorsData || simulatorsData.length === 0" class="bg-white rounded-lg shadow p-8 text-center">
-            <p class="text-gray-500">Симуляторы не найдены</p>
-            <button
-                v-if="hasActiveFilters"
-                @click="resetFilters"
-                class="mt-4 px-4 py-2 text-sm font-medium text-indigo-700 bg-indigo-100 hover:bg-indigo-200 rounded-md transition-colors"
-            >
-                Сбросить фильтры
-            </button>
+            <div v-if="simulatorsLinks && simulatorsLinks.length > 0" class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                <Pagination :links="simulatorsLinks" />
+            </div>
         </div>
 
         <!-- Модальное окно создания/редактирования -->
