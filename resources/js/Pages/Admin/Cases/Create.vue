@@ -32,58 +32,57 @@
                                 v-model="form.title"
                                 type="text"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
-                                :class="{ 'border-red-300': errors.title }"
+                                :class="{ 'border-red-300 focus:border-red-500': form.errors.title }"
                                 placeholder="Введите название кейса"
-                                required
                             />
-                            <div v-if="errors.title" class="text-red-500 text-sm mt-1">
-                                {{ errors.title }}
+                            <div v-if="form.errors.title" class="text-red-500 text-sm mt-1">
+                                {{ form.errors.title }}
                             </div>
                         </div>
 
                         <!-- Партнер -->
                         <Select
                             v-model="form.partner_id"
-                            label="Партнер"
+                            label="Партнер *"
                             :options="partnerOptions"
                             optionLabel="label"
                             optionValue="value"
                             placeholder="Выберите партнера"
-                            :error="errors.partner_id"
-                            required
+                            :error="form.errors.partner_id"
+                            :required="true"
                         />
 
                         <!-- Размер команды -->
                         <Select
                             v-model="form.required_team_size"
-                            label="Размер команды"
+                            label="Размер команды *"
                             :options="teamSizeOptions"
                             optionLabel="label"
                             optionValue="value"
                             placeholder="Выберите размер"
-                            :error="errors.required_team_size"
-                            required
+                            :error="form.errors.required_team_size"
+                            :required="true"
                         />
 
                         <!-- Дедлайн -->
                         <DatePicker
                             v-model="form.deadline"
-                            label="Дедлайн"
+                            label="Дедлайн *"
                             :minDate="minDate"
-                            :error="errors.deadline"
-                            required
+                            :error="form.errors.deadline"
+                            :required="true"
                         />
 
                         <!-- Статус -->
                         <Select
                             v-model="form.status"
-                            label="Статус"
+                            label="Статус *"
                             :options="statusOptions"
                             optionLabel="label"
                             optionValue="value"
                             placeholder="Выберите статус"
-                            :error="errors.status"
-                            required
+                            :error="form.errors.status"
+                            :required="true"
                         />
 
                         <!-- Награда -->
@@ -95,12 +94,11 @@
                                 v-model="form.reward"
                                 type="text"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
-                                :class="{ 'border-red-300': errors.reward }"
+                                :class="{ 'border-red-300 focus:border-red-500': form.errors.reward }"
                                 placeholder="Например: сертификат, призы, деньги"
-                                required
                             />
-                            <div v-if="errors.reward" class="text-red-500 text-sm mt-1">
-                                {{ errors.reward }}
+                            <div v-if="form.errors.reward" class="text-red-500 text-sm mt-1">
+                                {{ form.errors.reward }}
                             </div>
                         </div>
 
@@ -115,12 +113,11 @@
                             v-model="form.description"
                             rows="6"
                             class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
-                            :class="{ 'border-red-300': errors.description }"
+                            :class="{ 'border-red-300 focus:border-red-500': form.errors.description }"
                             placeholder="Подробно опишите задачу, цели и ожидаемые результаты..."
-                            required
                         ></textarea>
-                        <div v-if="errors.description" class="text-red-500 text-sm mt-1">
-                            {{ errors.description }}
+                        <div v-if="form.errors.description" class="text-red-500 text-sm mt-1">
+                            {{ form.errors.description }}
                         </div>
                     </div>
 
@@ -200,7 +197,6 @@ const props = defineProps({
     skills: Array,
     simulators: Array,
     statusOptions: Array,
-    errors: Object,
 })
 
 const processing = ref(false)

@@ -32,9 +32,8 @@
                                 v-model="form.title"
                                 type="text"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
-                                :class="{ 'border-red-300': form.errors.title }"
+                                :class="{ 'border-red-300 focus:border-red-500': form.errors.title }"
                                 placeholder="Введите название кейса"
-                                required
                             />
                             <div v-if="form.errors.title" class="text-red-500 text-sm mt-1">
                                 {{ form.errors.title }}
@@ -44,46 +43,46 @@
                         <!-- Партнер -->
                         <Select
                             v-model="form.partner_id"
-                            label="Партнер"
+                            label="Партнер *"
                             :options="partnerOptions"
                             optionLabel="label"
                             optionValue="value"
                             placeholder="Выберите партнера"
                             :error="form.errors.partner_id"
-                            required
+                            :required="true"
                         />
 
                         <!-- Размер команды -->
                         <Select
                             v-model="form.required_team_size"
-                            label="Размер команды"
+                            label="Размер команды *"
                             :options="teamSizeOptions"
                             optionLabel="label"
                             optionValue="value"
                             placeholder="Выберите размер"
                             :error="form.errors.required_team_size"
-                            required
+                            :required="true"
                         />
 
                         <!-- Дедлайн -->
                         <DatePicker
                             v-model="form.deadline"
-                            label="Дедлайн"
+                            label="Дедлайн *"
                             :minDate="minDate"
                             :error="form.errors.deadline"
-                            required
+                            :required="true"
                         />
 
                         <!-- Статус -->
                         <Select
                             v-model="form.status"
-                            label="Статус"
+                            label="Статус *"
                             :options="statusOptions"
                             optionLabel="label"
                             optionValue="value"
                             placeholder="Выберите статус"
                             :error="form.errors.status"
-                            required
+                            :required="true"
                         />
 
                         <!-- Награда -->
@@ -95,9 +94,8 @@
                                 v-model="form.reward"
                                 type="text"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
-                                :class="{ 'border-red-300': form.errors.reward }"
+                                :class="{ 'border-red-300 focus:border-red-500': form.errors.reward }"
                                 placeholder="Опишите награду за выполнение кейса"
-                                required
                             />
                             <div v-if="form.errors.reward" class="text-red-500 text-sm mt-1">
                                 {{ form.errors.reward }}
@@ -114,9 +112,8 @@
                             v-model="form.description"
                             rows="6"
                             class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
-                            :class="{ 'border-red-300': form.errors.description }"
+                            :class="{ 'border-red-300 focus:border-red-500': form.errors.description }"
                             placeholder="Подробно опишите задачу, цели и ожидаемые результаты..."
-                            required
                         ></textarea>
                         <div v-if="form.errors.description" class="text-red-500 text-sm mt-1">
                             {{ form.errors.description }}

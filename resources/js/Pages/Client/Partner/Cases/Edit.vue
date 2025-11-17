@@ -16,9 +16,11 @@
                             type="text"
                             id="title"
                             v-model="form.title"
-                            required
                             :disabled="processing"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 sm:text-sm disabled:opacity-50"
+                            :class="[
+                                'block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 sm:text-sm disabled:opacity-50',
+                                { 'border-red-300 focus:border-red-500': errors.title }
+                            ]"
                             placeholder="Введите название кейса"
                         />
                         <div v-if="errors.title" class="mt-1 text-sm text-red-600">{{ errors.title }}</div>
@@ -27,17 +29,39 @@
                     <!-- Описание -->
                     <div>
                         <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
-                            Описание
+                            Описание *
                         </label>
                         <textarea
                             id="description"
                             v-model="form.description"
                             rows="6"
                             :disabled="processing"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 sm:text-sm disabled:opacity-50"
+                            :class="[
+                                'block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 sm:text-sm disabled:opacity-50',
+                                { 'border-red-300 focus:border-red-500': errors.description }
+                            ]"
                             placeholder="Подробное описание кейса..."
                         ></textarea>
                         <div v-if="errors.description" class="mt-1 text-sm text-red-600">{{ errors.description }}</div>
+                    </div>
+
+                    <!-- Награда -->
+                    <div>
+                        <label for="reward" class="block text-sm font-medium text-gray-700 mb-1">
+                            Награда *
+                        </label>
+                        <input
+                            type="text"
+                            id="reward"
+                            v-model="form.reward"
+                            :disabled="processing"
+                            :class="[
+                                'block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 sm:text-sm disabled:opacity-50',
+                                { 'border-red-300 focus:border-red-500': errors.reward }
+                            ]"
+                            placeholder="Например: сертификат, призы, деньги"
+                        />
+                        <div v-if="errors.reward" class="mt-1 text-sm text-red-600">{{ errors.reward }}</div>
                     </div>
 
                     <!-- Требуемый размер команды -->
@@ -50,12 +74,17 @@
                             id="team_size"
                             v-model.number="form.team_size"
                             min="1"
-                            required
+                            max="10"
                             :disabled="processing"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 sm:text-sm disabled:opacity-50"
+                            :class="[
+                                'block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 sm:text-sm disabled:opacity-50',
+                                { 'border-red-300 focus:border-red-500': errors.required_team_size || errors.team_size }
+                            ]"
                             placeholder="Например: 3"
                         />
-                        <div v-if="errors.team_size" class="mt-1 text-sm text-red-600">{{ errors.team_size }}</div>
+                        <div v-if="errors.required_team_size || errors.team_size" class="mt-1 text-sm text-red-600">
+                            {{ errors.required_team_size || errors.team_size }}
+                        </div>
                     </div>
 
                     <!-- Требуемые навыки -->
@@ -89,9 +118,10 @@
                     <!-- Дедлайн -->
                     <DatePicker
                         v-model="form.deadline"
-                        label="Дедлайн"
+                        label="Дедлайн *"
                         :disabled="processing"
                         :error="errors.deadline"
+                        :required="true"
                     />
 
                     <!-- Статус -->
@@ -190,7 +220,8 @@ const props = defineProps({
 const form = reactive({
     title: props.caseData.title,
     description: props.caseData.description,
-    team_size: props.caseData.team_size,
+    reward: props.caseData.reward || '',
+    team_size: props.caseData.required_team_size || props.caseData.team_size || 1,
     required_skills: props.caseData.required_skills.map(skill => skill.id),
     deadline: props.caseData.deadline ? new Date(props.caseData.deadline) : null,
     status: props.caseData.status
@@ -214,6 +245,7 @@ const submitForm = () => {
 
     const formData = {
         ...form,
+        required_team_size: form.team_size,
         deadline: formatDateForServer(form.deadline)
     };
 
@@ -225,7 +257,7 @@ const submitForm = () => {
         },
         onError: (err) => {
             processing.value = false;
-            errors.value = err;
+            errors.value = err.errors || err;
         }
     });
 };

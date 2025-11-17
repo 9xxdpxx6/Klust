@@ -31,6 +31,7 @@ class CaseService
                 'simulator_id' => $data['simulator_id'] ?? null,
                 'title' => $data['title'],
                 'description' => $data['description'],
+                'reward' => $data['reward'] ?? '',
                 'required_team_size' => $data['required_team_size'] ?? 1,
                 'deadline' => $data['deadline'] ?? null,
                 'status' => $data['status'] ?? 'draft',
@@ -63,6 +64,7 @@ class CaseService
             $case->update([
                 'title' => $data['title'] ?? $case->title,
                 'description' => $data['description'] ?? $case->description,
+                'reward' => $data['reward'] ?? $case->reward,
                 'required_team_size' => $data['required_team_size'] ?? $case->required_team_size,
                 'deadline' => $data['deadline'] ?? $case->deadline,
                 'status' => $data['status'] ?? $case->status,
