@@ -69,7 +69,7 @@ class CaseController extends Controller
     {
         // Загрузить связи: partner, skills, applications, teams
         $case->load([
-            'partner.user',
+            'partner.user.partnerProfile',
             'simulator',
             'skills',
             'applications.leader',

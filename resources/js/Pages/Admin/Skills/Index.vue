@@ -176,7 +176,7 @@
                     >
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
-                                <div class="p-2 bg-indigo-100 rounded-lg group-hover:bg-indigo-200 transition-colors">
+                                <div class="w-10 h-10 flex items-center justify-center bg-indigo-100 rounded-lg group-hover:bg-indigo-200 transition-colors">
                                     <i class="pi pi-star text-indigo-600"></i>
                                 </div>
                                 <div class="text-sm font-semibold text-gray-900">
@@ -196,7 +196,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center gap-2">
-                                <div class="p-1.5 bg-blue-100 rounded-lg">
+                                <div class="w-10 h-10 flex items-center justify-center bg-blue-100 rounded-lg">
                                     <i class="pi pi-chart-line text-blue-600 text-xs"></i>
                                 </div>
                                 <span class="text-sm font-medium text-gray-900">

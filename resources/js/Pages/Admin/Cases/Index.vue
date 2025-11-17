@@ -191,7 +191,7 @@
                     >
                         <td class="px-6 py-4">
                             <div class="flex items-start gap-3">
-                                <div class="p-2 bg-indigo-100 rounded-lg group-hover:bg-indigo-200 transition-colors">
+                                <div class="w-10 h-10 flex items-center justify-center bg-indigo-100 rounded-lg group-hover:bg-indigo-200 transition-colors">
                                     <i class="pi pi-briefcase text-indigo-600"></i>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -206,13 +206,13 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center gap-2">
-                                <div class="p-1.5 bg-gray-100 rounded-lg">
+                                <div class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-lg">
                                     <i class="pi pi-building text-gray-600 text-xs"></i>
                                 </div>
                                 <div>
-                                    <div class="text-sm font-medium text-gray-900">{{ caseItem.partner?.company_name || 'Не указан' }}</div>
+                                    <div class="text-sm font-medium text-gray-900">{{ caseItem.partner?.company_name || caseItem.partner?.name || 'Не указан' }}</div>
                                     <div class="text-xs text-gray-500">{{
-                                            caseItem.partner?.user?.name || 'Без контакта'
+                                            caseItem.partner?.contact_person || caseItem.partner?.user?.name || 'Без контакта'
                                         }}
                                     </div>
                                 </div>
@@ -220,7 +220,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center gap-2">
-                                <div class="p-1.5 bg-red-100 rounded-lg">
+                                <div class="w-10 h-10 flex items-center justify-center bg-red-100 rounded-lg">
                                     <i class="pi pi-calendar text-red-600 text-xs"></i>
                                 </div>
                                 <div>
@@ -254,7 +254,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center gap-2">
-                                <div class="p-1.5 bg-purple-100 rounded-lg">
+                                <div class="w-10 h-10 flex items-center justify-center bg-purple-100 rounded-lg">
                                     <i class="pi pi-file-edit text-purple-600 text-xs"></i>
                                 </div>
                                 <span class="text-sm font-medium text-gray-900">
