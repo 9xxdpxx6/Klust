@@ -29,4 +29,3 @@ class ProgressLog extends Model
         return $this->morphTo();
     }
 }
-

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Filters;
 
-use App\Filters\BaseFilter;
 use Illuminate\Database\Eloquent\Builder;
 
 final class CaseFilter extends BaseFilter
@@ -36,7 +35,7 @@ final class CaseFilter extends BaseFilter
 
     private function applySearchFilter(Builder $query): void
     {
-        if (!$this->hasFilter('search')) {
+        if (! $this->hasFilter('search')) {
             return;
         }
 
@@ -47,14 +46,14 @@ final class CaseFilter extends BaseFilter
 
     private function applyStatusFilter(Builder $query): void
     {
-        if (!$this->hasFilter('status')) {
+        if (! $this->hasFilter('status')) {
             return;
         }
 
         $statuses = $this->getFilter('status');
 
         if (is_array($statuses)) {
-            $statuses = array_filter($statuses, static fn($status): bool => $status !== null && $status !== '');
+            $statuses = array_filter($statuses, static fn ($status): bool => $status !== null && $status !== '');
         }
 
         if (empty($statuses)) {
@@ -70,7 +69,7 @@ final class CaseFilter extends BaseFilter
 
     private function applySimulatorFilter(Builder $query): void
     {
-        if (!$this->hasFilter('simulator_id')) {
+        if (! $this->hasFilter('simulator_id')) {
             return;
         }
 
@@ -79,7 +78,7 @@ final class CaseFilter extends BaseFilter
 
     private function applyPartnerFilter(Builder $query): void
     {
-        if (!$this->hasFilter('partner_id')) {
+        if (! $this->hasFilter('partner_id')) {
             return;
         }
 
@@ -88,16 +87,16 @@ final class CaseFilter extends BaseFilter
 
     private function applySkillsFilter(Builder $query): void
     {
-        if (!$this->hasFilter('skills')) {
+        if (! $this->hasFilter('skills')) {
             return;
         }
 
         $skills = $this->getFilter('skills');
 
-        if (is_array($skills) && !empty($skills)) {
-            $skills = array_filter($skills, static fn($skill): bool => is_numeric($skill));
-            
-            if (!empty($skills)) {
+        if (is_array($skills) && ! empty($skills)) {
+            $skills = array_filter($skills, static fn ($skill): bool => is_numeric($skill));
+
+            if (! empty($skills)) {
                 $query->whereHas('skills', function (Builder $skillQuery) use ($skills): void {
                     $skillQuery->whereIn('skills.id', $skills);
                 });
@@ -124,15 +123,14 @@ final class CaseFilter extends BaseFilter
         $sortBy = $this->getFilter('sort_by', 'created_at');
         $sortOrder = strtolower((string) $this->getFilter('sort_order', 'desc'));
 
-        if (!in_array($sortBy, self::ALLOWED_SORT_FIELDS, true)) {
+        if (! in_array($sortBy, self::ALLOWED_SORT_FIELDS, true)) {
             $sortBy = 'created_at';
         }
 
-        if (!in_array($sortOrder, ['asc', 'desc'], true)) {
+        if (! in_array($sortOrder, ['asc', 'desc'], true)) {
             $sortOrder = 'desc';
         }
 
         $query->orderBy($sortBy, $sortOrder);
     }
 }
-

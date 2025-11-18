@@ -41,7 +41,7 @@ class AnalyticsController extends Controller
         } catch (\Exception $e) {
             return Inertia::render('Client/Partner/Analytics/Index', [
                 'analytics' => [],
-                'error' => 'Ошибка при загрузке аналитики: ' . $e->getMessage(),
+                'error' => 'Ошибка при загрузке аналитики: '.$e->getMessage(),
             ]);
         }
     }
@@ -54,7 +54,7 @@ class AnalyticsController extends Controller
         $user = auth()->user();
         $partner = $user->partner;
 
-        $filename = 'cases_' . date('Y-m-d_H-i-s') . '.xlsx';
+        $filename = 'cases_'.date('Y-m-d_H-i-s').'.xlsx';
 
         return Excel::download(new CasesExport(['partner_id' => $partner->id]), $filename);
     }
@@ -67,7 +67,7 @@ class AnalyticsController extends Controller
         $user = auth()->user();
         $partner = $user->partner;
 
-        $filename = 'applications_' . date('Y-m-d_H-i-s') . '.xlsx';
+        $filename = 'applications_'.date('Y-m-d_H-i-s').'.xlsx';
 
         return Excel::download(new ApplicationsExport(['partner_id' => $partner->id]), $filename);
     }
@@ -80,9 +80,8 @@ class AnalyticsController extends Controller
         $user = auth()->user();
         $partner = $user->partner;
 
-        $filename = 'teams_' . date('Y-m-d_H-i-s') . '.xlsx';
+        $filename = 'teams_'.date('Y-m-d_H-i-s').'.xlsx';
 
         return Excel::download(new TeamsExport($partner->id), $filename);
     }
 }
-

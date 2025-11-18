@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Models\CaseModel;
 use App\Models\Partner;
-use App\Models\Simulator;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class CaseModelFactory extends Factory
@@ -45,4 +44,3 @@ class CaseModelFactory extends Factory
         ];
     }
 }
-

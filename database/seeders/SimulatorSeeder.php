@@ -22,7 +22,7 @@ class SimulatorSeeder extends Seeder
 
         foreach ($simulatorsData as $index => $data) {
             $partner = $partners->where('name', $data['partner'])->first() ?? $partners->random();
-            
+
             Simulator::create([
                 'partner_id' => $partner->id,
                 'title' => $data['title'],
@@ -34,4 +34,3 @@ class SimulatorSeeder extends Seeder
         }
     }
 }
-

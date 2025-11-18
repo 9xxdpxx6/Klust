@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Skill;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 
 class UserSkillSeeder extends Seeder
 {
@@ -21,7 +20,7 @@ class UserSkillSeeder extends Seeder
 
             foreach ($randomSkills as $skill) {
                 $level = fake()->numberBetween(0, 100);
-                $pointsEarned = (int)($level * 10 * fake()->randomFloat(2, 0.5, 1.5));
+                $pointsEarned = (int) ($level * 10 * fake()->randomFloat(2, 0.5, 1.5));
 
                 $student->skills()->attach($skill->id, [
                     'level' => $level,
@@ -31,4 +30,3 @@ class UserSkillSeeder extends Seeder
         }
     }
 }
-

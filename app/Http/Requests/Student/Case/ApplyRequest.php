@@ -36,7 +36,7 @@ class ApplyRequest extends FormRequest
             'team_members.*' => [
                 'required', // Обязателен для каждого элемента массива
                 'integer',
-                'exists:users,id'
+                'exists:users,id',
             ],
         ];
     }

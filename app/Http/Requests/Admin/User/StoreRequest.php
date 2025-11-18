@@ -35,18 +35,18 @@ class StoreRequest extends FormRequest
                 'required_if:role,student',
                 'string',
                 'max:255',
-                'unique:users,kubgtu_id' // Уникален для всех пользователей
+                'unique:users,kubgtu_id', // Уникален для всех пользователей
             ],
             'course' => [
                 'required_if:role,student',
                 'integer',
-                'between:1,6' // Курсы от 1 до 6
+                'between:1,6', // Курсы от 1 до 6
             ],
             'avatar' => [
                 'nullable',
                 'image',
                 'mimes:jpeg,png,jpg,gif',
-                'max:2048' // 2MB
+                'max:2048', // 2MB
             ],
 
             // Поля из student_profiles (только для студентов)
@@ -54,22 +54,22 @@ class StoreRequest extends FormRequest
                 'required_if:role,student',
                 'nullable',
                 'integer',
-                'exists:faculties,id'
+                'exists:faculties,id',
             ],
             'group' => [
                 'required_if:role,student',
                 'nullable',
                 'string',
-                'max:255'
+                'max:255',
             ],
             'specialization' => [
                 'nullable',
                 'string',
-                'max:255'
+                'max:255',
             ],
             'bio' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             // Поля из partner_profiles (только для партнеров)
@@ -77,41 +77,41 @@ class StoreRequest extends FormRequest
                 'required_if:role,partner',
                 'nullable',
                 'string',
-                'max:255'
+                'max:255',
             ],
             'inn' => [
                 'nullable',
                 'string',
-                'max:12'
+                'max:12',
             ],
             'address' => [
                 'nullable',
-                'string'
+                'string',
             ],
             'website' => [
                 'nullable',
-                'url'
+                'url',
             ],
             'description' => [
                 'nullable',
-                'string'
+                'string',
             ],
             'contact_person' => [
                 'required_if:role,partner',
                 'nullable',
                 'string',
-                'max:255'
+                'max:255',
             ],
             'contact_phone' => [
                 'nullable',
                 'string',
-                'max:20'
+                'max:20',
             ],
             'logo' => [
                 'nullable',
                 'image',
                 'mimes:jpeg,png,jpg,gif,svg',
-                'max:5120' // 5MB
+                'max:5120', // 5MB
             ],
         ];
     }

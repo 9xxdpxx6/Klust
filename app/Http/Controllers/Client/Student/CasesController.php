@@ -102,7 +102,7 @@ class CasesController extends Controller
                 'status',
                 'statusHistory.changedBy',
                 'statusHistory.oldStatus',
-                'statusHistory.newStatus'
+                'statusHistory.newStatus',
             ]);
         }
 
@@ -168,12 +168,8 @@ class CasesController extends Controller
      */
     public function addTeamMember(AddTeamMemberRequest $request, CaseApplication $application): RedirectResponse
     {
-        $user = auth()->user();
-
-        // Проверить, что заявка принадлежит студенту и имеет статус 'pending'
-        if ($application->leader_id !== $user->id || $application->status->name !== 'pending') {
-            abort(403);
-        }
+        // Проверить права
+        $this->authorize('addTeamMember', $application);
 
         // Добавить участника команды
         $teamMember = $this->applicationService->addTeamMember($application, $request->user_id);
@@ -194,12 +190,8 @@ class CasesController extends Controller
      */
     public function withdraw(CaseApplication $application): RedirectResponse
     {
-        $user = auth()->user();
-
         // Проверить права (только лидер заявки может отозвать)
-        if ($application->leader_id !== $user->id) {
-            abort(403);
-        }
+        $this->authorize('delete', $application);
 
         // Отозвать заявку
         $this->applicationService->withdrawApplication($application);
@@ -214,20 +206,13 @@ class CasesController extends Controller
      */
     public function team(CaseApplication $application): Response
     {
-        $user = auth()->user();
-
         // Проверить, что заявка принята
         if ($application->status->name !== 'accepted') {
             abort(404);
         }
 
-        // Проверить, что студент входит в команду
-        $isTeamMember = $application->leader_id === $user->id ||
-            $application->teamMembers()->where('user_id', $user->id)->exists();
-
-        if (! $isTeamMember) {
-            abort(403);
-        }
+        // Проверить права доступа к команде
+        $this->authorize('viewTeam', $application);
 
         // Загрузить команду со всеми участниками
         $application->load(['leader', 'teamMembers.user', 'case']);

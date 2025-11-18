@@ -31,12 +31,12 @@ class IndexRequest extends FormRequest
                 'nullable',
                 'date',
                 'date_format:Y-m-d',
-                'after_or_equal:date_from' // 'date_to' не может быть раньше 'date_from'
+                'after_or_equal:date_from', // 'date_to' не может быть раньше 'date_from'
             ],
             'case_id' => [
                 'nullable',
                 'integer',
-                'exists:cases,id' // Проверяем, что такой кейс вообще существует в системе
+                'exists:cases,id', // Проверяем, что такой кейс вообще существует в системе
             ],
         ];
     }

@@ -40,7 +40,7 @@ class UserSeeder extends Seeder
             'password' => bcrypt('asd'),
         ]);
         $admin->assignRole($adminRole);
-        
+
         // 1 суперпользователь (имеет все права и роли)
         $superUser = User::factory()->create([
             'name' => 'Суперпользователь',
@@ -54,4 +54,3 @@ class UserSeeder extends Seeder
         }
     }
 }
-

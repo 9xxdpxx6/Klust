@@ -32,7 +32,7 @@ class StoreRequest extends FormRequest
                 'string',
                 'max:255',
                 'unique:simulators,slug',
-                'regex:/^[a-z0-9_-]+$/' // Проверка на URL-friendly формат (только строчные буквы, цифры, дефис и подчеркивание)
+                'regex:/^[a-z0-9_-]+$/', // Проверка на URL-friendly формат (только строчные буквы, цифры, дефис и подчеркивание)
             ],
             'description' => ['required', 'string'],
             'is_active' => ['boolean'],
@@ -42,7 +42,7 @@ class StoreRequest extends FormRequest
                 'nullable',
                 'image',
                 'mimes:jpeg,png,jpg,gif',
-                'max:5120' // 5MB
+                'max:5120', // 5MB
             ],
         ];
     }

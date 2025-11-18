@@ -6,7 +6,6 @@ use App\Models\Simulator;
 use App\Models\SimulatorSession;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 
 class SimulatorSessionSeeder extends Seeder
 {
@@ -24,4 +23,3 @@ class SimulatorSessionSeeder extends Seeder
         }
     }
 }
-

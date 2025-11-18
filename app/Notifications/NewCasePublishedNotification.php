@@ -35,7 +35,7 @@ class NewCasePublishedNotification extends Notification implements ShouldQueue
             ->subject('Новый кейс опубликован')
             ->line("Новый кейс '{$this->case->title}' опубликован!")
             ->line("Компания: {$this->case->partner->company_name}")
-            ->line("Требуемые навыки: " . $this->case->required_skills->pluck('name')->join(', '))
+            ->line('Требуемые навыки: '.$this->case->required_skills->pluck('name')->join(', '))
             ->line("Дедлайн: {$this->case->deadline->format('d.m.Y')}")
             ->action('Просмотреть кейс', url("/student/cases/{$this->case->id}"))
             ->line('Подайте заявку, если кейс вам интересен!');

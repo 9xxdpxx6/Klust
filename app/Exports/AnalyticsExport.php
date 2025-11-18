@@ -30,7 +30,7 @@ class AnalyticsExport implements FromView, ShouldAutoSize, WithStyles
         );
 
         return view('exports.analytics', [
-            'analytics' => $analyticsData
+            'analytics' => $analyticsData,
         ]);
     }
 

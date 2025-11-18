@@ -35,7 +35,7 @@ class UpdateRequest extends FormRequest
                 'string',
                 'max:255',
                 Rule::unique('simulators')->ignore($simulator->id), // Исключаем текущий симулятор
-                'regex:/^[a-z0-9_-]+$/'
+                'regex:/^[a-z0-9_-]+$/',
             ],
             'description' => ['required', 'string'],
             'is_active' => ['boolean'],
@@ -45,7 +45,7 @@ class UpdateRequest extends FormRequest
                 'nullable',
                 'image',
                 'mimes:jpeg,png,jpg,gif',
-                'max:5120' // 5MB
+                'max:5120', // 5MB
             ],
         ];
     }

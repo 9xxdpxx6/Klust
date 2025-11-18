@@ -16,4 +16,3 @@ class CaseSkillFactory extends Factory
         ];
     }
 }
-

@@ -34,9 +34,9 @@ class BadgeService
     public function updateBadge(Badge $badge, array $data): Badge
     {
         // Handle icon update - delete old file if it was a file path
-        if (isset($data['icon']) && $badge->icon && !$badge->isPrimeIcon()) {
+        if (isset($data['icon']) && $badge->icon && ! $badge->isPrimeIcon()) {
             // Old icon was a file, delete it
-                $this->fileService->deleteFile($badge->icon);
+            $this->fileService->deleteFile($badge->icon);
         }
 
         $badge->update([
@@ -56,7 +56,7 @@ class BadgeService
     {
         return DB::transaction(function () use ($badge) {
             // Delete icon file if exists and it's not a PrimeIcon class
-            if ($badge->icon && !$badge->isPrimeIcon()) {
+            if ($badge->icon && ! $badge->isPrimeIcon()) {
                 $this->fileService->deleteFile($badge->icon);
             }
 
@@ -79,8 +79,8 @@ class BadgeService
             ->map(function ($badge) {
                 // If icon starts with 'pi-' or 'fa-', it's an icon class, not a file path
                 $iconPath = null;
-                if ($badge->icon && !str_starts_with($badge->icon, 'pi-') && !str_starts_with($badge->icon, 'fa-')) {
-                    $iconPath = '/storage/' . $badge->icon;
+                if ($badge->icon && ! str_starts_with($badge->icon, 'pi-') && ! str_starts_with($badge->icon, 'fa-')) {
+                    $iconPath = '/storage/'.$badge->icon;
                 }
 
                 return [
@@ -194,8 +194,8 @@ class BadgeService
             ->map(function ($badge) use ($totalPoints) {
                 // If icon starts with 'pi-' or 'fa-', it's an icon class, not a file path
                 $iconPath = null;
-                if ($badge->icon && !str_starts_with($badge->icon, 'pi-') && !str_starts_with($badge->icon, 'fa-')) {
-                    $iconPath = '/storage/' . $badge->icon;
+                if ($badge->icon && ! str_starts_with($badge->icon, 'pi-') && ! str_starts_with($badge->icon, 'fa-')) {
+                    $iconPath = '/storage/'.$badge->icon;
                 }
 
                 return [

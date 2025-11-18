@@ -85,14 +85,14 @@ class SkillService
     public function getFilteredSkills(array $filters): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
         $skillFilter = new \App\Filters\SkillFilter($filters);
-        
+
         $query = Skill::query()
             ->withCount(['users', 'cases']);
-        
+
         $query = $skillFilter->apply($query);
-        
+
         $pagination = $skillFilter->getPaginationParams();
-        
+
         return $query->paginate($pagination['per_page']);
     }
 

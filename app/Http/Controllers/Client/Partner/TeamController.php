@@ -7,8 +7,8 @@ namespace App\Http\Controllers\Client\Partner;
 use App\Filters\Partner\TeamFilter;
 use App\Http\Controllers\Controller;
 use App\Models\CaseApplication;
-use App\Services\TeamService;
 use App\Services\CaseService;
+use App\Services\TeamService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -31,7 +31,7 @@ class TeamController extends Controller
             $user = auth()->user();
             $partner = $user->partner;
 
-            if (!$partner) {
+            if (! $partner) {
                 return redirect()
                     ->route('partner.dashboard')
                     ->with('error', 'Партнер не найден');
@@ -57,7 +57,7 @@ class TeamController extends Controller
                 })
                 ->with(['case.partner', 'leader', 'teamMembers.user']);
 
-            if (!$request->filled('status')) {
+            if (! $request->filled('status')) {
                 $teamsQuery->accepted();
             }
 
@@ -75,7 +75,7 @@ class TeamController extends Controller
         } catch (\Exception $e) {
             return redirect()
                 ->route('partner.dashboard')
-                ->with('error', 'Ошибка при загрузке команд: ' . $e->getMessage());
+                ->with('error', 'Ошибка при загрузке команд: '.$e->getMessage());
         }
     }
 
@@ -92,7 +92,7 @@ class TeamController extends Controller
             $application->load('case');
 
             // Проверить права (кейс принадлежит партнеру)
-            $this->caseService->ensureCaseBelongsToPartner($application->case, $partner);
+            $this->authorize('view', $application->case);
 
             // Загрузить команду со всеми участниками
             $application->load(['leader', 'teamMembers.user', 'case']);
@@ -111,8 +111,7 @@ class TeamController extends Controller
         } catch (\Exception $e) {
             return redirect()
                 ->route('partner.teams.index')
-                ->with('error', 'Ошибка при загрузке команды: ' . $e->getMessage());
+                ->with('error', 'Ошибка при загрузке команды: '.$e->getMessage());
         }
     }
 }
-

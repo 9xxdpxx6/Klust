@@ -31,4 +31,3 @@ class CaseApplicationFactory extends Factory
         ];
     }
 }
-

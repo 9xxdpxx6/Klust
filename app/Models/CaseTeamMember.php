@@ -13,4 +13,3 @@ class CaseTeamMember extends Pivot
         'user_id',
     ];
 }
-

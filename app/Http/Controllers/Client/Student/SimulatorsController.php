@@ -8,8 +8,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Student\Simulator\CompleteRequest;
 use App\Models\Simulator;
 use App\Models\SimulatorSession;
-use App\Services\SimulatorService;
 use App\Services\ProgressLogService;
+use App\Services\SimulatorService;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -50,7 +50,7 @@ class SimulatorsController extends Controller
         $user = auth()->user();
 
         // Проверить, что симулятор активен
-        if (!$simulator->is_active) {
+        if (! $simulator->is_active) {
             return redirect()
                 ->route('student.simulators.index')
                 ->with('error', 'Симулятор недоступен');
@@ -76,12 +76,7 @@ class SimulatorsController extends Controller
      */
     public function session(SimulatorSession $session): Response
     {
-        $user = auth()->user();
-
-        // Проверить, что сессия принадлежит студенту
-        if ($session->user_id !== $user->id) {
-            abort(403);
-        }
+        $this->authorize('view', $session);
 
         // Загрузить симулятор и данные сессии
         $session->load(['simulator']);
@@ -96,12 +91,7 @@ class SimulatorsController extends Controller
      */
     public function complete(CompleteRequest $request, SimulatorSession $session): RedirectResponse
     {
-        $user = auth()->user();
-
-        // Проверить, что сессия принадлежит студенту
-        if ($session->user_id !== $user->id) {
-            abort(403);
-        }
+        $this->authorize('update', $session);
 
         // Завершить сессию и начислить очки
         $this->simulatorService->completeSession($session, $request->validated());
@@ -114,4 +104,3 @@ class SimulatorsController extends Controller
             ->with('success', 'Симулятор успешно завершен');
     }
 }
-

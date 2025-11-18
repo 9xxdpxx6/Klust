@@ -54,4 +54,3 @@ class Simulator extends Model
         );
     }
 }
-

@@ -31,4 +31,3 @@ class StudentProfile extends Model
         return $this->belongsTo(Faculty::class);
     }
 }
-

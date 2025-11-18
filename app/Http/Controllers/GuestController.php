@@ -13,8 +13,7 @@ class GuestController extends Controller
 {
     public function __construct(
         private CaseService $caseService
-    ) {
-    }
+    ) {}
 
     /**
      * Главная страница для гостей

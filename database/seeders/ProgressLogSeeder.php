@@ -27,14 +27,14 @@ class ProgressLogSeeder extends Seeder
                 'joined_team',
             ]);
 
-            $loggable = match($action) {
+            $loggable = match ($action) {
                 'completed_simulator' => $sessions->random(),
                 'applied_to_case', 'joined_team' => $applications->random(),
                 'earned_badge' => $badges->random(),
                 default => null,
             };
 
-            if (!$loggable) {
+            if (! $loggable) {
                 continue; // Пропускаем если нет loggable
             }
 
@@ -47,4 +47,3 @@ class ProgressLogSeeder extends Seeder
         }
     }
 }
-

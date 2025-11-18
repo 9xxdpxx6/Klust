@@ -1,17 +1,14 @@
 <?php
 
-use App\Http\Controllers\Admin\CaseController;
-use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\BadgeController;
+use App\Http\Controllers\Admin\CaseController;
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\SkillController;
 use App\Http\Controllers\Admin\SimulatorController;
-use App\Http\Controllers\Search\SearchController;
+use App\Http\Controllers\Admin\SkillController;
+use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\GuestController;
-use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Client\Partner\AnalyticsController;
 use App\Http\Controllers\Client\Partner\CasesController as PartnerCasesController;
 use App\Http\Controllers\Client\Partner\DashboardController as PartnerDashboardController;
@@ -23,10 +20,12 @@ use App\Http\Controllers\Client\Student\DashboardController as StudentDashboardC
 use App\Http\Controllers\Client\Student\ProfileController as StudentProfileController;
 use App\Http\Controllers\Client\Student\SimulatorsController;
 use App\Http\Controllers\Client\Student\SkillsController;
+use App\Http\Controllers\GuestController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\Search\SearchController;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------

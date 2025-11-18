@@ -10,7 +10,7 @@ class AppNotificationFactory extends Factory
     public function definition(): array
     {
         $types = ['task', 'case', 'badge', 'system'];
-        
+
         $titles = [
             'task' => [
                 'Новая задача в симуляторе',
@@ -43,7 +43,7 @@ class AppNotificationFactory extends Factory
 
         $type = fake()->randomElement($types);
         $title = fake()->randomElement($titles[$type]);
-        $link = match($type) {
+        $link = match ($type) {
             'task' => '/learning/simulator',
             'case' => '/cases',
             'badge' => '/profile',
@@ -57,7 +57,7 @@ class AppNotificationFactory extends Factory
             'message' => $messages[$type],
             'type' => $type,
             'link' => $link,
-            'icon' => match($type) {
+            'icon' => match ($type) {
                 'task' => 'fa-tasks',
                 'case' => 'fa-briefcase',
                 'badge' => 'fa-award',
@@ -70,4 +70,3 @@ class AppNotificationFactory extends Factory
         ];
     }
 }
-

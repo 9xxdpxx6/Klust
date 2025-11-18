@@ -26,11 +26,10 @@ class SimulatorController extends Controller
      */
     public function index(Request $request): Response
     {
-        // TODO: Создать Policy и раскомментировать
-        // $this->authorize('viewAny', Simulator::class);
+        $this->authorize('viewAny', Simulator::class);
 
         $filters = $request->only(['search', 'status', 'perPage', 'per_page', 'page']);
-        
+
         // Нормализуем perPage -> per_page для совместимости с FilterHelper
         if (isset($filters['perPage'])) {
             $filters['per_page'] = $filters['perPage'];
@@ -67,8 +66,7 @@ class SimulatorController extends Controller
      */
     public function store(StoreRequest $request): RedirectResponse
     {
-        // TODO: Создать Policy и раскомментировать
-        // $this->authorize('create', Simulator::class);
+        $this->authorize('create', Simulator::class);
 
         $data = $request->validated();
         if ($request->hasFile('preview_image')) {
@@ -86,8 +84,7 @@ class SimulatorController extends Controller
      */
     public function update(UpdateRequest $request, Simulator $simulator): RedirectResponse
     {
-        // TODO: Создать Policy и раскомментировать
-        // $this->authorize('update', $simulator);
+        $this->authorize('update', $simulator);
 
         $data = $request->validated();
         if ($request->hasFile('preview_image')) {
@@ -105,8 +102,7 @@ class SimulatorController extends Controller
      */
     public function destroy(Simulator $simulator): RedirectResponse
     {
-        // TODO: Создать Policy и раскомментировать
-        // $this->authorize('delete', $simulator);
+        $this->authorize('delete', $simulator);
 
         try {
             $this->simulatorService->deleteSimulator($simulator);

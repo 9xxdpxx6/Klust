@@ -28,7 +28,7 @@ class BadgeController extends Controller
         $this->authorize('viewAny', Badge::class);
 
         $filters = $request->only(['search', 'perPage', 'per_page', 'page']);
-        
+
         // Нормализуем perPage -> per_page для совместимости с FilterHelper
         if (isset($filters['perPage'])) {
             $filters['per_page'] = $filters['perPage'];

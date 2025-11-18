@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
+use Database\Factories\CaseModelFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Database\Factories\CaseModelFactory;
 
 class CaseModel extends Model
 {
@@ -69,6 +69,7 @@ class CaseModel extends Model
         if ($status && $status !== 'all') {
             return $query->where('status', $status);
         }
+
         return $query;
     }
 
@@ -83,6 +84,7 @@ class CaseModel extends Model
                     ->orWhere('description', 'like', "%{$search}%");
             });
         }
+
         return $query;
     }
 
@@ -94,6 +96,7 @@ class CaseModel extends Model
         if ($partnerId) {
             return $query->where('partner_id', $partnerId);
         }
+
         return $query;
     }
 
@@ -112,7 +115,4 @@ class CaseModel extends Model
     {
         return $this->deadline->isPast();
     }
-
-
 }
-

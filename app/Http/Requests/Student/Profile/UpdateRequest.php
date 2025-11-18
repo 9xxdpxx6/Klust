@@ -34,7 +34,7 @@ class UpdateRequest extends FormRequest
                 'string',
                 'email',
                 'max:255',
-                Rule::unique('users')->ignore($userId) // Исключаем текущего пользователя из проверки уникальности
+                Rule::unique('users')->ignore($userId), // Исключаем текущего пользователя из проверки уникальности
             ],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'course' => ['nullable', 'integer', 'min:1', 'max:6'], // Курсы от 1 до 6
@@ -43,7 +43,7 @@ class UpdateRequest extends FormRequest
                 'nullable',
                 'image',
                 'mimes:jpeg,png,jpg,gif',
-                'max:2048' // 2MB
+                'max:2048', // 2MB
             ],
 
             'faculty_id' => ['nullable', 'integer', 'exists:faculties,id'],

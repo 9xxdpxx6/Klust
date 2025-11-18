@@ -65,12 +65,7 @@ class NotificationController extends Controller
      */
     public function markAsRead(AppNotification $notification): JsonResponse
     {
-        $user = Auth::user();
-
-        // Ensure the notification belongs to the authenticated user
-        if ($notification->user_id !== $user->id) {
-            abort(403, 'Unauthorized action.');
-        }
+        $this->authorize('update', $notification);
 
         $notification->update(['is_read' => true]);
 
@@ -102,12 +97,7 @@ class NotificationController extends Controller
      */
     public function destroy(AppNotification $notification): RedirectResponse
     {
-        $user = Auth::user();
-
-        // Ensure the notification belongs to the authenticated user
-        if ($notification->user_id !== $user->id) {
-            abort(403, 'Unauthorized action.');
-        }
+        $this->authorize('delete', $notification);
 
         $notification->delete();
 

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Requests\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class RegisterPartnerRequest extends FormRequest
 {
@@ -43,7 +42,7 @@ class RegisterPartnerRequest extends FormRequest
                 'nullable',
                 'image',
                 'mimes:jpeg,png,jpg,gif,svg',
-                'max:5120' // 5MB
+                'max:5120', // 5MB
             ],
         ];
     }

@@ -32,7 +32,7 @@ class UpdateRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('badges')->ignore($badge->id) // Исключаем текущий бейдж из проверки уникальности
+                Rule::unique('badges')->ignore($badge->id), // Исключаем текущий бейдж из проверки уникальности
             ],
             'description' => ['required', 'string'],
             'required_points' => ['required', 'integer', 'min:1'],

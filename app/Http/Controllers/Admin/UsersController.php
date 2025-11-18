@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Requests\Admin\StoreUserRequest;
-use App\Models\User;
-use Inertia\Inertia;
-use Illuminate\Http\Request;
-use Spatie\Permission\Models\Role;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Hash;
+use App\Http\Requests\Admin\StoreUserRequest;
 use App\Http\Requests\Admin\UpdateUserRequest;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
+use Spatie\Permission\Models\Role;
 
 class UsersController extends Controller
 {
@@ -20,6 +20,8 @@ class UsersController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('viewAny', User::class);
+
         // Получаем параметры фильтрации из запроса
         $filters = [
             'search' => $request->input('search', ''),
@@ -34,7 +36,7 @@ class UsersController extends Controller
             ->select(['id', 'name', 'email', 'kubgtu_id', 'course', 'avatar', 'email_verified_at', 'created_at']);
 
         // Поиск по имени, email или kubgtu_id
-        if (!empty($filters['search'])) {
+        if (! empty($filters['search'])) {
             $search = $filters['search'];
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
@@ -44,14 +46,14 @@ class UsersController extends Controller
         }
 
         // Фильтрация по роли
-        if (!empty($filters['role'])) {
+        if (! empty($filters['role'])) {
             $query->whereHas('roles', function ($q) use ($filters) {
                 $q->where('name', $filters['role']);
             });
         }
 
         // Фильтрация по статусу верификации email
-        if (!empty($filters['status'])) {
+        if (! empty($filters['status'])) {
             if ($filters['status'] === 'verified') {
                 $query->whereNotNull('email_verified_at');
             } elseif ($filters['status'] === 'unverified') {
@@ -60,7 +62,7 @@ class UsersController extends Controller
         }
 
         // Фильтрация по курсу
-        if (!empty($filters['course'])) {
+        if (! empty($filters['course'])) {
             $query->where('course', $filters['course']);
         }
 
@@ -90,6 +92,8 @@ class UsersController extends Controller
 
     public function show(User $user)
     {
+        $this->authorize('view', $user);
+
         // Загружаем все связи пользователя
         $user->load([
             'roles',
@@ -109,7 +113,7 @@ class UsersController extends Controller
             },
             'notifications',
             'progressLogs',
-            'partner'
+            'partner',
         ]);
 
         $stats = [
@@ -142,6 +146,8 @@ class UsersController extends Controller
 
     public function create()
     {
+        $this->authorize('create', User::class);
+
         $roles = Role::pluck('name')->toArray();
 
         return Inertia::render('Admin/Users/Create', [
@@ -151,6 +157,8 @@ class UsersController extends Controller
 
     public function store(StoreUserRequest $request)
     {
+        $this->authorize('create', User::class);
+
         // Используем транзакцию для избежания race condition
         return DB::transaction(function () use ($request) {
             // Находим максимальный существующий номер
@@ -163,12 +171,12 @@ class UsersController extends Controller
                     ->first();
 
                 if ($lastUser && preg_match('/STU(\d+)/', $lastUser->kubgtu_id, $matches)) {
-                    $nextNumber = (int)$matches[1] + 1;
+                    $nextNumber = (int) $matches[1] + 1;
                 } else {
                     $nextNumber = 1000001;
                 }
 
-                $kubgtu_id = 'STU' . $nextNumber;
+                $kubgtu_id = 'STU'.$nextNumber;
             }
 
             $user = User::create([
@@ -202,11 +210,14 @@ class UsersController extends Controller
 
     public function edit(User $user)
     {
+        $this->authorize('update', $user);
+
         $roles = Role::pluck('name')->toArray();
 
         // Загружаем текущую роль пользователя
         $user->load('roles');
         $currentRole = $user->roles->first()->name ?? '';
+
         return Inertia::render('Admin/Users/Edit', [
             'user' => $user,
             'currentRole' => $currentRole,
@@ -216,6 +227,8 @@ class UsersController extends Controller
 
     public function update(UpdateUserRequest $request, User $user)
     {
+        $this->authorize('update', $user);
+
         // Подготовка данных для обновления
         $updateData = [
             'name' => $request->name,
@@ -255,11 +268,7 @@ class UsersController extends Controller
 
     public function destroy(User $user)
     {
-        // Нельзя удалить самого себя
-        if ($user->id === auth()->id()) {
-            return redirect()->back()
-                ->with('error', 'Вы не можете удалить свой собственный аккаунт.');
-        }
+        $this->authorize('delete', $user);
 
         $user->delete();
 

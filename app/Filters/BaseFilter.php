@@ -24,7 +24,7 @@ abstract class BaseFilter implements FilterInterface
         $search = FilterHelper::getStringFilter($this->filters['search'] ?? null);
         if ($search) {
             $sanitizedSearch = FilterHelper::sanitizeSearch($search);
-            $query->where($field, 'like', '%' . $sanitizedSearch . '%');
+            $query->where($field, 'like', '%'.$sanitizedSearch.'%');
         }
     }
 
@@ -34,10 +34,9 @@ abstract class BaseFilter implements FilterInterface
      *
      * Пример: "жим лежа" найдет "жим штанги лежа", "лежа жим" и т.д.
      *
-     * @param Builder $query
-     * @param array<string> $fields Массив полей для поиска
-     * @param string $searchTerm Поисковая строка
-     * @param int $minWordLength Минимальная длина слова для поиска
+     * @param  array<string>  $fields  Массив полей для поиска
+     * @param  string  $searchTerm  Поисковая строка
+     * @param  int  $minWordLength  Минимальная длина слова для поиска
      */
     protected function applySmartSearch(Builder $query, array $fields, string $searchTerm, int $minWordLength = 2): void
     {
@@ -47,7 +46,7 @@ abstract class BaseFilter implements FilterInterface
 
         $words = array_filter(
             array_map('trim', explode(' ', $searchTerm)),
-            fn(string $word): bool => mb_strlen($word) >= $minWordLength
+            fn (string $word): bool => mb_strlen($word) >= $minWordLength
         );
 
         if (empty($words)) {
@@ -59,7 +58,7 @@ abstract class BaseFilter implements FilterInterface
                 $q->orWhere(function ($fieldQuery) use ($words, $field): void {
                     foreach ($words as $word) {
                         $escapedWord = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $word);
-                        $fieldQuery->where($field, 'like', '%' . $escapedWord . '%');
+                        $fieldQuery->where($field, 'like', '%'.$escapedWord.'%');
                     }
                 });
             }
@@ -69,11 +68,10 @@ abstract class BaseFilter implements FilterInterface
     /**
      * Умный поиск по словам для отношений (whereHas).
      *
-     * @param Builder $query
-     * @param string $relation Название отношения
-     * @param array<string> $fields Массив полей для поиска в отношении
-     * @param string $searchTerm Поисковая строка
-     * @param int $minWordLength Минимальная длина слова для поиска
+     * @param  string  $relation  Название отношения
+     * @param  array<string>  $fields  Массив полей для поиска в отношении
+     * @param  string  $searchTerm  Поисковая строка
+     * @param  int  $minWordLength  Минимальная длина слова для поиска
      */
     protected function applySmartSearchInRelation(
         Builder $query,
@@ -88,7 +86,7 @@ abstract class BaseFilter implements FilterInterface
 
         $words = array_filter(
             array_map('trim', explode(' ', $searchTerm)),
-            fn(string $word): bool => mb_strlen($word) >= $minWordLength
+            fn (string $word): bool => mb_strlen($word) >= $minWordLength
         );
 
         if (empty($words)) {
@@ -100,7 +98,7 @@ abstract class BaseFilter implements FilterInterface
                 $relationQuery->orWhere(function ($fieldQuery) use ($words, $field): void {
                     foreach ($words as $word) {
                         $escapedWord = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $word);
-                        $fieldQuery->where($field, 'like', '%' . $escapedWord . '%');
+                        $fieldQuery->where($field, 'like', '%'.$escapedWord.'%');
                     }
                 });
             }
@@ -111,11 +109,10 @@ abstract class BaseFilter implements FilterInterface
      * Умный поиск по словам для отношений с OR логикой (orWhereHas).
      * Используется для объединения нескольких условий поиска через OR.
      *
-     * @param Builder $query
-     * @param string $relation Название отношения
-     * @param array<string> $fields Массив полей для поиска в отношении
-     * @param string $searchTerm Поисковая строка
-     * @param int $minWordLength Минимальная длина слова для поиска
+     * @param  string  $relation  Название отношения
+     * @param  array<string>  $fields  Массив полей для поиска в отношении
+     * @param  string  $searchTerm  Поисковая строка
+     * @param  int  $minWordLength  Минимальная длина слова для поиска
      */
     protected function applySmartSearchInRelationOr(
         Builder $query,
@@ -130,7 +127,7 @@ abstract class BaseFilter implements FilterInterface
 
         $words = array_filter(
             array_map('trim', explode(' ', $searchTerm)),
-            fn(string $word): bool => mb_strlen($word) >= $minWordLength
+            fn (string $word): bool => mb_strlen($word) >= $minWordLength
         );
 
         if (empty($words)) {
@@ -142,7 +139,7 @@ abstract class BaseFilter implements FilterInterface
                 $relationQuery->orWhere(function ($fieldQuery) use ($words, $field): void {
                     foreach ($words as $word) {
                         $escapedWord = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $word);
-                        $fieldQuery->where($field, 'like', '%' . $escapedWord . '%');
+                        $fieldQuery->where($field, 'like', '%'.$escapedWord.'%');
                     }
                 });
             }
@@ -153,10 +150,9 @@ abstract class BaseFilter implements FilterInterface
      * Умный поиск по словам с OR логикой (orWhere).
      * Используется для объединения нескольких условий поиска через OR.
      *
-     * @param Builder $query
-     * @param array<string> $fields Массив полей для поиска
-     * @param string $searchTerm Поисковая строка
-     * @param int $minWordLength Минимальная длина слова для поиска
+     * @param  array<string>  $fields  Массив полей для поиска
+     * @param  string  $searchTerm  Поисковая строка
+     * @param  int  $minWordLength  Минимальная длина слова для поиска
      */
     protected function applySmartSearchOr(
         Builder $query,
@@ -170,7 +166,7 @@ abstract class BaseFilter implements FilterInterface
 
         $words = array_filter(
             array_map('trim', explode(' ', $searchTerm)),
-            fn(string $word): bool => mb_strlen($word) >= $minWordLength
+            fn (string $word): bool => mb_strlen($word) >= $minWordLength
         );
 
         if (empty($words)) {
@@ -182,7 +178,7 @@ abstract class BaseFilter implements FilterInterface
                 $q->orWhere(function ($fieldQuery) use ($words, $field): void {
                     foreach ($words as $word) {
                         $escapedWord = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $word);
-                        $fieldQuery->where($field, 'like', '%' . $escapedWord . '%');
+                        $fieldQuery->where($field, 'like', '%'.$escapedWord.'%');
                     }
                 });
             }
@@ -227,6 +223,4 @@ abstract class BaseFilter implements FilterInterface
     {
         return 100;
     }
-
 }
-

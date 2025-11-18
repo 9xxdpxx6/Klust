@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Client\Partner;
 
+use App\Exports\ApplicationsExport;
 use App\Filters\CaseApplicationFilter;
 use App\Filters\CaseFilter;
-use App\Exports\ApplicationsExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Partner\Application\ApproveRequest;
 use App\Http\Requests\Partner\Application\RejectRequest;
@@ -44,7 +44,7 @@ class CasesController extends Controller
             $user = auth()->user();
             $partner = $user->partner;
 
-            if (!$partner) {
+            if (! $partner) {
                 return Inertia::render('Client/Partner/Cases/Index', [
                     'cases' => [],
                     'filters' => [],
@@ -159,7 +159,7 @@ class CasesController extends Controller
             $partner = $user->partner;
 
             // Проверить права (только свой кейс)
-            $this->caseService->ensureCaseBelongsToPartner($case, $partner);
+            $this->authorize('view', $case);
 
             // Загрузить связи
             $case->load([
@@ -169,7 +169,7 @@ class CasesController extends Controller
                 'applications.teamMembers.user',
                 'applications.statusHistory.changedBy',
                 'applications.statusHistory.oldStatus',
-                'applications.statusHistory.newStatus'
+                'applications.statusHistory.newStatus',
             ]);
 
             // Получить статистику
@@ -208,7 +208,7 @@ class CasesController extends Controller
             $user = auth()->user();
             $partner = $user->partner;
 
-            if (!$partner) {
+            if (! $partner) {
                 return Inertia::render('Client/Partner/Cases/Applications', [
                     'case' => $case,
                     'applications' => collect(),
@@ -218,7 +218,7 @@ class CasesController extends Controller
             }
 
             // Проверить права
-            $this->caseService->ensureCaseBelongsToPartner($case, $partner);
+            $this->authorize('update', $case);
 
             // Загрузить кейс со связанными навыками
             $case->load('skills');
@@ -245,11 +245,8 @@ class CasesController extends Controller
     public function update(UpdateRequest $request, CaseModel $case): RedirectResponse
     {
         try {
-            $user = auth()->user();
-            $partner = $user->partner;
-
             // Проверить права
-            $this->caseService->ensureCaseBelongsToPartner($case, $partner);
+            $this->authorize('update', $case);
 
             // Обновить кейс
             $this->caseService->updateCase($case, $request->validated());
@@ -271,11 +268,8 @@ class CasesController extends Controller
     public function archive(CaseModel $case): RedirectResponse
     {
         try {
-            $user = auth()->user();
-            $partner = $user->partner;
-
             // Проверить права
-            $this->caseService->ensureCaseBelongsToPartner($case, $partner);
+            $this->authorize('archive', $case);
 
             // Изменить статус на 'archived'
             $this->caseService->archiveCase($case);
@@ -296,11 +290,8 @@ class CasesController extends Controller
     public function applications(CaseModel $case, Request $request): Response
     {
         try {
-            $user = auth()->user();
-            $partner = $user->partner;
-
             // Проверить права
-            $this->caseService->ensureCaseBelongsToPartner($case, $partner);
+            $this->authorize('viewApplications', $case);
 
             $filters = $request->only([
                 'search',
@@ -322,7 +313,7 @@ class CasesController extends Controller
                     'teamMembers.user',
                     'statusHistory.changedBy',
                     'statusHistory.oldStatus',
-                    'statusHistory.newStatus'
+                    'statusHistory.newStatus',
                 ]);
 
             $pagination = $applicationFilter->getPaginationParams();
@@ -352,11 +343,8 @@ class CasesController extends Controller
     public function approve(ApproveRequest $request, CaseModel $case, CaseApplication $application): RedirectResponse
     {
         try {
-            $user = auth()->user();
-            $partner = $user->partner;
-
             // Проверить права (кейс принадлежит партнеру)
-            $this->caseService->ensureCaseBelongsToPartner($case, $partner);
+            $this->authorize('approveApplication', $case);
 
             // Проверить, что заявка имеет статус 'pending'
             $pendingStatusId = \App\Models\ApplicationStatus::getIdByName('pending');
@@ -388,11 +376,8 @@ class CasesController extends Controller
     public function reject(RejectRequest $request, CaseModel $case, CaseApplication $application): RedirectResponse
     {
         try {
-            $user = auth()->user();
-            $partner = $user->partner;
-
             // Проверить права
-            $this->caseService->ensureCaseBelongsToPartner($case, $partner);
+            $this->authorize('rejectApplication', $case);
 
             // Проверить статус заявки
             $pendingStatusId = \App\Models\ApplicationStatus::getIdByName('pending');
@@ -423,13 +408,10 @@ class CasesController extends Controller
      */
     public function exportApplications(CaseModel $case): BinaryFileResponse
     {
-        $user = auth()->user();
-        $partner = $user->partner;
-
         // Проверить права
-        $this->caseService->ensureCaseBelongsToPartner($case, $partner);
+        $this->authorize('viewApplications', $case);
 
-        $filename = 'applications_case_' . $case->id . '_' . date('Y-m-d_H-i-s') . '.xlsx';
+        $filename = 'applications_case_'.$case->id.'_'.date('Y-m-d_H-i-s').'.xlsx';
 
         return Excel::download(new ApplicationsExport(['case_id' => $case->id]), $filename);
     }

@@ -12,4 +12,3 @@ class UserSkill extends Pivot
 
     public $incrementing = true;
 }
-

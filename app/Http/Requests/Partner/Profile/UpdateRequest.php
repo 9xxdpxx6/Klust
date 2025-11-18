@@ -36,7 +36,7 @@ class UpdateRequest extends FormRequest
                 'string',
                 'email',
                 'max:255',
-                Rule::unique('users')->ignore($user->id) // Исключаем текущего пользователя из проверки уникальности
+                Rule::unique('users')->ignore($user->id), // Исключаем текущего пользователя из проверки уникальности
             ],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'], // Опционален, если есть - должен быть подтвержден
 
@@ -54,7 +54,7 @@ class UpdateRequest extends FormRequest
                 'nullable',
                 'image',
                 'mimes:jpeg,png,jpg,gif,svg',
-                'max:5120' // 5MB
+                'max:5120', // 5MB
             ],
         ];
     }

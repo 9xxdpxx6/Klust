@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Partner;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 
 class PartnerSeeder extends Seeder
 {
@@ -36,4 +35,3 @@ class PartnerSeeder extends Seeder
         }
     }
 }
-

@@ -32,4 +32,3 @@ class TeacherProfileFactory extends Factory
         ];
     }
 }
-

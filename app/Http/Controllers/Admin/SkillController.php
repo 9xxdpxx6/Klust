@@ -25,11 +25,10 @@ class SkillController extends Controller
      */
     public function index(Request $request): Response
     {
-        // TODO: Создать Policy и раскомментировать
-        // $this->authorize('viewAny', Skill::class);
+        $this->authorize('viewAny', Skill::class);
 
         $filters = $request->only(['search', 'category', 'perPage', 'per_page', 'page']);
-        
+
         // Нормализуем perPage -> per_page для совместимости с FilterHelper
         if (isset($filters['perPage'])) {
             $filters['per_page'] = $filters['perPage'];
@@ -56,8 +55,7 @@ class SkillController extends Controller
      */
     public function store(StoreRequest $request): RedirectResponse
     {
-        // TODO: Создать Policy и раскомментировать
-        // $this->authorize('create', Skill::class);
+        $this->authorize('create', Skill::class);
 
         $this->skillService->createSkill($request->validated());
 
@@ -70,8 +68,7 @@ class SkillController extends Controller
      */
     public function update(UpdateRequest $request, Skill $skill): RedirectResponse
     {
-        // TODO: Создать Policy и раскомментировать
-        // $this->authorize('update', $skill);
+        $this->authorize('update', $skill);
 
         $this->skillService->updateSkill($skill, $request->validated());
 
@@ -84,8 +81,7 @@ class SkillController extends Controller
      */
     public function destroy(Skill $skill): RedirectResponse
     {
-        // TODO: Создать Policy и раскомментировать
-        // $this->authorize('delete', $skill);
+        $this->authorize('delete', $skill);
 
         try {
             $this->skillService->deleteSkill($skill);

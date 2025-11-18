@@ -8,8 +8,8 @@ use App\Http\Controllers\Controller;
 use App\Models\CaseModel;
 use App\Models\Skill;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class SearchController extends Controller
 {
@@ -19,7 +19,7 @@ class SearchController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = $request->input('q');
-        
+
         if (empty($query)) {
             return response()->json([
                 'cases' => [],

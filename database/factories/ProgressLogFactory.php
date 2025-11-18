@@ -19,8 +19,8 @@ class ProgressLogFactory extends Factory
         ];
 
         $action = fake()->randomElement($actions);
-        
-        $points = match($action) {
+
+        $points = match ($action) {
             'completed_task' => fake()->numberBetween(10, 50),
             'earned_badge' => fake()->numberBetween(50, 300),
             'applied_to_case' => fake()->numberBetween(5, 20),
@@ -44,4 +44,3 @@ class ProgressLogFactory extends Factory
         ];
     }
 }
-
