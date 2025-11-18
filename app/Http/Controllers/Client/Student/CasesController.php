@@ -206,16 +206,19 @@ class CasesController extends Controller
      */
     public function team(CaseApplication $application): Response
     {
-        // Проверить, что заявка принята
-        if ($application->status->name !== 'accepted') {
+        // Загрузить все необходимые связи ДО проверок
+        $application->load(['status', 'case', 'leader', 'teamMembers.user']);
+
+        // Получить ID статуса "accepted"
+        $acceptedStatusId = \App\Models\ApplicationStatus::getIdByName('accepted');
+
+        // Проверить, что заявка принята (используем status_id для избежания N+1)
+        if ($application->status_id !== $acceptedStatusId) {
             abort(404);
         }
 
-        // Проверить права доступа к команде
+        // Проверить права доступа к команде (Policy может безопасно использовать загруженные связи)
         $this->authorize('viewTeam', $application);
-
-        // Загрузить команду со всеми участниками
-        $application->load(['leader', 'teamMembers.user', 'case']);
 
         // Получить прогресс команды
         $progress = $this->teamService->getTeamProgress($application);

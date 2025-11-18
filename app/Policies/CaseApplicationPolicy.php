@@ -4,11 +4,26 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
+use App\Models\ApplicationStatus;
 use App\Models\CaseApplication;
 use App\Models\User;
 
 class CaseApplicationPolicy
 {
+    /**
+     * Get pending status ID (cached)
+     */
+    private function getPendingStatusId(): int
+    {
+        static $pendingStatusId = null;
+
+        if ($pendingStatusId === null) {
+            $pendingStatusId = ApplicationStatus::getIdByName('pending');
+        }
+
+        return $pendingStatusId;
+    }
+
     /**
      * Determine whether the user can view the application.
      */
@@ -26,7 +41,12 @@ class CaseApplicationPolicy
 
         // Партнер, которому принадлежит кейс
         if ($user->hasRole('partner')) {
-            return $user->partnerProfile?->partner_id === $application->case->partner_id;
+            // Загрузить case если не загружен
+            if (! $application->relationLoaded('case')) {
+                $application->load('case');
+            }
+
+            return $user->partnerProfile?->partner_id === $application->case?->partner_id;
         }
 
         // Админ и учитель
@@ -44,7 +64,7 @@ class CaseApplicationPolicy
     {
         // Только лидер может обновлять заявку
         return $application->leader_id === $user->id
-            && $application->status->name === 'pending';
+            && $application->status_id === $this->getPendingStatusId();
     }
 
     /**
@@ -54,7 +74,7 @@ class CaseApplicationPolicy
     {
         // Только лидер может отозвать заявку
         return $application->leader_id === $user->id
-            && $application->status->name === 'pending';
+            && $application->status_id === $this->getPendingStatusId();
     }
 
     /**
@@ -64,7 +84,7 @@ class CaseApplicationPolicy
     {
         // Только лидер может добавлять участников
         return $application->leader_id === $user->id
-            && $application->status->name === 'pending';
+            && $application->status_id === $this->getPendingStatusId();
     }
 
     /**
@@ -83,7 +103,12 @@ class CaseApplicationPolicy
 
         // Партнер, которому принадлежит кейс
         if ($user->hasRole('partner')) {
-            return $user->partnerProfile?->partner_id === $application->case->partner_id;
+            // Загрузить case если не загружен
+            if (! $application->relationLoaded('case')) {
+                $application->load('case');
+            }
+
+            return $user->partnerProfile?->partner_id === $application->case?->partner_id;
         }
 
         // Админ и учитель
