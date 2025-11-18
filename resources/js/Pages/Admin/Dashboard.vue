@@ -154,7 +154,7 @@
                     <Chart
                         type="doughnut"
                         :data="chartData.studentsByCourse"
-                        :options="chartOptions"
+                        :options="doughnutChartOptions"
                         class="h-80"
                     />
                 </div>
@@ -179,7 +179,8 @@
                         <div
                             v-for="(user, index) in recentActivities.registrations.slice(0, 5)"
                             :key="user.id || index"
-                            class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
+                            @click="navigateToUser(user)"
+                            class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 hover:shadow-md transition-all border border-gray-200 cursor-pointer"
                         >
                             <div class="flex items-center gap-3">
                                 <UserAvatar :user="user" size="sm" />
@@ -189,7 +190,7 @@
                                 </div>
                             </div>
                             <span class="px-2.5 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-lg border border-blue-200">
-                                {{ user.roles?.[0] || 'student' }}
+                                {{ user.role || 'Студент' }}
                             </span>
                         </div>
                     </div>
@@ -212,7 +213,8 @@
                         <div
                             v-for="(caseItem, index) in recentActivities.createdCases.slice(0, 5)"
                             :key="caseItem.id || index"
-                            class="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
+                            @click="navigateToCase(caseItem)"
+                            class="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 hover:shadow-md transition-all border border-gray-200 cursor-pointer"
                         >
                             <p class="text-sm font-semibold text-gray-900 mb-1">{{ caseItem.title }}</p>
                             <p class="text-xs text-gray-500">{{ formatDate(caseItem.created_at) }}</p>
@@ -237,7 +239,8 @@
                         <div
                             v-for="(caseItem, index) in recentActivities.completedCases.slice(0, 5)"
                             :key="caseItem.id || index"
-                            class="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
+                            @click="navigateToCase(caseItem)"
+                            class="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 hover:shadow-md transition-all border border-gray-200 cursor-pointer"
                         >
                             <p class="text-sm font-semibold text-gray-900 mb-1">{{ caseItem.title }}</p>
                             <p class="text-xs text-gray-500">{{ formatDate(caseItem.completed_at || caseItem.updated_at) }}</p>
@@ -346,6 +349,25 @@ const chartOptions = computed(() => ({
     },
 }));
 
+const doughnutChartOptions = computed(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: {
+            position: 'bottom',
+        },
+    },
+    // Для круговых диаграмм отключаем оси и сетку
+    scales: {
+        x: {
+            display: false,
+        },
+        y: {
+            display: false,
+        },
+    },
+}));
+
 const formatDate = (date) => {
     if (!date) return '';
     const d = new Date(date);
@@ -359,6 +381,64 @@ const safeVisit = (routeName, params = {}) => {
         } catch (e) {
             console.warn(`Route "${routeName}" not found`);
         }
+    }
+};
+
+const navigateToUser = (user) => {
+    if (!user?.id) return;
+    
+    // Пытаемся перейти на show страницу пользователя
+    if (routeExists('admin.users.show')) {
+        try {
+            router.visit(route('admin.users.show', user.id));
+        } catch (e) {
+            // Если show не работает, переходим на index с фильтром по ID
+            navigateToUserIndex(user);
+        }
+    } else {
+        // Если маршрута show нет, переходим на index с фильтром
+        navigateToUserIndex(user);
+    }
+};
+
+const navigateToUserIndex = (user) => {
+    if (!user?.id) return;
+    
+    // Переходим на index с поиском по ID или имени
+    const params = {};
+    if (user.id) {
+        params.search = user.id.toString();
+    } else if (user.name) {
+        params.search = user.name;
+    }
+    
+    if (routeExists('admin.users.index')) {
+        try {
+            router.get(route('admin.users.index'), params, {
+                preserveState: true,
+                preserveScroll: true,
+            });
+        } catch (e) {
+            console.warn('Failed to navigate to users index');
+        }
+    }
+};
+
+const navigateToCase = (caseItem) => {
+    if (!caseItem?.id) {
+        console.warn('Case item has no ID:', caseItem);
+        return;
+    }
+    
+    // Переходим на show страницу кейса
+    try {
+        // В Ziggy для route model binding нужно передать объект с ключом, соответствующим параметру маршрута
+        router.visit(route('admin.cases.show', { case: caseItem.id }));
+    } catch (e) {
+        console.error('Failed to navigate to case show page:', e);
+        console.error('Case item:', caseItem);
+        // Fallback: попробуем напрямую через URL
+        router.visit(`/admin/cases/${caseItem.id}`);
     }
 };
 </script>
