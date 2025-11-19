@@ -78,7 +78,7 @@ class DashboardService
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
-                    'role' => $this->translateRole($user->roles->first()?->name),
+                    'role' => $this->translateRole($this->getPrimaryRole($user)),
                     'roles' => $user->roles->pluck('name')->map(fn ($role) => $this->translateRole($role))->toArray(),
                     'created_at' => $user->created_at?->toISOString(),
                 ]),
@@ -210,6 +210,37 @@ class DashboardService
                 ],
             ],
         ];
+    }
+
+    /**
+     * Get primary role for user based on priority
+     * Priority: admin > teacher > partner > student
+     */
+    private function getPrimaryRole(User $user): ?string
+    {
+        $roleNames = $user->roles->pluck('name')->toArray();
+
+        if (empty($roleNames)) {
+            return null;
+        }
+
+        // Определяем приоритет ролей
+        $priority = [
+            'admin' => 1,
+            'teacher' => 2,
+            'partner' => 3,
+            'student' => 4,
+        ];
+
+        // Сортируем роли по приоритету и возвращаем самую приоритетную
+        usort($roleNames, function ($a, $b) use ($priority) {
+            $priorityA = $priority[$a] ?? 999;
+            $priorityB = $priority[$b] ?? 999;
+
+            return $priorityA <=> $priorityB;
+        });
+
+        return $roleNames[0];
     }
 
     /**

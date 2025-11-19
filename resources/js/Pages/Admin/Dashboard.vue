@@ -189,9 +189,18 @@
                                     <p class="text-xs text-gray-500">{{ formatDate(user.created_at) }}</p>
                                 </div>
                             </div>
-                            <span class="px-2.5 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-lg border border-blue-200">
-                                {{ user.role || 'Студент' }}
-                            </span>
+                            <div class="flex items-center gap-1.5 flex-wrap justify-end">
+                                <span class="px-2.5 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-lg border border-blue-200">
+                                    {{ user.role || 'Студент' }}
+                                </span>
+                                <span
+                                    v-if="user.roles && user.roles.length > 1"
+                                    class="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-lg border border-gray-200"
+                                    :title="`Все роли: ${user.roles.join(', ')}`"
+                                >
+                                    +{{ user.roles.length - 1 }}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
