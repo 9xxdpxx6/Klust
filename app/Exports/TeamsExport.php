@@ -34,9 +34,6 @@ class TeamsExport implements FromCollection, WithHeadings, WithMapping, WithStyl
             ->get();
     }
 
-    /**
-     * @return array
-     */
     public function headings(): array
     {
         return [
@@ -52,7 +49,6 @@ class TeamsExport implements FromCollection, WithHeadings, WithMapping, WithStyl
 
     /**
      * @param  CaseApplication  $application
-     * @return array
      */
     public function map($application): array
     {
@@ -74,7 +70,6 @@ class TeamsExport implements FromCollection, WithHeadings, WithMapping, WithStyl
     }
 
     /**
-     * @param  Worksheet  $sheet
      * @return array
      */
     public function styles(Worksheet $sheet)

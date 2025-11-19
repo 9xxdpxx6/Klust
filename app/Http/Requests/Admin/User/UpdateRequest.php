@@ -34,7 +34,7 @@ class UpdateRequest extends FormRequest
                 'string',
                 'email',
                 'max:255',
-                Rule::unique('users')->ignore($userId) // Исключаем текущего пользователя из проверки уникальности
+                Rule::unique('users')->ignore($userId), // Исключаем текущего пользователя из проверки уникальности
             ],
             // Пароль опционален. Если есть - должен быть валидным.
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
@@ -46,19 +46,19 @@ class UpdateRequest extends FormRequest
                 'required_if:role,student',
                 'string',
                 'max:255',
-                Rule::unique('users', 'kubgtu_id')->ignore($userId)
+                Rule::unique('users', 'kubgtu_id')->ignore($userId),
             ],
             'course' => [
                 'sometimes',
                 'required_if:role,student',
                 'integer',
-                'between:1,6'
+                'between:1,6',
             ],
             'avatar' => [
                 'nullable',
                 'image',
                 'mimes:jpeg,png,jpg,gif',
-                'max:2048' // 2MB
+                'max:2048', // 2MB
             ],
 
             // Поля из student_profiles (только для студентов)
@@ -66,24 +66,24 @@ class UpdateRequest extends FormRequest
                 'sometimes',
                 'nullable',
                 'integer',
-                'exists:faculties,id'
+                'exists:faculties,id',
             ],
             'group' => [
                 'sometimes',
                 'nullable',
                 'string',
-                'max:255'
+                'max:255',
             ],
             'specialization' => [
                 'sometimes',
                 'nullable',
                 'string',
-                'max:255'
+                'max:255',
             ],
             'bio' => [
                 'sometimes',
                 'nullable',
-                'string'
+                'string',
             ],
 
             // Поля из partner_profiles (только для партнеров)
@@ -91,47 +91,47 @@ class UpdateRequest extends FormRequest
                 'sometimes',
                 'nullable',
                 'string',
-                'max:255'
+                'max:255',
             ],
             'inn' => [
                 'sometimes',
                 'nullable',
                 'string',
-                'max:12'
+                'max:12',
             ],
             'address' => [
                 'sometimes',
                 'nullable',
-                'string'
+                'string',
             ],
             'website' => [
                 'sometimes',
                 'nullable',
-                'url'
+                'url',
             ],
             'description' => [
                 'sometimes',
                 'nullable',
-                'string'
+                'string',
             ],
             'contact_person' => [
                 'sometimes',
                 'nullable',
                 'string',
-                'max:255'
+                'max:255',
             ],
             'contact_phone' => [
                 'sometimes',
                 'nullable',
                 'string',
-                'max:20'
+                'max:20',
             ],
             'logo' => [
                 'sometimes',
                 'nullable',
                 'image',
                 'mimes:jpeg,png,jpg,gif,svg',
-                'max:5120' // 5MB
+                'max:5120', // 5MB
             ],
         ];
     }

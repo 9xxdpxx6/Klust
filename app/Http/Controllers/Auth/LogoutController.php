@@ -25,4 +25,3 @@ class LogoutController extends Controller
             ->with('success', 'Вы успешно вышли из системы.');
     }
 }
-

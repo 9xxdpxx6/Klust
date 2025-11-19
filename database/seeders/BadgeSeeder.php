@@ -13,4 +13,3 @@ class BadgeSeeder extends Seeder
         Badge::factory(15)->create();
     }
 }
-

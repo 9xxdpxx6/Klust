@@ -14,7 +14,7 @@ class BadgePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole(['admin', 'teacher']);
+        return $user->hasPermissionTo('badges.view');
     }
 
     /**
@@ -22,7 +22,7 @@ class BadgePolicy
      */
     public function view(User $user, Badge $badge): bool
     {
-        return $user->hasAnyRole(['admin', 'teacher']);
+        return $user->hasPermissionTo('badges.view');
     }
 
     /**
@@ -30,7 +30,7 @@ class BadgePolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasAnyRole(['admin', 'teacher']);
+        return $user->hasPermissionTo('badges.create');
     }
 
     /**
@@ -38,7 +38,7 @@ class BadgePolicy
      */
     public function update(User $user, Badge $badge): bool
     {
-        return $user->hasAnyRole(['admin', 'teacher']);
+        return $user->hasPermissionTo('badges.update');
     }
 
     /**
@@ -46,7 +46,7 @@ class BadgePolicy
      */
     public function delete(User $user, Badge $badge): bool
     {
-        return $user->hasAnyRole(['admin', 'teacher']);
+        return $user->hasPermissionTo('badges.delete');
     }
 
     /**

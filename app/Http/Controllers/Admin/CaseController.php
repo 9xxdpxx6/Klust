@@ -27,6 +27,8 @@ class CaseController extends Controller
 
     public function index(Request $request): Response
     {
+        $this->authorize('viewAny', CaseModel::class);
+
         // Получить фильтры (status, partner_id, search, perPage)
         $filters = [
             'status' => $request->input('status'),
@@ -67,6 +69,8 @@ class CaseController extends Controller
 
     public function show(CaseModel $case): Response
     {
+        $this->authorize('view', $case);
+
         // Загрузить связи: partner, skills, applications, teams
         $case->load([
             'partner.user.partnerProfile',
@@ -102,6 +106,8 @@ class CaseController extends Controller
 
     public function create(): Response
     {
+        $this->authorize('create', CaseModel::class);
+
         // Получить список партнеров и симуляторов
         $partners = Partner::with('user')->get()->map(function ($partner) {
             return [
@@ -137,6 +143,8 @@ class CaseController extends Controller
 
     public function store(StoreRequest $request): RedirectResponse
     {
+        $this->authorize('create', CaseModel::class);
+
         try {
             // Использовать CaseService::createCase($request->validated())
             // Создать кейс и привязать навыки через sync
@@ -155,6 +163,8 @@ class CaseController extends Controller
 
     public function edit(CaseModel $case): Response
     {
+        $this->authorize('update', $case);
+
         // Загрузить кейс со связанными навыками
         $case->load('skills');
 
@@ -197,6 +207,8 @@ class CaseController extends Controller
 
     public function update(UpdateRequest $request, CaseModel $case): RedirectResponse
     {
+        $this->authorize('update', $case);
+
         try {
             // Использовать CaseService::updateCase($case, $request->validated())
             // Обновить навыки через sync
@@ -215,6 +227,8 @@ class CaseController extends Controller
 
     public function destroy(CaseModel $case): RedirectResponse
     {
+        $this->authorize('delete', $case);
+
         try {
             // Проверить, нет ли активных заявок
             // Использовать CaseService::deleteCase($case)

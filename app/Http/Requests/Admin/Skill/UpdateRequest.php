@@ -31,7 +31,7 @@ class UpdateRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('skills')->ignore($skill->id) // Исключаем текущий навык из проверки уникальности
+                Rule::unique('skills')->ignore($skill->id), // Исключаем текущий навык из проверки уникальности
             ],
             'category' => ['required', 'string', 'in:hard,soft,language,other'],
             'max_level' => ['required', 'integer', 'min:1', 'max:1000'],

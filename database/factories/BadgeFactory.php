@@ -38,4 +38,3 @@ class BadgeFactory extends Factory
         ];
     }
 }
-

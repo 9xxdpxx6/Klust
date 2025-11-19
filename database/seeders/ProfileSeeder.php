@@ -2,12 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\StudentProfile;
 use App\Models\PartnerProfile;
+use App\Models\StudentProfile;
 use App\Models\TeacherProfile;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 
 class ProfileSeeder extends Seeder
 {
@@ -38,4 +37,3 @@ class ProfileSeeder extends Seeder
         }
     }
 }
-

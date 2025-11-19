@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Filters;
 
-use App\Filters\BaseFilter;
 use Illuminate\Database\Eloquent\Builder;
 
 final class CaseApplicationFilter extends BaseFilter
@@ -33,7 +32,7 @@ final class CaseApplicationFilter extends BaseFilter
 
     private function applySearchFilter(Builder $query): void
     {
-        if (!$this->hasFilter('search')) {
+        if (! $this->hasFilter('search')) {
             return;
         }
 
@@ -45,14 +44,14 @@ final class CaseApplicationFilter extends BaseFilter
 
     private function applyStatusFilter(Builder $query): void
     {
-        if (!$this->hasFilter('status')) {
+        if (! $this->hasFilter('status')) {
             return;
         }
 
         $statuses = $this->getFilter('status');
 
         if (is_array($statuses)) {
-            $statuses = array_filter($statuses, static fn($status): bool => $status !== null && $status !== '');
+            $statuses = array_filter($statuses, static fn ($status): bool => $status !== null && $status !== '');
         }
 
         if (empty($statuses)) {
@@ -74,7 +73,7 @@ final class CaseApplicationFilter extends BaseFilter
 
     private function applyCaseFilter(Builder $query): void
     {
-        if (!$this->hasFilter('case_id')) {
+        if (! $this->hasFilter('case_id')) {
             return;
         }
 
@@ -105,12 +104,10 @@ final class CaseApplicationFilter extends BaseFilter
         // Delegate to BaseFilter's applySorting with allowed fields validation
         $sortBy = $this->getFilter('sort_by', 'submitted_at');
 
-        if (!in_array($sortBy, self::ALLOWED_SORT_FIELDS, true)) {
+        if (! in_array($sortBy, self::ALLOWED_SORT_FIELDS, true)) {
             $sortBy = 'submitted_at';
         }
 
         $this->applySorting($query, $sortBy, 'desc');
     }
-
 }
-

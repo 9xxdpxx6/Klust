@@ -25,26 +25,26 @@ class CasesExport implements FromView, ShouldAutoSize, WithStyles
         $query = CaseModel::with(['partner', 'required_skills']);
 
         // Apply filters if provided
-        if (!empty($this->filters['status'])) {
+        if (! empty($this->filters['status'])) {
             $query->where('status', $this->filters['status']);
         }
 
-        if (!empty($this->filters['partner_id'])) {
+        if (! empty($this->filters['partner_id'])) {
             $query->where('partner_id', $this->filters['partner_id']);
         }
 
-        if (!empty($this->filters['date_from'])) {
+        if (! empty($this->filters['date_from'])) {
             $query->whereDate('created_at', '>=', $this->filters['date_from']);
         }
 
-        if (!empty($this->filters['date_to'])) {
+        if (! empty($this->filters['date_to'])) {
             $query->whereDate('created_at', '<=', $this->filters['date_to']);
         }
 
         $cases = $query->get();
 
         return view('exports.cases', [
-            'cases' => $cases
+            'cases' => $cases,
         ]);
     }
 

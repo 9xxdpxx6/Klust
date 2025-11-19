@@ -30,7 +30,7 @@ class RejectRequest extends FormRequest
                 'required',
                 'string',
                 'min:10', // Минимальная длина, чтобы избежать бессмысленных ответов
-                'max:1000'
+                'max:1000',
             ],
         ];
     }

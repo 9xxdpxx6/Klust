@@ -27,7 +27,7 @@ class Badge extends Model
         return Attribute::make(
             get: function ($value, $attributes) {
                 $icon = $attributes['icon'] ?? null;
-                
+
                 if (empty($icon)) {
                     return null;
                 }
@@ -39,7 +39,7 @@ class Badge extends Model
                 }
 
                 // Otherwise, it's a file path in storage
-                return '/storage/' . $icon;
+                return '/storage/'.$icon;
             }
         );
     }
@@ -60,4 +60,3 @@ class Badge extends Model
             ->withTimestamps();
     }
 }
-

@@ -8,4 +8,3 @@ class UserBadge extends Pivot
 {
     protected $table = 'user_badges';
 }
-

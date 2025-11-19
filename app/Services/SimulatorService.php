@@ -154,6 +154,7 @@ class SimulatorService
             if ($simulator->partner && $simulator->partner->user) {
                 $simulator->partner->contact_person = $simulator->partner->user->name;
             }
+
             return $simulator;
         });
 

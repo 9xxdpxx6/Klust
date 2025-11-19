@@ -12,4 +12,3 @@ return [
         'course_label' => ':number курс',
     ],
 ];
-

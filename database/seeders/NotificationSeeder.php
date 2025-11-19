@@ -15,11 +15,10 @@ class NotificationSeeder extends Seeder
         // ~200 уведомлений (по 1-3 на пользователя)
         foreach ($users as $user) {
             $notificationsCount = fake()->numberBetween(1, 3);
-            
+
             AppNotification::factory($notificationsCount)->create([
                 'user_id' => $user->id,
             ]);
         }
     }
 }
-

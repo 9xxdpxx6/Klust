@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Client\Partner;
 
 use App\Http\Controllers\Controller;
-use App\Services\PartnerService;
 use App\Services\CaseService;
-use Illuminate\Http\Request;
+use App\Services\PartnerService;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -48,9 +47,8 @@ class DashboardController extends Controller
                 'statistics' => [],
                 'activeCases' => [],
                 'recentActivities' => [],
-                'error' => 'Ошибка при загрузке данных: ' . $e->getMessage(),
+                'error' => 'Ошибка при загрузке данных: '.$e->getMessage(),
             ]);
         }
     }
 }
-

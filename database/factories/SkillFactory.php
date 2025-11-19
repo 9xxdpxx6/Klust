@@ -16,4 +16,3 @@ class SkillFactory extends Factory
         ];
     }
 }
-

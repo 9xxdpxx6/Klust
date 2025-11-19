@@ -6,8 +6,8 @@ namespace App\Http\Controllers\Client\Student;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Student\Profile\UpdateRequest;
-use App\Services\UserService;
 use App\Services\FileService;
+use App\Services\UserService;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -67,4 +67,3 @@ class ProfileController extends Controller
             ->with('success', 'Профиль успешно обновлен');
     }
 }
-

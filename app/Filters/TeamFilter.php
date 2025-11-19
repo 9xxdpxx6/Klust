@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Filters;
 
-use App\Filters\BaseFilter;
 use Illuminate\Database\Eloquent\Builder;
 
 final class TeamFilter extends BaseFilter
@@ -34,7 +33,7 @@ final class TeamFilter extends BaseFilter
 
     private function applySearchFilter(Builder $query): void
     {
-        if (!$this->hasFilter('search')) {
+        if (! $this->hasFilter('search')) {
             return;
         }
 
@@ -53,7 +52,7 @@ final class TeamFilter extends BaseFilter
         }
 
         if (is_array($statuses)) {
-            $statuses = array_filter($statuses, static fn($status): bool => $status !== null && $status !== '');
+            $statuses = array_filter($statuses, static fn ($status): bool => $status !== null && $status !== '');
         }
 
         if (empty($statuses)) {
@@ -75,7 +74,7 @@ final class TeamFilter extends BaseFilter
 
     private function applyCaseFilter(Builder $query): void
     {
-        if (!$this->hasFilter('case_id')) {
+        if (! $this->hasFilter('case_id')) {
             return;
         }
 
@@ -88,7 +87,7 @@ final class TeamFilter extends BaseFilter
 
     private function applyLeaderFilter(Builder $query): void
     {
-        if (!$this->hasFilter('leader_id')) {
+        if (! $this->hasFilter('leader_id')) {
             return;
         }
 
@@ -119,11 +118,10 @@ final class TeamFilter extends BaseFilter
         // Delegate to BaseFilter's applySorting with allowed fields validation
         $sortBy = $this->getFilter('sort_by', 'submitted_at');
 
-        if (!in_array($sortBy, self::ALLOWED_SORT_FIELDS, true)) {
+        if (! in_array($sortBy, self::ALLOWED_SORT_FIELDS, true)) {
             $sortBy = 'submitted_at';
         }
 
         $this->applySorting($query, $sortBy, 'desc');
     }
 }
-

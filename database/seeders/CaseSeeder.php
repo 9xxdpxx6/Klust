@@ -39,4 +39,3 @@ class CaseSeeder extends Seeder
         }
     }
 }
-

@@ -22,4 +22,3 @@ class TeacherProfile extends Model
         return $this->belongsTo(User::class);
     }
 }
-

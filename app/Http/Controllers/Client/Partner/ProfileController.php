@@ -6,8 +6,8 @@ namespace App\Http\Controllers\Client\Partner;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Partner\Profile\UpdateRequest;
-use App\Services\UserService;
 use App\Services\FileService;
+use App\Services\UserService;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -34,9 +34,10 @@ class ProfileController extends Controller
             ]);
         } catch (\Exception $e) {
             $user = auth()->user();
+
             return Inertia::render('Client/Partner/Profile/Index', [
                 'user' => $user,
-                'error' => 'Ошибка при загрузке профиля: ' . $e->getMessage(),
+                'error' => 'Ошибка при загрузке профиля: '.$e->getMessage(),
             ]);
         }
     }
@@ -54,9 +55,10 @@ class ProfileController extends Controller
             ]);
         } catch (\Exception $e) {
             $user = auth()->user();
+
             return Inertia::render('Client/Partner/Profile/Edit', [
                 'user' => $user,
-                'error' => 'Ошибка при загрузке формы: ' . $e->getMessage(),
+                'error' => 'Ошибка при загрузке формы: '.$e->getMessage(),
             ]);
         }
     }
@@ -86,8 +88,7 @@ class ProfileController extends Controller
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'Ошибка при обновлении профиля: ' . $e->getMessage());
+                ->with('error', 'Ошибка при обновлении профиля: '.$e->getMessage());
         }
     }
 }
-

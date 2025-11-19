@@ -15,6 +15,7 @@ class CaseSkillSeeder extends Seeder
 
         if ($cases->isEmpty() || $skills->isEmpty()) {
             $this->command->warn('Нет кейсов или навыков для связывания. Убедитесь, что CaseSeeder и SkillSeeder выполнены.');
+
             return;
         }
 
@@ -22,11 +23,10 @@ class CaseSkillSeeder extends Seeder
             // Каждый кейс получает от 2 до 5 случайных навыков
             $skillsCount = fake()->numberBetween(2, min(5, $skills->count()));
             $randomSkills = $skills->random($skillsCount);
-            
+
             $case->skills()->sync($randomSkills->pluck('id')->toArray());
         }
 
         $this->command->info("Привязано навыков к кейсам: {$cases->count()} кейсов");
     }
 }
-

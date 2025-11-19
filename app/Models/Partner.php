@@ -54,4 +54,3 @@ class Partner extends Model
         return $this->user?->partnerProfile?->contact_person ?? $this->user?->name ?? null;
     }
 }
-

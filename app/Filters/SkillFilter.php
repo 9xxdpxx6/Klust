@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Filters;
 
-use App\Filters\BaseFilter;
 use Illuminate\Database\Eloquent\Builder;
 
 final class SkillFilter extends BaseFilter
@@ -37,13 +36,13 @@ final class SkillFilter extends BaseFilter
 
     private function applyCategoryFilter(Builder $query): void
     {
-        if (!$this->hasFilter('category')) {
+        if (! $this->hasFilter('category')) {
             return;
         }
 
         $category = (string) $this->getFilter('category');
-        
-        if (!empty($category) && in_array($category, ['hard', 'soft', 'language', 'other'], true)) {
+
+        if (! empty($category) && in_array($category, ['hard', 'soft', 'language', 'other'], true)) {
             $query->where('category', $category);
         }
     }
@@ -53,15 +52,14 @@ final class SkillFilter extends BaseFilter
         $sortBy = $this->getFilter('sort_by', 'name');
         $sortOrder = strtolower((string) $this->getFilter('sort_order', 'asc'));
 
-        if (!in_array($sortBy, self::ALLOWED_SORT_FIELDS, true)) {
+        if (! in_array($sortBy, self::ALLOWED_SORT_FIELDS, true)) {
             $sortBy = 'name';
         }
 
-        if (!in_array($sortOrder, ['asc', 'desc'], true)) {
+        if (! in_array($sortOrder, ['asc', 'desc'], true)) {
             $sortOrder = 'asc';
         }
 
         $query->orderBy($sortBy, $sortOrder);
     }
 }
-

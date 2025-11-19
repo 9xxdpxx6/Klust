@@ -6,7 +6,6 @@ use App\Models\CaseApplication;
 use App\Models\CaseModel;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 
 class CaseApplicationSeeder extends Seeder
 {
@@ -24,4 +23,3 @@ class CaseApplicationSeeder extends Seeder
         }
     }
 }
-

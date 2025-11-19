@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class PartnerFactory extends Factory
@@ -35,4 +34,3 @@ class PartnerFactory extends Factory
         ];
     }
 }
-

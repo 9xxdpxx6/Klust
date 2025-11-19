@@ -17,7 +17,7 @@ class PermissionSeeder extends Seeder
     {
         // Очистка существующих прав и ролей (опционально)
         // Permission::query()->delete();
-        
+
         // Права для управления пользователями
         $userPermissions = [
             'users.view' => 'Просмотр пользователей',
@@ -128,4 +128,3 @@ class PermissionSeeder extends Seeder
         ]);
     }
 }
-

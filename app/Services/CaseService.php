@@ -312,18 +312,6 @@ class CaseService
     }
 
     /**
-     * Ensure case belongs to partner
-     *
-     * @throws \Exception
-     */
-    public function ensureCaseBelongsToPartner(CaseModel $case, Partner $partner): void
-    {
-        if ($case->partner_id !== $partner->id) {
-            throw new \Exception('This case does not belong to the partner');
-        }
-    }
-
-    /**
      * Calculate average team size for case
      */
     private function calculateAverageTeamSize(CaseModel $case): float

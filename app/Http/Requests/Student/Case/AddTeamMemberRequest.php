@@ -29,7 +29,7 @@ class AddTeamMemberRequest extends FormRequest
             'user_id' => [
                 'required',
                 'integer',
-                'exists:users,id' // Проверяем, что такой пользователь вообще существует
+                'exists:users,id', // Проверяем, что такой пользователь вообще существует
             ],
         ];
     }

@@ -38,4 +38,3 @@ class SimulatorSession extends Model
         return $this->belongsTo(Simulator::class);
     }
 }
-

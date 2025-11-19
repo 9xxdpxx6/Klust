@@ -135,7 +135,7 @@ class DashboardService
             // Форматируем дату на русском языке: день + сокращенное название месяца
             $monthIndex = (int) $date->format('n');
             $monthName = __('months.short', [], 'ru')[$monthIndex] ?? $date->format('M');
-            $days[] = $date->format('d') . ' ' . $monthName;
+            $days[] = $date->format('d').' '.$monthName;
 
             $newUsers[] = User::whereDate('created_at', $date)->count();
             $newApplications[] = CaseApplication::whereDate('submitted_at', $date)->count();
@@ -188,6 +188,7 @@ class DashboardService
             if ($item->course > 0) {
                 return __('dashboard.course.course_label', ['number' => $item->course], 'ru');
             }
+
             return __('dashboard.course.not_specified', [], 'ru');
         })->toArray();
         $data = $distribution->pluck('count')->toArray();
@@ -216,7 +217,7 @@ class DashboardService
      */
     private function translateRole(?string $role): ?string
     {
-        if (!$role) {
+        if (! $role) {
             return null;
         }
 

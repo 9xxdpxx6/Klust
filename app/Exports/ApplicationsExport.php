@@ -25,26 +25,26 @@ class ApplicationsExport implements FromView, ShouldAutoSize, WithStyles
         $query = CaseApplication::with(['case', 'leader', 'members', 'case.partner']);
 
         // Apply filters if provided
-        if (!empty($this->filters['status'])) {
+        if (! empty($this->filters['status'])) {
             $query->withStatus($this->filters['status']);
         }
 
-        if (!empty($this->filters['case_id'])) {
+        if (! empty($this->filters['case_id'])) {
             $query->where('case_id', $this->filters['case_id']);
         }
 
-        if (!empty($this->filters['date_from'])) {
+        if (! empty($this->filters['date_from'])) {
             $query->whereDate('submitted_at', '>=', $this->filters['date_from']);
         }
 
-        if (!empty($this->filters['date_to'])) {
+        if (! empty($this->filters['date_to'])) {
             $query->whereDate('submitted_at', '<=', $this->filters['date_to']);
         }
 
         $applications = $query->get();
 
         return view('exports.applications', [
-            'applications' => $applications
+            'applications' => $applications,
         ]);
     }
 

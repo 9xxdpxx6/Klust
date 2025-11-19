@@ -29,4 +29,3 @@ class Skill extends Model
         return $this->belongsToMany(CaseModel::class, 'case_skills', 'skill_id', 'case_id')->withTimestamps();
     }
 }
-
