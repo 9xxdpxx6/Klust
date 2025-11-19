@@ -8,6 +8,7 @@ use App\Models\CaseModel;
 use App\Models\Skill;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class SearchService
 {
@@ -20,14 +21,14 @@ class SearchService
     {
         return CaseModel::where('title', 'LIKE', "%{$query}%")
             ->orWhere('description', 'LIKE', "%{$query}%")
-            ->with(['partner', 'required_skills'])
+            ->with(['partner', 'skills'])
             ->limit($limit)
             ->get()
             ->map(function ($case) {
                 return [
                     'id' => $case->id,
                     'title' => $case->title,
-                    'description' => str_limit(strip_tags($case->description), 100),
+                    'description' => Str::limit(strip_tags($case->description), 100),
                     'partner' => $case->partner->company_name ?? null,
                     'deadline' => $case->deadline?->format('d.m.Y'),
                     'type' => 'case',
