@@ -1,8 +1,6 @@
 <template>
-    <PartnerLayout>
-        <template #header>
-            <h1 class="text-2xl font-bold text-gray-900">Профиль партнера</h1>
-        </template>
+    <div class="space-y-6">
+        <h1 class="text-2xl font-bold text-gray-900">Профиль партнера</h1>
 
         <div class="bg-white shadow-sm rounded-lg p-6">
             <div class="flex justify-end mb-6">
@@ -235,13 +233,12 @@
                 </div>
             </div>
         </div>
-    </PartnerLayout>
+    </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
 import { router } from '@inertiajs/vue3';
-import PartnerLayout from '@/Layouts/PartnerLayout.vue';
 
 const props = defineProps({
     user: {

@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue'
 import { router } from '@inertiajs/vue3'
-import StudentLayout from '@/Layouts/StudentLayout.vue'
 import Card from '@/Components/UI/Card.vue'
 import Badge from '@/Components/UI/Badge.vue'
 import Button from '@/Components/UI/Button.vue'
@@ -51,8 +50,7 @@ const viewTeam = (application) => {
 </script>
 
 <template>
-    <StudentLayout>
-        <div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="max-w-7xl mx-auto px-4 py-8">
             <div class="flex items-center justify-between mb-6">
                 <h1 class="text-3xl font-bold">Мои кейсы</h1>
                 <Button variant="primary" @click="router.visit(route('student.cases.index'))">
@@ -280,5 +278,4 @@ const viewTeam = (application) => {
                 </div>
             </div>
         </div>
-    </StudentLayout>
 </template>

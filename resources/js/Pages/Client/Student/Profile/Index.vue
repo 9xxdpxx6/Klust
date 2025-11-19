@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue'
 import { useForm } from '@inertiajs/vue3'
-import StudentLayout from '@/Layouts/StudentLayout.vue'
 import Card from '@/Components/UI/Card.vue'
 import Button from '@/Components/UI/Button.vue'
 import Input from '@/Components/UI/Input.vue'
@@ -82,7 +81,7 @@ const cancelEdit = () => {
 </script>
 
 <template>
-    <StudentLayout>
+    <div class="space-y-6">
         <div class="max-w-4xl mx-auto px-4 py-8">
             <div class="flex items-center justify-between mb-6">
                 <h1 class="text-3xl font-bold">Мой профиль</h1>
@@ -323,5 +322,5 @@ const cancelEdit = () => {
                 </div>
             </form>
         </div>
-    </StudentLayout>
+    </div>
 </template>

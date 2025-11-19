@@ -1,17 +1,15 @@
 <template>
-    <PartnerLayout>
-        <template #header>
-            <div class="flex justify-between items-center">
-                <h1 class="text-2xl font-bold text-gray-900">Кейсы</h1>
-                <Button
-                    @click="router.visit(route('partner.cases.create'))"
-                    label="Создать кейс"
-                    icon="pi pi-plus"
-                    unstyled
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out inline-flex items-center justify-center gap-2"
-                />
-            </div>
-        </template>
+    <div class="space-y-6">
+        <div class="flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-gray-900">Кейсы</h1>
+            <Button
+                @click="router.visit(route('partner.cases.create'))"
+                label="Создать кейс"
+                icon="pi pi-plus"
+                unstyled
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out inline-flex items-center justify-center gap-2"
+            />
+        </div>
 
         <!-- Tabs -->
         <div class="mb-6">
@@ -194,14 +192,13 @@
 
         <!-- Pagination -->
         <Pagination v-if="cases.links.length > 2" :links="cases.links" class="mt-6" />
-    </PartnerLayout>
+    </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { usePage, router } from '@inertiajs/vue3';
+import { usePage, router, Link } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
-import PartnerLayout from '@/Layouts/PartnerLayout.vue';
 import Pagination from '@/Components/Pagination.vue';
 import DatePicker from '@/Components/UI/DatePicker.vue';
 import Select from '@/Components/UI/Select.vue';

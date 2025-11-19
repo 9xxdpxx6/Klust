@@ -1,6 +1,5 @@
 <template>
-    <StudentLayout>
-        <div class="space-y-6">
+    <div class="space-y-6">
             <div>
                 <h1 class="text-3xl font-bold text-text-primary mb-2">Панель студента</h1>
                 <p class="text-text-secondary">Ваш прогресс и активность</p>
@@ -141,12 +140,10 @@
                 </Card>
             </div>
         </div>
-    </StudentLayout>
 </template>
 
 <script setup>
 import { router, useForm } from '@inertiajs/vue3';
-import StudentLayout from '@/Layouts/StudentLayout.vue';
 import StatsWidget from '@/Components/UI/StatsWidget.vue';
 import Card from '@/Components/UI/Card.vue';
 import Badge from '@/Components/UI/Badge.vue';

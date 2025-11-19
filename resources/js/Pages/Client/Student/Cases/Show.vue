@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useForm, router } from '@inertiajs/vue3'
-import StudentLayout from '@/Layouts/StudentLayout.vue'
 import Button from '@/Components/UI/Button.vue'
 import Badge from '@/Components/UI/Badge.vue'
 import Card from '@/Components/UI/Card.vue'
@@ -82,7 +81,7 @@ const formatDate = (dateString) => {
 </script>
 
 <template>
-    <StudentLayout>
+    <div class="space-y-6">
         <div class="max-w-5xl mx-auto px-4 py-8">
             <!-- Breadcrumbs -->
             <nav class="mb-6 text-sm">
@@ -296,5 +295,5 @@ const formatDate = (dateString) => {
                 </div>
             </form>
         </Modal>
-    </StudentLayout>
+    </div>
 </template>

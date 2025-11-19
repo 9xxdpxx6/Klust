@@ -1,7 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useForm, router } from '@inertiajs/vue3'
-import StudentLayout from '@/Layouts/StudentLayout.vue'
 import Card from '@/Components/UI/Card.vue'
 import Button from '@/Components/UI/Button.vue'
 import ProgressBar from '@/Components/UI/ProgressBar.vue'
@@ -78,7 +77,7 @@ const exitSession = () => {
 </script>
 
 <template>
-    <StudentLayout>
+    <div class="space-y-6">
         <div class="min-h-screen bg-gray-50">
             <!-- Header -->
             <div class="bg-white border-b border-gray-200 sticky top-0 z-10">
@@ -165,7 +164,7 @@ const exitSession = () => {
                 </div>
             </div>
         </div>
-    </StudentLayout>
+    </div>
 </template>
 
 <style scoped>

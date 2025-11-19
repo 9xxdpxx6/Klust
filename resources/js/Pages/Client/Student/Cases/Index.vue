@@ -1,6 +1,5 @@
 <template>
-    <StudentLayout>
-        <div class="space-y-6">
+    <div class="space-y-6">
             <div>
                 <h1 class="text-3xl font-bold text-text-primary mb-2">Каталог кейсов</h1>
                 <p class="text-text-secondary">Выберите кейс для подачи заявки</p>
@@ -76,13 +75,11 @@
                 />
             </div>
         </div>
-    </StudentLayout>
 </template>
 
 <script setup>
 import { ref } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
-import StudentLayout from '@/Layouts/StudentLayout.vue';
 import Card from '@/Components/UI/Card.vue';
 import Input from '@/Components/UI/Input.vue';
 import Select from '@/Components/UI/Select.vue';
