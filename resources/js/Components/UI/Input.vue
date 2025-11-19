@@ -113,6 +113,23 @@ const inputId = computed(() => `input-${Math.random().toString(36).substr(2, 9)}
 :deep(.p-inputtext.p-invalid) {
   @apply border-red-500;
 }
+
+/* Стили для IconField - правильный padding для иконки */
+:deep(.p-icon-field) {
+  @apply w-full;
+}
+
+:deep(.p-icon-field-left .p-inputtext) {
+  @apply pl-10;
+}
+
+:deep(.p-icon-field-right .p-inputtext) {
+  @apply pr-10;
+}
+
+:deep(.p-input-icon) {
+  @apply text-gray-400;
+}
 </style>
 
 

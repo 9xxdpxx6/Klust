@@ -255,63 +255,105 @@
             <!-- Одобренные заявки -->
             <div v-if="applicationsByStatus.approved && applicationsByStatus.approved.length > 0">
                 <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-                    <div class="px-6 py-4 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-200">
+                    <button
+                        @click="toggleSection('approved')"
+                        class="w-full px-6 py-4 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-200 hover:from-green-100 hover:to-emerald-100 transition-colors flex items-center justify-between"
+                    >
                         <h2 class="text-xl font-bold text-green-900 flex items-center gap-2">
                             <CheckCircleIcon class="h-6 w-6" />
                             Одобренные команды ({{ applicationsByStatus.approved.length }})
                         </h2>
-                    </div>
-                    <div class="divide-y divide-gray-100">
+                        <ChevronDownIcon
+                            :class="[
+                                'h-5 w-5 text-green-700 transition-transform duration-200',
+                                collapsedSections.approved ? 'transform rotate-180' : ''
+                            ]"
+                        />
+                    </button>
+                    <Transition name="slide">
                         <div
-                            v-for="application in applicationsByStatus.approved"
-                            :key="application.id"
-                            class="px-6 py-5 hover:bg-gray-50 transition-colors"
+                            v-if="!collapsedSections.approved"
+                            class="divide-y divide-gray-100"
                         >
-                            <ApplicationCard :application="application" />
+                            <div
+                                v-for="application in applicationsByStatus.approved"
+                                :key="application.id"
+                                class="px-6 py-5 hover:bg-gray-50 transition-colors"
+                            >
+                                <ApplicationCard :application="application" />
+                            </div>
                         </div>
-                    </div>
+                    </Transition>
                 </div>
             </div>
 
             <!-- Заявки на рассмотрении -->
             <div v-if="applicationsByStatus.pending && applicationsByStatus.pending.length > 0">
                 <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-                    <div class="px-6 py-4 bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-200">
+                    <button
+                        @click="toggleSection('pending')"
+                        class="w-full px-6 py-4 bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-200 hover:from-amber-100 hover:to-yellow-100 transition-colors flex items-center justify-between"
+                    >
                         <h2 class="text-xl font-bold text-amber-900 flex items-center gap-2">
                             <ClockIcon class="h-6 w-6" />
                             Заявки на рассмотрении ({{ applicationsByStatus.pending.length }})
                         </h2>
-                    </div>
-                    <div class="divide-y divide-gray-100">
+                        <ChevronDownIcon
+                            :class="[
+                                'h-5 w-5 text-amber-700 transition-transform duration-200',
+                                collapsedSections.pending ? 'transform rotate-180' : ''
+                            ]"
+                        />
+                    </button>
+                    <Transition name="slide">
                         <div
-                            v-for="application in applicationsByStatus.pending"
-                            :key="application.id"
-                            class="px-6 py-5 hover:bg-gray-50 transition-colors"
+                            v-if="!collapsedSections.pending"
+                            class="divide-y divide-gray-100"
                         >
-                            <ApplicationCard :application="application" />
+                            <div
+                                v-for="application in applicationsByStatus.pending"
+                                :key="application.id"
+                                class="px-6 py-5 hover:bg-gray-50 transition-colors"
+                            >
+                                <ApplicationCard :application="application" />
+                            </div>
                         </div>
-                    </div>
+                    </Transition>
                 </div>
             </div>
 
             <!-- Отклоненные заявки -->
             <div v-if="applicationsByStatus.rejected && applicationsByStatus.rejected.length > 0">
                 <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-                    <div class="px-6 py-4 bg-gradient-to-r from-red-50 to-rose-50 border-b border-red-200">
+                    <button
+                        @click="toggleSection('rejected')"
+                        class="w-full px-6 py-4 bg-gradient-to-r from-red-50 to-rose-50 border-b border-red-200 hover:from-red-100 hover:to-rose-100 transition-colors flex items-center justify-between"
+                    >
                         <h2 class="text-xl font-bold text-red-900 flex items-center gap-2">
                             <i class="pi pi-times-circle text-xl"></i>
                             Отклоненные заявки ({{ applicationsByStatus.rejected.length }})
                         </h2>
-                    </div>
-                    <div class="divide-y divide-gray-100">
+                        <ChevronDownIcon
+                            :class="[
+                                'h-5 w-5 text-red-700 transition-transform duration-200',
+                                collapsedSections.rejected ? 'transform rotate-180' : ''
+                            ]"
+                        />
+                    </button>
+                    <Transition name="slide">
                         <div
-                            v-for="application in applicationsByStatus.rejected"
-                            :key="application.id"
-                            class="px-6 py-5 hover:bg-gray-50 transition-colors"
+                            v-if="!collapsedSections.rejected"
+                            class="divide-y divide-gray-100"
                         >
-                            <ApplicationCard :application="application" />
+                            <div
+                                v-for="application in applicationsByStatus.rejected"
+                                :key="application.id"
+                                class="px-6 py-5 hover:bg-gray-50 transition-colors"
+                            >
+                                <ApplicationCard :application="application" />
+                            </div>
                         </div>
-                    </div>
+                    </Transition>
                 </div>
             </div>
 
@@ -374,6 +416,7 @@ import { router } from '@inertiajs/vue3'
 import { Link, Head } from '@inertiajs/vue3'
 import {
     ChevronRightIcon,
+    ChevronDownIcon,
     DocumentTextIcon,
     ClockIcon,
     CheckCircleIcon,
@@ -409,6 +452,18 @@ const applicationsByStatus = computed(() => props.applicationsByStatus || {})
 // Удаление кейса
 const showDeleteModal = ref(false)
 const processing = ref(false)
+
+// Состояние сворачивания секций заявок (по умолчанию все развернуты)
+const collapsedSections = ref({
+    approved: false,
+    pending: false,
+    rejected: false
+})
+
+// Переключение состояния секции
+const toggleSection = (section) => {
+    collapsedSections.value[section] = !collapsedSections.value[section]
+}
 
 const confirmDelete = () => {
     showDeleteModal.value = true
@@ -486,3 +541,40 @@ const getStatusBadgeClass = (status) => {
     return classMap[status] || 'bg-gray-100 text-gray-800 border border-gray-200'
 }
 </script>
+
+<style scoped>
+/* Анимация слайда вверх/вниз */
+.slide-enter-active {
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.slide-leave-active {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.slide-enter-from {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
+.slide-enter-to {
+    max-height: 10000px;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.slide-leave-from {
+    max-height: 10000px;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.slide-leave-to {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-20px);
+}
+</style>

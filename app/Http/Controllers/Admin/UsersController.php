@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Filters\UserFilter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreUserRequest;
 use App\Http\Requests\Admin\UpdateUserRequest;
@@ -35,40 +36,15 @@ class UsersController extends Controller
         $query = User::with('roles')
             ->select(['id', 'name', 'email', 'kubgtu_id', 'course', 'avatar', 'email_verified_at', 'created_at']);
 
-        // Поиск по имени, email или kubgtu_id
-        if (! empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('kubgtu_id', 'like', "%{$search}%");
-            });
-        }
+        // Применяем фильтры
+        $userFilter = new UserFilter($filters);
+        $query = $userFilter->apply($query);
 
-        // Фильтрация по роли
-        if (! empty($filters['role'])) {
-            $query->whereHas('roles', function ($q) use ($filters) {
-                $q->where('name', $filters['role']);
-            });
-        }
-
-        // Фильтрация по статусу верификации email
-        if (! empty($filters['status'])) {
-            if ($filters['status'] === 'verified') {
-                $query->whereNotNull('email_verified_at');
-            } elseif ($filters['status'] === 'unverified') {
-                $query->whereNull('email_verified_at');
-            }
-        }
-
-        // Фильтрация по курсу
-        if (! empty($filters['course'])) {
-            $query->where('course', $filters['course']);
-        }
+        // Получаем параметры пагинации
+        $paginationParams = $userFilter->getPaginationParams();
 
         // Сортировка и пагинация
-        $users = $query->orderBy('created_at', 'desc')
-            ->paginate($filters['perPage'])
+        $users = $query->paginate($paginationParams['per_page'])
             ->withQueryString();
 
         // Получаем список ролей для фильтра
