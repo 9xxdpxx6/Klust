@@ -134,7 +134,7 @@
                         class="hover:bg-indigo-50/50 transition-all group"
                     >
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="p-2 bg-amber-100 rounded-lg group-hover:bg-amber-200 transition-colors">
+                            <div class="w-14 h-14 flex items-center justify-center bg-amber-100 rounded-lg group-hover:bg-amber-200 transition-colors">
                                 <div v-if="badge.icon_path" class="w-10 h-10 flex items-center justify-center">
                                     <img :src="badge.icon_path" :alt="badge.name" class="max-w-full max-h-full object-contain"/>
                                 </div>
@@ -158,7 +158,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center gap-2">
-                                <div class="p-1.5 bg-indigo-100 rounded-lg">
+                                <div class="w-8 h-8 flex items-center justify-center bg-indigo-100 rounded-lg">
                                     <i class="pi pi-star text-indigo-600 text-xs"></i>
                                 </div>
                                 <span class="text-sm font-semibold text-indigo-600">
