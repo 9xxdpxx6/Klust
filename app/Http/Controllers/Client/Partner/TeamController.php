@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Client\Partner;
 
-use App\Filters\Partner\TeamFilter;
+use App\Filters\TeamFilter;
 use App\Http\Controllers\Controller;
 use App\Models\CaseApplication;
 use App\Services\CaseService;
