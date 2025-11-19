@@ -1,8 +1,7 @@
 <template>
-    <PartnerLayout>
-        <template #header>
-            <div class="flex justify-between items-center">
-                <h1 class="text-2xl font-bold text-gray-900">{{ caseData.title }}</h1>
+    <div class="space-y-6">
+        <div class="flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-gray-900">{{ caseData.title }}</h1>
                 <div class="flex space-x-3">
                     <Link
                         :href="route('partner.cases.edit', { case: caseData.id })"
@@ -29,7 +28,6 @@
                     </button>
                 </div>
             </div>
-        </template>
 
         <!-- Case Info -->
         <div class="bg-white shadow-sm rounded-lg p-6 mb-6">
@@ -325,13 +323,12 @@
                 </div>
             </div>
         </div>
-    </PartnerLayout>
+    </div>
 </template>
 
 <script setup>
 import { computed, ref } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
-import PartnerLayout from '@/Layouts/PartnerLayout.vue';
 import Pagination from '@/Components/Pagination.vue';
 import Select from '@/Components/UI/Select.vue';
 

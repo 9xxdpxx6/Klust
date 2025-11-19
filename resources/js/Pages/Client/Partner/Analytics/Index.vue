@@ -1,8 +1,6 @@
 <template>
-    <PartnerLayout>
-        <template #header>
-            <h1 class="text-2xl font-bold text-gray-900">Аналитика</h1>
-        </template>
+    <div class="space-y-6">
+        <h1 class="text-2xl font-bold text-gray-900">Аналитика</h1>
 
         <!-- Filters -->
         <div class="bg-white shadow-sm rounded-lg p-4 mb-6">
@@ -247,13 +245,12 @@
                 </table>
             </div>
         </div>
-    </PartnerLayout>
+    </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
-import PartnerLayout from '@/Layouts/PartnerLayout.vue';
 import DatePicker from '@/Components/UI/DatePicker.vue';
 import Select from '@/Components/UI/Select.vue';
 import {
@@ -284,17 +281,14 @@ ChartJS.register(
 );
 
 const props = defineProps({
-    statistics: {
+    analytics: {
         type: Object,
-        required: true
-    },
-    chartData: {
-        type: Object,
-        required: true
-    },
-    topCases: {
-        type: Array,
-        required: true
+        default: () => ({
+            overview: {},
+            application_stats: {},
+            charts: {},
+            date_range: {}
+        })
     },
     filters: {
         type: Object,
@@ -306,6 +300,66 @@ const filters = reactive({
     period: props.filters.period || '30',
     start_date: props.filters.start_date ? new Date(props.filters.start_date) : null,
     end_date: props.filters.end_date ? new Date(props.filters.end_date) : null
+});
+
+// Extract data from analytics object
+const statistics = computed(() => props.analytics?.overview || {});
+const topCases = computed(() => props.analytics?.top_cases || []);
+
+// Transform chart data to Chart.js format
+const chartData = computed(() => {
+    const charts = props.analytics?.charts || {};
+    
+    return {
+        // Applications over time (Line chart)
+        case_creation_timeline: charts.applications_over_time ? {
+            labels: charts.applications_over_time.labels || [],
+            datasets: [{
+                label: 'Заявки',
+                data: charts.applications_over_time.data || [],
+                borderColor: 'rgb(59, 130, 246)',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                tension: 0.1
+            }]
+        } : null,
+        
+        // Cases by status (Doughnut chart)
+        case_status_distribution: charts.cases_by_status ? {
+            labels: charts.cases_by_status.labels || [],
+            datasets: [{
+                data: charts.cases_by_status.data || [],
+                backgroundColor: [
+                    'rgb(34, 197, 94)',  // Active - green
+                    'rgb(59, 130, 246)', // Completed - blue
+                    'rgb(156, 163, 175)', // Draft - gray
+                    'rgb(168, 85, 247)'  // Archived - purple
+                ]
+            }]
+        } : null,
+        
+        // Application conversion (Pie chart)
+        application_conversion: charts.application_conversion ? {
+            labels: charts.application_conversion.labels || [],
+            datasets: [{
+                data: charts.application_conversion.data || [],
+                backgroundColor: [
+                    'rgb(234, 179, 8)',  // Pending - yellow
+                    'rgb(34, 197, 94)',   // Accepted - green
+                    'rgb(239, 68, 68)'   // Rejected - red
+                ]
+            }]
+        } : null,
+        
+        // Popular skills (Bar chart)
+        case_popularity: charts.popular_skills ? {
+            labels: charts.popular_skills.labels || [],
+            datasets: [{
+                label: 'Количество',
+                data: charts.popular_skills.data || [],
+                backgroundColor: 'rgb(59, 130, 246)'
+            }]
+        } : null
+    };
 });
 
 const periodOptions = computed(() => [
@@ -409,15 +463,15 @@ const generateCSV = () => {
     csv += `Период: ${filters.period} дней\n\n`;
     
     csv += 'Статистика\n';
-    csv += `Всего кейсов,${props.statistics.total_cases}\n`;
-    csv += `Активные кейсы,${props.statistics.active_cases}\n`;
-    csv += `Завершенные кейсы,${props.statistics.completed_cases}\n`;
-    csv += `Всего команд,${props.statistics.total_teams}\n`;
-    csv += `Средняя конверсия,${props.statistics.average_conversion}%\n\n`;
+    csv += `Всего кейсов,${statistics.value.total_cases || 0}\n`;
+    csv += `Активные кейсы,${statistics.value.active_cases || 0}\n`;
+    csv += `Завершенные кейсы,${statistics.value.completed_cases || 0}\n`;
+    csv += `Всего команд,${statistics.value.total_teams || 0}\n`;
+    csv += `Средняя конверсия,${statistics.value.average_conversion || 0}%\n\n`;
     
     csv += 'Топ кейсов\n';
     csv += 'Название,Заявки,Команды,Конверсия\n';
-    props.topCases.forEach(topCase => {
+    topCases.value.forEach(topCase => {
         csv += `"${topCase.title}",${topCase.applications_count},${topCase.teams_count},${topCase.conversion_rate}%\n`;
     });
     

@@ -1,6 +1,5 @@
 <script setup>
 import { router } from '@inertiajs/vue3'
-import StudentLayout from '@/Layouts/StudentLayout.vue'
 import Card from '@/Components/UI/Card.vue'
 import Button from '@/Components/UI/Button.vue'
 import Table from '@/Components/UI/Table.vue'
@@ -59,7 +58,7 @@ const sessionColumns = [
 </script>
 
 <template>
-    <StudentLayout>
+    <div class="space-y-6">
         <div class="max-w-7xl mx-auto px-4 py-8">
             <h1 class="text-3xl font-bold mb-6">Симуляторы</h1>
 
@@ -178,5 +177,5 @@ const sessionColumns = [
                 </div>
             </Card>
         </div>
-    </StudentLayout>
+    </div>
 </template>

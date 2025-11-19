@@ -1,8 +1,7 @@
 <template>
-    <PartnerLayout>
-        <template #header>
-            <div class="flex justify-between items-center">
-                <h1 class="text-2xl font-bold text-gray-900">Команда: {{ team.leader.name }}</h1>
+    <div class="space-y-6">
+        <div class="flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-gray-900">Команда: {{ team.leader.name }}</h1>
                 <Link
                     :href="route('partner.teams.index')"
                     class="text-blue-600 hover:text-blue-900 text-sm font-medium"
@@ -181,12 +180,11 @@
                 </ul>
             </div>
         </div>
-    </PartnerLayout>
+    </div>
 </template>
 
 <script setup>
 import { Link } from '@inertiajs/vue3';
-import PartnerLayout from '@/Layouts/PartnerLayout.vue';
 
 const props = defineProps({
     team: {

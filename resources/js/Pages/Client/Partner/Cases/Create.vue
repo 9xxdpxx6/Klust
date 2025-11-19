@@ -1,8 +1,6 @@
 <template>
-    <PartnerLayout>
-        <template #header>
-            <h1 class="text-2xl font-bold text-gray-900">Создать кейс</h1>
-        </template>
+    <div class="space-y-6">
+        <h1 class="text-2xl font-bold text-gray-900">Создать кейс</h1>
 
         <div class="bg-white shadow-sm rounded-lg p-6">
             <form @submit.prevent="submitForm">
@@ -187,13 +185,12 @@
                 </div>
             </form>
         </div>
-    </PartnerLayout>
+    </div>
 </template>
 
 <script setup>
 import { ref, reactive } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
-import PartnerLayout from '@/Layouts/PartnerLayout.vue';
 import DatePicker from '@/Components/UI/DatePicker.vue';
 
 const props = defineProps({

@@ -1,8 +1,6 @@
 <template>
-    <PartnerLayout>
-        <template #header>
-            <h1 class="text-2xl font-bold text-gray-900">Команды</h1>
-        </template>
+    <div class="space-y-6">
+        <h1 class="text-2xl font-bold text-gray-900">Команды</h1>
 
         <!-- Filters -->
         <div class="bg-white shadow-sm rounded-lg p-4 mb-6">
@@ -103,13 +101,12 @@
                 </div>
             </div>
         </div>
-    </PartnerLayout>
+    </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
-import PartnerLayout from '@/Layouts/PartnerLayout.vue';
 import Select from '@/Components/UI/Select.vue';
 
 const props = defineProps({
