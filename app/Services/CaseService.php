@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Filters\CaseFilter;
 use App\Helpers\FilterHelper;
 use App\Models\CaseModel;
 use App\Models\Partner;
@@ -122,37 +123,16 @@ class CaseService
      */
     public function getFilteredCases(array $filters): LengthAwarePaginator
     {
-        $query = CaseModel::query();
+        $caseFilter = new CaseFilter($filters);
 
-        // Apply status filter
-        $status = FilterHelper::getStringFilter($filters['status'] ?? null);
-        if ($status) {
-            $query->where('status', $status);
-        }
+        $query = CaseModel::query()
+            ->with(['partner.user.partnerProfile', 'skills']);
 
-        // Apply partner filter
-        $partnerId = FilterHelper::getIntegerFilter($filters['partner_id'] ?? null);
-        if ($partnerId) {
-            $query->where('partner_id', $partnerId);
-        }
+        $query = $caseFilter->apply($query);
 
-        // Apply search filter
-        $search = FilterHelper::getStringFilter($filters['search'] ?? null);
-        if ($search) {
-            $sanitizedSearch = FilterHelper::sanitizeSearch($search);
-            $query->where(function ($q) use ($sanitizedSearch) {
-                $q->where('title', 'like', "%{$sanitizedSearch}%")
-                    ->orWhere('description', 'like', "%{$sanitizedSearch}%");
-            });
-        }
+        $pagination = $caseFilter->getPaginationParams();
 
-        // Eager load relationships
-        $query->with(['partner.user.partnerProfile', 'skills']);
-
-        // Get pagination parameters
-        $pagination = FilterHelper::getPaginationParams($filters, 25);
-
-        return $query->latest()->paginate($pagination['per_page']);
+        return $query->paginate($pagination['per_page']);
     }
 
     /**
