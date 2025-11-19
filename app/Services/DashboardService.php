@@ -200,12 +200,12 @@ class DashboardService
                     'label' => __('dashboard.charts.students', [], 'ru'),
                     'data' => $data,
                     'backgroundColor' => [
-                        '#3B82F6', // blue
-                        '#10B981', // green
-                        '#F59E0B', // amber
-                        '#EF4444', // red
-                        '#8B5CF6', // purple
-                        '#EC4899', // pink
+                        '#22C55E', // 1 курс 
+                        '#FDE047', // 2 курс 
+                        '#F97316', // 3 курс 
+                        '#EF4444', // 4 курс 
+                        '#3B82F6', // 5 курс 
+                        '#EAB308', // 6 курс 
                     ],
                 ],
             ],
