@@ -2,8 +2,6 @@
     <div class="space-y-6">
         <Head title="Управление симуляторами"/>
 
-        <FlashMessage/>
-
         <!-- Заголовок с градиентом -->
         <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg overflow-hidden">
             <div class="px-6 py-8">
@@ -498,7 +496,6 @@
 import {ref, computed} from 'vue'
 import {router, useForm} from '@inertiajs/vue3'
 import {Head} from '@inertiajs/vue3'
-import FlashMessage from '@/Components/Shared/FlashMessage.vue'
 import Pagination from '@/Components/Pagination.vue'
 import Select from '@/Components/UI/Select.vue'
 import Input from '@/Components/UI/Input.vue'

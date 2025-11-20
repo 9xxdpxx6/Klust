@@ -101,7 +101,11 @@ watch(message, (newMessage) => {
       close();
     }, 3500);
   } else {
-    // Если сообщение исчезло, скрываем компонент
+    // Если сообщение исчезло, скрываем компонент и очищаем таймер
+    if (autoCloseTimer) {
+      clearTimeout(autoCloseTimer);
+      autoCloseTimer = null;
+    }
     isVisible.value = false;
     showProgress.value = false;
   }
