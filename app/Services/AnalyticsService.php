@@ -53,10 +53,22 @@ class AnalyticsService
             'popular_skills' => $this->buildPopularSkillsChart($cases),
         ];
 
+        // Calculate top cases
+        $topCases = $this->getTopCases($cases);
+
+        // Calculate total teams
+        $totalTeams = $cases->sum(function ($case) {
+            return $case->applications->where('status', 'accepted')->count();
+        });
+
+        // Add total_teams to overview
+        $overview['total_teams'] = $totalTeams;
+
         return [
             'overview' => $overview,
             'application_stats' => $applicationStats,
             'charts' => $charts,
+            'top_cases' => $topCases,
             'date_range' => [
                 'from' => $dateFrom->toDateString(),
                 'to' => $dateTo->toDateString(),
@@ -221,5 +233,34 @@ class AnalyticsService
             'labels' => array_keys($topSkills),
             'data' => array_values($topSkills),
         ];
+    }
+
+    /**
+     * Get top cases by applications count
+     *
+     * @param  \Illuminate\Support\Collection  $cases
+     */
+    private function getTopCases($cases): array
+    {
+        return $cases
+            ->map(function ($case) {
+                $applicationsCount = $case->applications->count();
+                $teamsCount = $case->applications->where('status', 'accepted')->count();
+                $conversionRate = $applicationsCount > 0
+                    ? round(($teamsCount / $applicationsCount) * 100, 2)
+                    : 0;
+
+                return [
+                    'id' => $case->id,
+                    'title' => $case->title,
+                    'applications_count' => $applicationsCount,
+                    'teams_count' => $teamsCount,
+                    'conversion_rate' => $conversionRate,
+                ];
+            })
+            ->sortByDesc('applications_count')
+            ->take(10)
+            ->values()
+            ->toArray();
     }
 }
