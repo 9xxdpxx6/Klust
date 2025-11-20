@@ -9,15 +9,6 @@
                 <p class="text-gray-600 mt-2">Измените информацию о кейсе</p>
             </div>
 
-            <!-- Уведомления -->
-            <div v-if="$page.props.flash.success" class="mb-4 p-4 bg-green-100 text-green-700 rounded-md">
-                {{ $page.props.flash.success }}
-            </div>
-
-            <div v-if="$page.props.flash.error" class="mb-4 p-4 bg-red-100 text-red-700 rounded-md">
-                {{ $page.props.flash.error }}
-            </div>
-
             <!-- Форма -->
             <div class="bg-white rounded-lg shadow p-6">
                 <form @submit.prevent="submitForm">
