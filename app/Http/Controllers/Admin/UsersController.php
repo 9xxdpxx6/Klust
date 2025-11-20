@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Filters\UserFilter;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Admin\StoreUserRequest;
-use App\Http\Requests\Admin\UpdateUserRequest;
+use App\Http\Requests\Admin\User\StoreRequest;
+use App\Http\Requests\Admin\User\UpdateRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -131,7 +131,7 @@ class UsersController extends Controller
         ]);
     }
 
-    public function store(StoreUserRequest $request)
+    public function store(StoreRequest $request)
     {
         $this->authorize('create', User::class);
 
@@ -201,7 +201,7 @@ class UsersController extends Controller
         ]);
     }
 
-    public function update(UpdateUserRequest $request, User $user)
+    public function update(UpdateRequest $request, User $user)
     {
         $this->authorize('update', $user);
 
@@ -212,9 +212,11 @@ class UsersController extends Controller
             'course' => $request->course,
         ];
 
-        // Обновляем пароль только если он указан
+        // Обновляем пароль только если он указан и отличается от текущего
         if ($request->filled('password')) {
-            $updateData['password'] = Hash::make($request->password);
+            if (! Hash::check($request->password, $user->password)) {
+                $updateData['password'] = Hash::make($request->password);
+            }
         }
 
         // Обновляем аватар если указан

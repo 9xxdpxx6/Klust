@@ -66,9 +66,11 @@ class UserService
                 'kubgtu_id' => $data['kubgtu_id'] ?? $user->kubgtu_id,
             ];
 
-            // Update password if provided
+            // Update password if provided and different from current
             if (isset($data['password']) && ! empty($data['password'])) {
-                $userUpdate['password'] = Hash::make($data['password']);
+                if (! Hash::check($data['password'], $user->password)) {
+                    $userUpdate['password'] = Hash::make($data['password']);
+                }
             }
 
             // Handle avatar upload
