@@ -161,16 +161,8 @@ class CasesController extends Controller
             // Проверить права (только свой кейс)
             $this->authorize('view', $case);
 
-            // Загрузить связи
-            $case->load([
-                'skills',
-                'applications.leader',
-                'applications.status',
-                'applications.teamMembers.user',
-                'applications.statusHistory.changedBy',
-                'applications.statusHistory.oldStatus',
-                'applications.statusHistory.newStatus',
-            ]);
+            // Загрузить основные связи
+            $case->load(['skills']);
 
             // Получить статистику
             $statistics = $this->caseService->getCaseStatistics($case);
@@ -182,18 +174,38 @@ class CasesController extends Controller
                 ->with(['leader', 'teamMembers.user'])
                 ->get();
 
+            // Пагинация заявок
+            $applications = $case->applications()
+                ->with(['leader', 'status', 'teamMembers.user', 'statusHistory.changedBy', 'statusHistory.oldStatus', 'statusHistory.newStatus'])
+                ->latest()
+                ->paginate(10)
+                ->withQueryString();
+
             return Inertia::render('Client/Partner/Cases/Show', [
                 'caseData' => $case,
-                'applications' => $case->applications,
+                'applications' => $applications,
                 'teams' => $teams,
                 'statistics' => $statistics,
             ]);
         } catch (\Exception $e) {
+            // Возвращаем пустую пагинированную структуру при ошибке
+            $emptyPagination = new \Illuminate\Pagination\LengthAwarePaginator(
+                [],
+                0,
+                10,
+                1
+            );
+
             return Inertia::render('Client/Partner/Cases/Show', [
                 'caseData' => $case,
-                'applications' => collect(),
+                'applications' => $emptyPagination,
                 'teams' => collect(),
-                'statistics' => [],
+                'statistics' => [
+                    'total_applications' => 0,
+                    'pending_applications' => 0,
+                    'accepted_applications' => 0,
+                    'rejected_applications' => 0,
+                ],
                 'error' => 'Ошибка при загрузке кейса: '.$e->getMessage(),
             ]);
         }

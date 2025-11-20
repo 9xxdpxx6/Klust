@@ -31,14 +31,15 @@ class StoreRequest extends FormRequest
             'role' => ['required', 'string', 'in:student,teacher,partner,admin'],
 
             // Поля из основной таблицы users, зависящие от роли
+            // kubgtu_id автоматически генерируется для студентов, не требуется в форме
             'kubgtu_id' => [
-                'required_if:role,student',
+                'nullable',
                 'string',
                 'max:255',
                 'unique:users,kubgtu_id', // Уникален для всех пользователей
             ],
             'course' => [
-                'required_if:role,student',
+                'nullable',
                 'integer',
                 'between:1,6', // Курсы от 1 до 6
             ],
@@ -50,14 +51,13 @@ class StoreRequest extends FormRequest
             ],
 
             // Поля из student_profiles (только для студентов)
+            // Могут быть заполнены позже при редактировании профиля
             'faculty_id' => [
-                'required_if:role,student',
                 'nullable',
                 'integer',
                 'exists:faculties,id',
             ],
             'group' => [
-                'required_if:role,student',
                 'nullable',
                 'string',
                 'max:255',
@@ -73,8 +73,8 @@ class StoreRequest extends FormRequest
             ],
 
             // Поля из partner_profiles (только для партнеров)
+            // Могут быть заполнены позже при редактировании профиля
             'company_name' => [
-                'required_if:role,partner',
                 'nullable',
                 'string',
                 'max:255',
@@ -97,7 +97,6 @@ class StoreRequest extends FormRequest
                 'string',
             ],
             'contact_person' => [
-                'required_if:role,partner',
                 'nullable',
                 'string',
                 'max:255',
@@ -132,21 +131,15 @@ class StoreRequest extends FormRequest
             'password.confirmed' => 'Подтверждение пароля не совпадает.',
             'role.required' => 'Необходимо указать роль пользователя.',
             'role.in' => 'Выбрана некорректная роль.',
-            'kubgtu_id.required_if' => 'Поле "ID КУБГТУ" обязательно для студентов.',
             'kubgtu_id.unique' => 'Пользователь с таким ID КУБГТУ уже существует.',
             'kubgtu_id.max' => 'ID КУБГТУ не должен превышать 255 символов.',
-            'course.required_if' => 'Поле "Курс" обязательно для студентов.',
             'course.between' => 'Курс должен быть в диапазоне от 1 до 6.',
-            'faculty_id.required_if' => 'Факультет обязателен для студентов.',
             'faculty_id.exists' => 'Выбранный факультет не существует.',
-            'group.required_if' => 'Группа обязательна для студентов.',
             'group.max' => 'Название группы не должно превышать 255 символов.',
             'specialization.max' => 'Название специализации не должно превышать 255 символов.',
-            'company_name.required_if' => 'Название компании обязательно для партнеров.',
             'company_name.max' => 'Название компании не должно превышать 255 символов.',
             'inn.max' => 'ИНН не должен превышать 12 символов.',
             'website.url' => 'Поле "Сайт" должно содержать корректный URL-адрес.',
-            'contact_person.required_if' => 'Контактное лицо обязательно для партнеров.',
             'contact_person.max' => 'Имя контактного лица не должно превышать 255 символов.',
             'contact_phone.max' => 'Номер телефона не должен превышать 20 символов.',
             'avatar.image' => 'Файл аватара должен быть изображением.',

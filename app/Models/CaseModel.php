@@ -35,6 +35,29 @@ class CaseModel extends Model
         'deadline' => 'date',
     ];
 
+    protected $appends = [
+        'required_skills',
+        'team_size',
+    ];
+
+    /**
+     * Accessor для required_skills (алиас для skills)
+     * Используется в Vue компонентах
+     */
+    public function getRequiredSkillsAttribute()
+    {
+        return $this->skills;
+    }
+
+    /**
+     * Accessor для team_size (алиас для required_team_size)
+     * Используется в Vue компонентах
+     */
+    public function getTeamSizeAttribute()
+    {
+        return $this->required_team_size;
+    }
+
     public function partner(): BelongsTo
     {
         return $this->belongsTo(Partner::class);
