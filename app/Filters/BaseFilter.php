@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 abstract class BaseFilter implements FilterInterface
 {
-    protected readonly array $filters;
+    protected array $filters;
 
     public function __construct(array $filters = [])
     {
