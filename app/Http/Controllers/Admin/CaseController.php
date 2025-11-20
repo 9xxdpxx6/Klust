@@ -60,10 +60,20 @@ class CaseController extends Controller
             'perPage' => $filters['per_page'] ?? 25,
         ];
 
+        // Получаем общую статистику (независимо от фильтров и пагинации)
+        $statistics = [
+            'total_cases' => CaseModel::count(),
+            'active_cases' => CaseModel::where('status', 'active')->count(),
+            'draft_cases' => CaseModel::where('status', 'draft')->count(),
+            'completed_cases' => CaseModel::where('status', 'completed')->count(),
+            'archived_cases' => CaseModel::where('status', 'archived')->count(),
+        ];
+
         return Inertia::render('Admin/Cases/Index', [
             'cases' => $cases,
             'filters' => $frontendFilters,
             'partners' => $partners,
+            'statistics' => $statistics,
         ]);
     }
 

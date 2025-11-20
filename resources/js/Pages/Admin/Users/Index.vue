@@ -113,7 +113,7 @@
                     <div>
                         <p class="text-sm font-medium text-green-600 mb-1">Верифицированных</p>
                         <p class="text-2xl font-bold text-green-900">
-                            {{ usersData.filter(u => u.email_verified_at).length }}
+                            {{ verifiedUsersCount }}
                         </p>
                     </div>
                     <div class="w-12 h-12 flex items-center justify-center bg-green-500 rounded-xl">
@@ -126,7 +126,7 @@
                     <div>
                         <p class="text-sm font-medium text-amber-600 mb-1">Студентов</p>
                         <p class="text-2xl font-bold text-amber-900">
-                            {{ usersData.filter(u => u.roles?.some(r => r.name === 'student')).length }}
+                            {{ studentsCount }}
                         </p>
                     </div>
                     <div class="w-12 h-12 flex items-center justify-center bg-amber-500 rounded-xl">
@@ -314,12 +314,18 @@ const props = defineProps({
         type: [Array, Object],
         default: () => []
     },
+    statistics: {
+        type: Object,
+        default: () => ({})
+    },
 })
 
 // Computed свойства для безопасного доступа
 const usersData = computed(() => props.users?.data || [])
-const usersTotal = computed(() => props.users?.total || 0)
+const usersTotal = computed(() => props.statistics?.total_users || props.users?.total || 0)
 const usersLinks = computed(() => props.users?.links || [])
+const verifiedUsersCount = computed(() => props.statistics?.verified_users || 0)
+const studentsCount = computed(() => props.statistics?.students || 0)
 
 // Безопасная инициализация filters
 const filters = ref({

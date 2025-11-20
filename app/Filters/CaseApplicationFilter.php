@@ -86,17 +86,17 @@ final class CaseApplicationFilter extends BaseFilter
 
     private function applySubmittedAtRangeFilter(Builder $query): void
     {
-        // Delegate to BaseFilter's applyDateRange
         // Support both submitted_from/to and date_from/to
-        $filters = [
-            'date_from' => $this->getFilter('submitted_from') ?? $this->getFilter('date_from'),
-            'date_to' => $this->getFilter('submitted_to') ?? $this->getFilter('date_to'),
-        ];
+        $dateFrom = $this->getFilter('submitted_from') ?? $this->getFilter('date_from');
+        $dateTo = $this->getFilter('submitted_to') ?? $this->getFilter('date_to');
 
-        $tempFilters = $this->filters;
-        $this->filters = $filters;
-        $this->applyDateRange($query, 'submitted_at');
-        $this->filters = $tempFilters;
+        if ($dateFrom) {
+            $query->whereDate('submitted_at', '>=', $dateFrom);
+        }
+
+        if ($dateTo) {
+            $query->whereDate('submitted_at', '<=', $dateTo);
+        }
     }
 
     private function applySortingFilter(Builder $query): void

@@ -58,11 +58,22 @@ class UsersController extends Controller
             ->values()
             ->toArray();
 
+        // Получаем общую статистику (независимо от фильтров и пагинации)
+        $statistics = [
+            'total_users' => User::count(),
+            'verified_users' => User::whereNotNull('email_verified_at')->count(),
+            'students' => User::role('student')->count(),
+            'partners' => User::role('partner')->count(),
+            'teachers' => User::role('teacher')->count(),
+            'admins' => User::role('admin')->count(),
+        ];
+
         return Inertia::render('Admin/Users/Index', [
             'users' => $users,
             'filters' => $filters, // Всегда передаем filters
             'roles' => $roles,
             'courses' => $courses,
+            'statistics' => $statistics,
         ]);
     }
 

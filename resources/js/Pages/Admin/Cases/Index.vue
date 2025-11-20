@@ -118,7 +118,7 @@
                     <div>
                         <p class="text-sm font-medium text-green-600 mb-1">Активных</p>
                         <p class="text-2xl font-bold text-green-900">
-                            {{ casesData.filter(c => c.status === 'active').length }}
+                            {{ activeCasesCount }}
                         </p>
                     </div>
                     <div class="w-12 h-12 flex items-center justify-center bg-green-500 rounded-xl">
@@ -131,7 +131,7 @@
                     <div>
                         <p class="text-sm font-medium text-amber-600 mb-1">Черновиков</p>
                         <p class="text-2xl font-bold text-amber-900">
-                            {{ casesData.filter(c => c.status === 'draft').length }}
+                            {{ draftCasesCount }}
                         </p>
                     </div>
                     <div class="w-12 h-12 flex items-center justify-center bg-amber-500 rounded-xl">
@@ -329,12 +329,18 @@ const props = defineProps({
         type: Array,
         default: () => []
     },
+    statistics: {
+        type: Object,
+        default: () => ({})
+    },
 })
 
 // Computed свойства для безопасного доступа
 const casesData = computed(() => props.cases?.data || [])
-const casesTotal = computed(() => props.cases?.total || 0)
+const casesTotal = computed(() => props.statistics?.total_cases || props.cases?.total || 0)
 const casesLinks = computed(() => props.cases?.links || [])
+const activeCasesCount = computed(() => props.statistics?.active_cases || 0)
+const draftCasesCount = computed(() => props.statistics?.draft_cases || 0)
 
 // Проверка активных фильтров
 const hasActiveFilters = computed(() => {
