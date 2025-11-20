@@ -247,8 +247,6 @@ const submitForm = () => {
     };
 
     router.put(route('partner.cases.update', { case: props.caseData.id }), formData, {
-        preserveState: true,
-        preserveScroll: true,
         onSuccess: () => {
             processing.value = false;
         },
@@ -261,10 +259,7 @@ const submitForm = () => {
 
 const archiveCase = () => {
     if (confirm('Вы уверены, что хотите архивировать этот кейс?')) {
-        router.post(route('partner.cases.archive', { case: props.caseData.id }), {}, {
-            preserveState: true,
-            preserveScroll: true
-        });
+        router.post(route('partner.cases.archive', { case: props.caseData.id }));
     }
 };
 </script>

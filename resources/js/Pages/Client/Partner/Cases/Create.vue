@@ -234,8 +234,6 @@ const submitForm = () => {
     };
 
     router.post(route('partner.cases.store'), formData, {
-        preserveState: true,
-        preserveScroll: true,
         onSuccess: () => {
             processing.value = false;
         },
