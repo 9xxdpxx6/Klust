@@ -243,13 +243,8 @@ class UsersController extends Controller
         // Обновляем пользователя
         $user->update($updateData);
 
-        // Обновляем роль если она изменилась
-        if ($request->role) {
-            $currentRole = $user->roles->first()?->name ?? null;
-            if ($request->role !== $currentRole) {
-                $user->syncRoles([$request->role]);
-            }
-        }
+        // Роль не может быть изменена при редактировании пользователя
+        // Она устанавливается только при создании и не должна обновляться здесь
 
         return redirect()->route('admin.users.index')
             ->with('success', 'Пользователь успешно обновлен.');
