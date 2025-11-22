@@ -32,7 +32,7 @@ class UpdateRequest extends FormRequest
             'email' => [
                 'required',
                 'string',
-                'email',
+                'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
                 'max:255',
                 Rule::unique('users')->ignore($userId), // Исключаем текущего пользователя из проверки уникальности
             ],
@@ -63,6 +63,7 @@ class UpdateRequest extends FormRequest
         return [
             'name.required' => 'Имя обязательно для заполнения.',
             'email.required' => 'Email обязателен для заполнения.',
+            'email.regex' => 'Email должен быть корректным адресом электронной почты (например, user@example.com).',
             'email.unique' => 'Этот email уже используется другим пользователем.',
             'password.min' => 'Пароль должен содержать минимум 8 символов.',
             'password.confirmed' => 'Подтверждение пароля не совпадает.',

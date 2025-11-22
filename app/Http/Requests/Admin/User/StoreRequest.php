@@ -26,7 +26,13 @@ class StoreRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'email' => [
+                'required',
+                'string',
+                'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
+                'max:255',
+                'unique:users,email',
+            ],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'role' => ['required', 'string', 'in:student,teacher,partner,admin'],
 
@@ -125,6 +131,7 @@ class StoreRequest extends FormRequest
         return [
             'name.required' => 'Имя пользователя обязательно для заполнения.',
             'email.required' => 'Email обязателен для заполнения.',
+            'email.regex' => 'Email должен быть корректным адресом электронной почты (например, user@example.com).',
             'email.unique' => 'Пользователь с таким email уже существует.',
             'password.required' => 'Пароль обязателен для заполнения.',
             'password.min' => 'Пароль должен содержать минимум 8 символов.',
