@@ -220,7 +220,7 @@ const formatDate = (dateString) => {
 
         <!-- Apply Modal -->
         <Modal v-model="showApplyModal" title="Подать заявку на кейс">
-            <form @submit.prevent="submitApplication">
+            <form @submit.prevent="submitApplication" novalidate>
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium mb-2">
@@ -262,7 +262,7 @@ const formatDate = (dateString) => {
                         <div class="flex gap-2" v-if="applyForm.team_members.length < caseData.required_team_size - 1">
                             <Input
                                 v-model="newMemberEmail"
-                                type="email"
+                                type="text"
                                 placeholder="Email участника"
                                 class="flex-1"
                             />

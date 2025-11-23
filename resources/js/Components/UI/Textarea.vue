@@ -13,7 +13,6 @@
       :id="textareaId"
       :modelValue="modelValue"
       :placeholder="placeholder"
-      :required="required"
       :disabled="disabled"
       :rows="rows"
       :invalid="!!error"

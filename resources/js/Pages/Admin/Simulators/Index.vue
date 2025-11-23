@@ -336,7 +336,7 @@
             @close="closeModal"
             size="lg"
         >
-            <form @submit.prevent="submitForm">
+            <form @submit.prevent="submitForm" novalidate>
                 <div class="space-y-4">
                     <Select
                         v-model="form.partner_id"

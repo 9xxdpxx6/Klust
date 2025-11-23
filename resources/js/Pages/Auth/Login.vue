@@ -1,5 +1,5 @@
 <template>
-    <form @submit.prevent="submit" class="space-y-6">
+    <form @submit.prevent="submit" novalidate class="space-y-6">
             <!-- Flash сообщения -->
             <div v-if="$page.props.flash?.error" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
                 {{ $page.props.flash.error }}
@@ -14,9 +14,8 @@
                     <input
                         id="email"
                         v-model="form.email"
-                        type="email"
+                        type="text"
                         autocomplete="email"
-                        required
                         class="appearance-none block w-full px-3 py-2 border border-border rounded-md shadow-sm placeholder-text-muted focus:outline-none focus:border-primary sm:text-sm"
                         :class="{ 'border-red-500': form.errors.email }"
                         placeholder="Введите email"
@@ -38,7 +37,6 @@
                         v-model="form.password"
                         type="password"
                         autocomplete="current-password"
-                        required
                         class="appearance-none block w-full px-3 py-2 border border-border rounded-md shadow-sm placeholder-text-muted focus:outline-none focus:border-primary sm:text-sm"
                         :class="{ 'border-red-500': form.errors.password }"
                         placeholder="Введите пароль"

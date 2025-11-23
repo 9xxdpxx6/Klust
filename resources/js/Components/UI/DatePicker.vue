@@ -19,7 +19,6 @@
       :minDate="minDate"
       :maxDate="maxDate"
       :disabled="disabled"
-      :required="required"
       :class="[
         {
           'p-invalid': error,

@@ -11,7 +11,7 @@
 
             <!-- Форма -->
             <div class="bg-white rounded-lg shadow p-6">
-                <form @submit.prevent="submitForm">
+                <form @submit.prevent="submitForm" novalidate>
                     <!-- Основная информация -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <!-- Название -->

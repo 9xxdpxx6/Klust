@@ -255,7 +255,7 @@ const skillsMatchPercentage = () => {
 
         <!-- Add Member Modal -->
         <Modal v-model="showAddMemberModal" title="Добавить участника">
-            <form @submit.prevent="submitAddMember">
+            <form @submit.prevent="submitAddMember" novalidate>
                 <div class="space-y-4">
                     <Input
                         v-model="addMemberForm.user_id"

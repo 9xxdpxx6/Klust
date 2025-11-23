@@ -13,10 +13,9 @@
       <PrimeInputIcon v-if="leftIcon" :class="leftIcon" />
       <PrimeInputText
         :id="inputId"
-        :type="type"
+        :type="type === 'email' ? 'text' : type"
         :modelValue="modelValue"
         :placeholder="placeholder"
-        :required="required"
         :disabled="disabled"
         :invalid="!!error"
         class="w-full"
@@ -30,10 +29,9 @@
     <PrimeInputText
       v-else
       :id="inputId"
-      :type="type"
+      :type="type === 'email' ? 'text' : type"
       :modelValue="modelValue"
       :placeholder="placeholder"
-      :required="required"
       :disabled="disabled"
       :invalid="!!error"
       class="w-full"

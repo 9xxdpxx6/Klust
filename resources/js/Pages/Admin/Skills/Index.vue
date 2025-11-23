@@ -287,7 +287,7 @@
             @close="closeModal"
             size="md"
         >
-            <form @submit.prevent="submitForm">
+            <form @submit.prevent="submitForm" novalidate>
                 <div class="space-y-4">
                     <Input
                         v-model="form.name"
@@ -310,7 +310,7 @@
 
                     <Input
                         v-model.number="form.max_level"
-                        type="number"
+                        type="text"
                         label="Максимальный уровень"
                         placeholder="100"
                         :error="form.errors.max_level"
