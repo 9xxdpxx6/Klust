@@ -2,7 +2,7 @@
     <div>
         <Head title="Редактирование кейса" />
 
-        <div class="max-w-4xl mx-auto">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Заголовок -->
             <div class="mb-6">
                 <h1 class="text-2xl font-bold">Редактирование кейса</h1>

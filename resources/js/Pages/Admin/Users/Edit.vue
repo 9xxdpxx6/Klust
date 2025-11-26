@@ -31,7 +31,7 @@
             </nav>
         </div>
 
-        <div class="max-w-3xl mx-auto">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-white shadow rounded-lg">
                 <div class="px-4 py-5 sm:p-6">
                     <div class="flex justify-between items-center mb-6">
