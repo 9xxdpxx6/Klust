@@ -27,7 +27,7 @@
             </div>
 
             <!-- Форма студента -->
-            <form v-if="registrationType === 'student'" @submit.prevent="submitStudent" class="space-y-6">
+            <form v-if="registrationType === 'student'" @submit.prevent="submitStudent" novalidate class="space-y-6">
                 <!-- KubGTU ID -->
                 <div>
                     <label for="kubgtu_id" class="block text-sm font-medium text-gray-700">
@@ -58,7 +58,6 @@
                             id="name"
                             v-model="studentForm.name"
                             type="text"
-                            required
                             class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500 sm:text-sm"
                             :class="{ 'border-red-500': studentForm.errors.name }"
                             placeholder="Введите ФИО"
@@ -78,8 +77,7 @@
                         <input
                             id="student_email"
                             v-model="studentForm.email"
-                            type="email"
-                            required
+                            type="text"
                             class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500 sm:text-sm"
                             :class="{ 'border-red-500': studentForm.errors.email }"
                             placeholder="Введите email"
@@ -112,7 +110,6 @@
                             id="student_password"
                             v-model="studentForm.password"
                             type="password"
-                            required
                             class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500 sm:text-sm"
                             :class="{ 'border-red-500': studentForm.errors.password }"
                             placeholder="Минимум 8 символов"
@@ -133,7 +130,6 @@
                             id="password_confirmation_student"
                             v-model="studentForm.password_confirmation"
                             type="password"
-                            required
                             class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500 sm:text-sm"
                         />
                     </div>
@@ -150,7 +146,7 @@
             </form>
 
             <!-- Форма партнера -->
-            <form v-else @submit.prevent="submitPartner" class="space-y-6">
+            <form v-else @submit.prevent="submitPartner" novalidate class="space-y-6">
                 <!-- Название компании -->
                 <div>
                     <label for="company_name" class="block text-sm font-medium text-gray-700">
@@ -161,7 +157,6 @@
                             id="company_name"
                             v-model="partnerForm.company_name"
                             type="text"
-                            required
                             class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500 sm:text-sm"
                             :class="{ 'border-red-500': partnerForm.errors.company_name }"
                             placeholder="Введите название компании"
@@ -182,7 +177,6 @@
                             id="contact_person"
                             v-model="partnerForm.contact_person"
                             type="text"
-                            required
                             class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500 sm:text-sm"
                             :class="{ 'border-red-500': partnerForm.errors.contact_person }"
                             placeholder="Введите ФИО контактного лица"
@@ -202,8 +196,7 @@
                         <input
                             id="partner_email"
                             v-model="partnerForm.email"
-                            type="email"
-                            required
+                            type="text"
                             class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500 sm:text-sm"
                             :class="{ 'border-red-500': partnerForm.errors.email }"
                             placeholder="Введите email"
@@ -223,8 +216,7 @@
                         <input
                             id="contact_phone"
                             v-model="partnerForm.contact_phone"
-                            type="tel"
-                            required
+                            type="text"
                             class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500 sm:text-sm"
                             :class="{ 'border-red-500': partnerForm.errors.contact_phone }"
                             placeholder="Введите телефон"
@@ -265,7 +257,6 @@
                             id="partner_password"
                             v-model="partnerForm.password"
                             type="password"
-                            required
                             class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500 sm:text-sm"
                             :class="{ 'border-red-500': partnerForm.errors.password }"
                             placeholder="Минимум 8 символов"
@@ -286,7 +277,6 @@
                             id="password_confirmation_partner"
                             v-model="partnerForm.password_confirmation"
                             type="password"
-                            required
                             class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500 sm:text-sm"
                         />
                     </div>

@@ -188,7 +188,7 @@ const cancelEdit = () => {
             </div>
 
             <!-- Edit Mode -->
-            <form v-else @submit.prevent="submitForm" class="space-y-6">
+            <form v-else @submit.prevent="submitForm" novalidate class="space-y-6">
                 <!-- Avatar Upload -->
                 <Card>
                     <h3 class="text-lg font-bold mb-4">Фотография профиля</h3>
@@ -233,7 +233,7 @@ const cancelEdit = () => {
                         />
                         <Input
                             v-model="form.email"
-                            type="email"
+                            type="text"
                             label="Email"
                             placeholder="Введите email"
                             :error="form.errors.email"

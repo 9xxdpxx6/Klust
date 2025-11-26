@@ -3,7 +3,7 @@
         <h1 class="text-2xl font-bold text-gray-900">Редактировать кейс: {{ caseData.title }}</h1>
 
         <div class="bg-white shadow-sm rounded-lg p-6">
-            <form @submit.prevent="submitForm">
+            <form @submit.prevent="submitForm" novalidate>
                 <div class="space-y-6">
                     <!-- Название -->
                     <div>
@@ -68,11 +68,9 @@
                             Требуемый размер команды *
                         </label>
                         <input
-                            type="number"
+                            type="text"
                             id="team_size"
                             v-model.number="form.team_size"
-                            min="1"
-                            max="10"
                             :disabled="processing"
                             :class="[
                                 'block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 sm:text-sm disabled:opacity-50',

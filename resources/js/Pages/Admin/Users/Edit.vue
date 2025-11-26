@@ -43,7 +43,7 @@
                         </div>
                     </div>
 
-                    <form @submit.prevent="submit">
+                    <form @submit.prevent="submit" novalidate>
                         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                             <!-- Основная информация -->
                             <div class="sm:col-span-2">
@@ -76,7 +76,7 @@
                             <div>
                                 <label for="email" class="block text-sm font-medium text-gray-700">Email *</label>
                                 <input
-                                    type="email"
+                                    type="text"
                                     id="email"
                                     v-model="form.email"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"

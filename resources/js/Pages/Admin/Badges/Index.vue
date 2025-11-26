@@ -234,7 +234,7 @@
             @close="closeModal"
             size="md"
         >
-            <form @submit.prevent="submitForm">
+            <form @submit.prevent="submitForm" novalidate>
                 <div class="space-y-4">
                     <Input
                         v-model="form.name"
@@ -255,7 +255,7 @@
 
                     <Input
                         v-model.number="form.required_points"
-                        type="number"
+                        type="text"
                         label="Требуемые баллы"
                         placeholder="100"
                         :error="form.errors.required_points"

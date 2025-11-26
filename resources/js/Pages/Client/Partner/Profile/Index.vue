@@ -186,7 +186,7 @@
                                     Email *
                                 </label>
                                 <input
-                                    type="email"
+                                    type="text"
                                     id="contact_email"
                                     v-model="form.contact_email"
                                     :readonly="!isEditing"
