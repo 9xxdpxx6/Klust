@@ -36,12 +36,11 @@
                         placeholder="Все статусы"
                         @update:modelValue="handleFilter"
                     />
-                    <Input
+                    <SearchInput
                         v-model="filters.search"
                         label="Поиск"
                         placeholder="Название, описание..."
-                        rightIcon="pi pi-search"
-                        @update:modelValue="handleSearch"
+                        @input="handleSearch"
                     />
                 </div>
             </Card>
@@ -81,7 +80,7 @@
 import { ref } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import Card from '@/Components/UI/Card.vue';
-import Input from '@/Components/UI/Input.vue';
+import SearchInput from '@/Components/UI/SearchInput.vue';
 import Select from '@/Components/UI/Select.vue';
 import CaseCard from '@/Components/CaseCard.vue';
 import MultiSelect from 'primevue/multiselect';

@@ -41,13 +41,13 @@ class CaseController extends Controller
         $cases = $this->caseService->getFilteredCases($filters);
 
         // Получаем список партнеров для фильтра
-        $partners = Partner::with('user')
+        $partners = Partner::with('user.partnerProfile')
             ->get()
             ->map(function ($partner) {
                 return [
                     'id' => $partner->id,
-                    'name' => $partner->name ?? 'Без названия',
-                    'contact_person' => $partner->user->name ?? 'Без контакта',
+                    'company_name' => $partner->company_name ?? 'Без названия',
+                    'contact_person' => $partner->contact_person ?? 'Без контакта',
                 ];
             });
 

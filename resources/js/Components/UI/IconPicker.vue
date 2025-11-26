@@ -301,7 +301,7 @@ const allIcons = [
   'pi-youtube',
   'pi-zoom-in',
   'pi-zoom-out',
-  'pi-award',
+  'pi-trophy',
   'pi-trophy',
   'pi-lightbulb',
   'pi-cog',

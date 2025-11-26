@@ -72,7 +72,7 @@ export const studentMenuItems = [
   {
     label: 'Бейджи',
     route: 'student.badges.index',
-    icon: 'pi pi-award',
+    icon: 'pi pi-trophy',
   },
   {
     label: 'Симуляторы',

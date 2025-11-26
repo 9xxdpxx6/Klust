@@ -34,7 +34,7 @@
                 <StatsWidget
                     title="Бейджи"
                     :value="stats?.badgesCount || 0"
-                    icon="pi pi-award"
+                    icon="pi pi-trophy"
                     variant="primary"
                 />
             </div>

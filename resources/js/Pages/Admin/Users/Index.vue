@@ -33,12 +33,11 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
                     <!-- Поиск -->
                     <div class="lg:col-span-2">
-                        <Input
+                        <SearchInput
                             v-model="filters.search"
                             label="Поиск"
                             placeholder="Имя, email, ID или kubgtu_id"
-                            left-icon="pi pi-search"
-                            @update:modelValue="updateFilters"
+                            @input="updateFilters"
                         />
                     </div>
 
@@ -86,7 +85,8 @@
                 <div class="mt-4 flex justify-end">
                     <button
                         @click="resetFilters"
-                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                        :disabled="!hasActiveFilters"
+                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <i class="pi pi-refresh"></i>
                         Сбросить фильтры
@@ -213,7 +213,8 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span
                                 v-if="user.course"
-                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-100 text-blue-800 border border-blue-200"
+                                :style="getCourseBadgeStyle(user.course)"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border"
                             >
                                 <i class="pi pi-calendar text-xs"></i>
                                 {{ user.course }} курс
@@ -225,9 +226,10 @@
                                 <span
                                     v-for="role in user.roles"
                                     :key="role.id"
-                                    class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-green-100 text-green-800 border border-green-200"
+                                    :style="getRoleBadgeStyle(role.name)"
+                                    class="px-2.5 py-1 text-xs font-semibold rounded-lg border"
                                 >
-                                    {{ role.name }}
+                                    {{ props.roleTranslations[role.name] || role.name }}
                                 </span>
                                 <span
                                     v-if="!user.roles || user.roles.length === 0"
@@ -275,9 +277,11 @@
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 mb-2">Пользователи не найдены</h3>
                 <p class="text-sm text-gray-500 mb-6">
-                    Попробуйте изменить параметры фильтрации
+                    <span v-if="hasActiveFilters">Попробуйте изменить параметры фильтрации</span>
+                    <span v-else>Пользователи не найдены</span>
                 </p>
                 <button
+                    v-if="hasActiveFilters"
                     @click="resetFilters"
                     class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                 >
@@ -294,7 +298,7 @@ import { router, Link } from '@inertiajs/vue3'
 import { Head } from '@inertiajs/vue3'
 import Pagination from '@/Components/Pagination.vue'
 import Select from '@/Components/UI/Select.vue'
-import Input from '@/Components/UI/Input.vue'
+import SearchInput from '@/Components/UI/SearchInput.vue'
 import { route } from 'ziggy-js'
 
 const props = defineProps({
@@ -309,6 +313,18 @@ const props = defineProps({
     roles: {
         type: [Array, Object],
         default: () => []
+    },
+    roleTranslations: {
+        type: Object,
+        default: () => ({})
+    },
+    roleColors: {
+        type: Object,
+        default: () => ({})
+    },
+    courseColors: {
+        type: Object,
+        default: () => ({})
     },
     courses: {
         type: [Array, Object],
@@ -334,6 +350,15 @@ const filters = ref({
     status: props.filters?.status || '',
     course: props.filters?.course || '',
     perPage: props.filters?.perPage ? String(props.filters.perPage) : '25',
+})
+
+// Проверка активных фильтров
+const hasActiveFilters = computed(() => {
+    return filters.value.search !== '' ||
+        filters.value.role !== '' ||
+        filters.value.status !== '' ||
+        filters.value.course !== '' ||
+        filters.value.perPage !== '25'
 })
 
 // Обновление фильтров с debounce для поиска
@@ -372,7 +397,7 @@ const roleFilterOptions = computed(() => {
     return [
         { label: 'Все роли', value: '' },
         ...rolesArray.map(role => ({
-            label: role,
+            label: props.roleTranslations[role] || role,
             value: role
         }))
     ];
@@ -413,5 +438,30 @@ const getUserInitials = (name) => {
         .join('')
         .toUpperCase()
         .substring(0, 2)
+}
+
+const hexToRgba = (hex, alpha) => {
+    const r = parseInt(hex.slice(1, 3), 16)
+    const g = parseInt(hex.slice(3, 5), 16)
+    const b = parseInt(hex.slice(5, 7), 16)
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
+const getCourseBadgeStyle = (course) => {
+    const color = props.courseColors[course] || '#6B7280'
+    return {
+        backgroundColor: hexToRgba(color, 0.1),
+        color: color,
+        borderColor: hexToRgba(color, 0.3),
+    }
+}
+
+const getRoleBadgeStyle = (roleName) => {
+    const color = props.roleColors[roleName] || '#6B7280'
+    return {
+        backgroundColor: hexToRgba(color, 0.1),
+        color: color,
+        borderColor: hexToRgba(color, 0.3),
+    }
 }
 </script>

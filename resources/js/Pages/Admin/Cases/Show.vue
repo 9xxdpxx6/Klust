@@ -38,17 +38,17 @@
                     <div class="flex gap-2 ml-4">
                         <Link
                             :href="route('admin.cases.edit', caseData.id)"
-                            class="inline-flex items-center justify-center p-3 bg-white/10 backdrop-blur-sm text-white rounded-lg hover:bg-white/20 focus:outline-none transition-all shadow-lg border border-white/20"
-                            title="Редактировать"
+                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-white/10 backdrop-blur-sm text-white rounded-lg hover:bg-white/20 focus:outline-none transition-all shadow-lg border border-white/20 font-medium"
                         >
-                            <i class="pi pi-pencil text-lg"></i>
+                            <i class="pi pi-pencil"></i>
+                            Редактировать
                         </Link>
                         <button
                             @click="confirmDelete"
-                            class="inline-flex items-center justify-center p-3 bg-red-500/20 backdrop-blur-sm text-white rounded-lg hover:bg-red-500/30 focus:outline-none transition-all shadow-lg border border-red-300/30"
-                            title="Удалить"
+                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-red-500/20 backdrop-blur-sm text-white rounded-lg hover:bg-red-500/30 focus:outline-none transition-all shadow-lg border border-red-300/30 font-medium"
                         >
-                            <i class="pi pi-trash text-lg"></i>
+                            <i class="pi pi-trash"></i>
+                            Удалить
                         </button>
                     </div>
                 </div>
