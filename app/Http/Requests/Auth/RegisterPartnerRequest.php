@@ -25,7 +25,13 @@ class RegisterPartnerRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'email' => [
+                'required',
+                'string',
+                'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
+                'max:255',
+                'unique:users,email',
+            ],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
 
             // Partner profile fields
@@ -58,7 +64,7 @@ class RegisterPartnerRequest extends FormRequest
             'name.required' => 'Имя обязательно для заполнения.',
             'name.max' => 'Имя не должно превышать 255 символов.',
             'email.required' => 'Email обязателен для заполнения.',
-            'email.email' => 'Email должен быть корректным адресом электронной почты.',
+            'email.regex' => 'Email должен быть корректным адресом электронной почты (например, user@example.com).',
             'email.unique' => 'Пользователь с таким email уже существует.',
             'email.max' => 'Email не должен превышать 255 символов.',
             'password.required' => 'Пароль обязателен для заполнения.',

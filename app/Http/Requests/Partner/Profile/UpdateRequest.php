@@ -34,7 +34,7 @@ class UpdateRequest extends FormRequest
             'email' => [
                 'required',
                 'string',
-                'email',
+                'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
                 'max:255',
                 Rule::unique('users')->ignore($user->id), // Исключаем текущего пользователя из проверки уникальности
             ],

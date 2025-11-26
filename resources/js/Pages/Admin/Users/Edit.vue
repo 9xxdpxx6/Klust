@@ -96,17 +96,14 @@
                                 :error="errors.course"
                             />
 
-                            <!-- Роль -->
-                            <Select
-                                v-model="form.role"
-                                label="Роль"
-                                :options="roleOptions"
-                                optionLabel="label"
-                                optionValue="value"
-                                placeholder="Выберите роль"
-                                :error="errors.role"
-                                required
-                            />
+                            <!-- Роль (только для просмотра) -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Роль</label>
+                                <div class="mt-1 text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded border">
+                                    {{ getRoleDisplayName(form.role) }}
+                                </div>
+                                <p class="mt-1 text-xs text-gray-500">Роль нельзя изменить после создания</p>
+                            </div>
 
                             <!-- Смена пароля -->
                             <div class="sm:col-span-2 border-t pt-4">
@@ -201,9 +198,10 @@ const form = useForm({
 })
 
 const submit = () => {
-    // Преобразуем курс перед отправкой
+    // Преобразуем курс перед отправкой и исключаем роль
+    const { role, ...formDataWithoutRole } = form.data()
     const submitData = {
-        ...form.data(),
+        ...formDataWithoutRole,
         course: form.course === null || form.course === '' ? null : Number(form.course)
     }
 
@@ -231,14 +229,6 @@ const courseOptions = computed(() => [
     ...Array.from({ length: 6 }, (_, i) => ({
         label: `${i + 1} курс`,
         value: i + 1
-    }))
-])
-
-const roleOptions = computed(() => [
-    { label: 'Выберите роль', value: '' },
-    ...props.roles.map(role => ({
-        label: getRoleDisplayName(role),
-        value: role
     }))
 ])
 </script>
