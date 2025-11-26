@@ -1,328 +1,541 @@
 <template>
-    <div>
+    <div class="space-y-6">
         <Head :title="`Пользователь: ${user.name}`" />
 
-        <!-- Хлебные крошки -->
-        <div class="mb-6">
-            <nav class="flex" aria-label="Breadcrumb">
-                <ol class="flex items-center space-x-4">
-                    <li>
-                        <div>
-                            <Link :href="route('admin.users.index')" class="text-gray-400 hover:text-gray-500">
-                                Пользователи
-                            </Link>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="flex items-center">
-                            <span class="mx-2 text-gray-400">/</span>
-                            <span class="ml-2 text-sm font-medium text-gray-500">{{ user.name }}</span>
-                        </div>
-                    </li>
-                </ol>
-            </nav>
-        </div>
-
-        <!-- Заголовок страницы и кнопка редактирования -->
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold text-gray-900">Профиль пользователя: {{ user.name }}</h1>
-            <Link
-                :href="route('admin.users.edit', user.id)"
-                class="inline-flex items-center justify-center p-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none transition-colors"
-                title="Редактировать"
-            >
-                <i class="pi pi-pencil text-sm"></i>
-            </Link>
-        </div>
-
-        <!-- Основная информация -->
-        <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
-            <div class="px-4 py-5 sm:px-6">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">Основная информация</h3>
-                <p class="mt-1 max-w-2xl text-sm text-gray-500">Детальные данные пользователя</p>
-            </div>
-            <div class="border-t border-gray-200">
-                <dl>
-                    <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt class="text-sm font-medium text-gray-500">Аватар</dt>
-                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                            <div class="flex items-center">
-                                <img
-                                    v-if="user.avatar"
-                                    class="h-16 w-16 rounded-full"
-                                    :src="user.avatar"
-                                    :alt="user.name"
-                                />
-                                <div
-                                    v-else
-                                    class="h-16 w-16 rounded-full bg-gray-300 flex items-center justify-center"
+        <!-- Заголовок с действиями -->
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg overflow-hidden">
+            <div class="px-6 py-8">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <nav class="flex mb-4" aria-label="Breadcrumb">
+                            <ol class="flex items-center space-x-2">
+                                <li>
+                                    <Link :href="route('admin.users.index')" class="text-indigo-200 hover:text-white transition-colors">
+                                        <span class="text-sm font-medium">Пользователи</span>
+                                    </Link>
+                                </li>
+                                <li>
+                                    <i class="pi pi-angle-right text-indigo-300 text-sm"></i>
+                                </li>
+                                <li>
+                                    <span class="text-sm font-medium text-white">{{ user.name }}</span>
+                                </li>
+                            </ol>
+                        </nav>
+                        <h1 class="text-3xl font-bold text-white mb-3">{{ user.name }}</h1>
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <div class="flex flex-wrap gap-2">
+                                <span
+                                    v-for="role in user.roles"
+                                    :key="role.id"
+                                    :class="getRoleBadgeClass(role.name)"
+                                    class="px-4 py-1.5 text-sm font-semibold rounded-full shadow-sm"
                                 >
-                                    <span class="text-gray-600 text-lg font-medium">{{ getUserInitials(user.name) }}</span>
+                                    {{ roleTranslations[role.name] || role.name }}
+                                </span>
+                            </div>
+                            <span class="text-indigo-100 text-sm">
+                                Зарегистрирован {{ formatDate(user.created_at) }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 ml-4">
+                        <Link
+                            :href="route('admin.users.edit', user.id)"
+                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-white/10 backdrop-blur-sm text-white rounded-lg hover:bg-white/20 focus:outline-none transition-all shadow-lg border border-white/20 font-medium"
+                        >
+                            <i class="pi pi-pencil"></i>
+                            Редактировать
+                        </Link>
+                        <button
+                            @click="confirmDelete"
+                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-red-500/20 backdrop-blur-sm text-white rounded-lg hover:bg-red-500/30 focus:outline-none transition-all shadow-lg border border-red-300/30 font-medium"
+                        >
+                            <i class="pi pi-trash"></i>
+                            Удалить
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Статистика - карточки с градиентами -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 shadow-md border border-blue-200/50 hover:shadow-lg transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-blue-600 mb-1">Навыков</p>
+                        <p class="text-3xl font-bold text-blue-900">{{ stats.skills_count || 0 }}</p>
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-blue-500 rounded-xl">
+                        <i class="pi pi-star text-white text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-6 shadow-md border border-amber-200/50 hover:shadow-lg transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-amber-600 mb-1">Бейджей</p>
+                        <p class="text-3xl font-bold text-amber-900">{{ stats.badges_count || 0 }}</p>
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-amber-500 rounded-xl">
+                        <i class="pi pi-trophy text-white text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 shadow-md border border-green-200/50 hover:shadow-lg transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-green-600 mb-1">Сессий симулятора</p>
+                        <p class="text-3xl font-bold text-green-900">{{ stats.simulator_sessions_count || 0 }}</p>
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-green-500 rounded-xl">
+                        <i class="pi pi-desktop text-white text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 shadow-md border border-purple-200/50 hover:shadow-lg transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-purple-600 mb-1">Заявок на кейсы</p>
+                        <p class="text-3xl font-bold text-purple-900">{{ stats.case_applications_count || 0 }}</p>
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-purple-500 rounded-xl">
+                        <i class="pi pi-file-edit text-white text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl p-6 shadow-md border border-pink-200/50 hover:shadow-lg transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-pink-600 mb-1">Участий в командах</p>
+                        <p class="text-3xl font-bold text-pink-900">{{ stats.team_memberships_count || 0 }}</p>
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-pink-500 rounded-xl">
+                        <i class="pi pi-users text-white text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl p-6 shadow-md border border-indigo-200/50 hover:shadow-lg transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-indigo-600 mb-1">Уведомлений</p>
+                        <p class="text-3xl font-bold text-indigo-900">{{ stats.notifications_count || 0 }}</p>
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-indigo-500 rounded-xl">
+                        <i class="pi pi-bell text-white text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Основной контент -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Основная информация -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Основная информация -->
+                <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                        <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                            <i class="pi pi-user text-indigo-600"></i>
+                            Основная информация
+                        </h2>
+                    </div>
+                    <div class="px-6 py-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Аватар</p>
+                                <div class="flex items-center">
+                                    <img
+                                        v-if="user.avatar"
+                                        class="h-20 w-20 rounded-full border-2 border-gray-200"
+                                        :src="user.avatar"
+                                        :alt="user.name"
+                                    />
+                                    <div
+                                        v-else
+                                        class="h-20 w-20 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center border-2 border-gray-200"
+                                    >
+                                        <span class="text-white text-xl font-bold">{{ getUserInitials(user.name) }}</span>
+                                    </div>
                                 </div>
                             </div>
-                        </dd>
-                    </div>
-                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt class="text-sm font-medium text-gray-500">Имя</dt>
-                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ user.name }}</dd>
-                    </div>
-                    <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt class="text-sm font-medium text-gray-500">Email</dt>
-                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ user.email }}</dd>
-                    </div>
-                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt class="text-sm font-medium text-gray-500">KUBGTU ID</dt>
-                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                            {{ user.kubgtu_id || 'Не указан' }}
-                        </dd>
-                    </div>
-                    <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt class="text-sm font-medium text-gray-500">Курс</dt>
-                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-              <span v-if="user.course" class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                {{ user.course }} курс
-              </span>
-                            <span v-else class="text-gray-500">Не указан</span>
-                        </dd>
-                    </div>
-                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt class="text-sm font-medium text-gray-500">Роли</dt>
-                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                            <div class="flex flex-wrap gap-1">
-                <span
-                    v-for="role in user.roles"
-                    :key="role.id"
-                    class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800"
-                >
-                  {{ role.name }}
-                </span>
-                                <span v-if="!user.roles.length" class="text-gray-500">Нет ролей</span>
-                            </div>
-                        </dd>
-                    </div>
-                    <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt class="text-sm font-medium text-gray-500">Статус email</dt>
-                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-              <span
-                  v-if="user.email_verified_at"
-                  class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800"
-              >
-                Подтвержден
-              </span>
-                            <span
-                                v-else
-                                class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800"
-                            >
-                Не подтвержден
-              </span>
-                        </dd>
-                    </div>
-                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt class="text-sm font-medium text-gray-500">Дата регистрации</dt>
-                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ formatDate(user.created_at) }}</dd>
-                    </div>
-                </dl>
-            </div>
-        </div>
-
-        <!-- Профили пользователя -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            <!-- Студенческий профиль -->
-            <div v-if="user.student_profile" class="bg-white shadow rounded-lg p-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Студенческий профиль</h3>
-                <div class="space-y-2">
-                    <div>
-                        <span class="text-sm font-medium text-gray-500">Факультет:</span>
-                        <span class="ml-2 text-sm text-gray-900">{{ user.student_profile.faculty || 'Не указан' }}</span>
-                    </div>
-                    <div>
-                        <span class="text-sm font-medium text-gray-500">Специальность:</span>
-                        <span class="ml-2 text-sm text-gray-900">{{ user.student_profile.specialization || 'Не указана' }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Профиль партнера -->
-            <div v-if="user.partner_profile" class="bg-white shadow rounded-lg p-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Профиль партнера</h3>
-                <div class="space-y-2">
-                    <div>
-                        <span class="text-sm font-medium text-gray-500">Компания:</span>
-                        <span class="ml-2 text-sm text-gray-900">{{ user.partner_profile.company_name || 'Не указана' }}</span>
-                    </div>
-                    <div>
-                        <span class="text-sm font-medium text-gray-500">Должность:</span>
-                        <span class="ml-2 text-sm text-gray-900">{{ user.partner_profile.position || 'Не указана' }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Профиль преподавателя -->
-            <div v-if="user.teacher_profile" class="bg-white shadow rounded-lg p-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Профиль преподавателя</h3>
-                <div class="space-y-2">
-                    <div>
-                        <span class="text-sm font-medium text-gray-500">Кафедра:</span>
-                        <span class="ml-2 text-sm text-gray-900">{{ user.teacher_profile.department || 'Не указана' }}</span>
-                    </div>
-                    <div>
-                        <span class="text-sm font-medium text-gray-500">Должность:</span>
-                        <span class="ml-2 text-sm text-gray-900">{{ user.teacher_profile.position || 'Не указана' }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Статистика -->
-        <div class="bg-white shadow rounded-lg p-6 mb-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Статистика</h3>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-indigo-600">{{ stats.skills_count }}</div>
-                    <div class="text-sm text-gray-500">Навыков</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-indigo-600">{{ stats.badges_count }}</div>
-                    <div class="text-sm text-gray-500">Бейджей</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-indigo-600">{{ stats.simulator_sessions_count }}</div>
-                    <div class="text-sm text-gray-500">Сессий симулятора</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-indigo-600">{{ stats.case_applications_count }}</div>
-                    <div class="text-sm text-gray-500">Заявок на кейсы</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-indigo-600">{{ stats.team_memberships_count }}</div>
-                    <div class="text-sm text-gray-500">Участий в командах</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-indigo-600">{{ stats.notifications_count }}</div>
-                    <div class="text-sm text-gray-500">Уведомлений</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Навыки и бейджи -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Навыки -->
-            <div class="bg-white shadow rounded-lg p-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Навыки</h3>
-                <div v-if="user.skills && user.skills.length" class="space-y-3">
-                    <div
-                        v-for="skill in user.skills"
-                        :key="skill.id"
-                        class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
-                    >
-                        <div>
-                            <div class="font-medium text-gray-900">{{ skill.name }}</div>
-                            <div class="text-sm text-gray-500">{{ skill.category === 'hard' ? 'Hard Skill' : 'Soft Skill' }}</div>
-                        </div>
-                        <div class="text-right">
-                            <div class="font-medium text-indigo-600">Уровень {{ skill.pivot.level }}</div>
-                            <div class="text-sm text-gray-500">{{ skill.pivot.points_earned }} очков</div>
-                        </div>
-                    </div>
-                </div>
-                <div v-else class="text-center text-gray-500 py-4">
-                    Навыки не добавлены
-                </div>
-            </div>
-
-            <!-- Бейджи -->
-            <div class="bg-white shadow rounded-lg p-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Бейджи</h3>
-                <div v-if="user.badges && user.badges.length" class="grid grid-cols-2 gap-4">
-                    <div
-                        v-for="badge in user.badges"
-                        :key="badge.id"
-                        class="text-center p-3 bg-gray-50 rounded-lg"
-                    >
-                        <div class="flex justify-center mb-2">
-                            <img
-                                v-if="badge.icon_path"
-                                :src="badge.icon_path"
-                                :alt="badge.name"
-                                class="w-12 h-12 object-contain"
-                            />
-                            <i
-                                v-else-if="badge.icon && (badge.icon.startsWith('pi-') || badge.icon.startsWith('fa-'))"
-                                :class="['text-[48px] text-yellow-600', badge.icon.startsWith('fa-') ? `pi pi-${badge.icon.replace('fa-', '')}` : `pi ${badge.icon}`]"
-                            ></i>
-                            <span v-else class="text-2xl">🏆</span>
-                        </div>
-                        <div class="font-medium text-gray-900">{{ badge.name }}</div>
-                        <div class="text-sm text-gray-500">{{ formatDate(badge.pivot.earned_at) }}</div>
-                    </div>
-                </div>
-                <div v-else class="text-center text-gray-500 py-4">
-                    Бейджи не получены
-                </div>
-            </div>
-        </div>
-
-        <!-- Кейсы пользователя -->
-        <div class="bg-white shadow rounded-lg p-6 mt-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Участие в кейсах</h3>
-
-            <!-- Как лидер -->
-            <div v-if="user.case_applications && user.case_applications.length" class="mb-6">
-                <h4 class="font-medium text-gray-700 mb-3">В качестве лидера команды</h4>
-                <div class="space-y-3">
-                    <div
-                        v-for="application in user.case_applications"
-                        :key="application.id"
-                        class="p-3 border border-gray-200 rounded-lg"
-                    >
-                        <div class="flex justify-between items-start">
                             <div>
-                                <div class="font-medium text-gray-900">{{ application.case.title }}</div>
-                                <div class="text-sm text-gray-500">Партнер: {{ application.case.partner.company_name }}</div>
-                                <div class="text-sm text-gray-500">Статус: {{ application.status?.label || getStatusText(application.status?.name) }}</div>
+                                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Имя</p>
+                                <p class="text-sm font-medium text-gray-900">{{ user.name }}</p>
                             </div>
-                            <span
-                                :class="getStatusBadgeClass(application.status?.name)"
-                                class="px-2 py-1 text-xs font-semibold rounded-full"
-                            >
-                {{ application.status?.label || getStatusText(application.status?.name) }}
-              </span>
+                            <div>
+                                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Email</p>
+                                <p class="text-sm font-medium text-gray-900">{{ user.email }}</p>
+                                <span
+                                    v-if="user.email_verified_at"
+                                    class="inline-flex items-center gap-1 mt-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800"
+                                >
+                                    <i class="pi pi-check-circle text-xs"></i>
+                                    Подтвержден
+                                </span>
+                                <span
+                                    v-else
+                                    class="inline-flex items-center gap-1 mt-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-800"
+                                >
+                                    <i class="pi pi-times-circle text-xs"></i>
+                                    Не подтвержден
+                                </span>
+                            </div>
+                            <div>
+                                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">KUBGTU ID</p>
+                                <p class="text-sm font-medium text-gray-900">{{ user.kubgtu_id || 'Не указан' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Курс</p>
+                                <span
+                                    v-if="user.course"
+                                    :class="getCourseBadgeClass(user.course)"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg"
+                                >
+                                    <i class="pi pi-calendar text-xs"></i>
+                                    {{ user.course }} курс
+                                </span>
+                                <span v-else class="text-sm text-gray-500">Не указан</span>
+                            </div>
+                            <div>
+                                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Дата регистрации</p>
+                                <p class="text-sm font-medium text-gray-900">{{ formatDate(user.created_at) }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Профили пользователя -->
+                <div v-if="user.student_profile || user.partner_profile || user.teacher_profile" class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                        <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                            <i class="pi pi-id-card text-indigo-600"></i>
+                            Профили пользователя
+                        </h2>
+                    </div>
+                    <div class="px-6 py-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <!-- Студенческий профиль -->
+                            <div v-if="user.student_profile" class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                <h3 class="text-sm font-semibold text-blue-900 mb-3">Студенческий профиль</h3>
+                                <div class="space-y-2">
+                                    <div>
+                                        <p class="text-xs text-blue-600 mb-1">Факультет</p>
+                                        <p class="text-sm font-medium text-blue-900">{{ user.student_profile.faculty || 'Не указан' }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-blue-600 mb-1">Специальность</p>
+                                        <p class="text-sm font-medium text-blue-900">{{ user.student_profile.specialization || 'Не указана' }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Профиль партнера -->
+                            <div v-if="user.partner_profile" class="p-4 bg-green-50 rounded-lg border border-green-200">
+                                <h3 class="text-sm font-semibold text-green-900 mb-3">Профиль партнера</h3>
+                                <div class="space-y-2">
+                                    <div>
+                                        <p class="text-xs text-green-600 mb-1">Компания</p>
+                                        <p class="text-sm font-medium text-green-900">{{ user.partner_profile.company_name || 'Не указана' }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-green-600 mb-1">Должность</p>
+                                        <p class="text-sm font-medium text-green-900">{{ user.partner_profile.position || 'Не указана' }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Профиль преподавателя -->
+                            <div v-if="user.teacher_profile" class="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                                <h3 class="text-sm font-semibold text-purple-900 mb-3">Профиль преподавателя</h3>
+                                <div class="space-y-2">
+                                    <div>
+                                        <p class="text-xs text-purple-600 mb-1">Кафедра</p>
+                                        <p class="text-sm font-medium text-purple-900">{{ user.teacher_profile.department || 'Не указана' }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-purple-600 mb-1">Должность</p>
+                                        <p class="text-sm font-medium text-purple-900">{{ user.teacher_profile.position || 'Не указана' }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Навыки и бейджи -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Навыки -->
+                    <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                        <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                            <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                <i class="pi pi-star text-amber-500"></i>
+                                Навыки
+                            </h2>
+                        </div>
+                        <div class="px-6 py-6">
+                            <div v-if="user.skills && user.skills.length" class="space-y-3">
+                                <div
+                                    v-for="skill in user.skills"
+                                    :key="skill.id"
+                                    class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+                                >
+                                    <div>
+                                        <div class="font-medium text-gray-900">{{ skill.name }}</div>
+                                        <div class="text-sm text-gray-500">{{ skill.category === 'hard' ? 'Hard Skill' : 'Soft Skill' }}</div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="font-medium text-indigo-600">Уровень {{ skill.pivot.level }}</div>
+                                        <div class="text-sm text-gray-500">{{ skill.pivot.points_earned }} очков</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-else class="text-center text-gray-500 py-8">
+                                <i class="pi pi-info-circle text-4xl text-gray-300 mb-3"></i>
+                                <p class="text-sm">Навыки не добавлены</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Бейджи -->
+                    <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                        <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                            <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                <i class="pi pi-trophy text-amber-500"></i>
+                                Бейджи
+                            </h2>
+                        </div>
+                        <div class="px-6 py-6">
+                            <div v-if="user.badges && user.badges.length" class="grid grid-cols-2 gap-4">
+                                <div
+                                    v-for="badge in user.badges"
+                                    :key="badge.id"
+                                    class="text-center p-3 bg-gray-50 rounded-lg"
+                                >
+                                    <div class="flex justify-center mb-2">
+                                        <img
+                                            v-if="badge.icon_path"
+                                            :src="badge.icon_path"
+                                            :alt="badge.name"
+                                            class="w-12 h-12 object-contain"
+                                        />
+                                        <i
+                                            v-else-if="badge.icon && (badge.icon.startsWith('pi-') || badge.icon.startsWith('fa-'))"
+                                            :class="['text-[48px] text-yellow-600', badge.icon.startsWith('fa-') ? `pi pi-${badge.icon.replace('fa-', '')}` : `pi ${badge.icon}`]"
+                                        ></i>
+                                        <span v-else class="text-2xl">🏆</span>
+                                    </div>
+                                    <div class="font-medium text-gray-900 text-sm">{{ badge.name }}</div>
+                                    <div class="text-xs text-gray-500">{{ formatDate(badge.pivot.earned_at) }}</div>
+                                </div>
+                            </div>
+                            <div v-else class="text-center text-gray-500 py-8">
+                                <i class="pi pi-info-circle text-4xl text-gray-300 mb-3"></i>
+                                <p class="text-sm">Бейджи не получены</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Участие в кейсах -->
+                <div v-if="user.case_applications?.length || user.case_team_members?.length" class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                        <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                            <i class="pi pi-briefcase text-indigo-600"></i>
+                            Участие в кейсах
+                        </h2>
+                    </div>
+                    <div class="px-6 py-6 space-y-6">
+                        <!-- Как лидер -->
+                        <div v-if="user.case_applications && user.case_applications.length">
+                            <h4 class="font-medium text-gray-700 mb-3">В качестве лидера команды</h4>
+                            <div class="space-y-3">
+                                <div
+                                    v-for="application in user.case_applications"
+                                    :key="application.id"
+                                    class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                                >
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <div class="font-medium text-gray-900">{{ application.case.title }}</div>
+                                            <div class="text-sm text-gray-500 mt-1">Партнер: {{ application.case.partner?.company_name || 'Не указан' }}</div>
+                                            <div class="text-sm text-gray-500">Статус: {{ application.status?.label || getStatusText(application.status?.name) }}</div>
+                                        </div>
+                                        <span
+                                            :class="getStatusBadgeClass(application.status?.name)"
+                                            class="px-3 py-1 text-xs font-semibold rounded-full"
+                                        >
+                                            {{ application.status?.label || getStatusText(application.status?.name) }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Как участник команды -->
+                        <div v-if="user.case_team_members && user.case_team_members.length">
+                            <h4 class="font-medium text-gray-700 mb-3">В качестве участника команды</h4>
+                            <div class="space-y-3">
+                                <div
+                                    v-for="member in user.case_team_members"
+                                    :key="member.id"
+                                    class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                                >
+                                    <div class="font-medium text-gray-900">{{ member.application.case.title }}</div>
+                                    <div class="text-sm text-gray-500 mt-1">Лидер: {{ member.application.leader.name }}</div>
+                                    <div class="text-sm text-gray-500">Статус: {{ member.application.status?.label || getStatusText(member.application.status?.name) }}</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Как участник команды -->
-            <div v-if="user.case_team_members && user.case_team_members.length">
-                <h4 class="font-medium text-gray-700 mb-3">В качестве участника команды</h4>
-                <div class="space-y-3">
-                    <div
-                        v-for="member in user.case_team_members"
-                        :key="member.id"
-                        class="p-3 border border-gray-200 rounded-lg"
-                    >
-                        <div class="font-medium text-gray-900">{{ member.application.case.title }}</div>
-                        <div class="text-sm text-gray-500">Лидер: {{ member.application.leader.name }}</div>
-                        <div class="text-sm text-gray-500">Статус: {{ member.application.status?.label || getStatusText(member.application.status?.name) }}</div>
+            <!-- Детали пользователя - боковая панель -->
+            <div class="space-y-6">
+                <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden sticky top-6">
+                    <div class="px-6 py-4 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-200">
+                        <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                            <i class="pi pi-info-circle text-indigo-600"></i>
+                            Детали пользователя
+                        </h2>
+                    </div>
+                    <div class="px-6 py-6 space-y-5">
+                        <!-- Роли -->
+                        <div class="pb-5 border-b border-gray-100">
+                            <div class="flex items-start gap-3">
+                                <div class="p-2 bg-indigo-100 rounded-lg">
+                                    <i class="pi pi-shield text-indigo-600"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Роли</p>
+                                    <div class="flex flex-wrap gap-2">
+                                        <span
+                                            v-for="role in user.roles"
+                                            :key="role.id"
+                                            :class="getRoleBadgeClass(role.name)"
+                                            class="px-2.5 py-1 text-xs font-semibold rounded-lg"
+                                        >
+                                            {{ roleTranslations[role.name] || role.name }}
+                                        </span>
+                                        <span v-if="!user.roles.length" class="text-sm text-gray-500">Нет ролей</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Email статус -->
+                        <div class="pb-5 border-b border-gray-100">
+                            <div class="flex items-start gap-3">
+                                <div class="p-2 bg-green-100 rounded-lg">
+                                    <i class="pi pi-envelope text-green-600"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Email статус</p>
+                                    <span
+                                        v-if="user.email_verified_at"
+                                        class="inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800"
+                                    >
+                                        <i class="pi pi-check-circle text-xs"></i>
+                                        Подтвержден
+                                    </span>
+                                    <span
+                                        v-else
+                                        class="inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800"
+                                    >
+                                        <i class="pi pi-times-circle text-xs"></i>
+                                        Не подтвержден
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Дата регистрации -->
+                        <div>
+                            <div class="flex items-start gap-3">
+                                <div class="p-2 bg-gray-100 rounded-lg">
+                                    <i class="pi pi-clock text-gray-600"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Дата регистрации</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ formatDate(user.created_at) }}</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div v-if="!user.case_applications?.length && !user.case_team_members?.length" class="text-center text-gray-500 py-4">
-                Пользователь не участвовал в кейсах
+        <!-- Модальное окно подтверждения удаления -->
+        <div v-if="showDeleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+            <div class="relative bg-white rounded-xl shadow-2xl max-w-md w-full border border-gray-200">
+                <div class="p-6">
+                    <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+                        <i class="pi pi-exclamation-triangle text-3xl text-red-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 text-center mb-2">Подтверждение удаления</h3>
+                    <div class="mt-4 text-center">
+                        <p class="text-sm text-gray-600 mb-2">
+                            Вы уверены, что хотите удалить пользователя
+                        </p>
+                        <p class="text-sm font-semibold text-gray-900 mb-4">"{{ user.name }}"?</p>
+                        <p class="text-xs text-red-600 bg-red-50 rounded-lg p-3">
+                            Это действие нельзя отменить. Все данные пользователя будут удалены безвозвратно.
+                        </p>
+                    </div>
+                    <div class="flex justify-center gap-3 mt-6">
+                        <button
+                            @click="showDeleteModal = false"
+                            class="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                        >
+                            Отмена
+                        </button>
+                        <button
+                            @click="deleteUser"
+                            :disabled="processing"
+                            class="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                        >
+                            <span v-if="processing">Удаление...</span>
+                            <span v-else>Удалить</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { Link } from '@inertiajs/vue3'
-import { Head } from '@inertiajs/vue3'
+import { ref, computed } from 'vue'
+import { router, Link, Head } from '@inertiajs/vue3'
+import { route } from 'ziggy-js'
 
 const props = defineProps({
     user: Object,
     stats: Object,
+    roleTranslations: {
+        type: Object,
+        default: () => ({})
+    },
+    roleColors: {
+        type: Object,
+        default: () => ({})
+    },
+    courseColors: {
+        type: Object,
+        default: () => ({})
+    },
 })
+
+const showDeleteModal = ref(false)
+const processing = ref(false)
 
 const formatDate = (date) => {
     if (!date) return ''
@@ -363,5 +576,46 @@ const getStatusBadgeClass = (status) => {
         'archived': 'bg-gray-100 text-gray-800'
     }
     return classMap[status] || 'bg-gray-100 text-gray-800'
+}
+
+const getRoleBadgeClass = (roleName) => {
+    const classMap = {
+        'admin': 'bg-red-100 text-red-800 border border-red-200',
+        'partner': 'bg-blue-100 text-blue-800 border border-blue-200',
+        'student': 'bg-green-100 text-green-800 border border-green-200',
+        'teacher': 'bg-amber-100 text-amber-800 border border-amber-200',
+    }
+    return classMap[roleName] || 'bg-gray-100 text-gray-800 border border-gray-200'
+}
+
+const getCourseBadgeClass = (course) => {
+    const classMap = {
+        1: 'bg-green-100 text-green-800 border border-green-200',
+        2: 'bg-yellow-100 text-yellow-800 border border-yellow-200',
+        3: 'bg-orange-100 text-orange-800 border border-orange-200',
+        4: 'bg-red-100 text-red-800 border border-red-200',
+        5: 'bg-blue-100 text-blue-800 border border-blue-200',
+        6: 'bg-amber-100 text-amber-800 border border-amber-200',
+    }
+    return classMap[course] || 'bg-gray-100 text-gray-800 border border-gray-200'
+}
+
+const confirmDelete = () => {
+    showDeleteModal.value = true
+}
+
+const deleteUser = () => {
+    processing.value = true
+    router.delete(route('admin.users.destroy', props.user.id), {
+        onSuccess: () => {
+            router.visit(route('admin.users.index'))
+        },
+        onError: () => {
+            processing.value = false
+        },
+        onFinish: () => {
+            processing.value = false
+        },
+    })
 }
 </script>
