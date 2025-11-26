@@ -92,6 +92,12 @@ const datePickerId = computed(() => `datepicker-${Math.random().toString(36).sub
 </script>
 
 <style scoped>
-/* Стили применяются глобально через components.css */
+:deep(.p-datepicker) {
+  @apply w-full;
+}
+
+:deep(.p-datepicker-input) {
+  @apply w-full;
+}
 </style>
 
