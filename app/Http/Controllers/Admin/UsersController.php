@@ -50,6 +50,30 @@ class UsersController extends Controller
         // Получаем список ролей для фильтра
         $roles = Role::pluck('name')->toArray();
 
+        // Получаем переводы ролей
+        $roleTranslations = [];
+        foreach ($roles as $roleName) {
+            $roleTranslations[$roleName] = trans("roles.{$roleName}", [], 'ru');
+        }
+
+        // Цвета для курсов (из DashboardService)
+        $courseColors = [
+            1 => '#22C55E', // зеленый
+            2 => '#FDE047', // желтый
+            3 => '#F97316', // оранжевый
+            4 => '#EF4444', // красный
+            5 => '#3B82F6', // синий
+            6 => '#EAB308', // желтый
+        ];
+
+        // Цвета для ролей
+        $roleColors = [
+            'admin' => '#DC2626',   // красный
+            'partner' => '#2563EB',  // синий
+            'student' => '#10B981', // зеленый
+            'teacher' => '#F59E0B',  // янтарный
+        ];
+
         // Получаем список курсов для фильтра
         $courses = User::whereNotNull('course')
             ->distinct()
@@ -72,6 +96,9 @@ class UsersController extends Controller
             'users' => $users,
             'filters' => $filters, // Всегда передаем filters
             'roles' => $roles,
+            'roleTranslations' => $roleTranslations,
+            'roleColors' => $roleColors,
+            'courseColors' => $courseColors,
             'courses' => $courses,
             'statistics' => $statistics,
         ]);
@@ -125,8 +152,36 @@ class UsersController extends Controller
             ];
         });
 
+        // Получаем переводы ролей
+        $roles = Role::pluck('name')->toArray();
+        $roleTranslations = [];
+        foreach ($roles as $roleName) {
+            $roleTranslations[$roleName] = trans("roles.{$roleName}", [], 'ru');
+        }
+
+        // Цвета для курсов (из DashboardService)
+        $courseColors = [
+            1 => '#22C55E',
+            2 => '#FDE047',
+            3 => '#F97316',
+            4 => '#EF4444',
+            5 => '#3B82F6',
+            6 => '#EAB308',
+        ];
+
+        // Цвета для ролей
+        $roleColors = [
+            'admin' => '#DC2626',
+            'partner' => '#2563EB',
+            'student' => '#10B981',
+            'teacher' => '#F59E0B',
+        ];
+
         return Inertia::render('Admin/Users/Show', [
             'user' => $user,
+            'roleTranslations' => $roleTranslations,
+            'roleColors' => $roleColors,
+            'courseColors' => $courseColors,
             'stats' => $stats,
         ]);
     }
