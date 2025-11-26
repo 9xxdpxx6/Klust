@@ -64,16 +64,12 @@
                 </div>
                 
                 <div>
-                    <label for="search-filter" class="block text-sm font-medium text-gray-700 mb-1">
-                        Поиск по названию
-                    </label>
-                    <input
-                        type="text"
-                        id="search-filter"
+                    <SearchInput
                         v-model="filters.search"
-                        @input="debounceSearch"
+                        label="Поиск по названию"
                         placeholder="Поиск кейсов..."
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 sm:text-sm"
+                        :debounce="0"
+                        @input="debounceSearch"
                     />
                 </div>
             </div>
@@ -200,6 +196,7 @@ import { ref, computed, onMounted } from 'vue';
 import { usePage, router, Link } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import Pagination from '@/Components/Pagination.vue';
+import SearchInput from '@/Components/UI/SearchInput.vue';
 import DatePicker from '@/Components/UI/DatePicker.vue';
 import Select from '@/Components/UI/Select.vue';
 import Button from 'primevue/button';
