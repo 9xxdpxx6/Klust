@@ -89,11 +89,14 @@ class FilterHelper
      */
     public static function getPaginationParams(array $filters, int $defaultPerPage = 20): array
     {
-        $perPage = self::getIntegerFilter($filters['per_page'] ?? null, $defaultPerPage);
+        // ИЗМЕНЕНИЕ: Ищем сначала 'per_page', потом 'perPage'. Это делает код гибким.
+        $perPageValue = $filters['per_page'] ?? $filters['perPage'] ?? null;
+
+        $perPage = self::getIntegerFilter($perPageValue, $defaultPerPage);
         $perPage = min(max($perPage, 5), 100); // Clamp between 5 and 100
 
         return [
-            'per_page' => $perPage,
+            'per_page' => $perPage, // Всегда возвращаем с 'per_page' для консистентности
             'page' => self::getIntegerFilter($filters['page'] ?? null, 1),
         ];
     }
