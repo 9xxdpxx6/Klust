@@ -116,12 +116,19 @@ final class TeamFilter extends BaseFilter
     private function applySortingFilter(Builder $query): void
     {
         // Delegate to BaseFilter's applySorting with allowed fields validation
-        $sortBy = $this->getFilter('sort_by', 'submitted_at');
+        $sortBy = $this->getFilter('sort_by');
 
-        if (! in_array($sortBy, self::ALLOWED_SORT_FIELDS, true)) {
-            $sortBy = 'submitted_at';
+        // If sort_by is not provided or not in allowed fields, use id desc by default
+        if (! $sortBy || ! in_array($sortBy, self::ALLOWED_SORT_FIELDS, true)) {
+            $sortBy = 'id';
         }
 
-        $this->applySorting($query, $sortBy, 'desc');
+        $sortOrder = strtolower((string) $this->getFilter('sort_order', 'desc'));
+
+        if (! in_array($sortOrder, ['asc', 'desc'], true)) {
+            $sortOrder = 'desc';
+        }
+
+        $query->orderBy($sortBy, $sortOrder);
     }
 }

@@ -185,7 +185,7 @@ abstract class BaseFilter implements FilterInterface
         });
     }
 
-    protected function applySorting(Builder $query, string $defaultField = 'name', string $defaultOrder = 'asc'): void
+    protected function applySorting(Builder $query, string $defaultField = 'id', string $defaultOrder = 'desc'): void
     {
         $sortParams = FilterHelper::getSortParams($this->filters, $defaultField, $defaultOrder);
         $query->orderBy($sortParams['sort_by'], $sortParams['sort_order']);

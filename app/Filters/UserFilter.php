@@ -99,12 +99,14 @@ final class UserFilter extends BaseFilter
 
     private function applySortingFilter(Builder $query): void
     {
-        $sortBy = $this->getFilter('sort_by', 'created_at');
-        $sortOrder = strtolower((string) $this->getFilter('sort_order', 'desc'));
+        $sortBy = $this->getFilter('sort_by');
 
-        if (! in_array($sortBy, self::ALLOWED_SORT_FIELDS, true)) {
-            $sortBy = 'created_at';
+        // If sort_by is not provided or not in allowed fields, use id desc by default
+        if (! $sortBy || ! in_array($sortBy, self::ALLOWED_SORT_FIELDS, true)) {
+            $sortBy = 'id';
         }
+
+        $sortOrder = strtolower((string) $this->getFilter('sort_order', 'desc'));
 
         if (! in_array($sortOrder, ['asc', 'desc'], true)) {
             $sortOrder = 'desc';
