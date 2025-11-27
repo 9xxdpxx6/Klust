@@ -85,8 +85,9 @@
                                 <div v-if="errors.email" class="text-red-500 text-sm mt-1">{{ errors.email }}</div>
                             </div>
 
-                            <!-- Курс -->
+                            <!-- Курс (только для студентов) -->
                             <Select
+                                v-if="form.role === 'student'"
                                 v-model="form.course"
                                 label="Курс"
                                 :options="courseOptions"
@@ -202,7 +203,10 @@ const submit = () => {
     const { role, ...formDataWithoutRole } = form.data()
     const submitData = {
         ...formDataWithoutRole,
-        course: form.course === null || form.course === '' ? null : Number(form.course)
+        // Отправляем курс только для студентов
+        course: form.role === 'student' 
+            ? (form.course === null || form.course === '' ? null : Number(form.course))
+            : null
     }
 
     form.transform(() => submitData).put(route('admin.users.update', props.user.id))

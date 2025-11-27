@@ -61,8 +61,9 @@
                                 <div v-if="errors.email" class="text-red-500 text-sm mt-1">{{ errors.email }}</div>
                             </div>
 
-                            <!-- Курс -->
+                            <!-- Курс (только для студентов) -->
                             <Select
+                                v-if="form.role === 'student'"
                                 v-model="form.course"
                                 label="Курс"
                                 :options="courseOptions"
@@ -157,7 +158,15 @@ const form = useForm({
 })
 
 const submit = () => {
-    form.post(route('admin.users.store'))
+    // Отправляем курс только для студентов
+    const submitData = {
+        ...form.data(),
+        course: form.role === 'student' 
+            ? (form.course === null || form.course === '' ? null : Number(form.course))
+            : null
+    }
+    
+    form.transform(() => submitData).post(route('admin.users.store'))
 }
 
 const getRoleDisplayName = (role) => {
