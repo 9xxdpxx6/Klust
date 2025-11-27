@@ -172,6 +172,21 @@
                 </div>
             </div>
         </div>
+
+        <!-- Диалог подтверждения удаления -->
+        <ConfirmDialog
+            :visible="showDeleteConfirm"
+            @update:visible="showDeleteConfirm = $event"
+            @confirm="handleDelete"
+            title="Подтвердите удаление"
+            :message="`Вы уверены, что хотите удалить пользователя \"${user.name}\"? Это действие нельзя отменить.`"
+            confirm-text="Удалить"
+            cancel-text="Отмена"
+            type="danger"
+            confirm-variant="danger"
+            :loading="deleteLoading"
+            loading-text="Удаление..."
+        />
     </div>
 </template>
 
@@ -179,8 +194,9 @@
 import { useForm } from '@inertiajs/vue3'
 import { Link, Head } from '@inertiajs/vue3'
 import { router } from '@inertiajs/vue3'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import Select from '@/Components/UI/Select.vue'
+import ConfirmDialog from '@/Components/UI/ConfirmDialog.vue'
 
 const props = defineProps({
     user: Object,
@@ -198,6 +214,9 @@ const form = useForm({
     password_confirmation: '',
 })
 
+const showDeleteConfirm = ref(false)
+const deleteLoading = ref(false)
+
 const submit = () => {
     // Преобразуем курс перед отправкой и исключаем роль
     const { role, ...formDataWithoutRole } = form.data()
@@ -213,9 +232,17 @@ const submit = () => {
 }
 
 const confirmDelete = () => {
-    if (confirm(`Вы уверены, что хотите удалить пользователя "${props.user.name}"? Это действие нельзя отменить.`)) {
-        router.delete(route('admin.users.destroy', props.user.id))
-    }
+    showDeleteConfirm.value = true
+}
+
+const handleDelete = () => {
+    deleteLoading.value = true
+    router.delete(route('admin.users.destroy', props.user.id), {
+        onFinish: () => {
+            deleteLoading.value = false
+            showDeleteConfirm.value = false
+        }
+    })
 }
 
 const getRoleDisplayName = (role) => {
