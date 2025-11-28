@@ -179,7 +179,7 @@
             @update:visible="showDeleteConfirm = $event"
             @confirm="handleDelete"
             title="Подтвердите удаление"
-            :message="`Вы уверены, что хотите удалить пользователя \"${user.name}\"? Это действие нельзя отменить.`"
+            :message="deleteConfirmMessage"
             confirm-text="Удалить"
             cancel-text="Отмена"
             type="danger"
@@ -216,6 +216,10 @@ const form = useForm({
 
 const showDeleteConfirm = ref(false)
 const deleteLoading = ref(false)
+
+const deleteConfirmMessage = computed(() => {
+    return `Вы уверены, что хотите удалить пользователя "${props.user.name}"? Это действие нельзя отменить.`
+})
 
 const submit = () => {
     // Преобразуем курс перед отправкой и исключаем роль
