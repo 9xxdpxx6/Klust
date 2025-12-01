@@ -43,13 +43,6 @@
                             <i class="pi pi-pencil"></i>
                             Редактировать
                         </Link>
-                        <button
-                            @click="confirmDelete"
-                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-red-500/20 backdrop-blur-sm text-white rounded-lg hover:bg-red-500/30 focus:outline-none transition-all shadow-lg border border-red-300/30 font-medium"
-                        >
-                            <i class="pi pi-trash"></i>
-                            Удалить
-                        </button>
                     </div>
                 </div>
             </div>
@@ -371,6 +364,33 @@
             </div>
         </div>
 
+        <!-- Секция опасных действий -->
+        <div class="bg-white rounded-xl shadow-md border border-red-200 overflow-hidden">
+            <div class="px-6 py-4 bg-gradient-to-r from-red-50 to-orange-50 border-b border-red-200">
+                <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <i class="pi pi-exclamation-triangle text-red-600"></i>
+                    Опасные действия
+                </h2>
+            </div>
+            <div class="px-6 py-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                        <h3 class="text-sm font-semibold text-gray-900 mb-1">Удаление кейса</h3>
+                        <p class="text-sm text-gray-600">
+                            Это действие нельзя отменить. Все данные кейса, включая заявки и связанную информацию, будут удалены безвозвратно.
+                        </p>
+                    </div>
+                    <button
+                        @click="confirmDelete"
+                        class="ml-6 inline-flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none transition-colors font-medium shadow-sm"
+                    >
+                        <i class="pi pi-trash"></i>
+                        Удалить кейс
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Модальное окно подтверждения удаления -->
         <div v-if="showDeleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
             <div class="relative bg-white rounded-xl shadow-2xl max-w-md w-full border border-gray-200">
@@ -379,12 +399,23 @@
                         <i class="pi pi-exclamation-triangle text-3xl text-red-600"></i>
                     </div>
                     <h3 class="text-xl font-bold text-gray-900 text-center mb-2">Подтверждение удаления</h3>
-                    <div class="mt-4 text-center">
-                        <p class="text-sm text-gray-600 mb-2">
+                    <div class="mt-4">
+                        <p class="text-sm text-gray-600 mb-2 text-center">
                             Вы уверены, что хотите удалить кейс
                         </p>
-                        <p class="text-sm font-semibold text-gray-900 mb-4">"{{ caseData.title }}"?</p>
-                        <p class="text-xs text-red-600 bg-red-50 rounded-lg p-3">
+                        <p class="text-sm font-semibold text-gray-900 mb-4 text-center">"{{ caseData.title }}"?</p>
+                        
+                        <div v-if="blockingData?.has_blocking_data" class="mb-4">
+                            <p class="text-sm text-red-600 font-semibold mb-2">
+                                Внимание! Невозможно удалить кейс:
+                            </p>
+                            <div class="text-xs text-red-700 bg-red-50 rounded-lg p-3">
+                                • На кейс подано {{ blockingData.active_applications_count }} 
+                                {{ pluralize(blockingData.active_applications_count, 'активная заявка', 'активные заявки', 'активных заявок') }} от студентов
+                            </div>
+                        </div>
+                        
+                        <p v-else class="text-xs text-red-600 bg-red-50 rounded-lg p-3">
                             Это действие нельзя отменить. Все данные кейса будут удалены безвозвратно.
                         </p>
                     </div>
@@ -397,7 +428,7 @@
                         </button>
                         <button
                             @click="deleteCase"
-                            :disabled="processing"
+                            :disabled="processing || (blockingData?.has_blocking_data)"
                             class="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                         >
                             <span v-if="processing">Удаление...</span>
@@ -440,6 +471,13 @@ const props = defineProps({
             pending: [],
             approved: [],
             rejected: []
+        })
+    },
+    blockingData: {
+        type: Object,
+        default: () => ({
+            has_blocking_data: false,
+            active_applications_count: 0,
         })
     }
 })
@@ -539,6 +577,22 @@ const getStatusBadgeClass = (status) => {
         archived: 'bg-red-100 text-red-800 border border-red-200',
     }
     return classMap[status] || 'bg-gray-100 text-gray-800 border border-gray-200'
+}
+
+const pluralize = (count, one, two, five) => {
+    const mod10 = count % 10
+    const mod100 = count % 100
+
+    if (mod100 >= 11 && mod100 <= 19) {
+        return five
+    }
+    if (mod10 === 1) {
+        return one
+    }
+    if (mod10 >= 2 && mod10 <= 4) {
+        return two
+    }
+    return five
 }
 </script>
 

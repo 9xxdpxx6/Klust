@@ -139,6 +139,37 @@ class UsersController extends Controller
             'notifications_count' => $user->notifications->count(),
         ];
 
+        // Проверка связанных данных, которые могут помешать удалению
+        $activeApplicationsCount = $user->caseApplications()
+            ->whereHas('status', function ($q) {
+                $q->whereIn('name', ['pending', 'accepted']);
+            })
+            ->count();
+
+        $activeTeamMembershipsCount = $user->caseTeamMembers()
+            ->whereHas('application', function ($q) {
+                $q->whereHas('status', function ($statusQ) {
+                    $statusQ->whereIn('name', ['pending', 'accepted']);
+                });
+            })
+            ->count();
+
+        $activeCasesCount = 0;
+        if ($user->hasRole('partner') && $user->partner) {
+            $activeCasesCount = $user->partner->cases()
+                ->where('status', 'active')
+                ->count();
+        }
+
+        $hasBlockingData = $activeApplicationsCount > 0 || $activeTeamMembershipsCount > 0 || $activeCasesCount > 0;
+
+        $blockingData = [
+            'active_applications_count' => $activeApplicationsCount,
+            'active_team_memberships_count' => $activeTeamMembershipsCount,
+            'active_cases_count' => $activeCasesCount,
+            'has_blocking_data' => $hasBlockingData,
+        ];
+
         // Transform badges to include icon_path
         $user->badges->transform(function ($badge) {
             return [
@@ -183,6 +214,7 @@ class UsersController extends Controller
             'roleColors' => $roleColors,
             'courseColors' => $courseColors,
             'stats' => $stats,
+            'blockingData' => $blockingData,
         ]);
     }
 

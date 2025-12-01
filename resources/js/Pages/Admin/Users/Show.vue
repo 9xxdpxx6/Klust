@@ -47,13 +47,6 @@
                             <i class="pi pi-pencil"></i>
                             Редактировать
                         </Link>
-                        <button
-                            @click="confirmDelete"
-                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-red-500/20 backdrop-blur-sm text-white rounded-lg hover:bg-red-500/30 focus:outline-none transition-all shadow-lg border border-red-300/30 font-medium"
-                        >
-                            <i class="pi pi-trash"></i>
-                            Удалить
-                        </button>
                     </div>
                 </div>
             </div>
@@ -473,6 +466,33 @@
             </div>
         </div>
 
+        <!-- Секция опасных действий -->
+        <div class="bg-white rounded-xl shadow-md border border-red-200 overflow-hidden">
+            <div class="px-6 py-4 bg-gradient-to-r from-red-50 to-orange-50 border-b border-red-200">
+                <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <i class="pi pi-exclamation-triangle text-red-600"></i>
+                    Опасные действия
+                </h2>
+            </div>
+            <div class="px-6 py-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                        <h3 class="text-sm font-semibold text-gray-900 mb-1">Удаление пользователя</h3>
+                        <p class="text-sm text-gray-600">
+                            Это действие нельзя отменить. Все данные пользователя будут удалены безвозвратно.
+                        </p>
+                    </div>
+                    <button
+                        @click="confirmDelete"
+                        class="ml-6 inline-flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none transition-colors font-medium shadow-sm"
+                    >
+                        <i class="pi pi-trash"></i>
+                        Удалить пользователя
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Модальное окно подтверждения удаления -->
         <div v-if="showDeleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
             <div class="relative bg-white rounded-xl shadow-2xl max-w-md w-full border border-gray-200">
@@ -481,12 +501,33 @@
                         <i class="pi pi-exclamation-triangle text-3xl text-red-600"></i>
                     </div>
                     <h3 class="text-xl font-bold text-gray-900 text-center mb-2">Подтверждение удаления</h3>
-                    <div class="mt-4 text-center">
-                        <p class="text-sm text-gray-600 mb-2">
+                    <div class="mt-4">
+                        <p class="text-sm text-gray-600 mb-2 text-center">
                             Вы уверены, что хотите удалить пользователя
                         </p>
-                        <p class="text-sm font-semibold text-gray-900 mb-4">"{{ user.name }}"?</p>
-                        <p class="text-xs text-red-600 bg-red-50 rounded-lg p-3">
+                        <p class="text-sm font-semibold text-gray-900 mb-4 text-center">"{{ user.name }}"?</p>
+                        
+                        <div v-if="blockingData?.has_blocking_data" class="mb-4">
+                            <p class="text-sm text-red-600 font-semibold mb-2">
+                                Внимание! Невозможно удалить пользователя:
+                            </p>
+                            <div class="text-xs text-red-700 bg-red-50 rounded-lg p-3 space-y-1">
+                                <div v-if="blockingData.active_applications_count > 0">
+                                    • Пользователь является лидером команды в {{ blockingData.active_applications_count }} 
+                                    {{ pluralize(blockingData.active_applications_count, 'активной заявке', 'активных заявках', 'активных заявках') }} на кейсы
+                                </div>
+                                <div v-if="blockingData.active_team_memberships_count > 0">
+                                    • Пользователь участвует в {{ blockingData.active_team_memberships_count }} 
+                                    {{ pluralize(blockingData.active_team_memberships_count, 'активной команде', 'активных командах', 'активных командах') }}
+                                </div>
+                                <div v-if="blockingData.active_cases_count > 0">
+                                    • У партнера есть {{ blockingData.active_cases_count }} 
+                                    {{ pluralize(blockingData.active_cases_count, 'активный кейс', 'активных кейса', 'активных кейсов') }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <p v-else class="text-xs text-red-600 bg-red-50 rounded-lg p-3">
                             Это действие нельзя отменить. Все данные пользователя будут удалены безвозвратно.
                         </p>
                     </div>
@@ -499,7 +540,7 @@
                         </button>
                         <button
                             @click="deleteUser"
-                            :disabled="processing"
+                            :disabled="processing || (blockingData?.has_blocking_data)"
                             class="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                         >
                             <span v-if="processing">Удаление...</span>
@@ -520,6 +561,15 @@ import { route } from 'ziggy-js'
 const props = defineProps({
     user: Object,
     stats: Object,
+    blockingData: {
+        type: Object,
+        default: () => ({
+            has_blocking_data: false,
+            active_applications_count: 0,
+            active_team_memberships_count: 0,
+            active_cases_count: 0,
+        })
+    },
     roleTranslations: {
         type: Object,
         default: () => ({})
@@ -598,6 +648,22 @@ const getCourseBadgeClass = (course) => {
         6: 'bg-amber-100 text-amber-800 border border-amber-200',
     }
     return classMap[course] || 'bg-gray-100 text-gray-800 border border-gray-200'
+}
+
+const pluralize = (count, one, two, five) => {
+    const mod10 = count % 10
+    const mod100 = count % 100
+
+    if (mod100 >= 11 && mod100 <= 19) {
+        return five
+    }
+    if (mod10 === 1) {
+        return one
+    }
+    if (mod10 >= 2 && mod10 <= 4) {
+        return two
+    }
+    return five
 }
 
 const confirmDelete = () => {
