@@ -7,6 +7,7 @@ import Button from '@/Components/UI/Button.vue'
 import Input from '@/Components/UI/Input.vue'
 import Textarea from '@/Components/UI/Textarea.vue'
 import UserAvatar from '@/Components/Shared/UserAvatar.vue'
+import InputMask from 'primevue/inputmask'
 
 defineOptions({
     layout: AdminLayout
@@ -22,6 +23,7 @@ const props = defineProps({
 const isEditing = ref(false)
 const avatarPreview = ref(null)
 const showPasswordFields = ref(false)
+const avatarInput = ref(null)
 
 const form = useForm({
     name: props.user.name,
@@ -29,6 +31,7 @@ const form = useForm({
     phone: props.user.phone || '',
     bio: props.user.bio || '',
     avatar: null,
+    current_password: '',
     password: '',
     password_confirmation: ''
 })
@@ -45,6 +48,10 @@ const handleAvatarChange = (event) => {
     }
 }
 
+const openFilePicker = () => {
+    avatarInput.value.click()
+}
+
 const submitForm = () => {
     form.post(route('admin.profile.update'), {
         forceFormData: true,
@@ -52,6 +59,7 @@ const submitForm = () => {
             isEditing.value = false
             avatarPreview.value = null
             showPasswordFields.value = false
+            form.current_password = ''
             form.password = ''
             form.password_confirmation = ''
         }
@@ -147,22 +155,20 @@ const cancelEdit = () => {
                         />
                         <div>
                             <input
+                                ref="avatarInput"
                                 type="file"
                                 accept="image/*"
                                 @change="handleAvatarChange"
                                 class="hidden"
-                                id="avatar-upload"
                             />
-                            <label for="avatar-upload">
-                                <Button
-                                    type="button"
-                                    variant="secondary"
-                                    as="span"
-                                >
-                                    <i class="pi pi-upload mr-2"></i>
-                                    Загрузить фото
-                                </Button>
-                            </label>
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                @click="openFilePicker"
+                            >
+                                <i class="pi pi-upload mr-2"></i>
+                                Загрузить фото
+                            </Button>
                             <p class="text-sm text-text-muted mt-2">JPG, PNG, GIF. Макс. 2MB</p>
                         </div>
                     </div>
@@ -187,13 +193,20 @@ const cancelEdit = () => {
                             :error="form.errors.email"
                             required
                         />
-                        <Input
-                            v-model="form.phone"
-                            type="tel"
-                            label="Телефон"
-                            placeholder="+7 (___) ___-__-__"
-                            :error="form.errors.phone"
-                        />
+                        <div>
+                            <label class="block text-sm font-medium mb-1 text-text-primary">
+                                Телефон
+                            </label>
+                            <InputMask
+                                v-model="form.phone"
+                                mask="+7 (999) 999-99-99"
+                                placeholder="+7 (___) ___-__-__"
+                                :class="['w-full', { 'p-invalid': form.errors.phone }]"
+                            />
+                            <p v-if="form.errors.phone" class="mt-1 text-sm text-red-600">
+                                {{ form.errors.phone }}
+                            </p>
+                        </div>
                     </div>
                 </Card>
 
@@ -203,7 +216,7 @@ const cancelEdit = () => {
                     <Textarea
                         v-model="form.bio"
                         placeholder="Расскажите о себе, своем опыте и квалификации..."
-                        rows="4"
+                        :rows="4"
                         :error="form.errors.bio"
                     />
                 </Card>
@@ -214,7 +227,8 @@ const cancelEdit = () => {
                         <h3 class="text-lg font-bold text-text-primary">Смена пароля</h3>
                         <Button
                             type="button"
-                            variant="text"
+                            variant="outline"
+                            size="sm"
                             @click="showPasswordFields = !showPasswordFields"
                         >
                             {{ showPasswordFields ? 'Скрыть' : 'Изменить пароль' }}
@@ -223,10 +237,18 @@ const cancelEdit = () => {
 
                     <div v-if="showPasswordFields" class="space-y-4">
                         <Input
+                            v-model="form.current_password"
+                            type="password"
+                            label="Текущий пароль"
+                            placeholder="Введите текущий пароль"
+                            :error="form.errors.current_password"
+                            required
+                        />
+                        <Input
                             v-model="form.password"
                             type="password"
                             label="Новый пароль"
-                            placeholder="Введите новый пароль"
+                            placeholder="Введите новый пароль (минимум 8 символов)"
                             :error="form.errors.password"
                         />
                         <Input
@@ -237,7 +259,8 @@ const cancelEdit = () => {
                             :error="form.errors.password_confirmation"
                         />
                         <p class="text-sm text-text-muted">
-                            Оставьте поля пустыми, если не хотите менять пароль
+                            <i class="pi pi-info-circle mr-1"></i>
+                            Для смены пароля необходимо ввести текущий пароль
                         </p>
                     </div>
                 </Card>

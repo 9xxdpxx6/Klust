@@ -35,6 +35,12 @@ class UpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique('users')->ignore($userId),
             ],
+            'current_password' => [
+                'nullable',
+                'required_with:password',
+                'string',
+                'current_password',
+            ],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'avatar' => [
                 'nullable',
@@ -61,6 +67,8 @@ class UpdateRequest extends FormRequest
             'email.regex' => 'Email должен быть корректным адресом электронной почты.',
             'email.unique' => 'Этот email уже используется другим пользователем.',
             'email.max' => 'Email не должен превышать 255 символов.',
+            'current_password.required_with' => 'Для смены пароля необходимо ввести текущий пароль.',
+            'current_password.current_password' => 'Указан неверный текущий пароль.',
             'password.min' => 'Пароль должен содержать минимум 8 символов.',
             'password.confirmed' => 'Подтверждение пароля не совпадает.',
             'avatar.image' => 'Файл аватара должен быть изображением.',
