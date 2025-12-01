@@ -107,10 +107,25 @@ class CaseController extends Controller
             })->values(),
         ];
 
+        // Проверка связанных данных, которые могут помешать удалению
+        $activeApplicationsCount = $case->applications()
+            ->whereHas('status', function ($q) {
+                $q->whereIn('name', ['pending', 'accepted']);
+            })
+            ->count();
+
+        $hasBlockingData = $activeApplicationsCount > 0;
+
+        $blockingData = [
+            'active_applications_count' => $activeApplicationsCount,
+            'has_blocking_data' => $hasBlockingData,
+        ];
+
         return Inertia::render('Admin/Cases/Show', [
             'caseData' => $case,
             'statistics' => $statistics,
             'applicationsByStatus' => $applicationsByStatus,
+            'blockingData' => $blockingData,
         ]);
     }
 
