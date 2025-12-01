@@ -173,7 +173,7 @@
                                 </button>
                                 <button
                                     @click.stop="confirmDelete(badge)"
-                                    class="p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-lg transition-colors focus:outline-none border border-transparent hover:border-red-200"
+                                    class="p-2 text-gray-400 group-hover:text-red-600 hover:text-red-900 hover:bg-red-50 rounded-lg transition-colors focus:outline-none border border-transparent hover:border-red-200 opacity-50 group-hover:opacity-100"
                                     title="Удалить"
                                 >
                                     <i class="pi pi-trash text-sm"></i>

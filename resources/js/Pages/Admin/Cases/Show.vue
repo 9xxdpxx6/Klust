@@ -43,13 +43,6 @@
                             <i class="pi pi-pencil"></i>
                             Редактировать
                         </Link>
-                        <button
-                            @click="confirmDelete"
-                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-red-500/20 backdrop-blur-sm text-white rounded-lg hover:bg-red-500/30 focus:outline-none transition-all shadow-lg border border-red-300/30 font-medium"
-                        >
-                            <i class="pi pi-trash"></i>
-                            Удалить
-                        </button>
                     </div>
                 </div>
             </div>
@@ -367,6 +360,33 @@
                     <p class="text-sm text-gray-500">
                         На этот кейс еще не было подано заявок от студентов.
                     </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Секция опасных действий -->
+        <div class="bg-white rounded-xl shadow-md border border-red-200 overflow-hidden">
+            <div class="px-6 py-4 bg-gradient-to-r from-red-50 to-orange-50 border-b border-red-200">
+                <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <i class="pi pi-exclamation-triangle text-red-600"></i>
+                    Опасные действия
+                </h2>
+            </div>
+            <div class="px-6 py-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                        <h3 class="text-sm font-semibold text-gray-900 mb-1">Удаление кейса</h3>
+                        <p class="text-sm text-gray-600">
+                            Это действие нельзя отменить. Все данные кейса, включая заявки и связанную информацию, будут удалены безвозвратно.
+                        </p>
+                    </div>
+                    <button
+                        @click="confirmDelete"
+                        class="ml-6 inline-flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none transition-colors font-medium shadow-sm"
+                    >
+                        <i class="pi pi-trash"></i>
+                        Удалить кейс
+                    </button>
                 </div>
             </div>
         </div>
