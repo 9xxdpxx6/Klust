@@ -607,9 +607,8 @@ const confirmDelete = () => {
 const deleteUser = () => {
     processing.value = true
     router.delete(route('admin.users.destroy', props.user.id), {
-        onSuccess: () => {
-            router.visit(route('admin.users.index'))
-        },
+        // Inertia::location() в контроллере уже делает редирект,
+        // поэтому onSuccess не нужен
         onError: () => {
             processing.value = false
         },
