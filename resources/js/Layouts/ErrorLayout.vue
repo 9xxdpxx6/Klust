@@ -9,7 +9,7 @@
                         <img 
                             v-if="logoIcon"
                             :src="logoIcon" 
-                            alt="Klust" 
+                            alt="Кластер" 
                             class="h-10 w-10 object-contain"
                             @error="$event.target.style.display = 'none'"
                         />
@@ -17,12 +17,12 @@
                         <img 
                             v-else-if="logoImage"
                             :src="logoImage" 
-                            alt="Klust" 
+                            alt="Кластер" 
                             class="h-10 object-contain"
                             @error="$event.target.style.display = 'none'"
                         />
                         <!-- Текстовое лого по умолчанию -->
-                        <h1 v-else class="text-2xl font-bold text-primary">Klust</h1>
+                        <h1 v-else class="text-2xl font-bold text-primary">Кластер</h1>
                     </div>
                     <div class="flex items-center gap-4">
                         <Link
