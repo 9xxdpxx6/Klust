@@ -86,9 +86,9 @@ class CaseController extends Controller
             'partner.user.partnerProfile',
             'simulator',
             'skills',
-            'applications.leader',
+            'applications.leader.studentProfile.faculty',
             'applications.status',
-            'applications.teamMembers.user',
+            'applications.teamMembers.user.studentProfile.faculty',
         ]);
 
         // Получить статистику через CaseService::getCaseStatistics($case)

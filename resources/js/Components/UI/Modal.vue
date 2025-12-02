@@ -4,6 +4,7 @@
     :modal="true"
     :closable="closable"
     :draggable="false"
+    :dismissableMask="true"
     :style="{ width: modalWidth }"
     :header="title"
     @update:visible="$emit('update:visible', $event)"

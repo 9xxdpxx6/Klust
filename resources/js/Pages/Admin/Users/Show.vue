@@ -204,8 +204,8 @@
                     </div>
                 </div>
 
-                <!-- Профили пользователя -->
-                <div v-if="user.student_profile || user.partner_profile || user.teacher_profile" class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                <!-- Профили пользователя (только если больше 1) -->
+                <div v-if="profileCount > 1" class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
                     <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
                         <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
                             <i class="pi pi-id-card text-indigo-600"></i>
@@ -220,7 +220,16 @@
                                 <div class="space-y-2">
                                     <div>
                                         <p class="text-xs text-blue-600 mb-1">Факультет</p>
-                                        <p class="text-sm font-medium text-blue-900">{{ user.student_profile.faculty || 'Не указан' }}</p>
+                                        <p class="text-sm font-medium text-blue-900">
+                                            <span v-if="user.student_profile.faculty">
+                                                {{ user.student_profile.faculty.name || user.student_profile.faculty }}
+                                            </span>
+                                            <span v-else>Не указан</span>
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-blue-600 mb-1">Группа</p>
+                                        <p class="text-sm font-medium text-blue-900">{{ user.student_profile.group || 'Не указана' }}</p>
                                     </div>
                                     <div>
                                         <p class="text-xs text-blue-600 mb-1">Специальность</p>
@@ -403,7 +412,7 @@
                         <!-- Роли -->
                         <div class="pb-5 border-b border-gray-100">
                             <div class="flex items-start gap-3">
-                                <div class="p-2 bg-indigo-100 rounded-lg">
+                                <div class="w-10 h-10 flex items-center justify-center bg-indigo-100 rounded-lg">
                                     <i class="pi pi-shield text-indigo-600"></i>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -426,7 +435,7 @@
                         <!-- Email статус -->
                         <div class="pb-5 border-b border-gray-100">
                             <div class="flex items-start gap-3">
-                                <div class="p-2 bg-green-100 rounded-lg">
+                                <div class="w-10 h-10 flex items-center justify-center bg-green-100 rounded-lg">
                                     <i class="pi pi-envelope text-green-600"></i>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -449,10 +458,88 @@
                             </div>
                         </div>
 
+                        <!-- Профиль (если только один) -->
+                        <div v-if="profileCount === 1" class="pb-5 border-b border-gray-100">
+                            <!-- Студенческий профиль -->
+                            <div v-if="user.student_profile">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-10 h-10 flex items-center justify-center bg-blue-100 rounded-lg">
+                                        <i class="pi pi-user text-blue-600"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Студенческий профиль</p>
+                                        <div class="space-y-2">
+                                            <div>
+                                                <p class="text-xs text-gray-500 mb-0.5">Факультет</p>
+                                                <p class="text-sm font-medium text-gray-900">
+                                                    <span v-if="user.student_profile.faculty">
+                                                        {{ user.student_profile.faculty.name || user.student_profile.faculty }}
+                                                    </span>
+                                                    <span v-else>Не указан</span>
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs text-gray-500 mb-0.5">Группа</p>
+                                                <p class="text-sm font-medium text-gray-900">{{ user.student_profile.group || 'Не указана' }}</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs text-gray-500 mb-0.5">Специальность</p>
+                                                <p class="text-sm font-medium text-gray-900">{{ user.student_profile.specialization || 'Не указана' }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Профиль партнера -->
+                            <div v-if="user.partner_profile">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-10 h-10 flex items-center justify-center bg-green-100 rounded-lg">
+                                        <i class="pi pi-building text-green-600"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Профиль партнера</p>
+                                        <div class="space-y-2">
+                                            <div>
+                                                <p class="text-xs text-gray-500 mb-0.5">Компания</p>
+                                                <p class="text-sm font-medium text-gray-900">{{ user.partner_profile.company_name || 'Не указана' }}</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs text-gray-500 mb-0.5">Должность</p>
+                                                <p class="text-sm font-medium text-gray-900">{{ user.partner_profile.position || 'Не указана' }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Профиль преподавателя -->
+                            <div v-if="user.teacher_profile">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-10 h-10 flex items-center justify-center bg-purple-100 rounded-lg">
+                                        <i class="pi pi-graduation-cap text-purple-600"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Профиль преподавателя</p>
+                                        <div class="space-y-2">
+                                            <div>
+                                                <p class="text-xs text-gray-500 mb-0.5">Кафедра</p>
+                                                <p class="text-sm font-medium text-gray-900">{{ user.teacher_profile.department || 'Не указана' }}</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs text-gray-500 mb-0.5">Должность</p>
+                                                <p class="text-sm font-medium text-gray-900">{{ user.teacher_profile.position || 'Не указана' }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Дата регистрации -->
                         <div>
                             <div class="flex items-start gap-3">
-                                <div class="p-2 bg-gray-100 rounded-lg">
+                                <div class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-lg">
                                     <i class="pi pi-clock text-gray-600"></i>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -494,7 +581,11 @@
         </div>
 
         <!-- Модальное окно подтверждения удаления -->
-        <div v-if="showDeleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+        <div 
+            v-if="showDeleteModal" 
+            class="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
+            @click.self="showDeleteModal = false"
+        >
             <div class="relative bg-white rounded-xl shadow-2xl max-w-md w-full border border-gray-200">
                 <div class="p-6">
                     <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
@@ -586,6 +677,15 @@ const props = defineProps({
 
 const showDeleteModal = ref(false)
 const processing = ref(false)
+
+// Подсчет количества профилей
+const profileCount = computed(() => {
+    let count = 0
+    if (props.user?.student_profile) count++
+    if (props.user?.partner_profile) count++
+    if (props.user?.teacher_profile) count++
+    return count
+})
 
 const formatDate = (date) => {
     if (!date) return ''

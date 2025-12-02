@@ -314,8 +314,14 @@
                 <p class="text-gray-700 mb-4">
                     Вы уверены, что хотите удалить бейдж <strong>{{ badgeToDelete.name }}</strong>?
                 </p>
-                <p class="text-sm text-gray-600">
-                    Это действие необратимо. Бейдж будет удален у всех пользователей, которые его получили.
+                <p v-if="badgeToDelete.users_count" class="text-sm text-red-600 mb-4">
+                    Внимание! Этот бейдж используется 
+                    {{ badgeToDelete.users_count }} 
+                    {{ pluralize(badgeToDelete.users_count, 'пользователем', 'пользователями', 'пользователями') }}.
+                    Удаление невозможно.
+                </p>
+                <p v-else class="text-sm text-gray-600">
+                    Это действие необратимо. Бейдж будет удален.
                 </p>
             </div>
 
@@ -333,7 +339,7 @@
                         severity="danger"
                         type="button"
                         @click="deleteBadge"
-                        :disabled="deleteForm.processing"
+                        :disabled="deleteForm.processing || (badgeToDelete && badgeToDelete.users_count)"
                     >
                         Удалить
                     </Button>
