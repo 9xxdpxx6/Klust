@@ -297,7 +297,7 @@ class UserService
     }
 
     /**
-     * Update user profile (for admins and teachers)
+     * Update user profile (for all roles: admin, teacher, student, partner)
      */
     public function updateProfile(User $user, array $data): User
     {
@@ -308,32 +308,114 @@ class UserService
                 'email' => $data['email'] ?? $user->email,
             ];
 
-            // Update phone and bio if provided
-            if (isset($data['phone'])) {
-                $updateData['phone'] = $data['phone'];
-            }
-            if (isset($data['bio'])) {
-                $updateData['bio'] = $data['bio'];
-            }
-
             // Handle password update
             if (!empty($data['password'])) {
                 $updateData['password'] = bcrypt($data['password']);
             }
 
-            $user->update($updateData);
-
-            // Handle avatar
+            // Handle avatar - удаляем старый и сохраняем новый
             if (isset($data['avatar'])) {
-                if ($user->avatar) {
-                    $this->fileService->deleteFile($user->avatar);
+                // Удаляем старый аватар, если есть (используем getRawOriginal для получения пути из БД, не URL)
+                $oldAvatarPath = $user->getRawOriginal('avatar');
+                if ($oldAvatarPath) {
+                    $this->fileService->deleteFile($oldAvatarPath);
                 }
-                $user->update([
-                    'avatar' => $this->fileService->storeAvatar($data['avatar']),
-                ]);
+                
+                // Если это файл (UploadedFile), сохраняем его
+                if ($data['avatar'] instanceof \Illuminate\Http\UploadedFile) {
+                    $updateData['avatar'] = $this->fileService->storeAvatar($data['avatar']);
+                } elseif (is_string($data['avatar'])) {
+                    // Если это уже путь (строка), используем его напрямую
+                    $updateData['avatar'] = $data['avatar'];
+                }
             }
 
-            return $user->fresh();
+            // Обновляем курс для студента
+            if (isset($data['course'])) {
+                $updateData['course'] = $data['course'];
+            }
+
+            $user->update($updateData);
+
+            // Обновляем профиль в зависимости от роли
+            if ($user->hasRole('teacher') && $user->teacherProfile) {
+                $profileData = [];
+                if (isset($data['department'])) {
+                    $profileData['department'] = $data['department'];
+                }
+                if (isset($data['position'])) {
+                    $profileData['position'] = $data['position'];
+                }
+                if (isset($data['bio'])) {
+                    $profileData['bio'] = $data['bio'];
+                }
+                if (isset($data['phone'])) {
+                    // Для teacher phone можно хранить в users, но сейчас не используется
+                }
+                if (!empty($profileData)) {
+                    $user->teacherProfile->update($profileData);
+                }
+            } elseif ($user->hasRole('student') && $user->studentProfile) {
+                $profileData = [];
+                if (isset($data['faculty_id'])) {
+                    $profileData['faculty_id'] = $data['faculty_id'];
+                }
+                if (isset($data['group'])) {
+                    $profileData['group'] = $data['group'];
+                }
+                if (isset($data['specialization'])) {
+                    $profileData['specialization'] = $data['specialization'];
+                }
+                if (isset($data['phone'])) {
+                    $profileData['phone'] = $data['phone'];
+                }
+                if (isset($data['bio'])) {
+                    $profileData['bio'] = $data['bio'];
+                }
+                if (!empty($profileData)) {
+                    $user->studentProfile->update($profileData);
+                }
+            } elseif ($user->hasRole('partner') && $user->partnerProfile) {
+                $profileData = [];
+                if (isset($data['company_name'])) {
+                    $profileData['company_name'] = $data['company_name'];
+                }
+                if (isset($data['inn'])) {
+                    $profileData['inn'] = $data['inn'];
+                }
+                if (isset($data['address'])) {
+                    $profileData['address'] = $data['address'];
+                }
+                if (isset($data['website'])) {
+                    $profileData['website'] = $data['website'];
+                }
+                if (isset($data['description'])) {
+                    $profileData['description'] = $data['description'];
+                }
+                if (isset($data['contact_person'])) {
+                    $profileData['contact_person'] = $data['contact_person'];
+                }
+                if (isset($data['contact_phone'])) {
+                    $profileData['contact_phone'] = $data['contact_phone'];
+                }
+                if (!empty($profileData)) {
+                    $user->partnerProfile->update($profileData);
+                }
+            }
+
+            // Загружаем все профили для возврата
+            $relations = ['roles'];
+            if ($user->hasRole('teacher')) {
+                $relations[] = 'teacherProfile';
+            }
+            if ($user->hasRole('student')) {
+                $relations[] = 'studentProfile.faculty';
+            }
+            if ($user->hasRole('partner')) {
+                $relations[] = 'partnerProfile';
+            }
+
+            return $user->fresh($relations);
         });
     }
 
