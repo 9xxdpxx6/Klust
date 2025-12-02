@@ -392,7 +392,11 @@
         </div>
 
         <!-- Модальное окно подтверждения удаления -->
-        <div v-if="showDeleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+        <div 
+            v-if="showDeleteModal" 
+            class="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
+            @click.self="showDeleteModal = false"
+        >
             <div class="relative bg-white rounded-xl shadow-2xl max-w-md w-full border border-gray-200">
                 <div class="p-6">
                     <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">

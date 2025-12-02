@@ -111,7 +111,7 @@ class UsersController extends Controller
         // Загружаем все связи пользователя
         $user->load([
             'roles',
-            'studentProfile',
+            'studentProfile.faculty',
             'partnerProfile',
             'teacherProfile',
             'skills' => function ($query) {

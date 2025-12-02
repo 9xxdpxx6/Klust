@@ -54,13 +54,19 @@ class BadgeService
      */
     public function deleteBadge(Badge $badge): bool
     {
+        // Check if badge is assigned to users
+        $usedByUsers = $badge->users()->count();
+        if ($usedByUsers > 0) {
+            throw new \Exception("Cannot delete badge that is assigned to {$usedByUsers} user(s)");
+        }
+
         return DB::transaction(function () use ($badge) {
             // Delete icon file if exists and it's not a PrimeIcon class
             if ($badge->icon && ! $badge->isPrimeIcon()) {
                 $this->fileService->deleteFile($badge->icon);
             }
 
-            // Detach from users
+            // Detach from users (should be empty at this point, but just in case)
             $badge->users()->detach();
 
             return $badge->delete();
@@ -136,7 +142,8 @@ class BadgeService
      */
     public function getFilteredBadges(array $filters): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        $query = Badge::query();
+        $query = Badge::query()
+            ->withCount('users');
 
         // Apply search filter
         $search = \App\Helpers\FilterHelper::getStringFilter($filters['search'] ?? null);
@@ -153,7 +160,7 @@ class BadgeService
             ->paginate($pagination['per_page'])
             ->withQueryString();
 
-        // Transform badges to include icon_path
+        // Transform badges to include icon_path and users_count
         $badges->setCollection(
             $badges->getCollection()->map(function ($badge) {
                 return [
@@ -163,6 +170,7 @@ class BadgeService
                     'icon' => $badge->icon,
                     'icon_path' => $badge->icon_path,
                     'required_points' => $badge->required_points,
+                    'users_count' => $badge->users_count ?? 0,
                     'created_at' => $badge->created_at,
                     'updated_at' => $badge->updated_at,
                 ];
