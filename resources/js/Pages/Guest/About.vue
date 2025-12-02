@@ -4,7 +4,7 @@
         <section class="bg-gradient-to-br from-primary to-primary-dark text-white py-20">
             <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                 <h1 class="text-4xl md:text-5xl font-extrabold mb-6">
-                    О проекте Klust
+                    О проекте Кластер
                 </h1>
                 <p class="text-xl text-white/90">
                     Платформа для case-based обучения, объединяющая студентов КубГТУ и партнеров-компаний
@@ -20,7 +20,7 @@
                         Наша миссия
                     </h2>
                     <p class="text-lg text-text-secondary leading-relaxed">
-                        Klust создан для того, чтобы дать студентам возможность работать над реальными проектами
+                        Кластер создан для того, чтобы дать студентам возможность работать над реальными проектами
                         от компаний-партнеров, получать практический опыт и развивать профессиональные навыки
                         в условиях, максимально приближенных к реальной работе в индустрии.
                     </p>
@@ -207,7 +207,7 @@
         <section class="py-20 bg-gradient-to-br from-primary to-primary-dark text-white">
             <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                 <h2 class="text-3xl md:text-4xl font-bold mb-4">
-                    Присоединяйтесь к Klust
+                    Присоединяйтесь к Кластер
                 </h2>
                 <p class="text-xl text-white/90 mb-8">
                     Станьте частью экосистемы, объединяющей образование и индустрию
