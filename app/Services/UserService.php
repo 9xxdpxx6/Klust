@@ -297,6 +297,47 @@ class UserService
     }
 
     /**
+     * Update user profile (for admins and teachers)
+     */
+    public function updateProfile(User $user, array $data): User
+    {
+        return DB::transaction(function () use ($user, $data) {
+            // Update user basic info
+            $updateData = [
+                'name' => $data['name'] ?? $user->name,
+                'email' => $data['email'] ?? $user->email,
+            ];
+
+            // Update phone and bio if provided
+            if (isset($data['phone'])) {
+                $updateData['phone'] = $data['phone'];
+            }
+            if (isset($data['bio'])) {
+                $updateData['bio'] = $data['bio'];
+            }
+
+            // Handle password update
+            if (!empty($data['password'])) {
+                $updateData['password'] = bcrypt($data['password']);
+            }
+
+            $user->update($updateData);
+
+            // Handle avatar
+            if (isset($data['avatar'])) {
+                if ($user->avatar) {
+                    $this->fileService->deleteFile($user->avatar);
+                }
+                $user->update([
+                    'avatar' => $this->fileService->storeAvatar($data['avatar']),
+                ]);
+            }
+
+            return $user->fresh();
+        });
+    }
+
+    /**
      * Create profile for user based on role
      */
     private function createProfileForUser(User $user, string $role, array $data): void

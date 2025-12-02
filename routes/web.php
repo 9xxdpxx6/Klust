@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\BadgeController;
 use App\Http\Controllers\Admin\CaseController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
 use App\Http\Controllers\Admin\SimulatorController;
 use App\Http\Controllers\Admin\SkillController;
 use App\Http\Controllers\Admin\UsersController;
@@ -160,6 +161,11 @@ Route::middleware('auth')->group(function () {
 
 Route::prefix('admin')->middleware(['auth', 'role:admin|teacher'])->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Profile
+    Route::get('/profile', [AdminProfileController::class, 'show'])->name('profile.show');
+    Route::get('/profile/edit', [AdminProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [AdminProfileController::class, 'update'])->name('profile.update');
 
     // Маршруты пользователей
     Route::get('/users', [UsersController::class, 'index'])->name('users.index');
