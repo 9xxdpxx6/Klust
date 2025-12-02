@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\Request;
 use Illuminate\Session\TokenMismatchException;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
@@ -34,11 +35,30 @@ class Handler extends ExceptionHandler
     public function register(): void
     {
         $this->reportable(function (Throwable $e) {
-            //
+            // Логируем все исключения
+            Log::error('Exception occurred', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+                'class' => get_class($e),
+            ]);
         });
 
         // Обработка ошибок для Inertia запросов
         $this->renderable(function (Throwable $e, Request $request) {
+            // Логируем ошибку перед обработкой
+            Log::error('Inertia error rendering', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+                'class' => get_class($e),
+                'url' => $request->fullUrl(),
+                'method' => $request->method(),
+                'is_inertia' => $request->header('X-Inertia') !== null,
+            ]);
+
             // Проверяем, является ли запрос Inertia запросом
             if (!$request->header('X-Inertia')) {
                 return null; // Используем стандартную обработку Laravel
