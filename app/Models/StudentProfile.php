@@ -18,6 +18,7 @@ class StudentProfile extends Model
         'group',
         'specialization',
         'bio',
+        'phone',
         'total_points',
     ];
 

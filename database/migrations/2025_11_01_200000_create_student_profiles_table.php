@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('group')->nullable();
             $table->string('specialization')->nullable();
             $table->text('bio')->nullable();
+            $table->string('phone')->nullable();
             $table->integer('total_points')->default(0);
             $table->timestamps();
         });
