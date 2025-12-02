@@ -81,7 +81,7 @@ const props = defineProps({
     default: () => ({
       logoIcon: '/images/logo/icon.png',
       logoImage: '/images/logo/logo.png',
-      logoText: 'Klust',
+      logoText: 'Кластер',
       showSearch: false,
       showNotifications: false,
     }),

@@ -32,7 +32,7 @@ import BaseFooter from '@/Components/Layout/BaseFooter.vue';
 const props = defineProps({
   logoText: {
     type: String,
-    default: 'Klust',
+    default: 'Кластер',
   },
   logoLink: {
     type: String,

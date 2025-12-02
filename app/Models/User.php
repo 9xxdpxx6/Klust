@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -126,5 +128,29 @@ class User extends Authenticatable
     public function getFacultyAttribute()
     {
         return $this->studentProfile?->faculty;
+    }
+
+    /**
+     * Get the full URL for the user's avatar.
+     * Преобразует относительный путь из БД в полный URL для доступа через веб.
+     */
+    protected function avatar(): Attribute
+    {
+        return Attribute::make(
+            get: function ($value) {
+                if (!$value) {
+                    return null;
+                }
+
+                // Если уже полный URL (начинается с http), возвращаем как есть
+                if (str_starts_with($value, 'http')) {
+                    return $value;
+                }
+
+                // Формируем полный URL из относительного пути
+                return Storage::disk('public')->url($value);
+            },
+            set: fn ($value) => $value, // При сохранении сохраняем как есть (относительный путь)
+        );
     }
 }

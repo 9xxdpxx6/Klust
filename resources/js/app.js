@@ -14,7 +14,7 @@ import StudentLayout from '@/Layouts/StudentLayout.vue';
 import PartnerLayout from '@/Layouts/PartnerLayout.vue';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Klust';
+const appName = import.meta.env.VITE_APP_NAME || 'Кластер';
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,

@@ -31,6 +31,7 @@ class StudentProfileFactory extends Factory
             'group' => fake()->numerify('ИТ-##'),
             'specialization' => fake()->randomElement($specializations),
             'bio' => fake()->optional(0.6)->sentence(15),
+            'phone' => fake()->optional(0.7)->phoneNumber(),
             'total_points' => fake()->numberBetween(0, 5000),
         ];
     }

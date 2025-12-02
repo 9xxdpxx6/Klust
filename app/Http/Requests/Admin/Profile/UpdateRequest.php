@@ -25,8 +25,23 @@ class UpdateRequest extends FormRequest
     public function rules(): array
     {
         $userId = auth()->id();
-
-        return [
+        $user = auth()->user();
+        
+        // Определяем роль пользователя
+        $isTeacher = false;
+        $isStudent = false;
+        $isPartner = false;
+        
+        if ($user && $user->roles) {
+            $roleNames = $user->roles->pluck('name')->toArray();
+            $isTeacher = in_array('teacher', $roleNames);
+            $isStudent = in_array('student', $roleNames);
+            $isPartner = in_array('partner', $roleNames);
+        }
+        
+        // Базовые правила для всех ролей
+        
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => [
                 'required',
@@ -48,9 +63,36 @@ class UpdateRequest extends FormRequest
                 'mimes:jpeg,png,jpg,gif',
                 'max:2048', // 2MB
             ],
-            'phone' => ['nullable', 'string', 'max:20'],
-            'bio' => ['nullable', 'string', 'max:1000'],
         ];
+        
+        // Поля для преподавателя
+        if ($isTeacher) {
+            $rules['department'] = ['nullable', 'string', 'max:255'];
+            $rules['position'] = ['nullable', 'string', 'max:255'];
+            $rules['bio'] = ['nullable', 'string', 'max:1000'];
+        }
+        // Поля для студента
+        elseif ($isStudent) {
+            $rules['faculty_id'] = ['nullable', 'integer', 'exists:faculties,id'];
+            $rules['group'] = ['nullable', 'string', 'max:255'];
+            $rules['specialization'] = ['nullable', 'string', 'max:255'];
+            $rules['phone'] = ['nullable', 'string', 'max:20'];
+            $rules['bio'] = ['nullable', 'string', 'max:1000'];
+            $rules['course'] = ['nullable', 'integer', 'between:1,6'];
+        }
+        // Поля для партнера
+        elseif ($isPartner) {
+            $rules['company_name'] = ['nullable', 'string', 'max:255'];
+            $rules['inn'] = ['nullable', 'string', 'max:12'];
+            $rules['address'] = ['nullable', 'string'];
+            $rules['website'] = ['nullable', 'url', 'max:255'];
+            $rules['description'] = ['nullable', 'string'];
+            $rules['contact_person'] = ['nullable', 'string', 'max:255'];
+            $rules['contact_phone'] = ['nullable', 'string', 'max:20'];
+        }
+        // Для админа - только базовые поля (name, email, avatar, password)
+        
+        return $rules;
     }
 
     /**

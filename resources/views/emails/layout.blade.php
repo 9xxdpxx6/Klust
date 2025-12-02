@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Klust')</title>
+    <title>@yield('title', 'Кластер')</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -78,14 +78,14 @@
 <body>
     <div class="email-container">
         <div class="email-header">
-            <h1>Klust</h1>
+            <h1>Кластер</h1>
         </div>
         <div class="email-body">
             @yield('content')
         </div>
         <div class="email-footer">
             <p>Это автоматическое письмо, пожалуйста, не отвечайте на него.</p>
-            <p>&copy; {{ date('Y') }} Klust. Все права защищены.</p>
+            <p>&copy; {{ date('Y') }} Кластер. Все права защищены.</p>
         </div>
     </div>
 </body>

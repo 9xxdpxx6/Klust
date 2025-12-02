@@ -88,7 +88,7 @@ const searchValue = ref('');
 const props = defineProps({
   logoText: {
     type: String,
-    default: 'Klust',
+    default: 'Кластер',
   },
   logoLink: {
     type: String,

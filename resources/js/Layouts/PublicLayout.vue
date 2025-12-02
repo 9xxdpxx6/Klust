@@ -10,18 +10,18 @@
                             <img
                                 v-if="logoIcon"
                                 :src="logoIcon"
-                                alt="Klust"
+                                alt="Кластер"
                                 class="h-10 w-10 object-contain"
                                 @error="$event.target.style.display = 'none'"
                             />
                             <img
                                 v-else-if="logoImage"
                                 :src="logoImage"
-                                alt="Klust"
+                                alt="Кластер"
                                 class="h-10 object-contain"
                                 @error="$event.target.style.display = 'none'"
                             />
-                            <h1 v-else class="text-2xl font-bold text-primary">Klust</h1>
+                            <h1 v-else class="text-2xl font-bold text-primary">Кластер</h1>
                         </Link>
                     </div>
 
@@ -192,7 +192,7 @@
                     <div>
                         <h3 class="text-sm font-semibold text-text-primary mb-3">О проекте</h3>
                         <p class="text-sm text-text-secondary">
-                            Klust — платформа для case-based обучения, объединяющая студентов и партнеров для работы над реальными проектами.
+                            Кластер — платформа для case-based обучения, объединяющая студентов и партнеров для работы над реальными проектами.
                         </p>
                     </div>
 
@@ -247,7 +247,7 @@
 
                 <div class="mt-8 pt-8 border-t border-border-light text-center">
                     <p class="text-sm text-text-secondary">
-                        © {{ currentYear }} Klust. Все права защищены.
+                        © {{ currentYear }} Кластер. Все права защищены.
                     </p>
                 </div>
             </div>

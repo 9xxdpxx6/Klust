@@ -50,7 +50,7 @@ public/images/logo/
 
 ```vue
 <BaseHeader
-  logo-text="Klust"
+  logo-text="Кластер"
   logo-icon="/images/logo/icon.svg"
   logo-image="/images/logo/logo-full.svg"
 />

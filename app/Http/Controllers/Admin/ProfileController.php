@@ -18,7 +18,7 @@ class ProfileController extends Controller
         private UserService $userService,
         private FileService $fileService
     ) {
-        $this->middleware(['auth', 'role:admin|teacher']);
+        $this->middleware(['auth', 'role:admin|teacher|student|partner']);
     }
 
     /**
@@ -27,9 +27,20 @@ class ProfileController extends Controller
     public function show(): Response
     {
         $user = auth()->user();
+        
+        // Загружаем профили в зависимости от роли
+        /** @var \App\Models\User $user */
+        $user->load(['studentProfile.faculty', 'teacherProfile', 'partnerProfile', 'roles']);
+        
+        // Загружаем факультеты для студентов
+        $faculties = [];
+        if ($user && method_exists($user, 'hasRole') && $user->hasRole('student')) {
+            $faculties = \App\Models\Faculty::where('is_active', true)->orderBy('name')->get();
+        }
 
         return Inertia::render('Admin/Profile/Index', [
             'user' => $user,
+            'faculties' => $faculties,
         ]);
     }
 
@@ -51,19 +62,41 @@ class ProfileController extends Controller
     public function update(UpdateRequest $request): RedirectResponse
     {
         $user = auth()->user();
-
         $data = $request->validated();
 
-        // Обработать загрузку аватара, если есть
+        // Передаем файл аватара в сервис, если есть
         if ($request->hasFile('avatar')) {
-            $data['avatar'] = $this->fileService->storeAvatar($request->file('avatar'));
+            $data['avatar'] = $request->file('avatar');
         }
 
-        // Обновить профиль администратора
+        // Обновить профиль
         $this->userService->updateProfile($user, $data);
 
         return redirect()
             ->route('admin.profile.show')
             ->with('success', 'Профиль успешно обновлен');
+    }
+
+    /**
+     * Удаление аватара
+     */
+    public function deleteAvatar(): RedirectResponse
+    {
+        $user = auth()->user();
+
+        if ($user->avatar) {
+            // Удаляем файл из хранилища
+            $oldAvatarPath = $user->getRawOriginal('avatar');
+            if ($oldAvatarPath) {
+                $this->fileService->deleteFile($oldAvatarPath);
+            }
+            
+            // Удаляем из БД
+            $user->update(['avatar' => null]);
+        }
+
+        return redirect()
+            ->route('admin.profile.show')
+            ->with('success', 'Фотография удалена');
     }
 }
