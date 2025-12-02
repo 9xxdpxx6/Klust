@@ -28,7 +28,7 @@ class WelcomePartnerMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Добро пожаловать в Klust - Партнерская панель',
+            subject: 'Добро пожаловать в Кластер - Партнерская панель',
         );
     }
 

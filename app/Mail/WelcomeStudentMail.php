@@ -28,7 +28,7 @@ class WelcomeStudentMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Добро пожаловать в Klust!',
+            subject: 'Добро пожаловать в Кластер!',
         );
     }
 
