@@ -25,6 +25,7 @@
         "primeicons": "^7.0.0",
         "primevue": "^4.4.1",
         "vue": "^3.5.22",
+        "vue-advanced-cropper": "^2.8.9",
         "vue-chartjs": "^5.3.3",
         "ziggy-js": "^2.6.0"
     }
