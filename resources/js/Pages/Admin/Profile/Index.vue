@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useForm } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import Card from '@/Components/UI/Card.vue'
@@ -8,6 +8,10 @@ import Input from '@/Components/UI/Input.vue'
 import Textarea from '@/Components/UI/Textarea.vue'
 import UserAvatar from '@/Components/Shared/UserAvatar.vue'
 import InputMask from 'primevue/inputmask'
+import Select from '@/Components/UI/Select.vue'
+import AvatarCropper from '@/Components/UI/AvatarCropper.vue'
+import Modal from '@/Components/UI/Modal.vue'
+import { router } from '@inertiajs/vue3'
 
 defineOptions({
     layout: AdminLayout
@@ -17,6 +21,10 @@ const props = defineProps({
     user: {
         type: Object,
         required: true
+    },
+    faculties: {
+        type: Array,
+        default: () => []
     }
 })
 
@@ -24,28 +32,137 @@ const isEditing = ref(false)
 const avatarPreview = ref(null)
 const showPasswordFields = ref(false)
 const avatarInput = ref(null)
+const showCropper = ref(false)
+const imageForCrop = ref(null)
+const showDeleteModal = ref(false)
 
-const form = useForm({
-    name: props.user.name,
-    email: props.user.email,
-    phone: props.user.phone || '',
-    bio: props.user.bio || '',
-    avatar: null,
-    current_password: '',
-    password: '',
-    password_confirmation: ''
+// Определяем роль пользователя
+const userRole = computed(() => {
+    if (props.user.roles && props.user.roles.length > 0) {
+        return props.user.roles[0].name || props.user.roles[0]
+    }
+    return null
 })
+
+const isTeacher = computed(() => userRole.value === 'teacher')
+const isStudent = computed(() => userRole.value === 'student')
+const isPartner = computed(() => userRole.value === 'partner')
+const isAdmin = computed(() => userRole.value === 'admin')
+
+// Инициализируем форму в зависимости от роли
+const initialFormData = () => {
+    const baseData = {
+        name: props.user.name,
+        email: props.user.email,
+        avatar: null,
+        current_password: '',
+        password: '',
+        password_confirmation: ''
+    }
+    
+    if (isTeacher.value && props.user.teacher_profile) {
+        return {
+            ...baseData,
+            department: props.user.teacher_profile.department || '',
+            position: props.user.teacher_profile.position || '',
+            bio: props.user.teacher_profile.bio || ''
+        }
+    }
+    
+    if (isStudent.value && props.user.student_profile) {
+        return {
+            ...baseData,
+            faculty_id: props.user.student_profile.faculty_id || null,
+            group: props.user.student_profile.group || '',
+            specialization: props.user.student_profile.specialization || '',
+            phone: props.user.student_profile.phone || '',
+            bio: props.user.student_profile.bio || '',
+            course: props.user.course || null
+        }
+    }
+    
+    if (isPartner.value && props.user.partner_profile) {
+        return {
+            ...baseData,
+            company_name: props.user.partner_profile.company_name || '',
+            inn: props.user.partner_profile.inn || '',
+            address: props.user.partner_profile.address || '',
+            website: props.user.partner_profile.website || '',
+            description: props.user.partner_profile.description || '',
+            contact_person: props.user.partner_profile.contact_person || '',
+            contact_phone: props.user.partner_profile.contact_phone || ''
+        }
+    }
+    
+    // Для админа - только базовые поля из users (name, email, avatar)
+    return {
+        ...baseData
+    }
+}
+
+const form = useForm(initialFormData())
+
+const courseOptions = computed(() => [
+    { label: 'Не указан', value: null },
+    ...Array.from({ length: 6 }, (_, i) => ({
+        label: `${i + 1} курс`,
+        value: i + 1
+    }))
+])
+
+const facultyOptions = computed(() => 
+    props.faculties.map(faculty => ({
+        value: faculty.id,
+        label: faculty.name
+    }))
+)
 
 const handleAvatarChange = (event) => {
     const file = event.target.files[0]
     if (file) {
-        form.avatar = file
         const reader = new FileReader()
         reader.onload = (e) => {
-            avatarPreview.value = e.target.result
+            imageForCrop.value = e.target.result
+            showCropper.value = true
         }
         reader.readAsDataURL(file)
     }
+}
+
+const handleCrop = (file) => {
+    form.avatar = file
+    const reader = new FileReader()
+    reader.onload = (e) => {
+        avatarPreview.value = e.target.result
+    }
+    reader.readAsDataURL(file)
+    showCropper.value = false
+    imageForCrop.value = null
+}
+
+const handleCropCancel = () => {
+    showCropper.value = false
+    imageForCrop.value = null
+    avatarInput.value.value = ''
+}
+
+const openDeleteModal = () => {
+    showDeleteModal.value = true
+}
+
+const closeDeleteModal = () => {
+    showDeleteModal.value = false
+}
+
+const deleteAvatar = () => {
+    router.delete(route('admin.profile.avatar.delete'), {
+        preserveScroll: true,
+        onSuccess: () => {
+            avatarPreview.value = null
+            form.avatar = null
+            closeDeleteModal()
+        }
+    })
 }
 
 const openFilePicker = () => {
@@ -53,8 +170,27 @@ const openFilePicker = () => {
 }
 
 const submitForm = () => {
-    form.post(route('admin.profile.update'), {
-        forceFormData: true,
+    const hasAvatar = form.avatar !== null && form.avatar instanceof File
+    
+    form.transform((data) => {
+        if (hasAvatar) {
+            const formData = new FormData()
+            Object.keys(data).forEach(key => {
+                if (data[key] !== null && data[key] !== undefined) {
+                    if (data[key] instanceof File) {
+                        formData.append(key, data[key])
+                    } else {
+                        formData.append(key, data[key])
+                    }
+                }
+            })
+            formData.append('_method', 'PUT')
+            return formData
+        }
+        return { ...data, _method: 'PUT' }
+    }).post(route('admin.profile.update'), {
+        forceFormData: hasAvatar,
+        preserveScroll: true,
         onSuccess: () => {
             isEditing.value = false
             avatarPreview.value = null
@@ -72,6 +208,45 @@ const cancelEdit = () => {
     avatarPreview.value = null
     showPasswordFields.value = false
 }
+
+const getRoleLabel = (role) => {
+    const labels = {
+        'admin': 'Администратор',
+        'teacher': 'Преподаватель',
+        'student': 'Студент',
+        'partner': 'Партнер'
+    }
+    return labels[role] || role
+}
+
+// Проверка, заполнен ли профиль
+const isProfileFilled = computed(() => {
+    // У админа всегда "заполнен", так как name и email обязательны
+    if (isAdmin.value) {
+        return true
+    }
+    if (isTeacher.value && props.user.teacher_profile) {
+        return props.user.teacher_profile.department || 
+               props.user.teacher_profile.position || 
+               props.user.teacher_profile.bio
+    }
+    if (isStudent.value && props.user.student_profile) {
+        return props.user.student_profile.faculty_id ||
+               props.user.student_profile.group ||
+               props.user.student_profile.specialization ||
+               props.user.student_profile.phone ||
+               props.user.student_profile.bio
+    }
+    if (isPartner.value && props.user.partner_profile) {
+        return props.user.partner_profile.company_name ||
+               props.user.partner_profile.inn ||
+               props.user.partner_profile.address ||
+               props.user.partner_profile.description ||
+               props.user.partner_profile.contact_person ||
+               props.user.partner_profile.contact_phone
+    }
+    return false
+})
 </script>
 
 <template>
@@ -106,15 +281,20 @@ const cancelEdit = () => {
                                     <i class="pi pi-envelope text-sm"></i>
                                     <span class="font-medium">Email:</span> {{ user.email }}
                                 </p>
-                                <p v-if="user.phone" class="flex items-center gap-2">
+                                <p v-if="(isStudent && user.student_profile?.phone)" class="flex items-center gap-2">
                                     <i class="pi pi-phone text-sm"></i>
-                                    <span class="font-medium">Телефон:</span> {{ user.phone }}
+                                    <span class="font-medium">Телефон:</span> 
+                                    {{ user.student_profile.phone }}
+                                </p>
+                                <p v-if="isStudent && user.course" class="flex items-center gap-2">
+                                    <i class="pi pi-calendar text-sm"></i>
+                                    <span class="font-medium">Курс:</span> {{ user.course }} курс
                                 </p>
                                 <p class="flex items-center gap-2">
                                     <i class="pi pi-shield text-sm"></i>
                                     <span class="font-medium">Роль:</span>
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                        {{ user.roles?.[0] === 'admin' ? 'Администратор' : 'Преподаватель' }}
+                                        {{ getRoleLabel(userRole) }}
                                     </span>
                                 </p>
                             </div>
@@ -122,13 +302,109 @@ const cancelEdit = () => {
                     </div>
                 </Card>
 
-                <!-- Bio -->
-                <Card v-if="user.bio">
-                    <h3 class="text-lg font-bold mb-4 text-text-primary">О себе</h3>
-                    <p class="text-text-secondary whitespace-pre-wrap">{{ user.bio }}</p>
+                <!-- Teacher Profile Info -->
+                <Card v-if="isTeacher && user.teacher_profile && isProfileFilled">
+                    <h3 class="text-lg font-bold mb-4 text-text-primary">Профиль преподавателя</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div v-if="user.teacher_profile.department">
+                            <p class="text-sm text-text-muted mb-1">Кафедра</p>
+                            <p class="font-medium text-text-primary">
+                                {{ user.teacher_profile.department }}
+                            </p>
+                        </div>
+                        <div v-if="user.teacher_profile.position">
+                            <p class="text-sm text-text-muted mb-1">Должность</p>
+                            <p class="font-medium text-text-primary">
+                                {{ user.teacher_profile.position }}
+                            </p>
+                        </div>
+                        <div v-if="user.teacher_profile.bio" class="md:col-span-2">
+                            <p class="text-sm text-text-muted mb-1">О себе</p>
+                            <p class="text-text-secondary whitespace-pre-wrap">{{ user.teacher_profile.bio }}</p>
+                        </div>
+                    </div>
                 </Card>
 
-                <Card v-else>
+                <!-- Student Profile Info -->
+                <Card v-if="isStudent && user.student_profile && isProfileFilled">
+                    <h3 class="text-lg font-bold mb-4 text-text-primary">Учебная информация</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div v-if="user.student_profile.faculty">
+                            <p class="text-sm text-text-muted mb-1">Факультет</p>
+                            <p class="font-medium text-text-primary">
+                                {{ user.student_profile.faculty.name || user.student_profile.faculty }}
+                            </p>
+                        </div>
+                        <div v-if="user.student_profile.group">
+                            <p class="text-sm text-text-muted mb-1">Группа</p>
+                            <p class="font-medium text-text-primary">
+                                {{ user.student_profile.group }}
+                            </p>
+                        </div>
+                        <div v-if="user.student_profile.specialization">
+                            <p class="text-sm text-text-muted mb-1">Специальность</p>
+                            <p class="font-medium text-text-primary">
+                                {{ user.student_profile.specialization }}
+                            </p>
+                        </div>
+                        <div v-if="user.student_profile.bio" class="md:col-span-2">
+                            <p class="text-sm text-text-muted mb-1">О себе</p>
+                            <p class="text-text-secondary whitespace-pre-wrap">{{ user.student_profile.bio }}</p>
+                        </div>
+                    </div>
+                </Card>
+
+                <!-- Partner Profile Info -->
+                <Card v-if="isPartner && user.partner_profile && isProfileFilled">
+                    <h3 class="text-lg font-bold mb-4 text-text-primary">Информация о компании</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div v-if="user.partner_profile.company_name">
+                            <p class="text-sm text-text-muted mb-1">Название компании</p>
+                            <p class="font-medium text-text-primary">
+                                {{ user.partner_profile.company_name }}
+                            </p>
+                        </div>
+                        <div v-if="user.partner_profile.inn">
+                            <p class="text-sm text-text-muted mb-1">ИНН</p>
+                            <p class="font-medium text-text-primary">
+                                {{ user.partner_profile.inn }}
+                            </p>
+                        </div>
+                        <div v-if="user.partner_profile.address" class="md:col-span-2">
+                            <p class="text-sm text-text-muted mb-1">Адрес</p>
+                            <p class="font-medium text-text-primary">
+                                {{ user.partner_profile.address }}
+                            </p>
+                        </div>
+                        <div v-if="user.partner_profile.website">
+                            <p class="text-sm text-text-muted mb-1">Сайт</p>
+                            <p class="font-medium text-text-primary">
+                                <a :href="user.partner_profile.website" target="_blank" class="text-blue-600 hover:underline">
+                                    {{ user.partner_profile.website }}
+                                </a>
+                            </p>
+                        </div>
+                        <div v-if="user.partner_profile.contact_person">
+                            <p class="text-sm text-text-muted mb-1">Контактное лицо</p>
+                            <p class="font-medium text-text-primary">
+                                {{ user.partner_profile.contact_person }}
+                            </p>
+                        </div>
+                        <div v-if="user.partner_profile.contact_phone">
+                            <p class="text-sm text-text-muted mb-1">Контактный телефон</p>
+                            <p class="font-medium text-text-primary">
+                                {{ user.partner_profile.contact_phone }}
+                            </p>
+                        </div>
+                        <div v-if="user.partner_profile.description" class="md:col-span-2">
+                            <p class="text-sm text-text-muted mb-1">Описание</p>
+                            <p class="text-text-secondary whitespace-pre-wrap">{{ user.partner_profile.description }}</p>
+                        </div>
+                    </div>
+                </Card>
+
+                <!-- Пустой профиль -->
+                <Card v-if="!isProfileFilled">
                     <div class="text-center py-8 text-text-muted">
                         <i class="pi pi-info-circle text-4xl mb-3"></i>
                         <p>Вы еще не заполнили информацию о себе</p>
@@ -153,7 +429,7 @@ const cancelEdit = () => {
                             :user="{ ...user, avatar: avatarPreview || user.avatar }"
                             size="lg"
                         />
-                        <div>
+                        <div class="flex flex-col gap-2">
                             <input
                                 ref="avatarInput"
                                 type="file"
@@ -161,20 +437,40 @@ const cancelEdit = () => {
                                 @change="handleAvatarChange"
                                 class="hidden"
                             />
-                            <Button
-                                type="button"
-                                variant="secondary"
-                                @click="openFilePicker"
-                            >
-                                <i class="pi pi-upload mr-2"></i>
-                                Загрузить фото
-                            </Button>
-                            <p class="text-sm text-text-muted mt-2">JPG, PNG, GIF. Макс. 2MB</p>
+                            <div class="flex gap-2">
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    @click="openFilePicker"
+                                >
+                                    <i class="pi pi-upload mr-2"></i>
+                                    Загрузить фото
+                                </Button>
+                                <Button
+                                    v-if="user.avatar || avatarPreview"
+                                    type="button"
+                                    variant="outline"
+                                    @click="openDeleteModal"
+                                    class="text-red-600 hover:text-red-700"
+                                >
+                                    <i class="pi pi-trash mr-2"></i>
+                                    Удалить
+                                </Button>
+                            </div>
+                            <p class="text-sm text-text-muted">JPG, PNG, GIF. Макс. 2MB</p>
                         </div>
                     </div>
                 </Card>
 
-                <!-- Basic Info -->
+                <!-- Avatar Cropper Modal -->
+                <AvatarCropper
+                    v-if="showCropper && imageForCrop"
+                    :image="imageForCrop"
+                    @crop="handleCrop"
+                    @cancel="handleCropCancel"
+                />
+
+                <!-- Basic Info (для всех ролей) -->
                 <Card>
                     <h3 class="text-lg font-bold mb-4 text-text-primary">Основная информация</h3>
                     <div class="space-y-4">
@@ -193,6 +489,72 @@ const cancelEdit = () => {
                             :error="form.errors.email"
                             required
                         />
+                        
+                        <!-- Курс для студента -->
+                        <Select
+                            v-if="isStudent"
+                            v-model="form.course"
+                            label="Курс"
+                            :options="courseOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Не указан"
+                            :error="form.errors.course"
+                        />
+                    </div>
+                </Card>
+
+                <!-- Teacher Profile Fields -->
+                <Card v-if="isTeacher">
+                    <h3 class="text-lg font-bold mb-4 text-text-primary">Профиль преподавателя</h3>
+                    <div class="space-y-4">
+                        <Input
+                            v-model="form.department"
+                            label="Кафедра"
+                            placeholder="Введите название кафедры"
+                            :error="form.errors.department"
+                        />
+                        <Input
+                            v-model="form.position"
+                            label="Должность"
+                            placeholder="Введите должность"
+                            :error="form.errors.position"
+                        />
+                        <Textarea
+                            v-model="form.bio"
+                            label="О себе"
+                            placeholder="Расскажите о себе, своем опыте и квалификации..."
+                            :rows="4"
+                            :error="form.errors.bio"
+                        />
+                    </div>
+                </Card>
+
+                <!-- Student Profile Fields -->
+                <Card v-if="isStudent">
+                    <h3 class="text-lg font-bold mb-4 text-text-primary">Учебная информация</h3>
+                    <div class="space-y-4">
+                        <Select
+                            v-model="form.faculty_id"
+                            label="Факультет"
+                            :options="facultyOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Выберите факультет"
+                            :error="form.errors.faculty_id"
+                        />
+                        <Input
+                            v-model="form.group"
+                            label="Группа"
+                            placeholder="Например: ИВТ-101"
+                            :error="form.errors.group"
+                        />
+                        <Input
+                            v-model="form.specialization"
+                            label="Специальность"
+                            placeholder="Введите специальность"
+                            :error="form.errors.specialization"
+                        />
                         <div>
                             <label class="block text-sm font-medium mb-1 text-text-primary">
                                 Телефон
@@ -207,19 +569,76 @@ const cancelEdit = () => {
                                 {{ form.errors.phone }}
                             </p>
                         </div>
+                        <Textarea
+                            v-model="form.bio"
+                            label="О себе"
+                            placeholder="Расскажите о себе, своих интересах и навыках..."
+                            :rows="4"
+                            :error="form.errors.bio"
+                        />
                     </div>
                 </Card>
 
-                <!-- Bio -->
-                <Card>
-                    <h3 class="text-lg font-bold mb-4 text-text-primary">О себе</h3>
-                    <Textarea
-                        v-model="form.bio"
-                        placeholder="Расскажите о себе, своем опыте и квалификации..."
-                        :rows="4"
-                        :error="form.errors.bio"
-                    />
+                <!-- Partner Profile Fields -->
+                <Card v-if="isPartner">
+                    <h3 class="text-lg font-bold mb-4 text-text-primary">Информация о компании</h3>
+                    <div class="space-y-4">
+                        <Input
+                            v-model="form.company_name"
+                            label="Название компании"
+                            placeholder="Введите название компании"
+                            :error="form.errors.company_name"
+                        />
+                        <Input
+                            v-model="form.inn"
+                            label="ИНН"
+                            placeholder="Введите ИНН"
+                            :error="form.errors.inn"
+                        />
+                        <Textarea
+                            v-model="form.address"
+                            label="Адрес"
+                            placeholder="Введите адрес компании"
+                            :rows="2"
+                            :error="form.errors.address"
+                        />
+                        <Input
+                            v-model="form.website"
+                            type="url"
+                            label="Сайт"
+                            placeholder="https://example.com"
+                            :error="form.errors.website"
+                        />
+                        <Input
+                            v-model="form.contact_person"
+                            label="Контактное лицо"
+                            placeholder="Введите ФИО контактного лица"
+                            :error="form.errors.contact_person"
+                        />
+                        <div>
+                            <label class="block text-sm font-medium mb-1 text-text-primary">
+                                Контактный телефон
+                            </label>
+                            <InputMask
+                                v-model="form.contact_phone"
+                                mask="+7 (999) 999-99-99"
+                                placeholder="+7 (___) ___-__-__"
+                                :class="['w-full', { 'p-invalid': form.errors.contact_phone }]"
+                            />
+                            <p v-if="form.errors.contact_phone" class="mt-1 text-sm text-red-600">
+                                {{ form.errors.contact_phone }}
+                            </p>
+                        </div>
+                        <Textarea
+                            v-model="form.description"
+                            label="Описание компании"
+                            placeholder="Расскажите о деятельности компании..."
+                            :rows="4"
+                            :error="form.errors.description"
+                        />
+                    </div>
                 </Card>
+
 
                 <!-- Password Change -->
                 <Card>
@@ -286,6 +705,41 @@ const cancelEdit = () => {
                     </Button>
                 </div>
             </form>
+
+            <!-- Modal подтверждения удаления -->
+            <Modal
+                :visible="showDeleteModal"
+                title="Подтверждение удаления"
+                @update:visible="showDeleteModal = $event"
+                @close="closeDeleteModal"
+                size="sm"
+            >
+                <p class="text-gray-700 mb-4">
+                    Вы уверены, что хотите удалить фотографию?
+                </p>
+                <p class="text-sm text-gray-600">
+                    Это действие необратимо. Фотография будет удалена.
+                </p>
+
+                <template #footer>
+                    <div class="flex justify-end gap-2">
+                        <Button
+                            variant="secondary"
+                            type="button"
+                            @click="closeDeleteModal"
+                        >
+                            Отмена
+                        </Button>
+                        <Button
+                            severity="danger"
+                            type="button"
+                            @click="deleteAvatar"
+                        >
+                            Удалить
+                        </Button>
+                    </div>
+                </template>
+            </Modal>
         </div>
     </div>
 </template>
