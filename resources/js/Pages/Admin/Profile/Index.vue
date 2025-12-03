@@ -9,8 +9,7 @@ import Textarea from '@/Components/UI/Textarea.vue'
 import UserAvatar from '@/Components/Shared/UserAvatar.vue'
 import InputMask from 'primevue/inputmask'
 import Select from '@/Components/UI/Select.vue'
-import AvatarCropper from '@/Components/UI/AvatarCropper.vue'
-import Modal from '@/Components/UI/Modal.vue'
+import AvatarEditor from '@/Components/Shared/AvatarEditor.vue'
 import { router } from '@inertiajs/vue3'
 
 defineOptions({
@@ -29,12 +28,8 @@ const props = defineProps({
 })
 
 const isEditing = ref(false)
-const avatarPreview = ref(null)
+const avatarFile = ref(null)
 const showPasswordFields = ref(false)
-const avatarInput = ref(null)
-const showCropper = ref(false)
-const imageForCrop = ref(null)
-const showDeleteModal = ref(false)
 
 // Определяем роль пользователя
 const userRole = computed(() => {
@@ -54,7 +49,6 @@ const initialFormData = () => {
     const baseData = {
         name: props.user.name,
         email: props.user.email,
-        avatar: null,
         current_password: '',
         password: '',
         password_confirmation: ''
@@ -117,83 +111,37 @@ const facultyOptions = computed(() =>
     }))
 )
 
-const handleAvatarChange = (event) => {
-    const file = event.target.files[0]
-    if (file) {
-        const reader = new FileReader()
-        reader.onload = (e) => {
-            imageForCrop.value = e.target.result
-            showCropper.value = true
-        }
-        reader.readAsDataURL(file)
-    }
-}
-
-const handleCrop = (file) => {
-    form.avatar = file
-    const reader = new FileReader()
-    reader.onload = (e) => {
-        avatarPreview.value = e.target.result
-    }
-    reader.readAsDataURL(file)
-    showCropper.value = false
-    imageForCrop.value = null
-}
-
-const handleCropCancel = () => {
-    showCropper.value = false
-    imageForCrop.value = null
-    avatarInput.value.value = ''
-}
-
-const openDeleteModal = () => {
-    showDeleteModal.value = true
-}
-
-const closeDeleteModal = () => {
-    showDeleteModal.value = false
-}
-
-const deleteAvatar = () => {
-    router.delete(route('admin.profile.avatar.delete'), {
-        preserveScroll: true,
-        onSuccess: () => {
-            avatarPreview.value = null
-            form.avatar = null
-            closeDeleteModal()
-        }
-    })
-}
-
-const openFilePicker = () => {
-    avatarInput.value.click()
-}
 
 const submitForm = () => {
-    const hasAvatar = form.avatar !== null && form.avatar instanceof File
+    const hasAvatar = avatarFile.value !== null && avatarFile.value instanceof File
+    
+    const submitData = { ...form.data() }
+    if (hasAvatar) {
+        submitData.avatar = avatarFile.value
+    }
     
     form.transform((data) => {
         if (hasAvatar) {
             const formData = new FormData()
-            Object.keys(data).forEach(key => {
-                if (data[key] !== null && data[key] !== undefined) {
-                    if (data[key] instanceof File) {
-                        formData.append(key, data[key])
+            Object.keys(submitData).forEach(key => {
+                if (submitData[key] !== null && submitData[key] !== undefined) {
+                    if (submitData[key] instanceof File) {
+                        formData.append(key, submitData[key])
                     } else {
-                        formData.append(key, data[key])
+                        formData.append(key, submitData[key])
                     }
                 }
             })
             formData.append('_method', 'PUT')
             return formData
         }
-        return { ...data, _method: 'PUT' }
+        return { ...submitData, _method: 'PUT' }
     }).post(route('admin.profile.update'), {
         forceFormData: hasAvatar,
         preserveScroll: true,
         onSuccess: () => {
             isEditing.value = false
-            avatarPreview.value = null
+            avatarFile.value = null
             showPasswordFields.value = false
             form.current_password = ''
             form.password = ''
@@ -205,7 +153,7 @@ const submitForm = () => {
 const cancelEdit = () => {
     isEditing.value = false
     form.reset()
-    avatarPreview.value = null
+    avatarFile.value = null
     showPasswordFields.value = false
 }
 
@@ -422,52 +370,10 @@ const isProfileFilled = computed(() => {
             <!-- Edit Mode -->
             <form v-else @submit.prevent="submitForm" class="space-y-6">
                 <!-- Avatar Upload -->
-                <Card>
-                    <h3 class="text-lg font-bold mb-4 text-text-primary">Фотография профиля</h3>
-                    <div class="flex items-center gap-6">
-                        <UserAvatar
-                            :user="{ ...user, avatar: avatarPreview || user.avatar }"
-                            size="lg"
-                        />
-                        <div class="flex flex-col gap-2">
-                            <input
-                                ref="avatarInput"
-                                type="file"
-                                accept="image/*"
-                                @change="handleAvatarChange"
-                                class="hidden"
-                            />
-                            <div class="flex gap-2">
-                                <Button
-                                    type="button"
-                                    variant="secondary"
-                                    @click="openFilePicker"
-                                >
-                                    <i class="pi pi-upload mr-2"></i>
-                                    Загрузить фото
-                                </Button>
-                                <Button
-                                    v-if="user.avatar || avatarPreview"
-                                    type="button"
-                                    variant="outline"
-                                    @click="openDeleteModal"
-                                    class="text-red-600 hover:text-red-700"
-                                >
-                                    <i class="pi pi-trash mr-2"></i>
-                                    Удалить
-                                </Button>
-                            </div>
-                            <p class="text-sm text-text-muted">JPG, PNG, GIF. Макс. 2MB</p>
-                        </div>
-                    </div>
-                </Card>
-
-                <!-- Avatar Cropper Modal -->
-                <AvatarCropper
-                    v-if="showCropper && imageForCrop"
-                    :image="imageForCrop"
-                    @crop="handleCrop"
-                    @cancel="handleCropCancel"
+                <AvatarEditor
+                    :user="user"
+                    avatar-route-prefix="admin"
+                    v-model="avatarFile"
                 />
 
                 <!-- Basic Info (для всех ролей) -->
@@ -706,40 +612,6 @@ const isProfileFilled = computed(() => {
                 </div>
             </form>
 
-            <!-- Modal подтверждения удаления -->
-            <Modal
-                :visible="showDeleteModal"
-                title="Подтверждение удаления"
-                @update:visible="showDeleteModal = $event"
-                @close="closeDeleteModal"
-                size="sm"
-            >
-                <p class="text-gray-700 mb-4">
-                    Вы уверены, что хотите удалить фотографию?
-                </p>
-                <p class="text-sm text-gray-600">
-                    Это действие необратимо. Фотография будет удалена.
-                </p>
-
-                <template #footer>
-                    <div class="flex justify-end gap-2">
-                        <Button
-                            variant="secondary"
-                            type="button"
-                            @click="closeDeleteModal"
-                        >
-                            Отмена
-                        </Button>
-                        <Button
-                            severity="danger"
-                            type="button"
-                            @click="deleteAvatar"
-                        >
-                            Удалить
-                        </Button>
-                    </div>
-                </template>
-            </Modal>
         </div>
     </div>
 </template>

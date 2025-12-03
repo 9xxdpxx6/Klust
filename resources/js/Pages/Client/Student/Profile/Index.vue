@@ -7,6 +7,7 @@ import Input from '@/Components/UI/Input.vue'
 import Textarea from '@/Components/UI/Textarea.vue'
 import Select from '@/Components/UI/Select.vue'
 import UserAvatar from '@/Components/Shared/UserAvatar.vue'
+import AvatarEditor from '@/Components/Shared/AvatarEditor.vue'
 
 const props = defineProps({
     user: {
@@ -24,12 +25,11 @@ const props = defineProps({
 })
 
 const isEditing = ref(false)
-const avatarPreview = ref(null)
+const avatarFile = ref(null)
 
 const form = useForm({
     name: props.user.name,
     email: props.user.email,
-    avatar: null,
     faculty_id: props.studentProfile.faculty_id,
     course: props.studentProfile.course,
     group_number: props.studentProfile.group_number,
@@ -51,24 +51,36 @@ const facultyOptions = props.faculties.map(faculty => ({
     label: faculty.name
 }))
 
-const handleAvatarChange = (event) => {
-    const file = event.target.files[0]
-    if (file) {
-        form.avatar = file
-        const reader = new FileReader()
-        reader.onload = (e) => {
-            avatarPreview.value = e.target.result
-        }
-        reader.readAsDataURL(file)
-    }
-}
-
 const submitForm = () => {
-    form.post(route('student.profile.update'), {
-        forceFormData: true,
+    const hasAvatar = avatarFile.value !== null && avatarFile.value instanceof File
+    
+    const submitData = { ...form.data() }
+    if (hasAvatar) {
+        submitData.avatar = avatarFile.value
+    }
+    
+    form.transform((data) => {
+        if (hasAvatar) {
+            const formData = new FormData()
+            Object.keys(submitData).forEach(key => {
+                if (submitData[key] !== null && submitData[key] !== undefined) {
+                    if (submitData[key] instanceof File) {
+                        formData.append(key, submitData[key])
+                    } else {
+                        formData.append(key, submitData[key])
+                    }
+                }
+            })
+            formData.append('_method', 'PUT')
+            return formData
+        }
+        return { ...submitData, _method: 'PUT' }
+    }).post(route('student.profile.update'), {
+        forceFormData: hasAvatar,
+        preserveScroll: true,
         onSuccess: () => {
             isEditing.value = false
-            avatarPreview.value = null
+            avatarFile.value = null
         }
     })
 }
@@ -76,7 +88,7 @@ const submitForm = () => {
 const cancelEdit = () => {
     isEditing.value = false
     form.reset()
-    avatarPreview.value = null
+    avatarFile.value = null
 }
 </script>
 
@@ -190,35 +202,11 @@ const cancelEdit = () => {
             <!-- Edit Mode -->
             <form v-else @submit.prevent="submitForm" novalidate class="space-y-6">
                 <!-- Avatar Upload -->
-                <Card>
-                    <h3 class="text-lg font-bold mb-4">Фотография профиля</h3>
-                    <div class="flex items-center gap-6">
-                        <UserAvatar
-                            :src="avatarPreview || user.avatar"
-                            :name="user.name"
-                            size="xl"
-                        />
-                        <div>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                @change="handleAvatarChange"
-                                class="hidden"
-                                id="avatar-upload"
-                            />
-                            <label for="avatar-upload">
-                                <Button
-                                    type="button"
-                                    variant="secondary"
-                                    @click="$refs['avatar-upload'].click()"
-                                >
-                                    Загрузить фото
-                                </Button>
-                            </label>
-                            <p class="text-sm text-gray-500 mt-2">JPG, PNG. Макс. 2MB</p>
-                        </div>
-                    </div>
-                </Card>
+                <AvatarEditor
+                    :user="user"
+                    avatar-route-prefix="student"
+                    v-model="avatarFile"
+                />
 
                 <!-- Basic Info -->
                 <Card>

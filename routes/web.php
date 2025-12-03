@@ -112,6 +112,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/profile', [StudentProfileController::class, 'show'])->name('profile.show');
         Route::get('/profile/edit', [StudentProfileController::class, 'edit'])->name('profile.edit');
         Route::put('/profile', [StudentProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/profile/avatar', [StudentProfileController::class, 'deleteAvatar'])->name('profile.avatar.delete');
 
         // Skills & Badges
         Route::get('/skills', [SkillsController::class, 'index'])->name('skills.index');
@@ -133,6 +134,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/profile', [PartnerProfileController::class, 'show'])->name('profile.show');
         Route::get('/profile/edit', [PartnerProfileController::class, 'edit'])->name('profile.edit');
         Route::put('/profile', [PartnerProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/profile/avatar', [PartnerProfileController::class, 'deleteAvatar'])->name('profile.avatar.delete');
 
         // Cases
         Route::get('/cases', [PartnerCasesController::class, 'index'])->name('cases.index');

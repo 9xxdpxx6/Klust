@@ -56,6 +56,14 @@ class UpdateRequest extends FormRequest
                 'mimes:jpeg,png,jpg,gif,svg',
                 'max:5120', // 5MB
             ],
+            
+            // Аватар пользователя - только JPG, JPEG, PNG
+            'avatar' => [
+                'nullable',
+                'image',
+                'mimes:jpeg,png,jpg',
+                'max:2048', // 2MB
+            ],
         ];
     }
 
@@ -86,6 +94,9 @@ class UpdateRequest extends FormRequest
             'logo.image' => 'Файл логотипа должен быть изображением.',
             'logo.mimes' => 'Логотип должен быть в формате: jpeg, png, jpg, gif или svg.',
             'logo.max' => 'Максимальный размер логотипа не должен превышать 5 МБ.',
+            'avatar.image' => 'Файл аватара должен быть изображением.',
+            'avatar.mimes' => 'Аватар должен быть в формате JPG, JPEG или PNG. Недопустимый формат файла. Допустимые форматы: JPG, JPEG, PNG.',
+            'avatar.max' => 'Максимальный размер аватара не должен превышать 2 МБ.',
         ];
     }
 }

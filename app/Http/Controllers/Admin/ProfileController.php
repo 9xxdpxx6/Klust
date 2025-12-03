@@ -83,17 +83,7 @@ class ProfileController extends Controller
     public function deleteAvatar(): RedirectResponse
     {
         $user = auth()->user();
-
-        if ($user->avatar) {
-            // Удаляем файл из хранилища
-            $oldAvatarPath = $user->getRawOriginal('avatar');
-            if ($oldAvatarPath) {
-                $this->fileService->deleteFile($oldAvatarPath);
-            }
-            
-            // Удаляем из БД
-            $user->update(['avatar' => null]);
-        }
+        $this->userService->deleteUserAvatar($user);
 
         return redirect()
             ->route('admin.profile.show')

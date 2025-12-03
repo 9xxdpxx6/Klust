@@ -56,7 +56,7 @@ class ProfileController extends Controller
 
         // Обработать загрузку аватара, если есть
         if ($request->hasFile('avatar')) {
-            $data['avatar'] = $this->fileService->storeAvatar($request->file('avatar'));
+            $data['avatar'] = $request->file('avatar');
         }
 
         // Обновить профиль студента
@@ -65,5 +65,18 @@ class ProfileController extends Controller
         return redirect()
             ->route('student.profile.show')
             ->with('success', 'Профиль успешно обновлен');
+    }
+
+    /**
+     * Удаление аватара
+     */
+    public function deleteAvatar(): RedirectResponse
+    {
+        $user = auth()->user();
+        $this->userService->deleteUserAvatar($user);
+
+        return redirect()
+            ->route('student.profile.show')
+            ->with('success', 'Фотография удалена');
     }
 }
