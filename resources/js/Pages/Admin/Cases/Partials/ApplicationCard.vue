@@ -12,6 +12,9 @@
                     <span v-if="application.leader.student_profile.faculty">
                         {{ application.leader.student_profile.faculty.name || application.leader.student_profile.faculty }}, 
                     </span>
+                    <span v-if="application.leader.student_profile.course">
+                        {{ application.leader.student_profile.course }} курс, 
+                    </span>
                     {{ application.leader.student_profile.group }} группа
                 </p>
             </div>

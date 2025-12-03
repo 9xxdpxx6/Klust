@@ -333,11 +333,6 @@ class UserService
                 }
             }
 
-            // Обновляем курс для студента
-            if (isset($data['course'])) {
-                $updateData['course'] = $data['course'];
-            }
-
             $user->update($updateData);
 
             // Обновляем профиль в зависимости от роли
@@ -365,6 +360,9 @@ class UserService
                 }
                 if (isset($data['group'])) {
                     $profileData['group'] = $data['group'];
+                }
+                if (isset($data['course'])) {
+                    $profileData['course'] = $data['course'];
                 }
                 if (isset($data['specialization'])) {
                     $profileData['specialization'] = $data['specialization'];

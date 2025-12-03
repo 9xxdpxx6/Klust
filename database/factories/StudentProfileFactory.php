@@ -29,6 +29,7 @@ class StudentProfileFactory extends Factory
             'user_id' => User::factory(),
             'faculty_id' => ! empty($facultyIds) ? fake()->randomElement($facultyIds) : null,
             'group' => fake()->numerify('ИТ-##'),
+            'course' => fake()->boolean(80) ? fake()->numberBetween(1, 6) : null,
             'specialization' => fake()->randomElement($specializations),
             'bio' => fake()->optional(0.6)->sentence(15),
             'phone' => fake()->optional(0.7)->phoneNumber(),

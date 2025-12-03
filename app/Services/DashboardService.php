@@ -179,9 +179,10 @@ class DashboardService
     public function getStudentsByCourse(): array
     {
         $distribution = User::role('student')
-            ->selectRaw('COALESCE(course, 0) as course, count(*) as count')
-            ->groupBy('course')
-            ->orderBy('course')
+            ->join('student_profiles', 'users.id', '=', 'student_profiles.user_id')
+            ->selectRaw('COALESCE(student_profiles.course, 0) as course, count(*) as count')
+            ->groupBy('student_profiles.course')
+            ->orderBy('student_profiles.course')
             ->get();
 
         $labels = $distribution->map(function ($item) {

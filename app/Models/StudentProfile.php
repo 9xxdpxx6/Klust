@@ -16,6 +16,7 @@ class StudentProfile extends Model
         'user_id',
         'faculty_id',
         'group',
+        'course',
         'specialization',
         'bio',
         'phone',
