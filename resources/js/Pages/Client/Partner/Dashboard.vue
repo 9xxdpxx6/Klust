@@ -1,5 +1,6 @@
 <template>
-    <div class="space-y-6">
+    <PartnerLayout>
+        <div class="space-y-6">
             <div>
                 <h1 class="text-3xl font-bold text-text-primary mb-2">Панель партнера</h1>
                 <p class="text-text-secondary">Управление кейсами и аналитика</p>
@@ -123,11 +124,13 @@
                 </Card>
             </div>
         </div>
+    </PartnerLayout>
 </template>
 
 <script setup>
 import { computed } from 'vue';
 import { router } from '@inertiajs/vue3';
+import PartnerLayout from '@/Layouts/PartnerLayout.vue';
 import StatsWidget from '@/Components/UI/StatsWidget.vue';
 import Card from '@/Components/UI/Card.vue';
 import Badge from '@/Components/UI/Badge.vue';

@@ -2,14 +2,13 @@
     <div class="space-y-6">
         <div class="flex justify-between items-center">
             <h1 class="text-2xl font-bold text-gray-900">Команда: {{ team.leader.name }}</h1>
-                <Link
-                    :href="route('partner.teams.index')"
-                    class="text-blue-600 hover:text-blue-900 text-sm font-medium"
-                >
-                    ← Назад к командам
-                </Link>
-            </div>
-        </template>
+            <Link
+                :href="route('partner.teams.index')"
+                class="text-blue-600 hover:text-blue-900 text-sm font-medium"
+            >
+                ← Назад к командам
+            </Link>
+        </div>
 
         <!-- Case Info -->
         <div class="bg-white shadow-sm rounded-lg p-6 mb-6">

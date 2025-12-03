@@ -129,12 +129,11 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         <tr v-for="caseItem in cases.data" :key="caseItem.id">
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4">
                                 <div class="text-sm font-medium text-gray-900">{{ caseItem.title }}</div>
-                                <div class="text-sm text-gray-500 line-clamp-2">{{ caseItem.description }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span 
+                                <span
                                     class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                                     :class="getStatusClass(caseItem.status)"
                                 >
