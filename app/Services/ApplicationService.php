@@ -184,7 +184,7 @@ class ApplicationService
     public function hasApplication(User $user, CaseModel $case): bool
     {
         // Check as leader
-        if ($user->caseApplicationsAsLeader()->where('case_id', $case->id)->exists()) {
+        if ($user->caseApplications()->where('case_id', $case->id)->exists()) {
             return true;
         }
 
@@ -202,7 +202,7 @@ class ApplicationService
     public function getStudentApplicationStatus(User $user, CaseModel $case): ?CaseApplication
     {
         // First check as leader
-        $application = $user->caseApplicationsAsLeader()
+        $application = $user->caseApplications()
             ->where('case_id', $case->id)
             ->first();
 
@@ -231,7 +231,7 @@ class ApplicationService
         $rejectedStatusId = ApplicationStatus::getIdByName('rejected');
 
         // Get applications where user is leader
-        $leaderApplications = $user->caseApplicationsAsLeader()
+        $leaderApplications = $user->caseApplications()
             ->with(['case.partner', 'teamMembers.user', 'status'])
             ->get();
 

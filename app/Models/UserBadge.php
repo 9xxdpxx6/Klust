@@ -7,4 +7,8 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 class UserBadge extends Pivot
 {
     protected $table = 'user_badges';
+
+    protected $casts = [
+        'earned_at' => 'datetime',
+    ];
 }
