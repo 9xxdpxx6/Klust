@@ -2,7 +2,7 @@
   <ClientLayoutWithSidebar
     role="student"
     title="Студент"
-    :show-footer="true"
+    :show-footer="false"
     :header-props="{
       logoIcon: '/images/logo/icon.png',
       logoImage: '/images/logo/logo.png',
