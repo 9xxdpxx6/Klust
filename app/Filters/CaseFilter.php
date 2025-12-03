@@ -23,6 +23,7 @@ final class CaseFilter extends BaseFilter
         $this->applyPartnerFilter($query);
         $this->applySkillsFilter($query);
         $this->applyDeadlineRangeFilter($query);
+        $this->applyCreatedAtRangeFilter($query);
         $this->applySortingFilter($query);
 
         return $query;
@@ -115,6 +116,20 @@ final class CaseFilter extends BaseFilter
 
         if ($to) {
             $query->whereDate('deadline', '<=', $to);
+        }
+    }
+
+    private function applyCreatedAtRangeFilter(Builder $query): void
+    {
+        $from = $this->getFilter('date_from');
+        $to = $this->getFilter('date_to');
+
+        if ($from) {
+            $query->whereDate('created_at', '>=', $from);
+        }
+
+        if ($to) {
+            $query->whereDate('created_at', '<=', $to);
         }
     }
 

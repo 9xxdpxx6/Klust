@@ -58,6 +58,8 @@ class CasesController extends Controller
                 'simulator_id',
                 'deadline_from',
                 'deadline_to',
+                'date_from',
+                'date_to',
                 'sort_by',
                 'sort_order',
                 'per_page',
