@@ -60,7 +60,7 @@ class UpdateRequest extends FormRequest
             'avatar' => [
                 'nullable',
                 'image',
-                'mimes:jpeg,png,jpg,gif',
+                'mimes:jpeg,png,jpg',
                 'max:2048', // 2MB
             ],
         ];
@@ -114,7 +114,7 @@ class UpdateRequest extends FormRequest
             'password.min' => 'Пароль должен содержать минимум 8 символов.',
             'password.confirmed' => 'Подтверждение пароля не совпадает.',
             'avatar.image' => 'Файл аватара должен быть изображением.',
-            'avatar.mimes' => 'Аватар должен быть в формате: jpeg, png, jpg, gif.',
+            'avatar.mimes' => 'Аватар должен быть в формате JPG, JPEG или PNG. Недопустимый формат файла. Допустимые форматы: JPG, JPEG, PNG.',
             'avatar.max' => 'Максимальный размер аватара не должен превышать 2 МБ.',
             'phone.max' => 'Номер телефона не должен превышать 20 символов.',
             'bio.max' => 'Биография не должна превышать 1000 символов.',

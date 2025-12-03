@@ -86,6 +86,11 @@ class ProfileController extends Controller
                 $data['logo'] = $this->fileService->storeLogo($request->file('logo'));
             }
 
+            // Обработать загрузку аватара, если есть
+            if ($request->hasFile('avatar')) {
+                $data['avatar'] = $request->file('avatar');
+            }
+
             // Обновить профиль партнера
             $this->userService->updatePartnerProfile($user, $data);
 
@@ -98,5 +103,18 @@ class ProfileController extends Controller
                 ->withInput()
                 ->with('error', 'Ошибка при обновлении профиля: '.$e->getMessage());
         }
+    }
+
+    /**
+     * Удаление аватара
+     */
+    public function deleteAvatar(): RedirectResponse
+    {
+        $user = auth()->user();
+        $this->userService->deleteUserAvatar($user);
+
+        return redirect()
+            ->route('partner.profile.show')
+            ->with('success', 'Фотография удалена');
     }
 }

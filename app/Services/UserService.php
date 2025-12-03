@@ -45,6 +45,7 @@ class UserService
 
             // Handle avatar upload if present
             if (isset($data['avatar'])) {
+                // Для нового пользователя нет старого аватара, но используем метод для консистентности
                 $avatarPath = $this->fileService->storeAvatar($data['avatar']);
                 $user->update(['avatar' => $avatarPath]);
             }
@@ -75,10 +76,8 @@ class UserService
 
             // Handle avatar upload
             if (isset($data['avatar'])) {
-                // Delete old avatar if exists
-                if ($user->avatar) {
-                    $this->fileService->deleteFile($user->avatar);
-                }
+                // Delete old avatar before uploading new one
+                $this->updateUserAvatar($user, $data['avatar']);
                 $userUpdate['avatar'] = $this->fileService->storeAvatar($data['avatar']);
             }
 
@@ -226,9 +225,7 @@ class UserService
 
             // Handle avatar
             if (isset($data['avatar'])) {
-                if ($user->avatar) {
-                    $this->fileService->deleteFile($user->avatar);
-                }
+                $this->updateUserAvatar($user, $data['avatar']);
                 $user->update([
                     'avatar' => $this->fileService->storeAvatar($data['avatar']),
                 ]);
@@ -258,10 +255,19 @@ class UserService
     {
         return DB::transaction(function () use ($user, $data) {
             // Update user basic info
-            $user->update([
+            $userUpdate = [
                 'name' => $data['name'] ?? $user->name,
                 'email' => $data['email'] ?? $user->email,
-            ]);
+            ];
+
+            // Handle avatar upload
+            if (isset($data['avatar'])) {
+                // Delete old avatar before uploading new one
+                $this->updateUserAvatar($user, $data['avatar']);
+                $userUpdate['avatar'] = $this->fileService->storeAvatar($data['avatar']);
+            }
+
+            $user->update($userUpdate);
 
             // Update partner profile
             $profile = $user->partnerProfile;
@@ -315,11 +321,8 @@ class UserService
 
             // Handle avatar - удаляем старый и сохраняем новый
             if (isset($data['avatar'])) {
-                // Удаляем старый аватар, если есть (используем getRawOriginal для получения пути из БД, не URL)
-                $oldAvatarPath = $user->getRawOriginal('avatar');
-                if ($oldAvatarPath) {
-                    $this->fileService->deleteFile($oldAvatarPath);
-                }
+                // Удаляем старый аватар перед сохранением нового
+                $this->updateUserAvatar($user, $data['avatar']);
                 
                 // Если это файл (UploadedFile), сохраняем его
                 if ($data['avatar'] instanceof \Illuminate\Http\UploadedFile) {
@@ -516,6 +519,37 @@ class UserService
                 'description' => $data['description'] ?? $partner->description,
                 'website' => $data['website'] ?? $partner->website,
             ]);
+        }
+    }
+
+    /**
+     * Delete old user avatar before uploading new one
+     * Uses getRawOriginal to get the path from DB, not the URL accessor
+     */
+    private function updateUserAvatar(User $user, $newAvatar): void
+    {
+        // Получаем оригинальный путь из БД (не URL через accessor)
+        $oldAvatarPath = $user->getRawOriginal('avatar');
+        if ($oldAvatarPath) {
+            $this->fileService->deleteFile($oldAvatarPath);
+        }
+    }
+
+    /**
+     * Delete user avatar from storage and database
+     * Public method for use in controllers
+     */
+    public function deleteUserAvatar(User $user): void
+    {
+        if ($user->avatar) {
+            // Удаляем файл из хранилища
+            $oldAvatarPath = $user->getRawOriginal('avatar');
+            if ($oldAvatarPath) {
+                $this->fileService->deleteFile($oldAvatarPath);
+            }
+            
+            // Удаляем из БД
+            $user->update(['avatar' => null]);
         }
     }
 }
