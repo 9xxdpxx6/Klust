@@ -187,12 +187,12 @@
                             <div>
                                 <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Курс</p>
                                 <span
-                                    v-if="user.course"
-                                    :class="getCourseBadgeClass(user.course)"
+                                    v-if="user.student_profile?.course"
+                                    :class="getCourseBadgeClass(user.student_profile.course)"
                                     class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg"
                                 >
                                     <i class="pi pi-calendar text-xs"></i>
-                                    {{ user.course }} курс
+                                    {{ user.student_profile.course }} курс
                                 </span>
                                 <span v-else class="text-sm text-gray-500">Не указан</span>
                             </div>
@@ -226,6 +226,10 @@
                                             </span>
                                             <span v-else>Не указан</span>
                                         </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-blue-600 mb-1">Курс</p>
+                                        <p class="text-sm font-medium text-blue-900">{{ user.student_profile.course ? `${user.student_profile.course} курс` : 'Не указан' }}</p>
                                     </div>
                                     <div>
                                         <p class="text-xs text-blue-600 mb-1">Группа</p>

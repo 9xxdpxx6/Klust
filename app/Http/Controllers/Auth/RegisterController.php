@@ -44,12 +44,12 @@ class RegisterController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
-                'course' => $request->course,
             ]);
 
             // Создание профиля студента
             StudentProfile::create([
                 'user_id' => $user->id,
+                'course' => $request->course,
             ]);
 
             // Назначение роли студента

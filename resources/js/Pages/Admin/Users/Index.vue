@@ -212,12 +212,12 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span
-                                v-if="user.course"
-                                :style="getCourseBadgeStyle(user.course)"
+                                v-if="user.student_profile?.course"
+                                :style="getCourseBadgeStyle(user.student_profile.course)"
                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border"
                             >
                                 <i class="pi pi-calendar text-xs"></i>
-                                {{ user.course }} курс
+                                {{ user.student_profile.course }} курс
                             </span>
                             <span v-else class="text-sm text-gray-400">—</span>
                         </td>

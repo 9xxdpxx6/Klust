@@ -94,7 +94,9 @@ final class UserFilter extends BaseFilter
             return;
         }
 
-        $query->where('course', (int) $course);
+        $query->whereHas('studentProfile', function ($q) use ($course): void {
+            $q->where('course', (int) $course);
+        });
     }
 
     private function applySortingFilter(Builder $query): void

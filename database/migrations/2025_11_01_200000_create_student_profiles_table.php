@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignId('user_id')->unique()->constrained()->cascadeOnDelete();
             $table->foreignId('faculty_id')->nullable()->index()->constrained('faculties')->nullOnDelete();
             $table->string('group')->nullable();
+            $table->unsignedTinyInteger('course')->nullable();
             $table->string('specialization')->nullable();
             $table->text('bio')->nullable();
             $table->string('phone')->nullable();

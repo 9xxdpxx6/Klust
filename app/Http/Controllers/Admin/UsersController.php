@@ -33,8 +33,8 @@ class UsersController extends Controller
         ];
 
         // Строим запрос
-        $query = User::with('roles')
-            ->select(['id', 'name', 'email', 'kubgtu_id', 'course', 'avatar', 'email_verified_at', 'created_at']);
+        $query = User::with(['roles', 'studentProfile'])
+            ->select(['id', 'name', 'email', 'kubgtu_id', 'avatar', 'email_verified_at', 'created_at']);
 
         // Применяем фильтры
         $userFilter = new UserFilter($filters);
@@ -75,9 +75,11 @@ class UsersController extends Controller
         ];
 
         // Получаем список курсов для фильтра
-        $courses = User::whereNotNull('course')
+        $courses = User::role('student')
+            ->join('student_profiles', 'users.id', '=', 'student_profiles.user_id')
+            ->whereNotNull('student_profiles.course')
             ->distinct()
-            ->pluck('course')
+            ->pluck('student_profiles.course')
             ->sort()
             ->values()
             ->toArray();
@@ -259,7 +261,6 @@ class UsersController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'avatar' => null, // Пока null, обновим после загрузки файла
-                'course' => $request->course,
                 'email_verified_at' => now(),
             ]);
 
@@ -271,6 +272,18 @@ class UsersController extends Controller
             // Назначаем роль пользователю
             if ($request->role) {
                 $user->assignRole($request->role);
+            }
+
+            // Создаем профиль студента с course, если роль - student
+            if ($request->role === 'student') {
+                \App\Models\StudentProfile::create([
+                    'user_id' => $user->id,
+                    'faculty_id' => $request->faculty_id ?? null,
+                    'course' => $request->course ?? null,
+                    'group' => $request->group ?? null,
+                    'specialization' => $request->specialization ?? null,
+                    'total_points' => 0,
+                ]);
             }
 
             $message = $kubgtu_id
@@ -307,7 +320,6 @@ class UsersController extends Controller
         $updateData = [
             'name' => $request->name,
             'email' => $request->email,
-            'course' => $request->course,
         ];
 
         // Обновляем пароль только если он указан и отличается от текущего
@@ -329,6 +341,26 @@ class UsersController extends Controller
 
         // Обновляем пользователя
         $user->update($updateData);
+
+        // Обновляем профиль студента, если пользователь - студент
+        if ($user->hasRole('student') && $user->studentProfile) {
+            $profileData = [];
+            if ($request->has('faculty_id')) {
+                $profileData['faculty_id'] = $request->faculty_id;
+            }
+            if ($request->has('group')) {
+                $profileData['group'] = $request->group;
+            }
+            if ($request->has('course')) {
+                $profileData['course'] = $request->course;
+            }
+            if ($request->has('specialization')) {
+                $profileData['specialization'] = $request->specialization;
+            }
+            if (!empty($profileData)) {
+                $user->studentProfile->update($profileData);
+            }
+        }
 
         // Роль не может быть изменена при редактировании пользователя
         // Она устанавливается только при создании и не должна обновляться здесь

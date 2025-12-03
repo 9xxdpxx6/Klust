@@ -71,7 +71,7 @@ const initialFormData = () => {
             specialization: props.user.student_profile.specialization || '',
             phone: props.user.student_profile.phone || '',
             bio: props.user.student_profile.bio || '',
-            course: props.user.course || null
+            course: props.user.student_profile?.course || null
         }
     }
     
@@ -181,6 +181,7 @@ const isProfileFilled = computed(() => {
     if (isStudent.value && props.user.student_profile) {
         return props.user.student_profile.faculty_id ||
                props.user.student_profile.group ||
+               props.user.student_profile.course ||
                props.user.student_profile.specialization ||
                props.user.student_profile.phone ||
                props.user.student_profile.bio
@@ -234,9 +235,9 @@ const isProfileFilled = computed(() => {
                                     <span class="font-medium">Телефон:</span> 
                                     {{ user.student_profile.phone }}
                                 </p>
-                                <p v-if="isStudent && user.course" class="flex items-center gap-2">
+                                <p v-if="isStudent && user.student_profile?.course" class="flex items-center gap-2">
                                     <i class="pi pi-calendar text-sm"></i>
-                                    <span class="font-medium">Курс:</span> {{ user.course }} курс
+                                    <span class="font-medium">Курс:</span> {{ user.student_profile.course }} курс
                                 </p>
                                 <p class="flex items-center gap-2">
                                     <i class="pi pi-shield text-sm"></i>
