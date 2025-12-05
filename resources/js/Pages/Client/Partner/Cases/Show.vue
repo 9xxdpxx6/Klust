@@ -377,97 +377,50 @@
         </div>
 
         <!-- Модальное окно подтверждения архивирования -->
-        <div 
-            v-if="showArchiveModal" 
-            class="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
-            @click.self="showArchiveModal = false"
+        <DangerConfirmDialog
+            :visible="showArchiveModal"
+            @update:visible="showArchiveModal = $event"
+            @confirm="archiveCase"
+            type="archive"
+            title="Подтверждение архивирования"
+            message="Вы уверены, что хотите архивировать кейс"
+            :item-name="caseData.title"
+            confirm-text="Архивировать"
+            cancel-text="Отмена"
+            :loading="processing"
+            loading-text="Архивирование..."
         >
-            <div class="relative bg-white rounded-xl shadow-2xl max-w-md w-full border border-gray-200">
-                <div class="p-6">
-                    <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-amber-100 mb-4">
-                        <i class="pi pi-archive text-3xl text-amber-600"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-900 text-center mb-2">Подтверждение архивирования</h3>
-                    <div class="mt-4">
-                        <p class="text-sm text-gray-600 mb-2 text-center">
-                            Вы уверены, что хотите архивировать кейс
-                        </p>
-                        <p class="text-sm font-semibold text-gray-900 mb-4 text-center">"{{ caseData.title }}"?</p>
-                        
-                        <p class="text-xs text-amber-600 bg-amber-50 rounded-lg p-3">
-                            Кейс будет перемещен в архив и скрыт от студентов. Вы сможете восстановить его позже.
-                        </p>
-                    </div>
-                    <div class="flex justify-center gap-3 mt-6">
-                        <button
-                            @click="showArchiveModal = false"
-                            class="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-                        >
-                            Отмена
-                        </button>
-                        <button
-                            @click="archiveCase"
-                            :disabled="processing"
-                            class="px-6 py-2.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-                        >
-                            <span v-if="processing">Архивирование...</span>
-                            <span v-else>Архивировать</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+            <p class="text-xs text-amber-600 bg-amber-50 rounded-lg p-3">
+                Кейс будет перемещен в архив и скрыт от студентов. Вы сможете восстановить его позже.
+            </p>
+        </DangerConfirmDialog>
 
         <!-- Модальное окно подтверждения удаления -->
-        <div 
-            v-if="showDeleteModal" 
-            class="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
-            @click.self="showDeleteModal = false"
+        <DangerConfirmDialog
+            :visible="showDeleteModal"
+            @update:visible="showDeleteModal = $event"
+            @confirm="deleteCase"
+            type="delete"
+            title="Подтверждение удаления"
+            message="Вы уверены, что хотите удалить кейс"
+            :item-name="caseData.title"
+            confirm-text="Удалить"
+            cancel-text="Отмена"
+            :loading="processing"
+            loading-text="Удаление..."
         >
-            <div class="relative bg-white rounded-xl shadow-2xl max-w-md w-full border border-gray-200">
-                <div class="p-6">
-                    <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
-                        <i class="pi pi-exclamation-triangle text-3xl text-red-600"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-900 text-center mb-2">Подтверждение удаления</h3>
-                    <div class="mt-4">
-                        <p class="text-sm text-gray-600 mb-2 text-center">
-                            Вы уверены, что хотите удалить кейс
-                        </p>
-                        <p class="text-sm font-semibold text-gray-900 mb-4 text-center">"{{ caseData.title }}"?</p>
-                        
-                        <div v-if="statistics.total_applications > 0" class="mb-4">
-                            <p class="text-sm text-red-600 font-semibold mb-2">
-                                Внимание! На кейс подано {{ statistics.total_applications }} заявок.
-                            </p>
-                            <div class="text-xs text-red-700 bg-red-50 rounded-lg p-3">
-                                Удаление кейса с активными заявками может привести к потере данных.
-                            </div>
-                        </div>
-                        
-                        <p v-else class="text-xs text-red-600 bg-red-50 rounded-lg p-3">
-                            Это действие нельзя отменить. Все данные кейса будут удалены безвозвратно.
-                        </p>
-                    </div>
-                    <div class="flex justify-center gap-3 mt-6">
-                        <button
-                            @click="showDeleteModal = false"
-                            class="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-                        >
-                            Отмена
-                        </button>
-                        <button
-                            @click="deleteCase"
-                            :disabled="processing"
-                            class="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-                        >
-                            <span v-if="processing">Удаление...</span>
-                            <span v-else>Удалить</span>
-                        </button>
-                    </div>
+            <div v-if="statistics.total_applications > 0" class="mb-4">
+                <p class="text-sm text-red-600 font-semibold mb-2">
+                    Внимание! На кейс подано {{ statistics.total_applications }} заявок.
+                </p>
+                <div class="text-xs text-red-700 bg-red-50 rounded-lg p-3">
+                    Удаление кейса с активными заявками может привести к потере данных.
                 </div>
             </div>
-        </div>
+            <p v-else class="text-xs text-red-600 bg-red-50 rounded-lg p-3">
+                Это действие нельзя отменить. Все данные кейса будут удалены безвозвратно.
+            </p>
+        </DangerConfirmDialog>
     </div>
 </template>
 
@@ -476,6 +429,7 @@ import { ref, computed } from 'vue';
 import { Link, router, Head } from '@inertiajs/vue3';
 import Pagination from '@/Components/Pagination.vue';
 import Select from '@/Components/UI/Select.vue';
+import DangerConfirmDialog from '@/Components/UI/DangerConfirmDialog.vue';
 import { route } from 'ziggy-js';
 
 const props = defineProps({

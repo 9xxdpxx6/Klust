@@ -34,12 +34,28 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user() ? [
-                    'id' => $request->user()->id,
-                    'name' => $request->user()->name,
-                    'email' => $request->user()->email,
-                    'roles' => $request->user()->getRoleNames(),
-                ] : null,
+                'user' => $request->user() ? (function () use ($request) {
+                    $user = $request->user();
+                    $userData = [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'roles' => $user->getRoleNames(),
+                    ];
+
+                    // Загружаем partner_profile для партнеров
+                    if ($user->hasRole('partner')) {
+                        $user->load('partnerProfile');
+                        if ($user->partnerProfile) {
+                            $userData['partner_profile'] = [
+                                'company_name' => $user->partnerProfile->company_name,
+                                'contact_person' => $user->partnerProfile->contact_person,
+                            ];
+                        }
+                    }
+
+                    return $userData;
+                })() : null,
             ],
             'flash' => [
                 'message' => fn () => $request->session()->get('message'),
