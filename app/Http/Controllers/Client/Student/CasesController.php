@@ -16,6 +16,7 @@ use App\Services\NotificationService;
 use App\Services\TeamService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -90,8 +91,13 @@ class CasesController extends Controller
             abort(404);
         }
 
-        // Загрузить связи
-        $case->load(['partner', 'skills']);
+        // Загрузить связи с партнером и его профилем
+        $case->load([
+            'partner' => function ($query) {
+                $query->with(['user.partnerProfile']);
+            },
+            'skills'
+        ]);
 
         // Получить статус заявки студента
         $applicationStatus = $this->applicationService->getStudentApplicationStatus($user, $case);
@@ -104,6 +110,14 @@ class CasesController extends Controller
                 'statusHistory.oldStatus',
                 'statusHistory.newStatus',
             ]);
+        }
+
+        // Убеждаемся, что partner загружен с нужными связями
+        if ($case->partner) {
+            // Принудительно загружаем связи, если они еще не загружены
+            if (!$case->partner->relationLoaded('user')) {
+                $case->partner->load('user.partnerProfile');
+            }
         }
 
         return Inertia::render('Client/Student/Cases/Show', [
@@ -148,19 +162,52 @@ class CasesController extends Controller
                 ->with('error', 'Кейс недоступен для подачи заявки');
         }
 
-        // Создать заявку
-        $application = $this->applicationService->createApplication(
-            $user,
-            $case,
-            $request->validated()
-        );
+        // Подготовить данные для создания заявки
+        $data = $request->validated();
+        
+        // Если переданы email'ы, конвертируем их в user_id
+        if ($request->has('team_member_emails') && is_array($request->team_member_emails)) {
+            $userIds = \App\Models\User::whereIn('email', $request->team_member_emails)
+                ->where('id', '!=', $user->id) // Исключаем текущего пользователя
+                ->pluck('id')
+                ->toArray();
+            
+            $data['team_members'] = $userIds;
+        }
 
-        // Отправить уведомление партнеру
-        $this->notificationService->notifyPartnerAboutApplication($application);
+        try {
+            // Создать заявку
+            $application = $this->applicationService->createApplication(
+                $user,
+                $case,
+                $data
+            );
 
-        return redirect()
-            ->route('student.cases.show', $case)
-            ->with('success', 'Заявка успешно подана');
+            // Отправить уведомление партнеру (асинхронно, не блокирует ответ)
+            try {
+                $this->notificationService->notifyPartnerAboutApplication($application);
+            } catch (\Exception $e) {
+                Log::error('Failed to notify partner about application', [
+                    'application_id' => $application->id,
+                    'error' => $e->getMessage(),
+                ]);
+                // Не прерываем выполнение, если уведомление не отправилось
+            }
+
+            return redirect()
+                ->route('student.cases.show', $case)
+                ->with('success', 'Заявка успешно подана');
+        } catch (\Exception $e) {
+            Log::error('Failed to create application', [
+                'user_id' => $user->id,
+                'case_id' => $case->id,
+                'error' => $e->getMessage(),
+            ]);
+            
+            return redirect()
+                ->route('student.cases.show', $case)
+                ->with('error', 'Произошла ошибка при подаче заявки: '.$e->getMessage());
+        }
     }
 
     /**

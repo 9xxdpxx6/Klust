@@ -26,6 +26,12 @@ class ApplyRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // Мотивационное письмо (обязательно)
+            'motivation' => [
+                'required',
+                'string',
+                'max:5000',
+            ],
             // Поле с участниками команды. Может быть пустым, если студент подает заявку один.
             'team_members' => [
                 'array',
@@ -38,6 +44,17 @@ class ApplyRequest extends FormRequest
                 'integer',
                 'exists:users,id',
             ],
+            // Email'ы участников команды (альтернатива team_members)
+            'team_member_emails' => [
+                'nullable',
+                'array',
+                'max:9',
+            ],
+            'team_member_emails.*' => [
+                'required',
+                'email',
+                'exists:users,email',
+            ],
         ];
     }
 
@@ -49,10 +66,18 @@ class ApplyRequest extends FormRequest
     {
         $validator->after(function ($validator) {
             $teamMembers = $this->input('team_members', []);
+            $teamMemberEmails = $this->input('team_member_emails', []);
             $currentUserId = auth()->id();
+            $currentUserEmail = auth()->user()->email;
 
+            // Проверка для team_members
             if (in_array($currentUserId, $teamMembers)) {
                 $validator->errors()->add('team_members', 'Вы не можете добавить самого себя в список участников, так как вы автоматически являетесь лидером команды.');
+            }
+
+            // Проверка для team_member_emails
+            if (in_array($currentUserEmail, $teamMemberEmails)) {
+                $validator->errors()->add('team_member_emails', 'Вы не можете добавить самого себя в список участников, так как вы автоматически являетесь лидером команды.');
             }
         });
     }
@@ -65,12 +90,20 @@ class ApplyRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'motivation.required' => 'Мотивационное письмо обязательно для заполнения.',
+            'motivation.string' => 'Мотивационное письмо должно быть текстом.',
+            'motivation.max' => 'Мотивационное письмо не должно превышать 5000 символов.',
             'team_members.array' => 'Список участников должен быть массивом ID.',
             'team_members.max' => 'Вы можете добавить не более 9 участников.',
             'team_members.distinct' => 'Список участников не может содержать повторяющихся ID.',
             'team_members.*.required' => 'ID участника обязателен.',
             'team_members.*.integer' => 'ID каждого участника должен быть числом.',
             'team_members.*.exists' => 'Один из указанных участников не найден в системе.',
+            'team_member_emails.array' => 'Список email участников должен быть массивом.',
+            'team_member_emails.max' => 'Вы можете добавить не более 9 участников.',
+            'team_member_emails.*.required' => 'Email участника обязателен.',
+            'team_member_emails.*.email' => 'Один из указанных email имеет некорректный формат.',
+            'team_member_emails.*.exists' => 'Пользователь с email :input не найден в системе. Убедитесь, что участник зарегистрирован.',
         ];
     }
 }

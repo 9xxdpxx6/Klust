@@ -1,19 +1,19 @@
 <template>
   <Dialog
-    :visible="visible"
+    :visible="modelValue"
     :modal="true"
     :closable="closable"
     :draggable="false"
     :dismissableMask="true"
     :style="{ width: modalWidth }"
     :header="title"
-    @update:visible="$emit('update:visible', $event)"
+    @update:visible="$emit('update:modelValue', $event)"
     @hide="$emit('close')"
   >
     <slot />
     <template #footer>
       <slot name="footer">
-        <Button variant="secondary" @click="$emit('update:visible', false)">
+        <Button v-if="showDefaultFooter" variant="secondary" @click="$emit('update:modelValue', false)">
           Закрыть
         </Button>
       </slot>
@@ -27,7 +27,7 @@ import Dialog from 'primevue/dialog';
 import Button from './Button.vue';
 
 const props = defineProps({
-  visible: {
+  modelValue: {
     type: Boolean,
     default: false,
   },
@@ -44,9 +44,13 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  showDefaultFooter: {
+    type: Boolean,
+    default: true,
+  },
 });
 
-defineEmits(['update:visible', 'close']);
+defineEmits(['update:modelValue', 'close']);
 
 const modalWidth = computed(() => {
   const sizes = {
@@ -58,5 +62,12 @@ const modalWidth = computed(() => {
   return sizes[props.size] || sizes.md;
 });
 </script>
+
+<style scoped>
+:deep(.p-dialog-footer:empty),
+:deep(.p-dialog-footer:has(> :empty)) {
+  display: none !important;
+}
+</style>
 
 
