@@ -16,6 +16,7 @@ class StudentService
     public function getDashboardStatistics(User $user): array
     {
         $studentProfile = $user->studentProfile;
+        $totalPoints = $studentProfile?->total_points ?? 0;
 
         // Get active cases (as leader or team member)
         $activeAsLeader = $user->caseApplications()
@@ -44,14 +45,65 @@ class StudentService
             ->pending()
             ->count();
 
+        // Calculate level from total points
+        $level = $this->calculateLevelFromPoints($totalPoints);
+
+        // Calculate rating (position among all students by total_points)
+        // Count students with more points (better position)
+        $studentsWithMorePoints = User::role('student')
+            ->whereHas('studentProfile', function ($q) use ($totalPoints) {
+                $q->where('total_points', '>', $totalPoints);
+            })
+            ->count();
+        
+        // Rating is position: 1 = best, higher number = lower position
+        // If 5 students have more points, this student is at position 6
+        $rating = $studentsWithMorePoints + 1;
+
         return [
-            'total_points' => $studentProfile?->total_points ?? 0,
+            'level' => $level,
+            'rating' => $rating,
+            'total_points' => $totalPoints,
+            'totalPoints' => $totalPoints, // For backward compatibility
             'active_cases' => $activeAsLeader + $activeAsTeamMember,
             'completed_cases' => $completedAsLeader + $completedAsTeamMember,
+            'completedCases' => $completedAsLeader + $completedAsTeamMember, // For backward compatibility
             'pending_applications' => $pendingApplications,
             'badges_count' => $user->badges()->count(),
+            'badgesCount' => $user->badges()->count(), // For backward compatibility
             'skills_count' => $user->skills()->count(),
         ];
+    }
+
+    /**
+     * Calculate level from points
+     */
+    private function calculateLevelFromPoints(int $points): int
+    {
+        // Level thresholds
+        $thresholds = [
+            1 => 0,
+            2 => 100,
+            3 => 250,
+            4 => 500,
+            5 => 1000,
+            6 => 2000,
+            7 => 4000,
+            8 => 8000,
+            9 => 16000,
+            10 => 32000,
+        ];
+
+        $level = 1;
+        foreach ($thresholds as $lvl => $threshold) {
+            if ($points >= $threshold) {
+                $level = $lvl;
+            } else {
+                break;
+            }
+        }
+
+        return $level;
     }
 
     /**

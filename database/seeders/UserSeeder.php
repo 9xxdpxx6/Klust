@@ -52,5 +52,29 @@ class UserSeeder extends Seeder
         foreach ($allRoles as $role) {
             $superUser->assignRole($role);
         }
+
+        // 1 студент
+        $student = User::factory()->create([
+            'name' => 'Студент',
+            'email' => 'zxc@zxc.zxc',
+            'password' => bcrypt('zxc'),
+        ]);
+        $student->assignRole($studentRole);
+
+        // 1 партнёр
+        $partner = User::factory()->create([
+            'name' => 'Партнёр',
+            'email' => 'wer@wer.wer',
+            'password' => bcrypt('wer'),
+        ]);
+        $partner->assignRole($partnerRole);
+
+        // 1 преподаватель
+        $teacher = User::factory()->create([
+            'name' => 'Преподаватель',
+            'email' => 'sdf@sdf.sdf',
+            'password' => bcrypt('sdf'),
+        ]);
+        $teacher->assignRole($teacherRole);
     }
 }
