@@ -78,7 +78,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { router, useForm } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import Card from '@/Components/UI/Card.vue';
 import SearchInput from '@/Components/UI/SearchInput.vue';
 import Select from '@/Components/UI/Select.vue';
@@ -168,15 +168,6 @@ const handleApply = (caseId) => {
     }
 };
 
-const safeVisit = (routeName, params = {}) => {
-    if (routeExists(routeName)) {
-        try {
-            router.visit(route(routeName, params));
-        } catch (e) {
-            console.warn(`Route "${routeName}" not found`);
-        }
-    }
-};
 </script>
 
 

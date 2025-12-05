@@ -5,7 +5,7 @@
       <div class="flex items-start justify-between gap-3">
         <div class="flex-1 min-w-0">
           <h3 class="text-xl font-bold text-gray-900 mb-2 line-clamp-2">{{ caseData.title }}</h3>
-          <p class="text-sm text-gray-600 font-medium">{{ caseData.partner?.name || caseData.partner?.user?.name || 'Партнер не указан' }}</p>
+          <p class="text-sm text-gray-600 font-medium">{{ caseData.partner?.name || caseData.partner?.company_name || caseData.partner?.user?.name || 'Партнер не указан' }}</p>
         </div>
         <Badge :variant="statusVariant" :text="statusText" class="flex-shrink-0" />
       </div>
