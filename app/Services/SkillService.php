@@ -62,9 +62,9 @@ class SkillService
     public function getStudentSkills(User $user): Collection
     {
         return $user->skills()
-            ->withPivot(['level', 'points'])
+            ->withPivot(['level', 'points_earned'])
             ->orderByDesc('pivot_level')
-            ->orderByDesc('pivot_points')
+            ->orderByDesc('pivot_points_earned')
             ->get()
             ->map(function ($skill) {
                 return [
@@ -73,8 +73,8 @@ class SkillService
                     'category' => $skill->category,
                     'max_level' => $skill->max_level,
                     'level' => $skill->pivot->level,
-                    'points' => $skill->pivot->points,
-                    'progress_to_next_level' => $this->calculateProgressToNextLevel($skill->pivot->points, $skill->pivot->level),
+                    'points' => $skill->pivot->points_earned,
+                    'progress_to_next_level' => $this->calculateProgressToNextLevel($skill->pivot->points_earned, $skill->pivot->level),
                 ];
             });
     }

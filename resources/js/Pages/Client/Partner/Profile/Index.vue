@@ -36,14 +36,6 @@
             </div>
 
             <div class="space-y-6">
-                <!-- Фотография профиля -->
-                <AvatarEditor
-                    :user="user"
-                    avatar-route-prefix="partner"
-                    :editable="isEditing"
-                    v-model="avatarFile"
-                />
-
                 <!-- Информация о компании -->
                 <div class="border-t border-gray-200 pt-6">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -52,6 +44,14 @@
                             <p class="mt-1 text-sm text-gray-500">Основная информация о вашей компании</p>
                         </div>
                         <div class="md:col-span-2 space-y-4">
+                            <!-- Фотография профиля -->
+                            <AvatarEditor
+                                :user="user"
+                                avatar-route-prefix="partner"
+                                :editable="isEditing"
+                                v-model="avatarFile"
+                            />
+
                             <div>
                                 <label for="company_name" class="block text-sm font-medium text-gray-700 mb-1">
                                     Название компании *

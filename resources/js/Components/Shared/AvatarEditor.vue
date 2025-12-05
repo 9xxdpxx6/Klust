@@ -128,7 +128,7 @@ const currentAvatar = computed(() => {
         <div class="flex items-center gap-6">
             <UserAvatar
                 :user="{ ...user, avatar: currentAvatar }"
-                size="lg"
+                size="xl"
             />
             <div v-if="editable" class="flex flex-col gap-2">
                 <input
