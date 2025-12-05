@@ -1,85 +1,82 @@
 <template>
-  <Card :hover="true" class="case-card">
-    <template #header>
-      <div class="flex items-start justify-between">
-        <div class="flex-1">
-          <h3 class="text-lg font-semibold text-text-primary mb-1">{{ caseData.title }}</h3>
-          <p class="text-sm text-text-secondary">{{ caseData.partner?.name || 'Партнер не указан' }}</p>
+  <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all case-card">
+    <div class="p-6">
+      <!-- Header -->
+      <div class="flex items-start justify-between mb-4">
+        <div class="flex-1 pr-4">
+          <h3 class="text-lg font-bold text-gray-900 mb-1">{{ caseData.title }}</h3>
+          <p class="text-sm text-gray-600">{{ caseData.partner?.name || caseData.partner?.company_name || 'Партнер не указан' }}</p>
         </div>
         <Badge :variant="statusVariant" :text="statusText" />
       </div>
-    </template>
-    
-    <div class="space-y-3">
-      <p class="text-sm text-text-secondary line-clamp-2">
+      
+      <!-- Description -->
+      <p class="text-sm text-gray-600 line-clamp-2 mb-4">
         {{ caseData.description || 'Описание отсутствует' }}
       </p>
       
-      <div v-if="caseData.skills && caseData.skills.length > 0" class="flex flex-wrap gap-2">
-        <Badge
+      <!-- Skills -->
+      <div v-if="caseData.skills && caseData.skills.length > 0" class="flex flex-wrap gap-2 mb-4">
+        <span
           v-for="skill in caseData.skills"
           :key="skill.id"
-          variant="secondary"
-          size="sm"
+          class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full border border-gray-200"
         >
           {{ skill.name }}
-        </Badge>
+        </span>
       </div>
       
-      <div class="flex items-center justify-between text-sm text-text-muted">
+      <!-- Footer info -->
+      <div class="flex items-center justify-between text-sm text-gray-500 mb-4 pb-4 border-b border-gray-200">
         <div class="flex items-center">
-          <i class="pi pi-calendar mr-2" />
+          <i class="pi pi-calendar mr-2"></i>
           <span v-if="caseData.deadline">
             До {{ formatDate(caseData.deadline) }}
           </span>
           <span v-else>Дедлайн не установлен</span>
         </div>
         <div v-if="caseData.applications_count !== undefined" class="flex items-center">
-          <i class="pi pi-users mr-2" />
+          <i class="pi pi-users mr-2"></i>
           <span>{{ caseData.applications_count }} заявок</span>
         </div>
       </div>
-    </div>
-    
-    <template #footer v-if="showActions">
-      <div class="flex items-center justify-between">
+      
+      <!-- Actions -->
+      <div v-if="showActions" class="flex items-center justify-end gap-3">
         <Button
           variant="outline"
           size="sm"
-          @click="$emit('view')"
+          @click="handleViewClick"
         >
-          <i class="pi pi-eye mr-2" />
+          <i class="pi pi-eye mr-2"></i>
           Просмотр
         </Button>
-        <div class="flex gap-2">
-          <Button
-            v-if="canApply"
-            variant="primary"
-            size="sm"
-            :loading="applying"
-            @click="$emit('apply')"
-          >
-            <i class="pi pi-check mr-2" />
-            Подать заявку
-          </Button>
-          <Button
-            v-if="canEdit"
-            variant="secondary"
-            size="sm"
-            @click="$emit('edit')"
-          >
-            <i class="pi pi-pencil mr-2" />
-            Редактировать
-          </Button>
-        </div>
+        <Button
+          v-if="canApply"
+          variant="primary"
+          size="sm"
+          :loading="applying"
+          @click="handleApplyClick"
+        >
+          <i class="pi pi-check mr-2"></i>
+          Подать заявку
+        </Button>
+        <Button
+          v-if="canEdit"
+          variant="secondary"
+          size="sm"
+          @click="handleEditClick"
+        >
+          <i class="pi pi-pencil mr-2"></i>
+          Редактировать
+        </Button>
       </div>
-    </template>
-  </Card>
+    </div>
+  </div>
 </template>
 
 <script setup>
 import { computed } from 'vue';
-import Card from './UI/Card.vue';
 import Badge from './UI/Badge.vue';
 import Button from './UI/Button.vue';
 
@@ -106,7 +103,19 @@ const props = defineProps({
   },
 });
 
-defineEmits(['view', 'apply', 'edit']);
+const emit = defineEmits(['view', 'apply', 'edit']);
+
+const handleViewClick = () => {
+  emit('view');
+};
+
+const handleApplyClick = () => {
+  emit('apply');
+};
+
+const handleEditClick = () => {
+  emit('edit');
+};
 
 const statusVariant = computed(() => {
   const status = props.caseData.status?.toLowerCase();

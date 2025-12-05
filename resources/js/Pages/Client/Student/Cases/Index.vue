@@ -53,8 +53,8 @@
                     :case-data="caseItem"
                     :can-apply="true"
                     :applying="applyingCases.includes(caseItem.id)"
-                    @view="safeVisit('student.cases.show', caseItem.id)"
-                    @apply="handleApply(caseItem.id)"
+                    @view="() => handleViewCase(caseItem.id)"
+                    @apply="() => handleApply(caseItem.id)"
                 />
             </div>
 
@@ -79,6 +79,7 @@
 <script setup>
 import { ref } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
+import { route } from 'ziggy-js';
 import Card from '@/Components/UI/Card.vue';
 import SearchInput from '@/Components/UI/SearchInput.vue';
 import Select from '@/Components/UI/Select.vue';
@@ -155,8 +156,16 @@ const handlePage = (event) => {
     }
 };
 
+const handleViewCase = (caseId) => {
+    try {
+        router.visit(route('student.cases.show', caseId));
+    } catch (e) {
+        console.error('Error navigating to case:', e);
+    }
+};
+
 const handleApply = (caseId) => {
-    if (routeExists('student.cases.apply')) {
+    try {
         applyingCases.value.push(caseId);
         router.post(route('student.cases.apply', caseId), {}, {
             preserveScroll: true,
@@ -164,16 +173,9 @@ const handleApply = (caseId) => {
                 applyingCases.value = applyingCases.value.filter(id => id !== caseId);
             },
         });
-    }
-};
-
-const safeVisit = (routeName, params = {}) => {
-    if (routeExists(routeName)) {
-        try {
-            router.visit(route(routeName, params));
-        } catch (e) {
-            console.warn(`Route "${routeName}" not found`);
-        }
+    } catch (e) {
+        console.error('Error submitting application:', e);
+        applyingCases.value = applyingCases.value.filter(id => id !== caseId);
     }
 };
 </script>
