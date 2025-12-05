@@ -24,7 +24,7 @@ defineProps({
   variant: {
     type: String,
     default: 'primary',
-    validator: (value) => ['primary', 'secondary', 'danger', 'success', 'outline'].includes(value),
+    validator: (value) => ['primary', 'secondary', 'danger', 'success', 'outline', 'danger-outline'].includes(value),
   },
   size: {
     type: String,
@@ -75,14 +75,41 @@ defineEmits(['click']);
 
 .btn-outline {
   @apply border-2 border-primary text-primary bg-transparent hover:bg-primary hover:text-kubgtu-white;
+  box-sizing: border-box;
+}
+
+.btn-danger-outline {
+  @apply border-2 border-red-600 text-red-600 bg-transparent hover:bg-red-600 hover:text-white;
+  box-sizing: border-box;
 }
 
 .btn-sm {
-  @apply px-3 py-1.5 text-sm;
+  @apply text-sm;
+  height: 2rem;
+  padding: 0.375rem 0.75rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-outline.btn-sm {
+  height: 2rem;
+  padding: calc(0.375rem - 2px) calc(0.75rem - 2px);
+}
+
+.btn-danger-outline.btn-sm {
+  height: 2rem;
+  padding: calc(0.375rem - 2px) calc(0.75rem - 2px);
+}
+
+.btn-danger-outline {
+  min-height: 2.5rem; /* Высота как у PrimeVue InputText */
 }
 
 .btn-md {
   @apply px-4 py-2 text-base;
+  min-height: 2.5rem; /* Высота как у PrimeVue InputText */
 }
 
 .btn-lg {

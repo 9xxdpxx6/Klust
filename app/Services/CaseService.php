@@ -6,7 +6,9 @@ namespace App\Services;
 
 use App\Filters\CaseFilter;
 use App\Helpers\FilterHelper;
+use App\Models\CaseApplication;
 use App\Models\CaseModel;
+use App\Models\CaseTeamMember;
 use App\Models\Partner;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -148,7 +150,7 @@ class CaseService
             });
 
         // Exclude cases where student already has application
-        $appliedCaseIds = $user->caseApplicationsAsLeader()->pluck('case_id');
+        $appliedCaseIds = $user->caseApplications()->pluck('case_id');
         $query->whereNotIn('id', $appliedCaseIds);
 
         // Apply skill filter
@@ -235,6 +237,38 @@ class CaseService
     }
 
     /**
+     * Get active cases for student (as leader or team member)
+     */
+    public function getActiveCasesForStudent(User $user): Collection
+    {
+        // Get case IDs where student is leader with accepted application
+        $leaderCaseIds = $user->caseApplications()
+            ->accepted()
+            ->pluck('case_id');
+
+        // Get case IDs where student is team member with accepted application
+        $teamMemberApplicationIds = CaseTeamMember::where('user_id', $user->id)
+            ->pluck('application_id');
+
+        $teamMemberCaseIds = CaseApplication::whereIn('id', $teamMemberApplicationIds)
+            ->accepted()
+            ->pluck('case_id');
+
+        // Merge and get unique case IDs
+        $caseIds = $leaderCaseIds->merge($teamMemberCaseIds)->unique();
+
+        if ($caseIds->isEmpty()) {
+            return collect();
+        }
+
+        return CaseModel::whereIn('id', $caseIds)
+            ->where('status', 'active')
+            ->with(['partner.user.partnerProfile', 'skills'])
+            ->latest()
+            ->get();
+    }
+
+    /**
      * Get recommended cases for student based on skills
      */
     public function getRecommendedCases(User $user, int $limit = 5): Collection
@@ -251,7 +285,7 @@ class CaseService
         }
 
         // Get applied case IDs to exclude
-        $appliedCaseIds = $user->caseApplicationsAsLeader()->pluck('case_id');
+        $appliedCaseIds = $user->caseApplications()->pluck('case_id');
 
         // Find cases with matching skills
         return CaseModel::where('status', 'active')

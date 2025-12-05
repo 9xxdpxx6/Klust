@@ -12,6 +12,7 @@ use App\Models\CaseTeamMember;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ApplicationService
 {
@@ -31,12 +32,11 @@ class ApplicationService
             ]);
 
             // Add team members if provided
-            if (isset($data['team_members']) && is_array($data['team_members'])) {
+            if (isset($data['team_members']) && is_array($data['team_members']) && count($data['team_members']) > 0) {
                 $this->validateTeamMembers($data['team_members'], $case);
+                $this->validateTeamMembersEligibility($data['team_members'], $case);
 
                 foreach ($data['team_members'] as $userId) {
-                    $this->validateTeamMemberEligibility($userId, $case);
-
                     CaseTeamMember::create([
                         'application_id' => $application->id,
                         'user_id' => $userId,
@@ -56,7 +56,7 @@ class ApplicationService
                 'Заявка подана'
             );
 
-            return $application->fresh(['teamMembers', 'leader', 'case']);
+            return $application;
         });
     }
 
@@ -68,7 +68,7 @@ class ApplicationService
         $pendingStatusId = ApplicationStatus::getIdByName('pending');
 
         if ($application->status_id !== $pendingStatusId) {
-            throw new \Exception('Only pending applications can be approved');
+            throw new \Exception('Только заявки со статусом "ожидает" могут быть одобрены');
         }
 
         $oldStatusId = $application->status_id;
@@ -100,7 +100,7 @@ class ApplicationService
         $pendingStatusId = ApplicationStatus::getIdByName('pending');
 
         if ($application->status_id !== $pendingStatusId) {
-            throw new \Exception('Only pending applications can be rejected');
+            throw new \Exception('Только заявки со статусом "ожидает" могут быть отклонены');
         }
 
         $oldStatusId = $application->status_id;
@@ -132,7 +132,7 @@ class ApplicationService
         $pendingStatusId = ApplicationStatus::getIdByName('pending');
 
         if ($application->status_id !== $pendingStatusId) {
-            throw new \Exception('Only pending applications can be withdrawn');
+            throw new \Exception('Только заявки со статусом "ожидает" могут быть отозваны');
         }
 
         return DB::transaction(function () use ($application) {
@@ -152,13 +152,13 @@ class ApplicationService
         $pendingStatusId = ApplicationStatus::getIdByName('pending');
 
         if ($application->status_id !== $pendingStatusId) {
-            throw new \Exception('Can only add team members to pending applications');
+            throw new \Exception('Участников команды можно добавлять только к заявкам со статусом "ожидает"');
         }
 
         // Validate user is a student
         $user = User::findOrFail($userId);
         if (! $user->hasRole('student')) {
-            throw new \Exception('Team member must be a student');
+            throw new \Exception('Участник команды должен быть студентом');
         }
 
         // Validate team size
@@ -166,11 +166,11 @@ class ApplicationService
         $requiredSize = $application->case->required_team_size;
 
         if ($currentSize >= $requiredSize) {
-            throw new \Exception("Team is already full (max: {$requiredSize})");
+            throw new \Exception("Команда уже заполнена (максимум: {$requiredSize} человек)");
         }
 
         // Check if student is not in another team for this case
-        $this->validateTeamMemberEligibility($userId, $application->case);
+        $this->validateTeamMembersEligibility([$userId], $application->case);
 
         return CaseTeamMember::create([
             'application_id' => $application->id,
@@ -184,7 +184,7 @@ class ApplicationService
     public function hasApplication(User $user, CaseModel $case): bool
     {
         // Check as leader
-        if ($user->caseApplicationsAsLeader()->where('case_id', $case->id)->exists()) {
+        if ($user->caseApplications()->where('case_id', $case->id)->exists()) {
             return true;
         }
 
@@ -201,8 +201,8 @@ class ApplicationService
      */
     public function getStudentApplicationStatus(User $user, CaseModel $case): ?CaseApplication
     {
-        // First check as leader
-        $application = $user->caseApplicationsAsLeader()
+        // First check as leader (более быстрый запрос)
+        $application = CaseApplication::where('leader_id', $user->id)
             ->where('case_id', $case->id)
             ->first();
 
@@ -210,11 +210,11 @@ class ApplicationService
             return $application;
         }
 
-        // Then check as team member
-        $applicationIds = $case->applications()->pluck('id');
-
+        // Then check as team member (оптимизированный запрос)
         $teamMember = CaseTeamMember::where('user_id', $user->id)
-            ->whereIn('application_id', $applicationIds)
+            ->whereHas('application', function ($query) use ($case) {
+                $query->where('case_id', $case->id);
+            })
             ->with('application')
             ->first();
 
@@ -231,7 +231,7 @@ class ApplicationService
         $rejectedStatusId = ApplicationStatus::getIdByName('rejected');
 
         // Get applications where user is leader
-        $leaderApplications = $user->caseApplicationsAsLeader()
+        $leaderApplications = $user->caseApplications()
             ->with(['case.partner', 'teamMembers.user', 'status'])
             ->get();
 
@@ -263,40 +263,65 @@ class ApplicationService
 
         foreach ($users as $user) {
             if (! $user->hasRole('student')) {
-                throw new \Exception("User {$user->name} is not a student");
+                throw new \Exception("Пользователь {$user->name} не является студентом");
             }
         }
     }
 
     /**
-     * Validate team member eligibility for case
+     * Validate team member eligibility for case (batch validation for all members)
      */
-    private function validateTeamMemberEligibility(int $userId, CaseModel $case): void
+    private function validateTeamMembersEligibility(array $userIds, CaseModel $case): void
     {
+        if (empty($userIds)) {
+            return;
+        }
+
         $pendingStatusId = ApplicationStatus::getIdByName('pending');
         $acceptedStatusId = ApplicationStatus::getIdByName('accepted');
 
-        // Check if user is already in another team for this case
+        // Get existing application IDs for this case in one query
         $existingApplicationIds = $case->applications()
             ->whereIn('status_id', [$pendingStatusId, $acceptedStatusId])
-            ->pluck('id');
+            ->pluck('id')
+            ->toArray();
 
-        $isAlreadyInTeam = CaseTeamMember::where('user_id', $userId)
-            ->whereIn('application_id', $existingApplicationIds)
-            ->exists();
+        if (empty($existingApplicationIds)) {
+            // No existing applications, check only if users are leaders
+            $existingLeaders = CaseApplication::where('case_id', $case->id)
+                ->whereIn('leader_id', $userIds)
+                ->whereIn('status_id', [$pendingStatusId, $acceptedStatusId])
+                ->pluck('leader_id')
+                ->toArray();
 
-        if ($isAlreadyInTeam) {
-            throw new \Exception('Student is already in another team for this case');
+            if (!empty($existingLeaders)) {
+                $user = User::whereIn('id', $existingLeaders)->first();
+                throw new \Exception("Студент {$user->name} уже является лидером команды для этого кейса");
+            }
+            return;
         }
 
-        // Check if user is leader of another application
-        $isLeader = CaseApplication::where('leader_id', $userId)
-            ->where('case_id', $case->id)
-            ->whereIn('status_id', [$pendingStatusId, $acceptedStatusId])
-            ->exists();
+        // Check if any user is already in another team (batch query)
+        $usersInTeams = CaseTeamMember::whereIn('user_id', $userIds)
+            ->whereIn('application_id', $existingApplicationIds)
+            ->with('user:id,name')
+            ->get();
 
-        if ($isLeader) {
-            throw new \Exception('Student is already a leader for this case');
+        if ($usersInTeams->isNotEmpty()) {
+            $user = $usersInTeams->first()->user;
+            throw new \Exception("Студент {$user->name} уже участвует в другой команде для этого кейса");
+        }
+
+        // Check if any user is leader of another application (batch query)
+        $existingLeaders = CaseApplication::where('case_id', $case->id)
+            ->whereIn('leader_id', $userIds)
+            ->whereIn('status_id', [$pendingStatusId, $acceptedStatusId])
+            ->with('leader:id,name')
+            ->get();
+
+        if ($existingLeaders->isNotEmpty()) {
+            $user = $existingLeaders->first()->leader;
+            throw new \Exception("Студент {$user->name} уже является лидером команды для этого кейса");
         }
     }
 
@@ -309,7 +334,7 @@ class ApplicationService
 
         if ($teamSize > $case->required_team_size) {
             throw new \Exception(
-                "Team size ({$teamSize}) exceeds required size ({$case->required_team_size})"
+                "Размер команды ({$teamSize}) превышает требуемый размер ({$case->required_team_size})"
             );
         }
     }

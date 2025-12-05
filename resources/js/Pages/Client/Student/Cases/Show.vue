@@ -1,13 +1,12 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { useForm, router } from '@inertiajs/vue3'
+import { router } from '@inertiajs/vue3'
+import { route } from 'ziggy-js'
 import Button from '@/Components/UI/Button.vue'
 import Badge from '@/Components/UI/Badge.vue'
-import Card from '@/Components/UI/Card.vue'
-import Modal from '@/Components/UI/Modal.vue'
-import Textarea from '@/Components/UI/Textarea.vue'
-import Input from '@/Components/UI/Input.vue'
+import ConfirmDialog from '@/Components/UI/ConfirmDialog.vue'
 import ApplicationStatusTimeline from '@/Components/ApplicationStatusTimeline.vue'
+import ApplyCaseModal from '@/Components/ApplyCaseModal.vue'
 
 const props = defineProps({
     caseData: {
@@ -21,37 +20,15 @@ const props = defineProps({
 })
 
 const showApplyModal = ref(false)
-
-const applyForm = useForm({
-    message: '',
-    team_members: []
-})
-
-const newMemberEmail = ref('')
-
-const addTeamMember = () => {
-    if (newMemberEmail.value && applyForm.team_members.length < props.caseData.required_team_size - 1) {
-        applyForm.team_members.push(newMemberEmail.value)
-        newMemberEmail.value = ''
-    }
-}
-
-const removeMember = (index) => {
-    applyForm.team_members.splice(index, 1)
-}
-
-const submitApplication = () => {
-    applyForm.post(route('student.cases.apply', props.caseData.id), {
-        onSuccess: () => {
-            showApplyModal.value = false
-        }
-    })
-}
+const showWithdrawConfirm = ref(false)
 
 const withdrawApplication = () => {
-    if (confirm('Вы уверены, что хотите отозвать заявку?')) {
-        router.delete(route('student.applications.withdraw', props.applicationStatus.id))
-    }
+    showWithdrawConfirm.value = true
+}
+
+const confirmWithdraw = () => {
+    router.delete(route('student.applications.withdraw', props.applicationStatus.id))
+    showWithdrawConfirm.value = false
 }
 
 const canApply = computed(() => {
@@ -90,210 +67,192 @@ const formatDate = (dateString) => {
                 <span class="text-gray-600">{{ caseData.title }}</span>
             </nav>
 
-            <!-- Case Header -->
-            <Card class="mb-6">
-                <div class="flex items-start justify-between">
-                    <div class="flex-1">
-                        <h1 class="text-3xl font-bold mb-4">{{ caseData.title }}</h1>
-                        <div class="flex items-center gap-4">
-                            <img
-                                v-if="caseData.partner.logo"
-                                :src="caseData.partner.logo"
-                                :alt="caseData.partner.company_name"
-                                class="w-16 h-16 rounded-lg object-cover"
-                            />
-                            <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center" v-else>
-                                <span class="text-2xl text-gray-400">🏢</span>
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-600">Партнер</p>
-                                <p class="text-lg font-semibold">{{ caseData.partner.company_name }}</p>
+            <!-- Заголовок с градиентом -->
+            <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-xl shadow-lg overflow-hidden mb-6">
+                <div class="px-6 py-8">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <h1 class="text-3xl font-bold text-white mb-4">{{ caseData.title }}</h1>
+                            <div class="flex items-center gap-4">
+                                <img
+                                    v-if="caseData.partner?.logo"
+                                    :src="caseData.partner.logo"
+                                    :alt="caseData.partner?.company_name"
+                                    class="w-16 h-16 rounded-lg object-cover bg-white p-1"
+                                />
+                                <div class="w-16 h-16 bg-white/20 rounded-lg flex items-center justify-center" v-else>
+                                    <i class="pi pi-building text-white text-2xl"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-indigo-100">Партнер</p>
+                                    <p class="text-lg font-semibold text-white">{{ caseData.partner?.company_name || 'Не указан' }}</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div v-if="caseData.status === 'active'" class="text-green-600 font-semibold">
-                        Активен
+                        <div v-if="caseData.status === 'active'" class="px-4 py-2 bg-green-500 rounded-lg">
+                            <span class="text-white font-semibold">Активен</span>
+                        </div>
                     </div>
                 </div>
-            </Card>
+            </div>
 
             <!-- Application Status -->
-            <Card v-if="applicationStatus" class="mb-6" :class="statusColor">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h3 class="font-bold text-lg mb-2">Статус заявки: {{ statusText }}</h3>
-                        <p v-if="applicationStatus.status?.name === 'pending'" class="text-sm">
-                            Ваша заявка ожидает рассмотрения партнером
-                        </p>
-                        <p v-if="applicationStatus.status?.name === 'accepted'" class="text-sm">
-                            Поздравляем! Ваша заявка одобрена
-                        </p>
-                        <p v-if="applicationStatus.status?.name === 'rejected'" class="text-sm">
-                            К сожалению, ваша заявка была отклонена
-                        </p>
-                        <p v-if="applicationStatus.rejection_reason" class="mt-2 text-sm">
-                            <strong>Причина:</strong> {{ applicationStatus.rejection_reason }}
-                        </p>
-                        <p v-if="applicationStatus.partner_comment" class="mt-2 text-sm">
-                            <strong>Комментарий:</strong> {{ applicationStatus.partner_comment }}
-                        </p>
-                    </div>
-                    <div class="flex gap-2">
-                        <Button
-                            v-if="applicationStatus.status?.name === 'accepted'"
-                            variant="primary"
-                            @click="router.visit(route('student.team.show', applicationStatus.id))"
-                        >
-                            Перейти к команде
-                        </Button>
-                        <Button
-                            v-if="applicationStatus.status?.name === 'pending'"
-                            variant="danger"
-                            @click="withdrawApplication"
-                        >
-                            Отозвать заявку
-                        </Button>
+            <div v-if="applicationStatus" class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden mb-6">
+                <div class="px-6 py-4 bg-gradient-to-r from-amber-50 to-amber-100 border-b border-amber-200">
+                    <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <i class="pi pi-info-circle text-amber-600"></i>
+                        Статус заявки: {{ statusText }}
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <p v-if="applicationStatus.status?.name === 'pending'" class="text-sm text-gray-700 mb-2">
+                                Ваша заявка ожидает рассмотрения партнером
+                            </p>
+                            <p v-if="applicationStatus.status?.name === 'accepted'" class="text-sm text-gray-700 mb-2">
+                                Поздравляем! Ваша заявка одобрена
+                            </p>
+                            <p v-if="applicationStatus.status?.name === 'rejected'" class="text-sm text-gray-700 mb-2">
+                                К сожалению, ваша заявка была отклонена
+                            </p>
+                            <p v-if="applicationStatus.rejection_reason" class="mt-2 text-sm text-gray-600">
+                                <strong>Причина:</strong> {{ applicationStatus.rejection_reason }}
+                            </p>
+                            <p v-if="applicationStatus.partner_comment" class="mt-2 text-sm text-gray-600">
+                                <strong>Комментарий:</strong> {{ applicationStatus.partner_comment }}
+                            </p>
+                        </div>
+                        <div class="flex gap-2 ml-4">
+                            <Button
+                                v-if="applicationStatus.status?.name === 'accepted'"
+                                variant="primary"
+                                @click="router.visit(route('student.team.show', applicationStatus.id))"
+                            >
+                                Перейти к команде
+                            </Button>
+                            <Button
+                                v-if="applicationStatus.status?.name === 'pending'"
+                                variant="danger"
+                                @click="withdrawApplication"
+                            >
+                                Отозвать заявку
+                            </Button>
+                        </div>
                     </div>
                 </div>
-            </Card>
+            </div>
 
             <!-- Application Status History -->
-            <Card v-if="applicationStatus && applicationStatus.statusHistory" class="mb-6">
-                <h3 class="text-xl font-bold mb-4">История статуса заявки</h3>
-                <ApplicationStatusTimeline :history="applicationStatus.statusHistory" />
-            </Card>
+            <div v-if="applicationStatus && applicationStatus.statusHistory" class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden mb-6">
+                <div class="px-6 py-4 bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200">
+                    <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <i class="pi pi-clock text-blue-600"></i>
+                        История статуса заявки
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <ApplicationStatusTimeline :history="applicationStatus.statusHistory" />
+                </div>
+            </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Main Content -->
-                <div class="lg:col-span-2">
+                <div class="lg:col-span-2 space-y-6">
                     <!-- Description -->
-                    <Card class="mb-6">
-                        <h2 class="text-xl font-bold mb-4">Описание кейса</h2>
-                        <div class="prose max-w-none" v-html="caseData.description"></div>
-                    </Card>
+                    <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                        <div class="px-6 py-4 bg-gradient-to-r from-indigo-50 to-indigo-100 border-b border-indigo-200">
+                            <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                                <i class="pi pi-file-edit text-indigo-600"></i>
+                                Описание кейса
+                            </h2>
+                        </div>
+                        <div class="p-6">
+                            <div class="prose max-w-none" v-html="caseData.description"></div>
+                        </div>
+                    </div>
 
                     <!-- Requirements -->
-                    <Card>
-                        <h2 class="text-xl font-bold mb-4">Требования</h2>
-                        <div class="space-y-4">
-                            <div>
-                                <p class="text-sm text-gray-600">Размер команды</p>
-                                <p class="text-lg font-semibold">{{ caseData.required_team_size }} человек</p>
-                            </div>
-                            <div v-if="caseData.deadline">
-                                <p class="text-sm text-gray-600">Дедлайн</p>
-                                <p class="text-lg font-semibold">{{ formatDate(caseData.deadline) }}</p>
+                    <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                        <div class="px-6 py-4 bg-gradient-to-r from-green-50 to-green-100 border-b border-green-200">
+                            <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                                <i class="pi pi-list text-green-600"></i>
+                                Требования
+                            </h2>
+                        </div>
+                        <div class="p-6">
+                            <div class="space-y-4">
+                                <div class="p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200">
+                                    <p class="text-sm text-gray-600 mb-1">Размер команды</p>
+                                    <p class="text-lg font-semibold text-gray-900">{{ caseData.required_team_size }} человек</p>
+                                </div>
+                                <div v-if="caseData.deadline" class="p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200">
+                                    <p class="text-sm text-gray-600 mb-1">Дедлайн</p>
+                                    <p class="text-lg font-semibold text-gray-900">{{ formatDate(caseData.deadline) }}</p>
+                                </div>
                             </div>
                         </div>
-                    </Card>
+                    </div>
                 </div>
 
                 <!-- Sidebar -->
-                <div>
+                <div class="space-y-6">
                     <!-- Required Skills -->
-                    <Card class="mb-6">
-                        <h3 class="text-lg font-bold mb-3">Требуемые навыки</h3>
-                        <div class="flex flex-wrap gap-2">
-                            <Badge
-                                v-for="skill in caseData.skills"
-                                :key="skill.id"
-                                variant="primary"
-                            >
-                                {{ skill.name }}
-                            </Badge>
+                    <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                        <div class="px-6 py-4 bg-gradient-to-r from-purple-50 to-purple-100 border-b border-purple-200">
+                            <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                                <i class="pi pi-star text-purple-600"></i>
+                                Требуемые навыки
+                            </h3>
                         </div>
-                    </Card>
+                        <div class="p-6">
+                            <div class="flex flex-wrap gap-2">
+                                <span
+                                    v-for="skill in caseData.skills"
+                                    :key="skill.id"
+                                    class="px-3 py-1 bg-purple-100 text-purple-800 text-sm font-semibold rounded-lg border border-purple-200"
+                                >
+                                    {{ skill.name }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Apply Button -->
-                    <Card v-if="canApply">
-                        <Button
-                            variant="primary"
-                            class="w-full"
-                            @click="showApplyModal = true"
-                        >
-                            Подать заявку
-                        </Button>
-                    </Card>
+                    <div v-if="canApply" class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                        <div class="p-6">
+                            <Button
+                                variant="primary"
+                                class="w-full"
+                                @click="showApplyModal = true"
+                            >
+                                <i class="pi pi-check mr-2"></i>
+                                Подать заявку
+                            </Button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Apply Modal -->
-        <Modal v-model="showApplyModal" title="Подать заявку на кейс">
-            <form @submit.prevent="submitApplication" novalidate>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">
-                            Сообщение для партнера
-                        </label>
-                        <Textarea
-                            v-model="applyForm.message"
-                            rows="4"
-                            placeholder="Расскажите, почему вы хотите работать над этим кейсом..."
-                            :error="applyForm.errors.message"
-                        />
-                    </div>
+        <ApplyCaseModal
+            v-model="showApplyModal"
+            :case-data="caseData"
+            @success="() => {}"
+        />
 
-                    <div v-if="caseData.required_team_size > 1">
-                        <label class="block text-sm font-medium mb-2">
-                            Члены команды ({{ applyForm.team_members.length }}/{{ caseData.required_team_size - 1 }})
-                        </label>
-                        <div class="space-y-2 mb-3">
-                            <div
-                                v-for="(member, index) in applyForm.team_members"
-                                :key="index"
-                                class="flex items-center gap-2"
-                            >
-                                <Input
-                                    :model-value="member"
-                                    disabled
-                                    class="flex-1"
-                                />
-                                <Button
-                                    type="button"
-                                    variant="danger"
-                                    size="sm"
-                                    @click="removeMember(index)"
-                                >
-                                    Удалить
-                                </Button>
-                            </div>
-                        </div>
-                        <div class="flex gap-2" v-if="applyForm.team_members.length < caseData.required_team_size - 1">
-                            <Input
-                                v-model="newMemberEmail"
-                                type="text"
-                                placeholder="Email участника"
-                                class="flex-1"
-                            />
-                            <Button
-                                type="button"
-                                variant="secondary"
-                                @click="addTeamMember"
-                            >
-                                Добавить
-                            </Button>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-end gap-2 mt-6">
-                        <Button
-                            type="button"
-                            variant="secondary"
-                            @click="showApplyModal = false"
-                        >
-                            Отмена
-                        </Button>
-                        <Button
-                            type="submit"
-                            variant="primary"
-                            :disabled="applyForm.processing"
-                        >
-                            Подать заявку
-                        </Button>
-                    </div>
-                </div>
-            </form>
-        </Modal>
+        <!-- Confirm Dialog для отзыва заявки -->
+        <ConfirmDialog
+            :visible="showWithdrawConfirm"
+            @update:visible="showWithdrawConfirm = $event"
+            @confirm="confirmWithdraw"
+            title="Подтвердите действие"
+            message="Вы уверены, что хотите отозвать заявку?"
+            confirm-text="Отозвать"
+            cancel-text="Отмена"
+            type="warning"
+            confirm-variant="danger"
+        />
     </div>
 </template>

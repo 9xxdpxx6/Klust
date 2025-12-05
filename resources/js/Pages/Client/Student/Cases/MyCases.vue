@@ -1,25 +1,31 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { router } from '@inertiajs/vue3'
+import { route } from 'ziggy-js'
 import Card from '@/Components/UI/Card.vue'
 import Badge from '@/Components/UI/Badge.vue'
 import Button from '@/Components/UI/Button.vue'
 
 const props = defineProps({
-    applications: {
+    cases: {
         type: Object,
-        required: true
+        default: () => ({
+            current: [],
+            pending: [],
+            completed: [],
+            rejected: []
+        })
     }
 })
 
 const activeTab = ref('current')
 
-const tabs = [
-    { key: 'current', label: 'Текущие', count: props.applications.current.length },
-    { key: 'pending', label: 'Заявки', count: props.applications.pending.length },
-    { key: 'completed', label: 'Завершенные', count: props.applications.completed.length },
-    { key: 'rejected', label: 'Отклоненные', count: props.applications.rejected.length }
-]
+const tabs = computed(() => [
+    { key: 'current', label: 'Текущие', count: props.cases?.current?.length || 0 },
+    { key: 'pending', label: 'Заявки', count: props.cases?.pending?.length || 0 },
+    { key: 'completed', label: 'Завершенные', count: props.cases?.completed?.length || 0 },
+    { key: 'rejected', label: 'Отклоненные', count: props.cases?.rejected?.length || 0 }
+])
 
 const statusColors = {
     pending: 'bg-yellow-100 text-yellow-800',
@@ -90,7 +96,7 @@ const viewTeam = (application) => {
 
             <!-- Current Cases -->
             <div v-if="activeTab === 'current'">
-                <div v-if="applications.current.length === 0" class="text-center py-12">
+                <div v-if="!cases?.current || cases.current.length === 0" class="text-center py-12">
                     <p class="text-gray-500 mb-4">У вас пока нет активных кейсов</p>
                     <Button variant="primary" @click="router.visit(route('student.cases.index'))">
                         Найти кейс
@@ -98,7 +104,7 @@ const viewTeam = (application) => {
                 </div>
                 <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <Card
-                        v-for="application in applications.current"
+                        v-for="application in cases.current"
                         :key="application.id"
                         class="hover:shadow-lg transition-shadow cursor-pointer"
                     >
@@ -146,12 +152,12 @@ const viewTeam = (application) => {
 
             <!-- Pending Applications -->
             <div v-if="activeTab === 'pending'">
-                <div v-if="applications.pending.length === 0" class="text-center py-12">
+                <div v-if="!cases?.pending || cases.pending.length === 0" class="text-center py-12">
                     <p class="text-gray-500">У вас нет ожидающих рассмотрения заявок</p>
                 </div>
                 <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <Card
-                        v-for="application in applications.pending"
+                        v-for="application in cases.pending"
                         :key="application.id"
                         class="hover:shadow-lg transition-shadow"
                     >
@@ -189,12 +195,12 @@ const viewTeam = (application) => {
 
             <!-- Completed Cases -->
             <div v-if="activeTab === 'completed'">
-                <div v-if="applications.completed.length === 0" class="text-center py-12">
+                <div v-if="!cases?.completed || cases.completed.length === 0" class="text-center py-12">
                     <p class="text-gray-500">У вас пока нет завершенных кейсов</p>
                 </div>
                 <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <Card
-                        v-for="application in applications.completed"
+                        v-for="application in cases.completed"
                         :key="application.id"
                         class="hover:shadow-lg transition-shadow"
                     >
@@ -232,12 +238,12 @@ const viewTeam = (application) => {
 
             <!-- Rejected Applications -->
             <div v-if="activeTab === 'rejected'">
-                <div v-if="applications.rejected.length === 0" class="text-center py-12">
+                <div v-if="!cases?.rejected || cases.rejected.length === 0" class="text-center py-12">
                     <p class="text-gray-500">У вас нет отклоненных заявок</p>
                 </div>
                 <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <Card
-                        v-for="application in applications.rejected"
+                        v-for="application in cases.rejected"
                         :key="application.id"
                         class="hover:shadow-lg transition-shadow"
                     >

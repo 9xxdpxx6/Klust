@@ -23,6 +23,11 @@ class Partner extends Model
         'is_active' => 'boolean',
     ];
 
+    protected $appends = [
+        'company_name',
+        'contact_person',
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

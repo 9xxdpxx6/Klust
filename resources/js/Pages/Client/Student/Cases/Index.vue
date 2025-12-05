@@ -53,8 +53,8 @@
                     :case-data="caseItem"
                     :can-apply="true"
                     :applying="applyingCases.includes(caseItem.id)"
-                    @view="() => router.visit(route('student.cases.show', caseItem.id))"
-                    @apply="handleApply(caseItem.id)"
+                    @view="() => handleViewCase(caseItem.id)"
+                    @apply="() => handleApply(caseItem.id)"
                 />
             </div>
 
@@ -156,8 +156,16 @@ const handlePage = (event) => {
     }
 };
 
+const handleViewCase = (caseId) => {
+    try {
+        router.visit(route('student.cases.show', caseId));
+    } catch (e) {
+        console.error('Error navigating to case:', e);
+    }
+};
+
 const handleApply = (caseId) => {
-    if (routeExists('student.cases.apply')) {
+    try {
         applyingCases.value.push(caseId);
         router.post(route('student.cases.apply', caseId), {}, {
             preserveScroll: true,
@@ -165,9 +173,9 @@ const handleApply = (caseId) => {
                 applyingCases.value = applyingCases.value.filter(id => id !== caseId);
             },
         });
+    } catch (e) {
+        console.error('Error submitting application:', e);
+        applyingCases.value = applyingCases.value.filter(id => id !== caseId);
     }
 };
-
 </script>
-
-

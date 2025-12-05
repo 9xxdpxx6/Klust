@@ -182,5 +182,3 @@ const formatDate = (date) => {
   overflow: hidden;
 }
 </style>
-
-
