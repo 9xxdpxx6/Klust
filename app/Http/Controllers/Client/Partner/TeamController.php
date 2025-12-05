@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CaseApplication;
 use App\Services\CaseService;
 use App\Services\TeamService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -25,7 +26,7 @@ class TeamController extends Controller
     /**
      * Все команды партнера
      */
-    public function index(Request $request): Response
+    public function index(Request $request): Response|RedirectResponse
     {
         try {
             $user = auth()->user();
@@ -82,7 +83,7 @@ class TeamController extends Controller
     /**
      * Детали команды
      */
-    public function show(CaseApplication $application): Response
+    public function show(CaseApplication $application): Response|RedirectResponse
     {
         try {
             $user = auth()->user();
