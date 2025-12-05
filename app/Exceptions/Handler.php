@@ -35,6 +35,12 @@ class Handler extends ExceptionHandler
     public function register(): void
     {
         $this->reportable(function (Throwable $e) {
+            // Пропускаем логирование для .well-known запросов (Chrome DevTools и другие инструменты)
+            $request = request();
+            if ($request && str_contains($request->path(), '.well-known')) {
+                return;
+            }
+
             // Логируем все исключения
             Log::error('Exception occurred', [
                 'message' => $e->getMessage(),
@@ -47,6 +53,11 @@ class Handler extends ExceptionHandler
 
         // Обработка ошибок для Inertia запросов
         $this->renderable(function (Throwable $e, Request $request) {
+            // Пропускаем логирование для .well-known запросов (Chrome DevTools и другие инструменты)
+            if (str_contains($request->path(), '.well-known')) {
+                return null;
+            }
+
             // Логируем ошибку перед обработкой
             Log::error('Inertia error rendering', [
                 'message' => $e->getMessage(),

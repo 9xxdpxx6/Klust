@@ -39,6 +39,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+// Обработка .well-known запросов (Chrome DevTools и другие инструменты)
+Route::any('/.well-known/{path}', function () {
+    abort(404);
+})->where('path', '.*')->name('well-known');
+
 // Публичные страницы (без авторизации)
 Route::get('/', [GuestController::class, 'home'])->name('guest.home');
 Route::get('/about', [GuestController::class, 'about'])->name('guest.about');
