@@ -2,10 +2,10 @@
   <div class="relative">
     <button
       @click="toggle"
-      class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-hover transition-colors"
+      class="flex items-center gap-2 px-3 py-1 rounded-lg hover:bg-surface-hover transition-colors"
       aria-label="Меню пользователя"
     >
-      <UserAvatar :user="user" size="md" />
+      <UserAvatar :user="user" size="sm" />
       <span v-if="showName" class="hidden md:block text-sm font-medium text-text-primary">
         {{ userName }}
       </span>
@@ -17,6 +17,8 @@
       :model="menuItems"
       :popup="true"
       class="user-dropdown-menu"
+      @hide="handleMenuHide"
+      @show="handleMenuShow"
     />
   </div>
 </template>
@@ -35,16 +37,41 @@ const props = defineProps({
   },
 });
 
-const { user } = useAuth();
+const { user, hasRole } = useAuth();
 
-const userName = computed(() => user.value?.name || 'Пользователь');
+const userName = computed(() => {
+  const name = user.value?.name || 'Пользователь';
+  
+  // Если пользователь - партнер, добавляем название компании в скобках
+  if (hasRole('partner')) {
+    // Пробуем получить название компании из разных источников
+    const companyName = user.value?.partner_profile?.company_name || 
+                       user.value?.partner_profile?.companyName ||
+                       user.value?.partner?.company_name ||
+                       user.value?.partner?.companyName;
+    
+    if (companyName) {
+      return `${name} (${companyName})`;
+    }
+  }
+  
+  return name;
+});
 
 const menu = ref(null);
 const isMenuVisible = ref(false);
 
 const toggle = (event) => {
   menu.value.toggle(event);
-  isMenuVisible.value = !isMenuVisible.value;
+  // Состояние будет обновлено через события @show/@hide
+};
+
+const handleMenuShow = () => {
+  isMenuVisible.value = true;
+};
+
+const handleMenuHide = () => {
+  isMenuVisible.value = false;
 };
 
 const getUserRole = () => {

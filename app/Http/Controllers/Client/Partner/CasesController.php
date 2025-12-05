@@ -18,6 +18,7 @@ use App\Models\Skill;
 use App\Services\ApplicationService;
 use App\Services\CaseService;
 use App\Services\NotificationService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -52,6 +53,15 @@ class CasesController extends Controller
                 ]);
             }
 
+            // Дополнительная проверка: убеждаемся, что partner_id корректный
+            if (! $partner->id) {
+                return Inertia::render('Client/Partner/Cases/Index', [
+                    'cases' => [],
+                    'filters' => [],
+                    'error' => 'Неверный идентификатор партнера',
+                ]);
+            }
+
             $filters = $request->only([
                 'status',
                 'search',
@@ -65,14 +75,19 @@ class CasesController extends Controller
                 'per_page',
             ]);
 
+            // Явно исключаем partner_id из фильтров, чтобы предотвратить перезапись
+            unset($filters['partner_id']);
+
             $caseFilter = new CaseFilter($filters);
 
+            // Создаем запрос с жестким условием по partner_id
             $casesQuery = CaseModel::query()
                 ->where('partner_id', $partner->id)
                 ->with(['skills', 'simulator']);
 
             $pagination = $caseFilter->getPaginationParams();
 
+            // Применяем фильтр, но partner_id уже установлен и не может быть перезаписан
             $cases = $caseFilter
                 ->apply($casesQuery)
                 ->paginate($pagination['per_page'])
@@ -291,6 +306,10 @@ class CasesController extends Controller
             return redirect()
                 ->route('partner.cases.index')
                 ->with('success', 'Кейс успешно архивирован');
+        } catch (AuthorizationException $e) {
+            return redirect()
+                ->back()
+                ->with('error', 'Ошибка при архивации кейса: У вас нет прав для выполнения этого действия.');
         } catch (\Exception $e) {
             return redirect()
                 ->back()

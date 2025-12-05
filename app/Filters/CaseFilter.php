@@ -83,7 +83,22 @@ final class CaseFilter extends BaseFilter
             return;
         }
 
-        $query->where('partner_id', (int) $this->getFilter('partner_id'));
+        // Проверяем, не установлено ли уже условие partner_id в запросе
+        // Если установлено, не перезаписываем его (защита от перезаписи)
+        $wheres = $query->getQuery()->wheres ?? [];
+        $hasPartnerIdCondition = false;
+        
+        foreach ($wheres as $where) {
+            if (isset($where['column']) && $where['column'] === 'partner_id') {
+                $hasPartnerIdCondition = true;
+                break;
+            }
+        }
+
+        // Применяем фильтр только если условие partner_id еще не установлено
+        if (! $hasPartnerIdCondition) {
+            $query->where('partner_id', (int) $this->getFilter('partner_id'));
+        }
     }
 
     private function applySkillsFilter(Builder $query): void

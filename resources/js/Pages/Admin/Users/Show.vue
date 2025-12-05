@@ -585,72 +585,50 @@
         </div>
 
         <!-- Модальное окно подтверждения удаления -->
-        <div 
-            v-if="showDeleteModal" 
-            class="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
-            @click.self="showDeleteModal = false"
+        <DangerConfirmDialog
+            :visible="showDeleteModal"
+            @update:visible="showDeleteModal = $event"
+            @confirm="deleteUser"
+            type="delete"
+            title="Подтверждение удаления"
+            message="Вы уверены, что хотите удалить пользователя"
+            :item-name="user.name"
+            confirm-text="Удалить"
+            cancel-text="Отмена"
+            :loading="processing"
+            loading-text="Удаление..."
+            :disabled="blockingData?.has_blocking_data"
         >
-            <div class="relative bg-white rounded-xl shadow-2xl max-w-md w-full border border-gray-200">
-                <div class="p-6">
-                    <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
-                        <i class="pi pi-exclamation-triangle text-3xl text-red-600"></i>
+            <div v-if="blockingData?.has_blocking_data" class="mb-4">
+                <p class="text-sm text-red-600 font-semibold mb-2">
+                    Внимание! Невозможно удалить пользователя:
+                </p>
+                <div class="text-xs text-red-700 bg-red-50 rounded-lg p-3 space-y-1">
+                    <div v-if="blockingData.active_applications_count > 0">
+                        • Пользователь является лидером команды в {{ blockingData.active_applications_count }} 
+                        {{ pluralize(blockingData.active_applications_count, 'активной заявке', 'активных заявках', 'активных заявках') }} на кейсы
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 text-center mb-2">Подтверждение удаления</h3>
-                    <div class="mt-4">
-                        <p class="text-sm text-gray-600 mb-2 text-center">
-                            Вы уверены, что хотите удалить пользователя
-                        </p>
-                        <p class="text-sm font-semibold text-gray-900 mb-4 text-center">"{{ user.name }}"?</p>
-                        
-                        <div v-if="blockingData?.has_blocking_data" class="mb-4">
-                            <p class="text-sm text-red-600 font-semibold mb-2">
-                                Внимание! Невозможно удалить пользователя:
-                            </p>
-                            <div class="text-xs text-red-700 bg-red-50 rounded-lg p-3 space-y-1">
-                                <div v-if="blockingData.active_applications_count > 0">
-                                    • Пользователь является лидером команды в {{ blockingData.active_applications_count }} 
-                                    {{ pluralize(blockingData.active_applications_count, 'активной заявке', 'активных заявках', 'активных заявках') }} на кейсы
-                                </div>
-                                <div v-if="blockingData.active_team_memberships_count > 0">
-                                    • Пользователь участвует в {{ blockingData.active_team_memberships_count }} 
-                                    {{ pluralize(blockingData.active_team_memberships_count, 'активной команде', 'активных командах', 'активных командах') }}
-                                </div>
-                                <div v-if="blockingData.active_cases_count > 0">
-                                    • У партнера есть {{ blockingData.active_cases_count }} 
-                                    {{ pluralize(blockingData.active_cases_count, 'активный кейс', 'активных кейса', 'активных кейсов') }}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <p v-else class="text-xs text-red-600 bg-red-50 rounded-lg p-3">
-                            Это действие нельзя отменить. Все данные пользователя будут удалены безвозвратно.
-                        </p>
+                    <div v-if="blockingData.active_team_memberships_count > 0">
+                        • Пользователь участвует в {{ blockingData.active_team_memberships_count }} 
+                        {{ pluralize(blockingData.active_team_memberships_count, 'активной команде', 'активных командах', 'активных командах') }}
                     </div>
-                    <div class="flex justify-center gap-3 mt-6">
-                        <button
-                            @click="showDeleteModal = false"
-                            class="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-                        >
-                            Отмена
-                        </button>
-                        <button
-                            @click="deleteUser"
-                            :disabled="processing || (blockingData?.has_blocking_data)"
-                            class="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-                        >
-                            <span v-if="processing">Удаление...</span>
-                            <span v-else>Удалить</span>
-                        </button>
+                    <div v-if="blockingData.active_cases_count > 0">
+                        • У партнера есть {{ blockingData.active_cases_count }} 
+                        {{ pluralize(blockingData.active_cases_count, 'активный кейс', 'активных кейса', 'активных кейсов') }}
                     </div>
                 </div>
             </div>
-        </div>
+            <p v-else class="text-xs text-red-600 bg-red-50 rounded-lg p-3">
+                Это действие нельзя отменить. Все данные пользователя будут удалены безвозвратно.
+            </p>
+        </DangerConfirmDialog>
     </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import { router, Link, Head } from '@inertiajs/vue3'
+import DangerConfirmDialog from '@/Components/UI/DangerConfirmDialog.vue'
 import { route } from 'ziggy-js'
 
 const props = defineProps({

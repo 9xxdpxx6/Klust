@@ -29,6 +29,8 @@ class CaseController extends Controller
     {
         $this->authorize('viewAny', CaseModel::class);
 
+        $user = auth()->user();
+
         // Получить фильтры (status, partner_id, search, perPage)
         $filters = [
             'status' => $request->input('status'),
@@ -36,6 +38,11 @@ class CaseController extends Controller
             'search' => $request->input('search'),
             'per_page' => $request->input('perPage') ?? $request->input('per_page'),
         ];
+
+        // Если пользователь - партнер, показывать только его кейсы
+        if ($user->hasRole('partner') && $user->partnerProfile?->partner_id) {
+            $filters['partner_id'] = $user->partnerProfile->partner_id;
+        }
 
         // Получить кейсы через CaseService::getFilteredCases($filters)
         $cases = $this->caseService->getFilteredCases($filters);
@@ -60,13 +67,19 @@ class CaseController extends Controller
             'perPage' => $filters['per_page'] ?? 25,
         ];
 
-        // Получаем общую статистику (независимо от фильтров и пагинации)
+        // Получаем общую статистику
+        // Если пользователь - партнер, показывать статистику только по его кейсам
+        $statisticsQuery = CaseModel::query();
+        if ($user->hasRole('partner') && $user->partnerProfile?->partner_id) {
+            $statisticsQuery->where('partner_id', $user->partnerProfile->partner_id);
+        }
+        
         $statistics = [
-            'total_cases' => CaseModel::count(),
-            'active_cases' => CaseModel::where('status', 'active')->count(),
-            'draft_cases' => CaseModel::where('status', 'draft')->count(),
-            'completed_cases' => CaseModel::where('status', 'completed')->count(),
-            'archived_cases' => CaseModel::where('status', 'archived')->count(),
+            'total_cases' => $statisticsQuery->count(),
+            'active_cases' => (clone $statisticsQuery)->where('status', 'active')->count(),
+            'draft_cases' => (clone $statisticsQuery)->where('status', 'draft')->count(),
+            'completed_cases' => (clone $statisticsQuery)->where('status', 'completed')->count(),
+            'archived_cases' => (clone $statisticsQuery)->where('status', 'archived')->count(),
         ];
 
         return Inertia::render('Admin/Cases/Index', [
