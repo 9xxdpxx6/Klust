@@ -41,7 +41,7 @@
 
         <!-- Filters -->
         <div class="bg-white shadow-sm rounded-lg p-4 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                     <Select
                         v-model="filters.status"
@@ -53,16 +53,25 @@
                         @update:modelValue="applyFilters"
                     />
                 </div>
-                
+
                 <div>
                     <DatePicker
-                        v-model="filters.date"
-                        label="Дата создания"
-                        placeholder="Выберите дату"
+                        v-model="filters.date_from"
+                        label="Дата создания с"
+                        placeholder="Дата начала"
                         @date-select="applyFilters"
                     />
                 </div>
-                
+
+                <div>
+                    <DatePicker
+                        v-model="filters.date_to"
+                        label="Дата создания по"
+                        placeholder="Дата окончания"
+                        @date-select="applyFilters"
+                    />
+                </div>
+
                 <div>
                     <SearchInput
                         v-model="filters.search"
@@ -122,19 +131,20 @@
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Создан
                             </th>
-                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Действия
-                            </th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        <tr v-for="caseItem in cases.data" :key="caseItem.id">
-                            <td class="px-6 py-4 whitespace-nowrap">
+                        <tr
+                            v-for="caseItem in cases.data"
+                            :key="caseItem.id"
+                            @click="goToCase(caseItem.id)"
+                            class="hover:bg-blue-50 cursor-pointer transition-colors"
+                        >
+                            <td class="px-6 py-4">
                                 <div class="text-sm font-medium text-gray-900">{{ caseItem.title }}</div>
-                                <div class="text-sm text-gray-500 line-clamp-2">{{ caseItem.description }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span 
+                                <span
                                     class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                                     :class="getStatusClass(caseItem.status)"
                                 >
@@ -152,33 +162,6 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {{ formatDate(caseItem.created_at) }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <div class="flex justify-end gap-2">
-                                    <Link 
-                                        :href="route('partner.cases.show', { case: caseItem.id })" 
-                                        class="p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-md transition-colors focus:outline-none"
-                                        title="Просмотр"
-                                    >
-                                        <i class="pi pi-eye text-sm"></i>
-                                    </Link>
-                                    <Link 
-                                        v-if="caseItem.status !== 'archived'"
-                                        :href="route('partner.cases.edit', { case: caseItem.id })" 
-                                        class="p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-md transition-colors focus:outline-none"
-                                        title="Редактировать"
-                                    >
-                                        <i class="pi pi-pencil text-sm"></i>
-                                    </Link>
-                                    <button 
-                                        v-if="caseItem.status !== 'archived'"
-                                        @click.stop="archiveCase(caseItem.id)" 
-                                        class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors focus:outline-none"
-                                        title="Архивировать"
-                                    >
-                                        <i class="pi pi-archive text-sm"></i>
-                                    </button>
-                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -222,7 +205,8 @@ const page = usePage();
 const filters = ref({
     status: props.filters.status || '',
     search: props.filters.search || '',
-    date: props.filters.date ? new Date(props.filters.date) : null
+    date_from: props.filters.date_from ? new Date(props.filters.date_from) : null,
+    date_to: props.filters.date_to ? new Date(props.filters.date_to) : null
 });
 
 const currentTab = computed(() => {
@@ -304,7 +288,8 @@ const applyFilters = () => {
     const params = {
         status: filters.value.status || undefined,
         search: filters.value.search || undefined,
-        date: formatDateForServer(filters.value.date) || undefined
+        date_from: formatDateForServer(filters.value.date_from) || undefined,
+        date_to: formatDateForServer(filters.value.date_to) || undefined
     };
 
     router.get(route('partner.cases.index'), params, {
@@ -313,12 +298,7 @@ const applyFilters = () => {
     });
 };
 
-const archiveCase = (caseId) => {
-    if (confirm('Вы уверены, что хотите архивировать этот кейс?')) {
-        router.post(route('partner.cases.archive', { case: caseId }), {}, {
-            preserveState: true,
-            preserveScroll: true
-        });
-    }
+const goToCase = (caseId) => {
+    router.visit(route('partner.cases.show', { case: caseId }));
 };
 </script>

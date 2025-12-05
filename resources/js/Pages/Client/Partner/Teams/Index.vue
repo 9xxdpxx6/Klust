@@ -32,7 +32,7 @@
         </div>
 
         <!-- Teams Grid -->
-        <div v-if="teams.length === 0" class="bg-white shadow-sm rounded-lg p-12 text-center">
+        <div v-if="teams.data.length === 0" class="bg-white shadow-sm rounded-lg p-12 text-center">
             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
@@ -44,7 +44,7 @@
 
         <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div
-                v-for="team in teams"
+                v-for="team in teams.data"
                 :key="team.id"
                 class="bg-white shadow-sm rounded-lg overflow-hidden border border-gray-200 hover:shadow-md transition-shadow duration-200"
             >
@@ -101,6 +101,9 @@
                 </div>
             </div>
         </div>
+
+        <!-- Pagination -->
+        <Pagination v-if="teams.links && teams.links.length > 2" :links="teams.links" class="mt-6" />
     </div>
 </template>
 
@@ -108,18 +111,23 @@
 import { ref, computed } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import Select from '@/Components/UI/Select.vue';
+import Pagination from '@/Components/Pagination.vue';
 
 const props = defineProps({
     teams: {
-        type: Array,
+        type: Object,
         required: true
+    },
+    filters: {
+        type: Object,
+        default: () => ({})
     }
 });
 
 // Extract available cases from teams for filtering
 const availableCases = computed(() => {
     const casesMap = new Map();
-    props.teams.forEach(team => {
+    props.teams.data.forEach(team => {
         if (team.case && !casesMap.has(team.case.id)) {
             casesMap.set(team.case.id, team.case);
         }
@@ -128,8 +136,8 @@ const availableCases = computed(() => {
 });
 
 const filters = ref({
-    case_id: '',
-    status: ''
+    case_id: props.filters.case_id || '',
+    status: props.filters.status || ''
 });
 
 const getStatusClass = (status) => {

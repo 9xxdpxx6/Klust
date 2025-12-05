@@ -78,8 +78,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { router, useForm } from '@inertiajs/vue3';
-import { route } from 'ziggy-js';
+import { router } from '@inertiajs/vue3';
 import Card from '@/Components/UI/Card.vue';
 import SearchInput from '@/Components/UI/SearchInput.vue';
 import Select from '@/Components/UI/Select.vue';
@@ -87,6 +86,7 @@ import CaseCard from '@/Components/CaseCard.vue';
 import MultiSelect from 'primevue/multiselect';
 import Paginator from 'primevue/paginator';
 import { routeExists } from '@/Utils/routes';
+import { route } from 'ziggy-js';
 
 const props = defineProps({
     cases: {
@@ -179,5 +179,3 @@ const handleApply = (caseId) => {
     }
 };
 </script>
-
-

@@ -29,7 +29,15 @@ class DashboardController extends Controller
             $partner = $user->partner;
 
             // Получить статистику партнера
-            $statistics = $this->partnerService->getDashboardStatistics($user);
+            $stats = $this->partnerService->getDashboardStatistics($user);
+
+            // Преобразовать в camelCase для Vue компонента
+            $statistics = [
+                'totalCases' => $stats['total_cases'] ?? 0,
+                'activeCases' => $stats['active_cases'] ?? 0,
+                'completedCases' => $stats['completed_cases'] ?? 0,
+                'teamsCount' => $stats['total_teams'] ?? 0,
+            ];
 
             // Получить активные кейсы через getActiveCasesForPartner()
             $activeCases = $this->caseService->getActiveCasesForPartner($user);

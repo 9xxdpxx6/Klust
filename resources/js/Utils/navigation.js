@@ -92,24 +92,14 @@ export const partnerMenuItems = [
     icon: 'pi pi-home',
   },
   {
-    label: 'Мои кейсы',
+    label: 'Кейсы',
     route: 'partner.cases.index',
     icon: 'pi pi-briefcase',
-  },
-  {
-    label: 'Создать кейс',
-    route: 'partner.cases.create',
-    icon: 'pi pi-plus-circle',
   },
   {
     label: 'Команды',
     route: 'partner.teams.index',
     icon: 'pi pi-users',
-  },
-  {
-    label: 'Профиль компании',
-    route: 'partner.profile.show',
-    icon: 'pi pi-building',
   },
   {
     label: 'Аналитика',

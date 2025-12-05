@@ -1,22 +1,22 @@
 <template>
   <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all case-card">
-    <div class="p-6">
-      <!-- Header -->
-      <div class="flex items-start justify-between mb-4">
-        <div class="flex-1 pr-4">
-          <h3 class="text-lg font-bold text-gray-900 mb-1">{{ caseData.title }}</h3>
-          <p class="text-sm text-gray-600">{{ caseData.partner?.name || caseData.partner?.company_name || 'Партнер не указан' }}</p>
+    <div class="p-6 space-y-4">
+      <!-- Header with title and status -->
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex-1 min-w-0">
+          <h3 class="text-xl font-bold text-gray-900 mb-2 line-clamp-2">{{ caseData.title }}</h3>
+          <p class="text-sm text-gray-600 font-medium">{{ caseData.partner?.name || caseData.partner?.company_name || caseData.partner?.user?.name || 'Партнер не указан' }}</p>
         </div>
-        <Badge :variant="statusVariant" :text="statusText" />
+        <Badge :variant="statusVariant" :text="statusText" class="flex-shrink-0" />
       </div>
       
       <!-- Description -->
-      <p class="text-sm text-gray-600 line-clamp-2 mb-4">
+      <p class="text-sm text-gray-600 line-clamp-3 leading-relaxed">
         {{ caseData.description || 'Описание отсутствует' }}
       </p>
       
       <!-- Skills -->
-      <div v-if="caseData.skills && caseData.skills.length > 0" class="flex flex-wrap gap-2 mb-4">
+      <div v-if="caseData.skills && caseData.skills.length > 0" class="flex flex-wrap gap-2">
         <span
           v-for="skill in caseData.skills"
           :key="skill.id"
@@ -27,48 +27,51 @@
       </div>
       
       <!-- Footer info -->
-      <div class="flex items-center justify-between text-sm text-gray-500 mb-4 pb-4 border-b border-gray-200">
-        <div class="flex items-center">
-          <i class="pi pi-calendar mr-2"></i>
+      <div class="flex items-center justify-between text-sm text-gray-500 pt-2 border-t border-gray-100">
+        <div class="flex items-center gap-1.5">
+          <i class="pi pi-calendar text-gray-400" />
           <span v-if="caseData.deadline">
             До {{ formatDate(caseData.deadline) }}
           </span>
-          <span v-else>Дедлайн не установлен</span>
+          <span v-else class="text-gray-400">Дедлайн не установлен</span>
         </div>
-        <div v-if="caseData.applications_count !== undefined" class="flex items-center">
-          <i class="pi pi-users mr-2"></i>
+        <div v-if="caseData.applications_count !== undefined" class="flex items-center gap-1.5">
+          <i class="pi pi-users text-gray-400" />
           <span>{{ caseData.applications_count }} заявок</span>
         </div>
       </div>
-      
-      <!-- Actions -->
-      <div v-if="showActions" class="flex items-center justify-end gap-3">
-        <Button
-          variant="outline"
-          size="sm"
-          @click="handleViewClick"
-        >
-          <i class="pi pi-eye mr-2"></i>
-          Просмотр
-        </Button>
+    </div>
+    
+    <!-- Actions -->
+    <div v-if="showActions" class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between gap-3 relative z-10">
+      <button
+        v-if="canEdit"
+        type="button"
+        @click.stop.prevent="handleEdit"
+        class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer relative z-10"
+      >
+        <i class="pi pi-pencil mr-2" />
+        Редактировать
+      </button>
+      <div v-else class="flex-1"></div>
+      <div class="flex gap-2 relative z-10">
         <Button
           v-if="canApply"
           variant="primary"
           size="sm"
           :loading="applying"
-          @click="handleApplyClick"
+          @click.stop.prevent="handleApply"
         >
-          <i class="pi pi-check mr-2"></i>
+          <i class="pi pi-check mr-2" />
           Подать заявку
         </Button>
         <Button
-          v-if="canEdit"
-          variant="secondary"
+          variant="primary"
           size="sm"
-          @click="handleEditClick"
+          @click.stop.prevent="handleView"
         >
-          <i class="pi pi-pencil mr-2"></i>
-          Редактировать
+          <i class="pi pi-eye mr-2" />
+          Просмотр
         </Button>
       </div>
     </div>
@@ -105,16 +108,28 @@ const props = defineProps({
 
 const emit = defineEmits(['view', 'apply', 'edit']);
 
-const handleViewClick = () => {
+const handleView = (event) => {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
   emit('view');
 };
 
-const handleApplyClick = () => {
-  emit('apply');
+const handleEdit = (event) => {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  emit('edit');
 };
 
-const handleEditClick = () => {
-  emit('edit');
+const handleApply = (event) => {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  emit('apply');
 };
 
 const statusVariant = computed(() => {
@@ -144,7 +159,7 @@ const statusText = computed(() => {
 const formatDate = (date) => {
   if (!date) return '';
   const d = new Date(date);
-  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }) + ' г.';
 };
 </script>
 
@@ -159,6 +174,11 @@ const formatDate = (date) => {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 </style>
-
-
