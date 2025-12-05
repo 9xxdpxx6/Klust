@@ -31,7 +31,7 @@ const props = defineProps({
   size: {
     type: String,
     default: 'md',
-    validator: (value) => ['sm', 'md', 'lg'].includes(value),
+    validator: (value) => ['sm', 'md', 'lg', 'xl'].includes(value),
   },
   link: {
     type: [String, Boolean],

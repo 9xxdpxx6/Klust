@@ -36,6 +36,12 @@
   font-size: 1rem;
 }
 
+.user-avatar-xl {
+  width: 5rem;
+  height: 5rem;
+  font-size: 1.5rem;
+}
+
 /* Кнопки */
 .btn-kubgtu {
   background: var(--color-primary);
