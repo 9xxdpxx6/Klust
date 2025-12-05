@@ -12,6 +12,7 @@ use App\Models\AppNotification;
 use App\Models\CaseApplication;
 use App\Models\CaseModel;
 use App\Models\User;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -22,32 +23,100 @@ class NotificationService
      */
     public function notifyPartnerAboutApplication(CaseApplication $application): void
     {
-        $case = $application->case;
-        $partner = $case->partner;
-
-        if (! $partner || ! $partner->user_id) {
-            return;
-        }
-
-        // Создать уведомление в системе
-        AppNotification::create([
-            'user_id' => $partner->user_id,
-            'type' => 'new_application',
-            'title' => 'Новая заявка на кейс',
-            'message' => "Команда {$application->leader->name} подала заявку на ваш кейс \"{$case->title}\"",
-            'link' => route('partner.cases.show', $case->id),
-            'icon' => 'pi-inbox',
-            'action_text' => 'Просмотреть',
-        ]);
-
-        // Отправить email (без очереди)
         try {
-            $partnerUser = User::find($partner->user_id);
-            if ($partnerUser && $partnerUser->email) {
-                Mail::to($partnerUser->email)->send(new ApplicationSubmittedMail($application));
+            // Загружаем все необходимые связи одним запросом для избежания N+1
+            $application->load([
+                'leader:id,name,email',
+                'case:id,title,partner_id,required_team_size',
+                'case.partner:id,user_id',
+                'teamMembers:id,application_id'
+            ]);
+
+            $case = $application->case;
+            $partner = $case->partner;
+
+            if (! $partner || ! $partner->user_id) {
+                return;
+            }
+
+            // Создать уведомление в системе
+            try {
+                // Генерируем URL заранее, чтобы не было проблем с route()
+                $caseUrl = url("/partner/cases/{$case->id}");
+                
+                AppNotification::create([
+                    'user_id' => $partner->user_id,
+                    'type' => 'new_application',
+                    'title' => 'Новая заявка на кейс',
+                    'message' => "Команда {$application->leader->name} подала заявку на ваш кейс \"{$case->title}\"",
+                    'link' => $caseUrl,
+                    'icon' => 'pi-inbox',
+                    'action_text' => 'Просмотреть',
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to create notification', [
+                    'application_id' => $application->id,
+                    'error' => $e->getMessage(),
+                ]);
+                // Не прерываем выполнение, если уведомление не создалось
+            }
+
+            // Отправить email в фоне (не блокирует ответ)
+            // В development окружении не отправляем email
+            try {
+                $partnerUser = User::find($partner->user_id);
+                if ($partnerUser && $partnerUser->email) {
+                    $applicationId = $application->id;
+                    $partnerEmail = $partnerUser->email;
+                    
+                    // В development/local окружении не отправляем email через SMTP
+                    if (!app()->environment(['local', 'testing'])) {
+                        // В production отправляем email через очередь
+                        dispatch(function () use ($applicationId, $partnerEmail) {
+                            try {
+                                // Устанавливаем таймаут для выполнения
+                                set_time_limit(15);
+                                
+                                // Загружаем application с нужными связями
+                                $app = CaseApplication::with([
+                                    'leader:id,name,email',
+                                    'case:id,title,required_team_size',
+                                    'teamMembers:id,application_id'
+                                ])->find($applicationId);
+                                
+                                if ($app) {
+                                    try {
+                                        Mail::to($partnerEmail)->send(new ApplicationSubmittedMail($app));
+                                    } catch (\Exception $mailException) {
+                                        Log::error('Failed to send email', [
+                                            'application_id' => $applicationId,
+                                            'partner_email' => $partnerEmail,
+                                            'error' => $mailException->getMessage(),
+                                        ]);
+                                    }
+                                }
+                            } catch (\Exception $e) {
+                                Log::error('Failed to send email in job', [
+                                    'application_id' => $applicationId,
+                                    'partner_email' => $partnerEmail,
+                                    'error' => $e->getMessage(),
+                                ]);
+                            }
+                        })->afterResponse();
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::error('Failed to setup email sending', [
+                    'application_id' => $application->id,
+                    'error' => $e->getMessage(),
+                ]);
             }
         } catch (\Exception $e) {
-            Log::error('Failed to send application submitted email: '.$e->getMessage());
+            Log::error('Failed to notify partner', [
+                'application_id' => $application->id,
+                'error' => $e->getMessage(),
+            ]);
+            // Не пробрасываем исключение, чтобы не прервать создание заявки
         }
     }
 
