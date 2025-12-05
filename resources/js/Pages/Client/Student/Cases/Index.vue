@@ -53,7 +53,7 @@
                     :case-data="caseItem"
                     :can-apply="true"
                     :applying="applyingCases.includes(caseItem.id)"
-                    @view="safeVisit('student.cases.show', caseItem.id)"
+                    @view="() => router.visit(route('student.cases.show', caseItem.id))"
                     @apply="handleApply(caseItem.id)"
                 />
             </div>
@@ -86,6 +86,7 @@ import CaseCard from '@/Components/CaseCard.vue';
 import MultiSelect from 'primevue/multiselect';
 import Paginator from 'primevue/paginator';
 import { routeExists } from '@/Utils/routes';
+import { route } from 'ziggy-js';
 
 const props = defineProps({
     cases: {

@@ -21,7 +21,6 @@ class LogoutController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login')
-            ->with('success', 'Вы успешно вышли из системы.');
+        return redirect()->route('login');
     }
 }

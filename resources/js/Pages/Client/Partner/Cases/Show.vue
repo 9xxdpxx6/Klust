@@ -1,324 +1,469 @@
 <template>
     <div class="space-y-6">
-        <div class="flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-gray-900">{{ caseData.title }}</h1>
-                <div class="flex space-x-3">
-                    <Link
-                        :href="route('partner.cases.edit', { case: caseData.id })"
-                        class="inline-flex items-center justify-center p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm font-medium transition duration-150 ease-in-out focus:outline-none"
-                        title="Редактировать"
-                    >
-                        <i class="pi pi-pencil text-sm"></i>
-                    </Link>
-                    <button
-                        v-if="caseData.status !== 'archived'"
-                        @click="archiveCase"
-                        class="inline-flex items-center justify-center p-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md text-sm font-medium transition duration-150 ease-in-out focus:outline-none"
-                        title="Архивировать"
-                    >
-                        <i class="pi pi-archive text-sm"></i>
-                    </button>
-                    <button
-                        v-if="caseData.status !== 'archived'"
-                        @click="deleteCase"
-                        class="inline-flex items-center justify-center p-2 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm font-medium transition duration-150 ease-in-out focus:outline-none"
-                        title="Удалить"
-                    >
-                        <i class="pi pi-trash text-sm"></i>
-                    </button>
-                </div>
-            </div>
+        <Head :title="`Кейс: ${caseData.title}`" />
 
-        <!-- Case Info -->
-        <div class="bg-white shadow-sm rounded-lg p-6 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <h2 class="text-lg font-medium text-gray-900 mb-4">Информация о кейсе</h2>
-                    <div class="space-y-4">
-                        <div>
-                            <p class="text-sm font-medium text-gray-500">Описание</p>
-                            <p class="mt-1 text-gray-900 whitespace-pre-line">{{ caseData.description || 'Не указано' }}</p>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-500">Требуемый размер команды</p>
-                            <p class="mt-1 text-gray-900">{{ caseData.team_size }} человек</p>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-500">Дедлайн</p>
-                            <p class="mt-1 text-gray-900">{{ formatDate(caseData.deadline) || 'Не указан' }}</p>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-500">Статус</p>
-                            <p class="mt-1">
-                                <span
-                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                                    :class="getStatusClass(caseData.status)"
-                                >
-                                    {{ getStatusLabel(caseData.status) }}
-                                </span>
-                            </p>
+        <!-- Заголовок с действиями -->
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg overflow-hidden">
+            <div class="px-6 py-8">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <nav class="flex mb-4" aria-label="Breadcrumb">
+                            <ol class="flex items-center space-x-2">
+                                <li>
+                                    <Link :href="route('partner.cases.index')" class="text-indigo-200 hover:text-white transition-colors">
+                                        <span class="text-sm font-medium">Кейсы</span>
+                                    </Link>
+                                </li>
+                                <li>
+                                    <i class="pi pi-chevron-right text-indigo-300 text-xs"></i>
+                                </li>
+                                <li>
+                                    <span class="text-sm font-medium text-white">{{ caseData.title }}</span>
+                                </li>
+                            </ol>
+                        </nav>
+                        <h1 class="text-3xl font-bold text-white mb-3">{{ caseData.title }}</h1>
+                        <div class="flex items-center gap-3">
+                            <span :class="[
+                                'px-4 py-1.5 text-sm font-semibold rounded-full shadow-sm',
+                                getStatusBadgeClass(caseData.status)
+                            ]">
+                                {{ getStatusLabel(caseData.status) }}
+                            </span>
+                            <span class="text-indigo-100 text-sm">
+                                Создан {{ formatDate(caseData.created_at) }}
+                            </span>
                         </div>
                     </div>
-                </div>
-                <div>
-                    <h2 class="text-lg font-medium text-gray-900 mb-4">Требуемые навыки</h2>
-                    <div class="flex flex-wrap gap-2">
-                        <span
-                            v-for="skill in caseData.required_skills"
-                            :key="skill.id"
-                            class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
+                    <div class="flex gap-2 ml-4">
+                        <Link
+                            :href="route('partner.cases.edit', caseData.id)"
+                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-white/10 backdrop-blur-sm text-white rounded-lg hover:bg-white/20 focus:outline-none transition-all shadow-lg border border-white/20 font-medium"
                         >
-                            {{ skill.name }}
-                        </span>
-                        <span v-if="caseData.required_skills.length === 0" class="text-gray-500 italic">Навыки не указаны</span>
+                            <i class="pi pi-pencil"></i>
+                            Редактировать
+                        </Link>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Tabs -->
-        <div class="bg-white shadow-sm rounded-lg overflow-hidden">
-            <div class="border-b border-gray-200">
-                <nav class="-mb-px flex space-x-8 px-6">
-                    <Link
-                        v-for="tab in tabs"
-                        :key="tab.key"
-                        :href="route('partner.cases.show', { case: caseData.id, tab: tab.key })"
-                        :class="[
-                            currentTab === tab.key
-                            ? 'border-blue-500 text-blue-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                            'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm'
-                        ]"
-                    >
-                        {{ tab.label }}
-                        <span
-                            v-if="tab.count !== undefined"
-                            class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                            :class="currentTab === tab.key ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'"
-                        >
-                            {{ tab.count }}
-                        </span>
-                    </Link>
-                </nav>
+        <!-- Статистика - карточки с градиентами -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 shadow-md border border-blue-200/50 hover:shadow-lg transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-blue-600 mb-1">Всего заявок</p>
+                        <p class="text-3xl font-bold text-blue-900">{{ statistics.total_applications || 0 }}</p>
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-blue-500 rounded-xl">
+                        <i class="pi pi-file text-white text-xl"></i>
+                    </div>
+                </div>
             </div>
 
-            <div class="p-6">
-                <!-- Заявки Tab -->
-                <div v-if="currentTab === 'applications'">
-                    <div class="mb-6">
-                        <div class="flex justify-between items-center">
-                            <h3 class="text-lg font-medium text-gray-900">Заявки на кейс</h3>
-                            <div class="flex space-x-2">
-                                <Select
-                                    v-model="applicationFilters.status"
-                                    label="Статус"
-                                    :options="statusFilterOptions"
-                                    optionLabel="label"
-                                    optionValue="value"
-                                    placeholder="Все статусы"
-                                    @update:modelValue="loadApplications"
-                                />
-                                <a
-                                    :href="route('partner.cases.applications.export', { case: caseData.id })"
-                                    class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-                                >
-                                    <svg class="h-5 w-5 mr-2 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                    </svg>
-                                    Экспорт (Excel)
-                                </a>
+            <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-6 shadow-md border border-amber-200/50 hover:shadow-lg transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-amber-600 mb-1">На рассмотрении</p>
+                        <p class="text-3xl font-bold text-amber-900">{{ statistics.pending_applications || 0 }}</p>
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-amber-500 rounded-xl">
+                        <i class="pi pi-clock text-white text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 shadow-md border border-green-200/50 hover:shadow-lg transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-green-600 mb-1">Одобрено</p>
+                        <p class="text-3xl font-bold text-green-900">{{ statistics.accepted_applications || 0 }}</p>
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-green-500 rounded-xl">
+                        <i class="pi pi-check-circle text-white text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 shadow-md border border-purple-200/50 hover:shadow-lg transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-purple-600 mb-1">Команд</p>
+                        <p class="text-3xl font-bold text-purple-900">{{ teams.length || 0 }}</p>
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-purple-500 rounded-xl">
+                        <i class="pi pi-users text-white text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Основной контент -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Описание и навыки -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Описание кейса -->
+                <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                        <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                            <i class="pi pi-file-edit text-indigo-600"></i>
+                            Описание кейса
+                        </h2>
+                    </div>
+                    <div class="px-6 py-6">
+                        <p class="text-gray-700 leading-relaxed whitespace-pre-line">{{ caseData.description || 'Описание не указано' }}</p>
+                    </div>
+                </div>
+
+                <!-- Требуемые навыки -->
+                <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                        <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                            <i class="pi pi-star text-amber-500"></i>
+                            Требуемые навыки
+                        </h2>
+                    </div>
+                    <div class="px-6 py-6">
+                        <div v-if="caseData.skills && caseData.skills.length > 0" class="flex flex-wrap gap-3">
+                            <span
+                                v-for="skill in caseData.skills"
+                                :key="skill.id"
+                                class="px-4 py-2 bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 text-sm font-medium rounded-lg border border-indigo-200 shadow-sm"
+                            >
+                                {{ skill.name }}
+                            </span>
+                        </div>
+                        <div v-else class="text-center py-8">
+                            <i class="pi pi-info-circle text-4xl text-gray-300 mb-3"></i>
+                            <p class="text-gray-500 text-sm">Навыки не указаны</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Детали кейса - боковая панель -->
+            <div class="space-y-6">
+                <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden sticky top-6">
+                    <div class="px-6 py-4 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-200">
+                        <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                            <i class="pi pi-info-circle text-indigo-600"></i>
+                            Детали кейса
+                        </h2>
+                    </div>
+                    <div class="px-6 py-6 space-y-5">
+                        <!-- Дедлайн -->
+                        <div class="pb-5 border-b border-gray-100">
+                            <div class="flex items-start gap-3">
+                                <div class="p-2 bg-red-100 rounded-lg">
+                                    <i class="pi pi-calendar text-red-600"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Дедлайн</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ formatDate(caseData.deadline) || 'Не указан' }}</p>
+                                    <p :class="[
+                                        'text-xs font-medium mt-1',
+                                        isDeadlineSoon(caseData.deadline) ? 'text-red-600' : 'text-gray-500'
+                                    ]">
+                                        {{ daysUntilDeadline(caseData.deadline) }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Размер команды -->
+                        <div class="pb-5 border-b border-gray-100">
+                            <div class="flex items-start gap-3">
+                                <div class="p-2 bg-blue-100 rounded-lg">
+                                    <i class="pi pi-users text-blue-600"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Размер команды</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ caseData.required_team_size || 1 }} человек</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Дата создания -->
+                        <div>
+                            <div class="flex items-start gap-3">
+                                <div class="p-2 bg-gray-100 rounded-lg">
+                                    <i class="pi pi-clock text-gray-600"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Дата создания</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ formatDate(caseData.created_at) }}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
-
-                    <div v-if="applications.data.length === 0" class="text-center py-8">
-                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">Заявок нет</h3>
-                        <p class="mt-1 text-sm text-gray-500">
-                            {{
-                                applicationFilters.status 
-                                    ? `Нет заявок со статусом "${getStatusLabel(applicationFilters.status)}".` 
-                                    : 'Пока нет заявок на этот кейс.'
-                            }}
-                        </p>
-                    </div>
-
-                    <div v-else class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Лидер
-                                    </th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Размер команды
-                                    </th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Дата подачи
-                                    </th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Статус
-                                    </th>
-                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Действия
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <tr v-for="application in applications.data" :key="application.id">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 h-10 w-10">
-                                                <img 
-                                                    class="h-10 w-10 rounded-full object-cover" 
-                                                    :src="application.leader.avatar_url || '/images/default-avatar.png'" 
-                                                    :alt="application.leader.name"
-                                                />
-                                            </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">
-                                                    {{ application.leader.name }}
-                                                </div>
-                                                <div class="text-sm text-gray-500">
-                                                    {{ application.leader.email }}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ application.team_size }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ formatDate(application.created_at) }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span
-                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                                            :class="getStatusClass(application.status?.name)"
-                                        >
-                                            {{ application.status?.label || application.status?.name }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div class="flex justify-end space-x-2">
-                                            <Link
-                                                :href="route('partner.cases.applications.show', { application: application.id })"
-                                                class="text-blue-600 hover:text-blue-900"
-                                            >
-                                                Просмотреть
-                                            </Link>
-                                            <button
-                                                v-if="application.status?.name === 'pending'"
-                                                @click="approveApplication(application.id)"
-                                                class="text-green-600 hover:text-green-900"
-                                            >
-                                                Одобрить
-                                            </button>
-                                            <button
-                                                v-if="application.status?.name === 'pending'"
-                                                @click="rejectApplication(application.id)"
-                                                class="text-red-600 hover:text-red-900"
-                                            >
-                                                Отклонить
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Pagination for Applications -->
-                    <Pagination v-if="applications.links.length > 2" :links="applications.links" class="mt-6" />
                 </div>
+            </div>
+        </div>
 
-                <!-- Команды Tab -->
-                <div v-else-if="currentTab === 'teams'">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Одобренные команды</h3>
-                    
-                    <div v-if="teams.length === 0" class="text-center py-8">
-                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">Команд пока нет</h3>
-                        <p class="mt-1 text-sm text-gray-500">
-                            Нет одобренных команд для этого кейса.
-                        </p>
-                    </div>
-
-                    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div 
-                            v-for="team in teams" 
-                            :key="team.id"
-                            class="border border-gray-200 rounded-lg p-4"
+        <!-- Заявки -->
+        <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                        <i class="pi pi-file text-indigo-600"></i>
+                        Заявки на кейс
+                    </h2>
+                    <div class="flex gap-2">
+                        <Select
+                            v-model="applicationFilters.status"
+                            label="Статус"
+                            :options="statusFilterOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Все статусы"
+                            @update:modelValue="loadApplications"
+                        />
+                        <a
+                            :href="route('partner.cases.applications.export', { case: caseData.id })"
+                            class="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
                         >
-                            <div class="flex justify-between items-start">
+                            <i class="pi pi-download"></i>
+                            Экспорт (Excel)
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6">
+                <div v-if="applications.data.length === 0" class="text-center py-12">
+                    <div class="max-w-md mx-auto">
+                        <div class="mx-auto w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-4">
+                            <i class="pi pi-file text-4xl text-gray-400"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Заявок пока нет</h3>
+                        <p class="text-sm text-gray-500">
+                            {{ applicationFilters.status 
+                                ? `Нет заявок со статусом "${getStatusLabel(applicationFilters.status)}".` 
+                                : 'На этот кейс еще не было подано заявок от студентов.' }}
+                        </p>
+                    </div>
+                </div>
+
+                <div v-else class="space-y-4">
+                    <div
+                        v-for="application in applications.data"
+                        :key="application.id"
+                        class="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
+                    >
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <img 
+                                    class="h-12 w-12 rounded-full object-cover" 
+                                    :src="application.leader?.avatar_url || '/images/default-avatar.png'" 
+                                    :alt="application.leader?.name"
+                                />
                                 <div>
-                                    <h4 class="text-md font-medium text-gray-900">Команда: {{ team.leader.name }}</h4>
-                                    <p class="text-sm text-gray-500">Количество участников: {{ team.members.length }}</p>
+                                    <p class="text-sm font-semibold text-gray-900">{{ application.leader?.name }}</p>
+                                    <p class="text-xs text-gray-500">{{ application.leader?.email }}</p>
+                                    <p class="text-xs text-gray-500 mt-1">Размер команды: {{ application.team_size || 1 }}</p>
                                 </div>
-                                <Link 
-                                    :href="route('partner.teams.show', { application: team.id })" 
-                                    class="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <span
+                                    class="px-3 py-1 rounded-full text-xs font-medium"
+                                    :class="getStatusClass(application.status?.name)"
                                 >
-                                    Подробнее
-                                </Link>
-                            </div>
-                            <div class="mt-3">
-                                <div class="flex items-center text-sm text-gray-500">
-                                    <svg class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
-                                    </svg>
-                                    Прогресс: {{ team.progress || 0 }}%
+                                    {{ application.status?.label || application.status?.name }}
+                                </span>
+                                <div class="flex gap-2">
+                                    <button
+                                        v-if="application.status?.name === 'pending'"
+                                        @click="approveApplication(application.id)"
+                                        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                                    >
+                                        Одобрить
+                                    </button>
+                                    <button
+                                        v-if="application.status?.name === 'pending'"
+                                        @click="rejectApplication(application.id)"
+                                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+                                    >
+                                        Отклонить
+                                    </button>
                                 </div>
                             </div>
+                        </div>
+                        <div class="mt-3 text-xs text-gray-500">
+                            Подана: {{ formatDate(application.created_at) }}
                         </div>
                     </div>
                 </div>
 
-                <!-- Статистика Tab -->
-                <div v-else-if="currentTab === 'stats'">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Статистика кейса</h3>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                        <div class="bg-white p-4 rounded-lg shadow border">
-                            <p class="text-sm font-medium text-gray-500">Всего заявок</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ statistics.total_applications }}</p>
-                        </div>
-                        <div class="bg-white p-4 rounded-lg shadow border">
-                            <p class="text-sm font-medium text-gray-500">Ожидают</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ statistics.pending_applications }}</p>
-                        </div>
-                        <div class="bg-white p-4 rounded-lg shadow border">
-                            <p class="text-sm font-medium text-gray-500">Одобренные</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ statistics.accepted_applications }}</p>
-                        </div>
-                        <div class="bg-white p-4 rounded-lg shadow border">
-                            <p class="text-sm font-medium text-gray-500">Конверсия</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ statistics.conversion_rate }}%</p>
+                <!-- Pagination -->
+                <Pagination v-if="applications.links && applications.links.length > 2" :links="applications.links" class="mt-6" />
+            </div>
+        </div>
+
+        <!-- Команды -->
+        <div v-if="teams.length > 0" class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <i class="pi pi-users text-indigo-600"></i>
+                    Одобренные команды ({{ teams.length }})
+                </h2>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div
+                        v-for="team in teams"
+                        :key="team.id"
+                        class="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
+                    >
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h4 class="text-md font-semibold text-gray-900">Команда: {{ team.leader?.name }}</h4>
+                                <p class="text-sm text-gray-500 mt-1">Участников: {{ team.members?.length || 0 }}</p>
+                            </div>
+                            <Link
+                                :href="route('partner.teams.show', { application: team.id })"
+                                class="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                            >
+                                Подробнее
+                            </Link>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
 
-                    <div class="mt-6">
-                        <h4 class="text-md font-medium text-gray-900 mb-4">Детали конверсии</h4>
-                        <div class="bg-white p-4 rounded-lg shadow border">
-                            <div class="flex items-center">
-                                <div class="flex-1">
-                                    <div class="h-4 bg-gray-200 rounded-full overflow-hidden">
-                                        <div 
-                                            class="h-full bg-blue-600 rounded-full" 
-                                            :style="{ width: statistics.conversion_rate + '%' }"
-                                        ></div>
-                                    </div>
-                                </div>
-                                <div class="ml-4 text-sm text-gray-500">
-                                    {{ statistics.accepted_applications }} из {{ statistics.total_applications }} заявок принято
-                                </div>
+        <!-- Секция опасных действий -->
+        <div class="bg-white rounded-xl shadow-md border border-red-200 overflow-hidden">
+            <div class="px-6 py-4 bg-gradient-to-r from-red-50 to-orange-50 border-b border-red-200">
+                <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <i class="pi pi-exclamation-triangle text-red-600"></i>
+                    Опасные действия
+                </h2>
+            </div>
+            <div class="px-6 py-6 space-y-4">
+                <!-- Архивирование -->
+                <div v-if="caseData.status !== 'archived'" class="flex items-center justify-between pb-4 border-b border-gray-200">
+                    <div class="flex-1">
+                        <h3 class="text-sm font-semibold text-gray-900 mb-1">Архивирование кейса</h3>
+                        <p class="text-sm text-gray-600">
+                            Кейс будет перемещен в архив и скрыт от студентов. Вы сможете восстановить его позже.
+                        </p>
+                    </div>
+                    <button
+                        @click="confirmArchive"
+                        class="ml-6 inline-flex items-center gap-2 px-4 py-2.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 focus:outline-none transition-colors font-medium shadow-sm"
+                    >
+                        <i class="pi pi-archive"></i>
+                        Архивировать
+                    </button>
+                </div>
+
+                <!-- Удаление -->
+                <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                        <h3 class="text-sm font-semibold text-gray-900 mb-1">Удаление кейса</h3>
+                        <p class="text-sm text-gray-600">
+                            Это действие нельзя отменить. Все данные кейса, включая заявки и связанную информацию, будут удалены безвозвратно.
+                        </p>
+                    </div>
+                    <button
+                        @click="confirmDelete"
+                        class="ml-6 inline-flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none transition-colors font-medium shadow-sm"
+                    >
+                        <i class="pi pi-trash"></i>
+                        Удалить кейс
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно подтверждения архивирования -->
+        <div 
+            v-if="showArchiveModal" 
+            class="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
+            @click.self="showArchiveModal = false"
+        >
+            <div class="relative bg-white rounded-xl shadow-2xl max-w-md w-full border border-gray-200">
+                <div class="p-6">
+                    <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-amber-100 mb-4">
+                        <i class="pi pi-archive text-3xl text-amber-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 text-center mb-2">Подтверждение архивирования</h3>
+                    <div class="mt-4">
+                        <p class="text-sm text-gray-600 mb-2 text-center">
+                            Вы уверены, что хотите архивировать кейс
+                        </p>
+                        <p class="text-sm font-semibold text-gray-900 mb-4 text-center">"{{ caseData.title }}"?</p>
+                        
+                        <p class="text-xs text-amber-600 bg-amber-50 rounded-lg p-3">
+                            Кейс будет перемещен в архив и скрыт от студентов. Вы сможете восстановить его позже.
+                        </p>
+                    </div>
+                    <div class="flex justify-center gap-3 mt-6">
+                        <button
+                            @click="showArchiveModal = false"
+                            class="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                        >
+                            Отмена
+                        </button>
+                        <button
+                            @click="archiveCase"
+                            :disabled="processing"
+                            class="px-6 py-2.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                        >
+                            <span v-if="processing">Архивирование...</span>
+                            <span v-else>Архивировать</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно подтверждения удаления -->
+        <div 
+            v-if="showDeleteModal" 
+            class="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
+            @click.self="showDeleteModal = false"
+        >
+            <div class="relative bg-white rounded-xl shadow-2xl max-w-md w-full border border-gray-200">
+                <div class="p-6">
+                    <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+                        <i class="pi pi-exclamation-triangle text-3xl text-red-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 text-center mb-2">Подтверждение удаления</h3>
+                    <div class="mt-4">
+                        <p class="text-sm text-gray-600 mb-2 text-center">
+                            Вы уверены, что хотите удалить кейс
+                        </p>
+                        <p class="text-sm font-semibold text-gray-900 mb-4 text-center">"{{ caseData.title }}"?</p>
+                        
+                        <div v-if="statistics.total_applications > 0" class="mb-4">
+                            <p class="text-sm text-red-600 font-semibold mb-2">
+                                Внимание! На кейс подано {{ statistics.total_applications }} заявок.
+                            </p>
+                            <div class="text-xs text-red-700 bg-red-50 rounded-lg p-3">
+                                Удаление кейса с активными заявками может привести к потере данных.
                             </div>
                         </div>
+                        
+                        <p v-else class="text-xs text-red-600 bg-red-50 rounded-lg p-3">
+                            Это действие нельзя отменить. Все данные кейса будут удалены безвозвратно.
+                        </p>
+                    </div>
+                    <div class="flex justify-center gap-3 mt-6">
+                        <button
+                            @click="showDeleteModal = false"
+                            class="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                        >
+                            Отмена
+                        </button>
+                        <button
+                            @click="deleteCase"
+                            :disabled="processing"
+                            class="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                        >
+                            <span v-if="processing">Удаление...</span>
+                            <span v-else>Удалить</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -327,10 +472,11 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
-import { Link, router } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
+import { Link, router, Head } from '@inertiajs/vue3';
 import Pagination from '@/Components/Pagination.vue';
 import Select from '@/Components/UI/Select.vue';
+import { route } from 'ziggy-js';
 
 const props = defineProps({
     caseData: {
@@ -343,7 +489,7 @@ const props = defineProps({
     },
     teams: {
         type: Array,
-        required: true
+        default: () => []
     },
     statistics: {
         type: Object,
@@ -355,20 +501,21 @@ const props = defineProps({
     }
 });
 
-// Initialize filters
 const applicationFilters = ref({
     status: null
 });
 
-const currentTab = computed(() => {
-    return props.filters.tab || 'applications';
-});
+// Удаление и архивирование кейса
+const showDeleteModal = ref(false);
+const showArchiveModal = ref(false);
+const processing = ref(false);
 
-const tabs = [
-    { key: 'applications', label: 'Заявки', count: props.applications.meta?.total },
-    { key: 'teams', label: 'Команды', count: props.teams.length },
-    { key: 'stats', label: 'Статистика', count: undefined }
-];
+const statusFilterOptions = computed(() => [
+    { label: 'Все статусы', value: '' },
+    { label: 'Ожидает', value: 'pending' },
+    { label: 'Принято', value: 'accepted' },
+    { label: 'Отклонено', value: 'rejected' },
+]);
 
 const getStatusClass = (status) => {
     switch (status) {
@@ -409,33 +556,64 @@ const getStatusLabel = (status) => {
     }
 };
 
+const getStatusBadgeClass = (status) => {
+    const classMap = {
+        draft: 'bg-gray-100 text-gray-800 border border-gray-200',
+        active: 'bg-green-100 text-green-800 border border-green-200',
+        completed: 'bg-blue-100 text-blue-800 border border-blue-200',
+        archived: 'bg-red-100 text-red-800 border border-red-200',
+    };
+    return classMap[status] || 'bg-gray-100 text-gray-800 border border-gray-200';
+};
+
 const formatDate = (dateString) => {
     if (!dateString) return 'Не указан';
     const date = new Date(dateString);
-    return date.toLocaleDateString('ru-RU');
+    return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
 };
 
-const archiveCase = () => {
-    if (confirm('Вы уверены, что хотите архивировать этот кейс?')) {
-        router.post(route('partner.cases.archive', { case: props.caseData.id }), {}, {
-            preserveState: true,
-            preserveScroll: true
-        });
+const daysUntilDeadline = (deadline) => {
+    if (!deadline) return '';
+    try {
+        const today = new Date();
+        const deadlineDate = new Date(deadline);
+        const diffTime = deadlineDate - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays < 0) return 'Просрочен';
+        if (diffDays === 0) return 'Сегодня';
+        if (diffDays === 1) return 'Завтра';
+        return `Через ${diffDays} дн.`;
+    } catch (error) {
+        return '';
     }
 };
 
-const deleteCase = () => {
-    if (props.caseData.applications_count > 0) {
-        alert('Нельзя удалить кейс, если на него есть заявки или команды.');
-        return;
+const isDeadlineSoon = (deadline) => {
+    if (!deadline) return false;
+    try {
+        const today = new Date();
+        const deadlineDate = new Date(deadline);
+        const diffTime = deadlineDate - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays <= 3 && diffDays >= 0;
+    } catch (error) {
+        return false;
     }
+};
 
-    if (confirm('Вы уверены, что хотите удалить этот кейс? Это действие нельзя отменить.')) {
-        router.delete(route('partner.cases.destroy', { case: props.caseData.id }), {
+const loadApplications = () => {
+    router.get(
+        route('partner.cases.show', {
+            case: props.caseData.id,
+            status: applicationFilters.value.status || undefined
+        }),
+        {},
+        {
             preserveState: true,
             preserveScroll: true
-        });
-    }
+        }
+    );
 };
 
 const approveApplication = (applicationId) => {
@@ -456,25 +634,50 @@ const rejectApplication = (applicationId) => {
     }
 };
 
-const statusFilterOptions = computed(() => [
-    { label: 'Все статусы', value: '' },
-    { label: 'Ожидает', value: 'pending' },
-    { label: 'Принято', value: 'accepted' },
-    { label: 'Отклонено', value: 'rejected' },
-])
+const confirmArchive = () => {
+    showArchiveModal.value = true;
+};
 
-const loadApplications = () => {
-    router.get(
-        route('partner.cases.show', {
-            case: props.caseData.id,
-            tab: 'applications',
-            status: applicationFilters.value.status || undefined
-        }),
-        {},
-        {
-            preserveState: true,
-            preserveScroll: true
+const archiveCase = () => {
+    processing.value = true;
+    router.post(route('partner.cases.archive', { case: props.caseData.id }), {}, {
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: () => {
+            showArchiveModal.value = false;
+            processing.value = false;
+        },
+        onError: () => {
+            alert('Произошла ошибка при архивировании кейса');
+            showArchiveModal.value = false;
+            processing.value = false;
+        },
+        onFinish: () => {
+            processing.value = false;
         }
-    );
+    });
+};
+
+const confirmDelete = () => {
+    showDeleteModal.value = true;
+};
+
+const deleteCase = () => {
+    processing.value = true;
+    router.delete(route('partner.cases.destroy', { case: props.caseData.id }), {
+        preserveScroll: true,
+        onSuccess: () => {
+            showDeleteModal.value = false;
+            processing.value = false;
+        },
+        onError: () => {
+            alert('Произошла ошибка при удалении кейса');
+            showDeleteModal.value = false;
+            processing.value = false;
+        },
+        onFinish: () => {
+            processing.value = false;
+        }
+    });
 };
 </script>
