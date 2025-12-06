@@ -4,7 +4,7 @@
     title="Студент"
     :show-footer="false"
     :header-props="{
-      logoIcon: '/images/logo/icon.png',
+      logoLink: route('guest.home'),
       logoImage: '/images/logo/logo.png',
       showSearch: false,
       showNotifications: false,

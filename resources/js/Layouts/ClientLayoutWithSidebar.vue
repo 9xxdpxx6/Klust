@@ -16,6 +16,7 @@
     
     <div class="layout-with-sidebar__content">
       <BaseHeader
+        :logo-link="headerProps.logoLink"
         :logo-icon="headerProps.logoIcon"
         :logo-image="headerProps.logoImage"
         :logo-text="headerProps.logoText"
@@ -79,7 +80,7 @@ const props = defineProps({
   headerProps: {
     type: Object,
     default: () => ({
-      logoIcon: '/images/logo/icon.png',
+      logoLink: '/',
       logoImage: '/images/logo/logo.png',
       logoText: 'Кластер',
       showSearch: false,

@@ -40,7 +40,7 @@ const props = defineProps({
   },
   logoIcon: {
     type: String,
-    default: '/images/logo/icon.png',
+    default: null,
     // Иконка (просто буква) - приоритет над logoImage
   },
   logoImage: {
