@@ -48,6 +48,7 @@ Route::any('/.well-known/{path}', function () {
 Route::get('/', [GuestController::class, 'home'])->name('guest.home');
 Route::get('/about', [GuestController::class, 'about'])->name('guest.about');
 Route::get('/cases', [GuestController::class, 'cases'])->name('guest.cases');
+Route::get('/cases/{case}', [GuestController::class, 'show'])->name('guest.cases.show');
 
 // Гость (аутентификация)
 Route::middleware('guest')->group(function () {
