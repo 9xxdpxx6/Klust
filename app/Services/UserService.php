@@ -231,16 +231,28 @@ class UserService
                 ]);
             }
 
-            // Update student profile
+            // Update or create student profile
             $profile = $user->studentProfile;
             if ($profile) {
                 $profile->update([
                     'faculty_id' => $data['faculty_id'] ?? $profile->faculty_id,
                     'course' => $data['course'] ?? $profile->course,
-                    'group_number' => $data['group_number'] ?? $profile->group_number,
+                    'group' => $data['group'] ?? $profile->group,
+                    'specialization' => $data['specialization'] ?? $profile->specialization,
                     'bio' => $data['bio'] ?? $profile->bio,
-                    'telegram' => $data['telegram'] ?? $profile->telegram,
-                    'vk' => $data['vk'] ?? $profile->vk,
+                    'phone' => $data['phone'] ?? $profile->phone,
+                ]);
+            } else {
+                // Create profile if it doesn't exist
+                StudentProfile::create([
+                    'user_id' => $user->id,
+                    'faculty_id' => $data['faculty_id'] ?? null,
+                    'course' => $data['course'] ?? null,
+                    'group' => $data['group'] ?? null,
+                    'specialization' => $data['specialization'] ?? null,
+                    'bio' => $data['bio'] ?? null,
+                    'phone' => $data['phone'] ?? null,
+                    'total_points' => 0,
                 ]);
             }
 
@@ -430,7 +442,7 @@ class UserService
                 'user_id' => $user->id,
                 'faculty_id' => $data['faculty_id'] ?? null,
                 'course' => $data['course'] ?? null,
-                'group_number' => $data['group_number'] ?? null,
+                'group' => $data['group'] ?? null,
                 'total_points' => 0,
             ]),
             'partner' => $this->createPartnerProfile($user, $data),

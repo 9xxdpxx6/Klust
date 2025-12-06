@@ -26,10 +26,16 @@ class ProfileController extends Controller
      */
     public function show(): Response
     {
-        $user = auth()->user()->load('studentProfile');
+        $user = auth()->user()->load(['studentProfile.faculty']);
+        
+        $faculties = \App\Models\Faculty::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'code']);
 
         return Inertia::render('Client/Student/Profile/Index', [
             'user' => $user,
+            'studentProfile' => $user->studentProfile,
+            'faculties' => $faculties,
         ]);
     }
 
@@ -38,10 +44,16 @@ class ProfileController extends Controller
      */
     public function edit(): Response
     {
-        $user = auth()->user()->load('studentProfile');
+        $user = auth()->user()->load(['studentProfile.faculty']);
+        
+        $faculties = \App\Models\Faculty::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'code']);
 
         return Inertia::render('Client/Student/Profile/Edit', [
             'user' => $user,
+            'studentProfile' => $user->studentProfile,
+            'faculties' => $faculties,
         ]);
     }
 

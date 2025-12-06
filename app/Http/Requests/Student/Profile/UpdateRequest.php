@@ -50,6 +50,7 @@ class UpdateRequest extends FormRequest
             'group' => ['nullable', 'string', 'max:255'],
             'specialization' => ['nullable', 'string', 'max:255'],
             'bio' => ['nullable', 'string', 'max:1000'],
+            'phone' => ['nullable', 'string', 'max:255'],
         ];
     }
 
