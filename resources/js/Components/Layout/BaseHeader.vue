@@ -3,7 +3,7 @@
     <!-- Логотип -->
     <div class="base-header__logo">
       <slot name="logo">
-        <a :href="logoLink" class="flex items-center gap-2">
+        <Link :href="logoLink" class="flex items-center gap-2">
           <!-- Иконка (просто буква) - приоритет -->
           <template v-if="logoIcon">
             <img
@@ -29,7 +29,7 @@
           </template>
           <!-- Текстовое лого по умолчанию -->
           <span v-else class="text-primary font-bold text-xl">{{ logoText }}</span>
-        </a>
+        </Link>
       </slot>
     </div>
     
@@ -76,6 +76,7 @@
 
 <script setup>
 import { ref } from 'vue';
+import { Link } from '@inertiajs/vue3';
 import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
 import InputText from 'primevue/inputtext';

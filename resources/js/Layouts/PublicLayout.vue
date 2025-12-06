@@ -263,7 +263,7 @@ import FlashMessage from '@/Components/Shared/FlashMessage.vue'
 defineProps({
     logoIcon: {
         type: String,
-        default: '/images/logo/icon.png',
+        default: null,
     },
     logoImage: {
         type: String,

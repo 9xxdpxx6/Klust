@@ -4,7 +4,7 @@
         <header class="bg-kubgtu-white border-b border-border-light">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-16">
-                    <div class="flex items-center gap-3">
+                    <Link :href="route('guest.home')" class="flex items-center gap-3">
                         <!-- Иконка логотипа -->
                         <img 
                             v-if="logoIcon"
@@ -23,7 +23,7 @@
                         />
                         <!-- Текстовое лого по умолчанию -->
                         <h1 v-else class="text-2xl font-bold text-primary">Кластер</h1>
-                    </div>
+                    </Link>
                     <div class="flex items-center gap-4">
                         <Link
                             v-if="routeExists('login')"
@@ -74,7 +74,7 @@ defineProps({
     },
     logoIcon: {
         type: String,
-        default: '/images/logo/icon.png',
+        default: null,
         // Иконка (просто буква) - используется если указано
     },
     logoImage: {

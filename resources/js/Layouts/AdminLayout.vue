@@ -4,6 +4,7 @@
     title="Админ панель"
     :show-footer="false"
     :header-props="{
+      logoLink: route('guest.home'),
       logoText: 'КубГТУ',
       logoImage: '/images/logo/logo.png',
       showSearch: true,
