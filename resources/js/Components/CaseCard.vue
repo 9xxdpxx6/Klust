@@ -5,7 +5,6 @@
       <div class="flex items-start justify-between gap-3">
         <div class="flex-1 min-w-0">
           <h3 class="text-xl font-bold text-gray-900 mb-2 line-clamp-2">{{ caseData.title }}</h3>
-          <p class="text-sm text-gray-600 font-medium">{{ caseData.partner?.name || caseData.partner?.company_name || caseData.partner?.user?.name || 'Партнер не указан' }}</p>
         </div>
         <Badge :variant="statusVariant" :text="statusText" class="flex-shrink-0" />
       </div>
@@ -27,7 +26,13 @@
       </div>
       
       <!-- Footer info -->
-      <div class="flex items-center justify-between text-sm text-gray-500 pt-2 border-t border-gray-100">
+      <div class="flex items-center justify-between text-sm text-gray-500 mt-auto">
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+          <span>{{ caseData.partner?.name || caseData.partner?.company_name || caseData.partner?.user?.name || 'Партнер не указан' }}</span>
+        </div>
         <div class="flex items-center gap-1.5">
           <i class="pi pi-calendar text-gray-400" />
           <span v-if="caseData.deadline">
@@ -35,15 +40,11 @@
           </span>
           <span v-else class="text-gray-400">Дедлайн не установлен</span>
         </div>
-        <div v-if="caseData.applications_count !== undefined" class="flex items-center gap-1.5">
-          <i class="pi pi-users text-gray-400" />
-          <span>{{ caseData.applications_count }} заявок</span>
-        </div>
       </div>
     </div>
     
     <!-- Actions -->
-    <div v-if="showActions" class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between gap-3 relative z-10">
+    <div v-if="showActions" class="px-4 py-3 bg-white border-t border-gray-200 flex items-center justify-between gap-3 relative z-10">
       <button
         v-if="canEdit"
         type="button"
@@ -55,8 +56,12 @@
       </button>
       <div v-else class="flex-1"></div>
       <div class="flex gap-2 relative z-10">
+        <div v-if="hasApplication" class="inline-flex items-center justify-center px-3 h-8 bg-blue-50 border border-blue-200 rounded-md text-sm">
+          <i class="pi pi-check-circle text-blue-600 mr-2"></i>
+          <span class="font-medium text-blue-700">{{ applicationStatusLabel }}</span>
+        </div>
         <Button
-          v-if="canApply"
+          v-else-if="canApply"
           variant="primary"
           size="sm"
           :loading="applying"
@@ -66,7 +71,7 @@
           Подать заявку
         </Button>
         <Button
-          variant="primary"
+          variant="outline"
           size="sm"
           @click.stop.prevent="handleView"
         >
@@ -103,6 +108,14 @@ const props = defineProps({
   applying: {
     type: Boolean,
     default: false,
+  },
+  hasApplication: {
+    type: Boolean,
+    default: false,
+  },
+  applicationStatus: {
+    type: Object,
+    default: null,
   },
 });
 
@@ -161,6 +174,19 @@ const formatDate = (date) => {
   const d = new Date(date);
   return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }) + ' г.';
 };
+
+const applicationStatusLabel = computed(() => {
+  if (!props.applicationStatus) return 'Заявка подана';
+  
+  const status = props.applicationStatus.status;
+  const statusMap = {
+    pending: 'Заявка подана',
+    accepted: 'Заявка принята',
+    rejected: 'Заявка отклонена',
+  };
+  
+  return statusMap[status] || props.applicationStatus.status_label || 'Заявка подана';
+});
 </script>
 
 <style scoped>

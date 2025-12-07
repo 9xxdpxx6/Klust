@@ -48,12 +48,16 @@
 
             <!-- Кейсы -->
             <div v-if="cases.data && cases.data.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <CaseCard
+                <GuestCaseCard
                     v-for="caseItem in cases.data"
                     :key="caseItem.id"
                     :case-data="caseItem"
-                    :can-apply="true"
-                    :applying="applyingCases.includes(caseItem.id)"
+                    :show-link="false"
+                    :show-team-size="false"
+                    :show-student-actions="true"
+                    :can-apply="!caseItem.user_application"
+                    :has-application="!!caseItem.user_application"
+                    :application-status="caseItem.user_application"
                     @view="() => handleViewCase(caseItem.id)"
                     @apply="() => handleApply(caseItem.id)"
                 />
@@ -74,6 +78,14 @@
                     @page="handlePage"
                 />
             </div>
+
+        <!-- Apply Modal -->
+        <ApplyCaseModal
+            v-if="selectedCase"
+            v-model="showApplyModal"
+            :case-data="selectedCase"
+            @success="handleApplySuccess"
+        />
         </div>
 </template>
 
@@ -83,7 +95,8 @@ import { Head, router } from '@inertiajs/vue3';
 import Card from '@/Components/UI/Card.vue';
 import SearchInput from '@/Components/UI/SearchInput.vue';
 import Select from '@/Components/UI/Select.vue';
-import CaseCard from '@/Components/CaseCard.vue';
+import GuestCaseCard from '@/Components/GuestCaseCard.vue';
+import ApplyCaseModal from '@/Components/ApplyCaseModal.vue';
 import MultiSelect from 'primevue/multiselect';
 import Paginator from 'primevue/paginator';
 import { routeExists } from '@/Utils/routes';
@@ -115,7 +128,8 @@ const filters = ref({
     search: props.filters.search || '',
 });
 
-const applyingCases = ref([]);
+const showApplyModal = ref(false);
+const selectedCase = ref(null);
 
 const partnerOptions = [
     { label: 'Все партнеры', value: '' },
@@ -167,16 +181,18 @@ const handleViewCase = (caseId) => {
 
 const handleApply = (caseId) => {
     try {
-        applyingCases.value.push(caseId);
-        router.post(route('student.cases.apply', caseId), {}, {
-            preserveScroll: true,
-            onFinish: () => {
-                applyingCases.value = applyingCases.value.filter(id => id !== caseId);
-            },
-        });
+        const caseItem = props.cases.data.find(c => c.id === caseId);
+        if (caseItem) {
+            selectedCase.value = caseItem;
+            showApplyModal.value = true;
+        }
     } catch (e) {
-        console.error('Error submitting application:', e);
-        applyingCases.value = applyingCases.value.filter(id => id !== caseId);
+        console.error('Error opening apply modal:', e);
     }
+};
+
+const handleApplySuccess = () => {
+    // Обновляем данные после успешной подачи заявки
+    router.reload({ only: ['cases'] });
 };
 </script>
