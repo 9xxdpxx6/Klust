@@ -58,12 +58,6 @@ class CasesController extends Controller
                 $query->whereNull('deadline')
                     ->orWhere('deadline', '>=', now());
             })
-            ->whereNotExists(function ($query) use ($user): void {
-                $query->selectRaw(1)
-                    ->from('case_applications')
-                    ->whereColumn('case_applications.case_id', 'cases.id')
-                    ->where('case_applications.leader_id', $user->id);
-            })
             ->with(['partner', 'skills']);
 
         $pagination = $caseFilter->getPaginationParams();
@@ -72,6 +66,25 @@ class CasesController extends Controller
             ->apply($casesQuery)
             ->paginate($pagination['per_page'])
             ->withQueryString();
+
+        // Добавить информацию о заявках студента для каждого кейса
+        $cases->getCollection()->transform(function ($case) use ($user) {
+            $application = $this->applicationService->getStudentApplicationStatus($user, $case);
+            if ($application) {
+                // Загрузить статус, если еще не загружен
+                if (!$application->relationLoaded('status')) {
+                    $application->load('status');
+                }
+                $case->user_application = [
+                    'id' => $application->id,
+                    'status' => $application->status->name ?? null,
+                    'status_label' => $application->status->label ?? null,
+                ];
+            } else {
+                $case->user_application = null;
+            }
+            return $case;
+        });
 
         return Inertia::render('Client/Student/Cases/Index', [
             'cases' => $cases,

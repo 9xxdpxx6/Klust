@@ -60,66 +60,12 @@
 
                     <!-- Cases -->
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                        <div
+                        <GuestCaseCard
                             v-for="caseItem in cases.data"
                             :key="caseItem.id"
-                            class="bg-kubgtu-white p-6 rounded-xl shadow-sm border border-border-light hover:shadow-lg transition-shadow flex flex-col"
-                        >
-                            <!-- Case Header -->
-                            <div class="mb-4">
-                                <h3 class="text-xl font-semibold text-text-primary mb-2">
-                                    {{ caseItem.title }}
-                                </h3>
-                            </div>
-
-                            <!-- Description -->
-                            <p class="text-text-secondary mb-4 line-clamp-3">
-                                {{ caseItem.description }}
-                            </p>
-
-                            <!-- Skills -->
-                            <div class="flex flex-wrap gap-2 mb-4">
-                                <span
-                                    v-for="skill in caseItem.skills.slice(0, 4)"
-                                    :key="skill.id"
-                                    class="px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded"
-                                >
-                                    {{ skill.name }}
-                                </span>
-                                <span
-                                    v-if="caseItem.skills.length > 4"
-                                    class="px-2 py-1 text-xs font-medium bg-gray-100 text-text-secondary rounded"
-                                >
-                                    + ещё {{ caseItem.skills.length - 4 }}
-                                </span>
-                            </div>
-
-                            <!-- Info above border -->
-                            <div class="flex items-center justify-between text-sm text-text-secondary mt-auto pb-2">
-                                <div class="flex items-center gap-2">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                    </svg>
-                                    <span>{{ caseItem.partner?.user?.name || 'Партнер' }}</span>
-                                </div>
-                                <div class="flex items-center gap-1">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                    </svg>
-                                    <span>{{ caseItem.required_team_size }} чел.</span>
-                                </div>
-                            </div>
-
-                            <!-- Footer with button -->
-                            <div class="border-t border-border-light pt-3">
-                                <Link
-                                    :href="route('guest.cases.show', caseItem.id)"
-                                    class="w-full px-4 py-2 text-sm font-medium text-center text-kubgtu-white bg-primary rounded-lg hover:bg-primary-dark transition-colors inline-block"
-                                >
-                                    Подробнее
-                                </Link>
-                            </div>
-                        </div>
+                            :case-data="caseItem"
+                            :link-url="route('guest.cases.show', caseItem.id)"
+                        />
                     </div>
 
                     <!-- Pagination -->
@@ -169,6 +115,7 @@
 import { computed } from 'vue'
 import { Head, Link, usePage } from '@inertiajs/vue3'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
+import GuestCaseCard from '@/Components/GuestCaseCard.vue'
 
 const page = usePage()
 
