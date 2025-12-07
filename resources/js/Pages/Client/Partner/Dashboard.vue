@@ -1,5 +1,6 @@
 <template>
     <div class="space-y-6">
+        <Head title="Панель партнера" />
         <!-- Заголовок с градиентом -->
         <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-xl shadow-lg overflow-hidden">
             <div class="px-6 py-8">
@@ -178,7 +179,7 @@
 </template>
 
 <script setup>
-import { router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import CaseCard from '@/Components/CaseCard.vue';
 import { routeExists } from '@/Utils/routes';
 import { route } from 'ziggy-js';

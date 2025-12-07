@@ -1,5 +1,6 @@
 <template>
     <div class="space-y-6">
+        <Head title="Каталог кейсов" />
             <div>
                 <h1 class="text-3xl font-bold text-text-primary mb-2">Каталог кейсов</h1>
                 <p class="text-text-secondary">Выберите кейс для подачи заявки</p>
@@ -78,7 +79,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import Card from '@/Components/UI/Card.vue';
 import SearchInput from '@/Components/UI/SearchInput.vue';
 import Select from '@/Components/UI/Select.vue';

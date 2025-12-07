@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { router, Link, usePage } from '@inertiajs/vue3'
+import { router, Link, Head, usePage } from '@inertiajs/vue3'
 import { route } from 'ziggy-js'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 import Button from '@/Components/UI/Button.vue'
@@ -76,6 +76,7 @@ const formatDate = (dateString) => {
 
 <template>
     <PublicLayout>
+        <Head :title="`Кейс: ${caseData.title}`" />
         <!-- Hero Section -->
         <section class="bg-gradient-to-br from-primary to-primary-dark text-white py-16">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

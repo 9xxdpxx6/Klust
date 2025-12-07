@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { useForm } from '@inertiajs/vue3'
+import { Head, useForm } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import Card from '@/Components/UI/Card.vue'
 import Button from '@/Components/UI/Button.vue'
@@ -199,6 +199,7 @@ const isProfileFilled = computed(() => {
 </script>
 
 <template>
+    <Head title="Профиль администратора" />
     <div class="space-y-6">
         <div class="max-w-4xl mx-auto">
             <div class="flex items-center justify-between mb-6">

@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { Head, router } from '@inertiajs/vue3'
 import { route } from 'ziggy-js'
 import Card from '@/Components/UI/Card.vue'
 import Badge from '@/Components/UI/Badge.vue'
@@ -56,6 +56,7 @@ const viewTeam = (application) => {
 </script>
 
 <template>
+    <Head title="Мои кейсы" />
     <div class="max-w-7xl mx-auto px-4 py-8">
             <div class="flex items-center justify-between mb-6">
                 <h1 class="text-3xl font-bold">Мои кейсы</h1>

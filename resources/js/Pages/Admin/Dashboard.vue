@@ -1,5 +1,6 @@
 <template>
     <div class="space-y-6">
+        <Head title="Панель управления" />
         <!-- Заголовок с градиентом -->
         <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-xl shadow-lg overflow-hidden">
             <div class="px-6 py-8">
@@ -315,7 +316,7 @@
 
 <script setup>
 import { computed } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import StatsWidget from '@/Components/UI/StatsWidget.vue';
 import Card from '@/Components/UI/Card.vue';
 import Badge from '@/Components/UI/Badge.vue';

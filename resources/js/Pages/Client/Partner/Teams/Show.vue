@@ -1,5 +1,6 @@
 <template>
     <div class="space-y-6">
+        <Head :title="`Команда: ${team.leader.name}`" />
         <div class="flex justify-between items-center">
             <h1 class="text-2xl font-bold text-gray-900">Команда: {{ team.leader.name }}</h1>
             <Link
@@ -183,7 +184,7 @@
 </template>
 
 <script setup>
-import { Link } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 
 const props = defineProps({
     team: {

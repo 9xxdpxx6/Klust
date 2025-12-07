@@ -1,5 +1,6 @@
 <template>
     <div class="space-y-6">
+        <Head title="Аналитика" />
         <h1 class="text-2xl font-bold text-gray-900">Аналитика</h1>
 
         <!-- Filters -->
@@ -250,7 +251,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import DatePicker from '@/Components/UI/DatePicker.vue';
 import Select from '@/Components/UI/Select.vue';
 import {

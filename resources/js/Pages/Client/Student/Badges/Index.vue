@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { Head } from '@inertiajs/vue3'
 import Card from '@/Components/UI/Card.vue'
 import ProgressBar from '@/Components/UI/ProgressBar.vue'
 
@@ -41,6 +42,7 @@ const recentBadge = computed(() => {
 </script>
 
 <template>
+    <Head title="Мои достижения" />
     <div class="space-y-6">
         <div class="max-w-7xl mx-auto px-4 py-8">
             <h1 class="text-3xl font-bold mb-6">Мои достижения</h1>

@@ -1,5 +1,6 @@
 <template>
     <div class="space-y-6">
+        <Head title="Кейсы" />
         <div class="flex justify-between items-center">
             <h1 class="text-2xl font-bold text-gray-900">Кейсы</h1>
             <Button
@@ -176,7 +177,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { usePage, router, Link } from '@inertiajs/vue3';
+import { Head, usePage, router, Link } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import Pagination from '@/Components/Pagination.vue';
 import SearchInput from '@/Components/UI/SearchInput.vue';
