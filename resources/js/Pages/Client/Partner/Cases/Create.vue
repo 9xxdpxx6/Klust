@@ -1,5 +1,6 @@
 <template>
     <div class="space-y-6">
+        <Head title="Создать кейс" />
         <h1 class="text-2xl font-bold text-gray-900">Создать кейс</h1>
 
         <div class="bg-white shadow-sm rounded-lg p-6">
@@ -188,7 +189,7 @@
 
 <script setup>
 import { ref, reactive } from 'vue';
-import { Link, router } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import DatePicker from '@/Components/UI/DatePicker.vue';
 
 const props = defineProps({

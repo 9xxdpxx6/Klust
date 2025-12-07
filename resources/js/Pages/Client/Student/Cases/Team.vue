@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { useForm } from '@inertiajs/vue3'
+import { Head, useForm } from '@inertiajs/vue3'
 import Card from '@/Components/UI/Card.vue'
 import Badge from '@/Components/UI/Badge.vue'
 import Button from '@/Components/UI/Button.vue'
@@ -61,6 +61,7 @@ const skillsMatchPercentage = () => {
 
 <template>
     <div class="space-y-6">
+        <Head :title="`Команда: ${application.case.title}`" />
         <div class="max-w-7xl mx-auto px-4 py-8">
             <!-- Breadcrumbs -->
             <nav class="mb-6 text-sm">

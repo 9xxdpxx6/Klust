@@ -1,5 +1,6 @@
 <template>
     <div class="space-y-6">
+        <Head :title="`Редактировать кейс: ${caseData.title}`" />
         <h1 class="text-2xl font-bold text-gray-900">Редактировать кейс: {{ caseData.title }}</h1>
 
         <div class="bg-white shadow-sm rounded-lg p-6">
@@ -197,7 +198,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
-import { Link, router } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import DatePicker from '@/Components/UI/DatePicker.vue';
 
 const props = defineProps({

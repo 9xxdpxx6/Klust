@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useForm, router } from '@inertiajs/vue3'
+import { Head, useForm, router } from '@inertiajs/vue3'
 import Card from '@/Components/UI/Card.vue'
 import Button from '@/Components/UI/Button.vue'
 import ProgressBar from '@/Components/UI/ProgressBar.vue'
@@ -77,6 +77,7 @@ const exitSession = () => {
 </script>
 
 <template>
+    <Head :title="`Симулятор: ${session.simulator.title}`" />
     <div class="space-y-6">
         <div class="min-h-screen bg-gray-50">
             <!-- Header -->

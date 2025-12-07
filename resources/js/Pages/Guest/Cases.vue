@@ -1,5 +1,6 @@
 <template>
     <PublicLayout>
+        <Head title="Каталог кейсов" />
         <!-- Hero Section -->
         <section class="bg-gradient-to-br from-primary to-primary-dark text-white py-16">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -166,7 +167,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { Link, usePage } from '@inertiajs/vue3'
+import { Head, Link, usePage } from '@inertiajs/vue3'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 
 const page = usePage()

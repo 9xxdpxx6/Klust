@@ -1,5 +1,6 @@
 <template>
     <div class="space-y-6">
+        <Head title="Профиль студента" />
         <h1 class="text-2xl font-bold text-gray-900">Профиль студента</h1>
 
         <div class="bg-white shadow-sm rounded-lg p-6">
@@ -266,7 +267,7 @@
 
 <script setup>
 import { ref, reactive, watch } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import AvatarEditor from '@/Components/Shared/AvatarEditor.vue';
 import Slider from 'primevue/slider';
 

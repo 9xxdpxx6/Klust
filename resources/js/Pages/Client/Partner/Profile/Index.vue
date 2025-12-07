@@ -1,5 +1,6 @@
 <template>
     <div class="space-y-6">
+        <Head title="Профиль партнера" />
         <h1 class="text-2xl font-bold text-gray-900">Профиль партнера</h1>
 
         <div class="bg-white shadow-sm rounded-lg p-6">
@@ -227,7 +228,7 @@
 
 <script setup>
 import { ref, reactive } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import AvatarEditor from '@/Components/Shared/AvatarEditor.vue';
 
 const props = defineProps({

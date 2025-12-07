@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { Head, router } from '@inertiajs/vue3'
 import { route } from 'ziggy-js'
 import Button from '@/Components/UI/Button.vue'
 import Badge from '@/Components/UI/Badge.vue'
@@ -58,6 +58,7 @@ const formatDate = (dateString) => {
 </script>
 
 <template>
+    <Head :title="`Кейс: ${caseData.title}`" />
     <div class="space-y-6">
         <div class="max-w-5xl mx-auto px-4 py-8">
             <!-- Breadcrumbs -->

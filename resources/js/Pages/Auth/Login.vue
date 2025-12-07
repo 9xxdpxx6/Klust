@@ -1,4 +1,5 @@
 <template>
+    <Head title="Вход" />
     <form @submit.prevent="submit" novalidate class="space-y-6">
             <!-- Flash сообщения -->
             <div v-if="$page.props.flash?.error" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
@@ -84,7 +85,7 @@
 </template>
 
 <script setup>
-import { useForm, Link } from '@inertiajs/vue3';
+import { Head, useForm, Link } from '@inertiajs/vue3';
 
 const form = useForm({
     email: '',

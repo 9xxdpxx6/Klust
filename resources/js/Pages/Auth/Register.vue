@@ -1,4 +1,5 @@
 <template>
+    <Head title="Регистрация" />
     <div class="space-y-6">
             <!-- Выбор типа регистрации -->
             <div class="flex space-x-4 border-b border-gray-200 pb-4">
@@ -303,7 +304,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { useForm, Link } from '@inertiajs/vue3';
+import { Head, useForm, Link } from '@inertiajs/vue3';
 import Select from '@/Components/UI/Select.vue';
 import { route } from 'ziggy-js';
 

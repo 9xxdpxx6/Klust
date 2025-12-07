@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
+import { Head } from '@inertiajs/vue3'
 import Card from '@/Components/UI/Card.vue'
 import Badge from '@/Components/UI/Badge.vue'
 import ProgressBar from '@/Components/UI/ProgressBar.vue'
@@ -78,6 +79,7 @@ const averageLevel = computed(() => {
 </script>
 
 <template>
+    <Head title="Мои навыки" />
     <div class="space-y-6">
         <div class="max-w-7xl mx-auto px-4 py-8">
             <h1 class="text-3xl font-bold mb-6">Мои навыки</h1>

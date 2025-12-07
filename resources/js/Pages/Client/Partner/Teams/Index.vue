@@ -1,5 +1,6 @@
 <template>
     <div class="space-y-6">
+        <Head title="Команды" />
         <h1 class="text-2xl font-bold text-gray-900">Команды</h1>
 
         <!-- Filters -->
@@ -109,7 +110,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { Link, router } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import Select from '@/Components/UI/Select.vue';
 import Pagination from '@/Components/Pagination.vue';
 

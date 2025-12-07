@@ -17,7 +17,7 @@ import GuestLayout from '@/Layouts/GuestLayout.vue';
 const appName = import.meta.env.VITE_APP_NAME || 'Кластер';
 
 createInertiaApp({
-    title: (title) => `${title} - ${appName}`,
+    title: (title) => title ? `${title} - ${appName}` : appName,
     resolve: (name) => {
         const page = resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue'));
         

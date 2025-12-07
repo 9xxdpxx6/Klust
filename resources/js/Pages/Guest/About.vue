@@ -1,5 +1,6 @@
 <template>
     <PublicLayout>
+        <Head title="О проекте" />
         <!-- Hero Section -->
         <section class="bg-gradient-to-br from-primary to-primary-dark text-white py-20">
             <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -232,6 +233,6 @@
 </template>
 
 <script setup>
-import { Link } from '@inertiajs/vue3'
+import { Head, Link } from '@inertiajs/vue3'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 </script>
