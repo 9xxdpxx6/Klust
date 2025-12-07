@@ -62,7 +62,7 @@
                         <div
                             v-for="caseItem in cases.data"
                             :key="caseItem.id"
-                            class="bg-kubgtu-white p-6 rounded-xl shadow-sm border border-border-light hover:shadow-lg transition-shadow"
+                            class="bg-kubgtu-white p-6 rounded-xl shadow-sm border border-border-light hover:shadow-lg transition-shadow flex flex-col"
                         >
                             <!-- Case Header -->
                             <div class="mb-4">
@@ -95,12 +95,12 @@
                                     v-if="caseItem.skills.length > 4"
                                     class="px-2 py-1 text-xs font-medium bg-gray-100 text-text-secondary rounded"
                                 >
-                                    +{{ caseItem.skills.length - 4 }}
+                                    + ещё {{ caseItem.skills.length - 4 }}
                                 </span>
                             </div>
 
                             <!-- Footer -->
-                            <div class="pt-4 border-t border-border-light">
+                            <div class="pt-4 border-t border-border-light mt-auto">
                                 <div class="flex items-center justify-between mb-3">
                                     <div class="flex items-center gap-2 text-sm text-text-secondary">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -116,10 +116,10 @@
                                     </div>
                                 </div>
 
-                                <!-- Кнопки для студентов -->
-                                <div v-if="isStudent" class="flex gap-2">
+                                <!-- Кнопка Подробнее для всех пользователей -->
+                                <div class="flex gap-2">
                                     <Link
-                                        :href="route('student.cases.show', caseItem.id)"
+                                        :href="route('guest.cases.show', caseItem.id)"
                                         class="flex-1 px-4 py-2 text-sm font-medium text-center text-kubgtu-white bg-primary rounded-lg hover:bg-primary-dark transition-colors"
                                     >
                                         Подробнее

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\CaseModel;
+use App\Services\ApplicationService;
 use App\Services\CaseService;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -12,7 +13,8 @@ use Inertia\Response;
 class GuestController extends Controller
 {
     public function __construct(
-        private CaseService $caseService
+        private CaseService $caseService,
+        private ApplicationService $applicationService
     ) {}
 
     /**
@@ -60,6 +62,47 @@ class GuestController extends Controller
 
         return Inertia::render('Guest/Cases', [
             'cases' => $cases,
+        ]);
+    }
+
+    /**
+     * Публичный просмотр кейса (доступен всем)
+     */
+    public function show(CaseModel $case): Response
+    {
+        // Проверить, что кейс активен
+        if ($case->status !== 'active') {
+            abort(404);
+        }
+
+        // Загрузить связи с партнером и его профилем
+        $case->load([
+            'partner' => function ($query) {
+                $query->with(['user.partnerProfile']);
+            },
+            'skills'
+        ]);
+
+        // Получить статус заявки, если пользователь авторизован и является студентом
+        $applicationStatus = null;
+        $user = auth()->user();
+        if ($user && $user->hasRole('student')) {
+            $applicationStatus = $this->applicationService->getStudentApplicationStatus($user, $case);
+            
+            // Загрузить историю статусов, если заявка существует
+            if ($applicationStatus) {
+                $applicationStatus->load([
+                    'status',
+                    'statusHistory.changedBy',
+                    'statusHistory.oldStatus',
+                    'statusHistory.newStatus',
+                ]);
+            }
+        }
+
+        return Inertia::render('Guest/Cases/Show', [
+            'caseData' => $case,
+            'applicationStatus' => $applicationStatus,
         ]);
     }
 }
