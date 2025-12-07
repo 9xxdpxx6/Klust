@@ -187,7 +187,7 @@
         <!-- Footer -->
         <footer class="bg-kubgtu-white border-t border-border-light mt-auto">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     <!-- About -->
                     <div>
                         <h3 class="text-sm font-semibold text-text-primary mb-3">О проекте</h3>
@@ -242,6 +242,27 @@
                                 </li>
                             </template>
                         </ul>
+                    </div>
+
+                    <!-- University Logo -->
+                    <div>
+                        <h3 class="text-sm font-semibold text-text-primary mb-3">Партнер</h3>
+                        <div class="flex flex-col gap-2 items-start">
+                            <img
+                                src="/images/logo/kubstu-logo.png"
+                                alt="Кубанский государственный технологический университет"
+                                class="h-10 w-auto object-contain"
+                                @error="$event.target.style.display = 'none'"
+                            />
+                            <a
+                                href="https://kubstu.ru"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="text-sm text-text-secondary hover:text-primary transition-colors"
+                            >
+                                Официальный сайт
+                            </a>
+                        </div>
                     </div>
                 </div>
 
