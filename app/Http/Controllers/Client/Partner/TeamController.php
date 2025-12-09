@@ -7,8 +7,10 @@ namespace App\Http\Controllers\Client\Partner;
 use App\Filters\TeamFilter;
 use App\Http\Controllers\Controller;
 use App\Models\CaseApplication;
+use App\Models\CaseModel;
 use App\Services\CaseService;
 use App\Services\TeamService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -56,8 +58,10 @@ class TeamController extends Controller
                 ->whereHas('case', function ($caseQuery) use ($partner): void {
                     $caseQuery->where('partner_id', $partner->id);
                 })
-                ->with(['case.partner', 'leader', 'teamMembers.user']);
+                ->with(['case.partner', 'leader', 'status', 'teamMembers.user']);
 
+            // По умолчанию показываем только принятые заявки (команды)
+            // Но если фильтр статуса указан, показываем по фильтру
             if (! $request->filled('status')) {
                 $teamsQuery->accepted();
             }
@@ -69,9 +73,16 @@ class TeamController extends Controller
                 ->paginate($pagination['per_page'])
                 ->withQueryString();
 
+            // Загрузить все кейсы партнера для фильтра
+            $partnerCases = CaseModel::where('partner_id', $partner->id)
+                ->select('id', 'title')
+                ->orderBy('title')
+                ->get();
+
             return Inertia::render('Client/Partner/Teams/Index', [
                 'teams' => $teams,
                 'filters' => $filters,
+                'partnerCases' => $partnerCases,
             ]);
         } catch (\Exception $e) {
             return redirect()
@@ -92,11 +103,11 @@ class TeamController extends Controller
             // Загрузить кейс для проверки прав
             $application->load('case');
 
-            // Проверить права (кейс принадлежит партнеру)
-            $this->authorize('view', $application->case);
+            // Проверить права на просмотр заявки (CaseApplicationPolicy)
+            $this->authorize('view', $application);
 
-            // Загрузить команду со всеми участниками
-            $application->load(['leader', 'teamMembers.user', 'case']);
+            // Загрузить команду со всеми участниками и статусом
+            $application->load(['leader', 'teamMembers.user', 'case', 'status']);
 
             // Получить прогресс команды
             $progress = $this->teamService->getTeamProgress($application);
@@ -109,6 +120,10 @@ class TeamController extends Controller
                 'progress' => $progress,
                 'activityHistory' => $activityHistory,
             ]);
+        } catch (AuthorizationException $e) {
+            return redirect()
+                ->route('partner.teams.index')
+                ->with('error', __('auth.unauthorized'));
         } catch (\Exception $e) {
             return redirect()
                 ->route('partner.teams.index')

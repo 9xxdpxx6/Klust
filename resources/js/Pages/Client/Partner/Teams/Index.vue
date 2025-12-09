@@ -53,39 +53,58 @@
                     <!-- Team Header -->
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex-1">
-                            <h3 class="text-lg font-medium text-gray-900 mb-1">
-                                Команда: {{ team.leader.name }}
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                                Команда #{{ team.id }}
                             </h3>
-                            <p class="text-sm text-gray-500">
+                            <p class="text-sm font-medium text-gray-700 mb-3">
                                 {{ team.case.title }}
                             </p>
                         </div>
                         <span
                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                            :class="getStatusClass(team.status)"
+                            :class="getStatusClass(team.status?.name)"
                         >
-                            {{ getStatusLabel(team.status) }}
+                            {{ getStatusLabel(team.status?.name) }}
                         </span>
                     </div>
 
+                    <!-- Team Members -->
+                    <div class="mb-4">
+                        <p class="text-xs font-medium text-gray-500 mb-2">Состав команды:</p>
+                        <div class="space-y-1">
+                            <!-- Leader -->
+                            <div class="text-sm font-semibold text-gray-900">
+                                • {{ team.leader.name }}
+                            </div>
+                            <!-- Other members -->
+                            <div
+                                v-for="member in team.team_members || []"
+                                :key="member.id"
+                                class="text-sm text-gray-700"
+                            >
+                                • {{ member.user?.name }}
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Team Info -->
-                    <div class="space-y-3 mb-4">
+                    <div class="space-y-2 mb-4 pt-3 border-t border-gray-200">
                         <div class="flex items-center text-sm text-gray-500">
-                            <svg class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <svg class="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                 <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
                             </svg>
-                            Участников: {{ team.team_members.length + 1 }} / {{ team.case.team_size }}
+                            Участников: {{ (team.team_members?.length || 0) + 1 }} / {{ team.case.required_team_size || team.case.team_size }}
                         </div>
 
                         <div class="flex items-center text-sm text-gray-500">
-                            <svg class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <svg class="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
                             </svg>
                             Создана: {{ formatDate(team.created_at) }}
                         </div>
 
                         <div v-if="team.case.deadline" class="flex items-center text-sm text-gray-500">
-                            <svg class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <svg class="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
                             </svg>
                             Дедлайн: {{ formatDate(team.case.deadline) }}
@@ -122,18 +141,11 @@ const props = defineProps({
     filters: {
         type: Object,
         default: () => ({})
+    },
+    partnerCases: {
+        type: Array,
+        default: () => []
     }
-});
-
-// Extract available cases from teams for filtering
-const availableCases = computed(() => {
-    const casesMap = new Map();
-    props.teams.data.forEach(team => {
-        if (team.case && !casesMap.has(team.case.id)) {
-            casesMap.set(team.case.id, team.case);
-        }
-    });
-    return Array.from(casesMap.values());
 });
 
 const filters = ref({
@@ -142,6 +154,8 @@ const filters = ref({
 });
 
 const getStatusClass = (status) => {
+    if (!status) return 'bg-gray-100 text-gray-800';
+    
     switch (status) {
         case 'accepted':
             return 'bg-green-100 text-green-800';
@@ -149,12 +163,16 @@ const getStatusClass = (status) => {
             return 'bg-blue-100 text-blue-800';
         case 'rejected':
             return 'bg-red-100 text-red-800';
+        case 'pending':
+            return 'bg-yellow-100 text-yellow-800';
         default:
             return 'bg-gray-100 text-gray-800';
     }
 };
 
 const getStatusLabel = (status) => {
+    if (!status) return 'Неизвестно';
+    
     switch (status) {
         case 'accepted':
             return 'Активна';
@@ -162,6 +180,8 @@ const getStatusLabel = (status) => {
             return 'Завершена';
         case 'rejected':
             return 'Отклонена';
+        case 'pending':
+            return 'Ожидает';
         default:
             return status;
     }
@@ -187,7 +207,7 @@ const applyFilters = () => {
 
 const caseFilterOptions = computed(() => [
     { label: 'Все кейсы', value: '' },
-    ...availableCases.value.map(caseItem => ({
+    ...props.partnerCases.map(caseItem => ({
         label: caseItem.title,
         value: caseItem.id
     }))

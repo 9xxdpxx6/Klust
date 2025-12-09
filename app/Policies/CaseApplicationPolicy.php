@@ -46,7 +46,7 @@ class CaseApplicationPolicy
                 $application->load('case');
             }
 
-            return $user->partnerProfile?->partner_id === $application->case?->partner_id;
+            return $user->partner?->id === $application->case?->partner_id;
         }
 
         // Админ и учитель
@@ -108,7 +108,7 @@ class CaseApplicationPolicy
                 $application->load('case');
             }
 
-            return $user->partnerProfile?->partner_id === $application->case?->partner_id;
+            return $user->partner?->id === $application->case?->partner_id;
         }
 
         // Админ и учитель
