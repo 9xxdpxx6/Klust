@@ -523,14 +523,14 @@ const simulatorsLinks = computed(() => props.simulators?.links || [])
 const hasActiveFilters = computed(() => {
     return filters.value.search !== '' ||
         filters.value.status !== '' ||
-        filters.value.perPage !== '25'
+        filters.value.perPage !== '30'
 })
 
 // Безопасная инициализация filters
 const filters = ref({
     search: props.filters?.search || '',
     status: props.filters?.status || '',
-    perPage: props.filters?.perPage ? String(props.filters.perPage) : '25',
+    perPage: props.filters?.perPage ? String(props.filters.perPage) : '30',
 })
 
 // Модальные окна
@@ -568,10 +568,9 @@ const statusFilterOptions = computed(() => [
 ])
 
 const perPageOptions = computed(() => [
-    { label: 'Отображать по 10', value: '10' },
-    { label: 'Отображать по 15', value: '15' },
-    { label: 'Отображать по 25', value: '25' },
-    { label: 'Отображать по 50', value: '50' },
+    { label: 'Отображать по 30', value: '30' },
+    { label: 'Отображать по 60', value: '60' },
+    { label: 'Отображать по 100', value: '100' },
 ])
 
 // Таймер для дебаунса
@@ -598,7 +597,7 @@ const resetFilters = () => {
     filters.value = {
         search: '',
         status: '',
-        perPage: '25',
+        perPage: '30',
     }
     updateFilters()
 }

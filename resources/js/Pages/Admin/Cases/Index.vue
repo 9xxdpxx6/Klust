@@ -343,7 +343,7 @@ const hasActiveFilters = computed(() => {
     return filters.value.search !== '' ||
         filters.value.status !== '' ||
         filters.value.partner_id !== '' ||
-        filters.value.perPage !== '25'
+        filters.value.perPage !== '30'
 })
 
 // Безопасная инициализация filters
@@ -351,7 +351,7 @@ const filters = ref({
     search: props.filters?.search || '',
     status: props.filters?.status || '',
     partner_id: props.filters?.partner_id || '',
-    perPage: props.filters?.perPage ? String(props.filters.perPage) : '25',
+    perPage: props.filters?.perPage ? String(props.filters.perPage) : '30',
 })
 
 // Функция перехода к конкретному кейсу
@@ -406,10 +406,9 @@ const partnerFilterOptions = computed(() => [
 ])
 
 const perPageOptions = computed(() => [
-    { label: 'Отображать по 10', value: '10' },
-    { label: 'Отображать по 15', value: '15' },
-    { label: 'Отображать по 25', value: '25' },
-    { label: 'Отображать по 50', value: '50' },
+    { label: 'Отображать по 30', value: '30' },
+    { label: 'Отображать по 60', value: '60' },
+    { label: 'Отображать по 100', value: '100' },
 ])
 
 const resetFilters = () => {
@@ -417,7 +416,7 @@ const resetFilters = () => {
         search: '',
         status: '',
         partner_id: '',
-        perPage: '25',
+        perPage: '30',
     }
     updateFilters()
 }

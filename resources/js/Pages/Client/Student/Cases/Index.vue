@@ -8,41 +8,65 @@
 
             <!-- Фильтры -->
             <Card>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <MultiSelect
-                        v-model="filters.skills"
-                        :options="availableSkills"
-                        optionLabel="name"
-                        optionValue="id"
-                        placeholder="Навыки"
-                        :filter="true"
-                        class="w-full"
-                        @update:modelValue="handleFilter"
-                    />
-                    <Select
-                        v-model="filters.partner_id"
-                        :options="partnerOptions"
-                        optionLabel="label"
-                        optionValue="value"
-                        label="Партнер"
-                        placeholder="Все партнеры"
-                        @update:modelValue="handleFilter"
-                    />
-                    <Select
-                        v-model="filters.status"
-                        :options="statusOptions"
-                        optionLabel="label"
-                        optionValue="value"
-                        label="Статус"
-                        placeholder="Все статусы"
-                        @update:modelValue="handleFilter"
-                    />
-                    <SearchInput
-                        v-model="filters.search"
-                        label="Поиск"
-                        placeholder="Название, описание..."
-                        @input="handleSearch"
-                    />
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 filter-row">
+                    <div class="filter-item">
+                        <SearchInput
+                            v-model="filters.search"
+                            label="Поиск"
+                            placeholder="Название, описание..."
+                            class="w-full"
+                            @input="handleSearch"
+                        />
+                    </div>
+                    <div class="filter-item">
+                        <label class="block text-sm font-medium mb-1">Навыки</label>
+                        <MultiSelect
+                            v-model="filters.skills"
+                            :options="availableSkills"
+                            optionLabel="name"
+                            optionValue="id"
+                            placeholder="Навыки"
+                            :filter="true"
+                            class="w-full"
+                            @update:modelValue="handleFilter"
+                        />
+                    </div>
+                    <div class="filter-item">
+                        <Select
+                            v-model="filters.partner_id"
+                            :options="partnerOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            label="Партнер"
+                            placeholder="Все партнеры"
+                            class="w-full"
+                            @update:modelValue="handleFilter"
+                        />
+                    </div>
+                    <div class="filter-item">
+                        <Select
+                            v-model="filters.status"
+                            :options="statusOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            label="Статус"
+                            placeholder="Все статусы"
+                            class="w-full"
+                            @update:modelValue="handleFilter"
+                        />
+                    </div>
+                    <div class="filter-item">
+                        <Select
+                            v-model="filters.per_page"
+                            :options="perPageOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            label="На странице"
+                            placeholder="Выберите количество"
+                            class="w-full"
+                            @update:modelValue="handleFilter"
+                        />
+                    </div>
                 </div>
             </Card>
 
@@ -90,7 +114,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 import Card from '@/Components/UI/Card.vue';
 import SearchInput from '@/Components/UI/SearchInput.vue';
@@ -121,26 +145,68 @@ const props = defineProps({
     },
 });
 
+// Нормализация skills: преобразуем в массив чисел
+const normalizeSkills = (skills) => {
+    if (!skills) return [];
+    if (!Array.isArray(skills)) {
+        return [Number(skills)].filter(n => !isNaN(n));
+    }
+    return skills.map(s => Number(s)).filter(n => !isNaN(n));
+};
+
+// Нормализация partner_id: преобразуем в число или пустую строку
+const normalizePartnerId = (partnerId) => {
+    if (!partnerId || partnerId === '' || partnerId === '0') return '';
+    const num = Number(partnerId);
+    return isNaN(num) ? '' : num;
+};
+
+// Нормализация status: строка или пустая строка
+const normalizeStatus = (status) => {
+    return status && status !== '' ? String(status) : '';
+};
+
 const filters = ref({
-    skills: props.filters.skills || [],
-    partner_id: props.filters.partner_id || '',
-    status: props.filters.status || '',
-    search: props.filters.search || '',
+    search: props.filters?.search || '',
+    skills: normalizeSkills(props.filters?.skills),
+    partner_id: normalizePartnerId(props.filters?.partner_id),
+    status: normalizeStatus(props.filters?.status),
+    per_page: props.filters?.per_page ? String(props.filters.per_page) : '30',
 });
 
 const showApplyModal = ref(false);
 const selectedCase = ref(null);
 
-const partnerOptions = [
+// Используем computed для опций партнеров, чтобы они обновлялись при изменении props
+const partnerOptions = computed(() => [
     { label: 'Все партнеры', value: '' },
-    ...props.partners.map(p => ({ label: p.name, value: p.id })),
-];
+    ...props.partners.map(p => ({ label: p.name, value: Number(p.id) })),
+]);
 
 const statusOptions = [
     { label: 'Все статусы', value: '' },
     { label: 'Доступные', value: 'active' },
-    { label: 'Закрытые', value: 'closed' },
+    { label: 'Завершенные', value: 'completed' },
 ];
+
+const perPageOptions = [
+    { label: 'Отображать по 30', value: '30' },
+    { label: 'Отображать по 60', value: '60' },
+    { label: 'Отображать по 100', value: '100' },
+];
+
+// Синхронизация filters с props при обновлении страницы
+watch(() => props.filters, (newFilters) => {
+    if (newFilters) {
+        filters.value = {
+            search: newFilters.search || '',
+            skills: normalizeSkills(newFilters.skills),
+            partner_id: normalizePartnerId(newFilters.partner_id),
+            status: normalizeStatus(newFilters.status),
+            per_page: newFilters.per_page ? String(newFilters.per_page) : '30',
+        };
+    }
+}, { immediate: true, deep: true });
 
 let searchTimeout = null;
 const handleSearch = () => {
@@ -152,7 +218,30 @@ const handleSearch = () => {
 
 const handleFilter = () => {
     if (routeExists('student.cases.index')) {
-        router.get(route('student.cases.index'), filters.value, {
+        const filterParams = {};
+        
+        // Добавляем только непустые значения
+        if (filters.value.search) {
+            filterParams.search = filters.value.search;
+        }
+        
+        if (filters.value.skills && filters.value.skills.length > 0) {
+            filterParams.skills = filters.value.skills;
+        }
+        
+        if (filters.value.partner_id && filters.value.partner_id !== '') {
+            filterParams.partner_id = filters.value.partner_id;
+        }
+        
+        if (filters.value.status && filters.value.status !== '') {
+            filterParams.status = filters.value.status;
+        }
+        
+        if (filters.value.per_page) {
+            filterParams.per_page = filters.value.per_page;
+        }
+        
+        router.get(route('student.cases.index'), filterParams, {
             preserveState: true,
             preserveScroll: true,
         });
@@ -196,3 +285,28 @@ const handleApplySuccess = () => {
     router.reload({ only: ['cases'] });
 };
 </script>
+
+<style scoped>
+.filter-row {
+    align-items: flex-start;
+}
+
+.filter-item {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+}
+
+/* Ensure all filter inputs have consistent height */
+:deep(.p-multiselect),
+:deep(.p-select),
+:deep(.p-inputtext) {
+    min-height: 2.5rem;
+}
+
+/* Ensure labels are consistent */
+.filter-item label {
+    min-height: 1.25rem;
+    margin-bottom: 0.25rem;
+}
+</style>

@@ -10,6 +10,8 @@ use App\Http\Requests\Student\Case\AddTeamMemberRequest;
 use App\Http\Requests\Student\Case\ApplyRequest;
 use App\Models\CaseApplication;
 use App\Models\CaseModel;
+use App\Models\Partner;
+use App\Models\Skill;
 use App\Services\ApplicationService;
 use App\Services\CaseService;
 use App\Services\NotificationService;
@@ -42,6 +44,7 @@ class CasesController extends Controller
             'search',
             'skills',
             'partner_id',
+            'status',
             'deadline_from',
             'deadline_to',
             'sort_by',
@@ -49,26 +52,39 @@ class CasesController extends Controller
             'per_page',
         ]);
 
+        // Ensure skills is an array
+        if (isset($filters['skills']) && !is_array($filters['skills'])) {
+            $filters['skills'] = is_string($filters['skills']) 
+                ? explode(',', $filters['skills']) 
+                : [$filters['skills']];
+        }
+
         $caseFilter = new CaseFilter($filters);
 
-        // Базовый запрос: только активные кейсы
+        // Базовый запрос: если статус не указан, показываем только активные
+        // Если статус указан, CaseFilter применит его
         $casesQuery = CaseModel::query()
-            ->where('status', 'active')
             ->where(function ($query): void {
                 $query->whereNull('deadline')
                     ->orWhere('deadline', '>=', now());
             })
             ->with(['partner', 'skills']);
 
+        // Если статус не указан в фильтрах, показываем только активные кейсы
+        if (!isset($filters['status']) || $filters['status'] === '') {
+            $casesQuery->where('status', 'active');
+        }
+
         $pagination = $caseFilter->getPaginationParams();
 
+        /** @var \Illuminate\Contracts\Pagination\LengthAwarePaginator $cases */
         $cases = $caseFilter
             ->apply($casesQuery)
             ->paginate($pagination['per_page'])
-            ->withQueryString();
+            ->appends($request->query());
 
         // Добавить информацию о заявках студента для каждого кейса
-        $cases->getCollection()->transform(function ($case) use ($user) {
+        foreach ($cases->items() as $case) {
             $application = $this->applicationService->getStudentApplicationStatus($user, $case);
             if ($application) {
                 // Загрузить статус, если еще не загружен
@@ -83,12 +99,43 @@ class CasesController extends Controller
             } else {
                 $case->user_application = null;
             }
-            return $case;
-        });
+        }
+
+        // Получаем список партнеров для фильтра
+        $partners = Partner::with('user.partnerProfile')
+            ->get()
+            ->map(function ($partner) {
+                return [
+                    'id' => $partner->id,
+                    'name' => $partner->company_name ?? 'Без названия',
+                ];
+            });
+
+        // Получаем список навыков для фильтра
+        $availableSkills = Skill::query()
+            ->orderBy('name')
+            ->get()
+            ->map(function ($skill) {
+                return [
+                    'id' => $skill->id,
+                    'name' => $skill->name,
+                ];
+            });
+
+        // Возвращаем filters с perPage для фронтенда
+        $frontendFilters = [
+            'search' => $filters['search'] ?? '',
+            'skills' => $filters['skills'] ?? [],
+            'partner_id' => $filters['partner_id'] ?? '',
+            'status' => $filters['status'] ?? '',
+            'per_page' => $pagination['per_page'],
+        ];
 
         return Inertia::render('Client/Student/Cases/Index', [
             'cases' => $cases,
-            'filters' => $filters,
+            'filters' => $frontendFilters,
+            'partners' => $partners,
+            'availableSkills' => $availableSkills,
         ]);
     }
 
