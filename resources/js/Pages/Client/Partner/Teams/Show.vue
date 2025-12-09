@@ -1,8 +1,11 @@
 <template>
     <div class="space-y-6">
-        <Head :title="`Команда: ${team.leader.name}`" />
+        <Head :title="`Команда #${team.id}`" />
         <div class="flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-gray-900">Команда: {{ team.leader.name }}</h1>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Команда #{{ team.id }}</h1>
+                <p class="text-lg font-medium text-gray-700 mt-1">{{ team.case.title }}</p>
+            </div>
             <Link
                 :href="route('partner.teams.index')"
                 class="text-blue-600 hover:text-blue-900 text-sm font-medium"
@@ -14,9 +17,9 @@
         <!-- Case Info -->
         <div class="bg-white shadow-sm rounded-lg p-6 mb-6">
             <div class="flex items-start justify-between">
-                <div>
-                    <h2 class="text-lg font-medium text-gray-900">{{ team.case.title }}</h2>
-                    <p class="mt-1 text-sm text-gray-500">{{ team.case.description }}</p>
+                <div class="flex-1">
+                    <h2 class="text-lg font-medium text-gray-900 mb-2">{{ team.case.title }}</h2>
+                    <p class="text-sm text-gray-500">{{ team.case.description }}</p>
                 </div>
                 <Link
                     :href="route('partner.cases.show', { case: team.case.id })"
@@ -31,14 +34,14 @@
                     <p class="text-sm font-medium text-gray-500">Статус команды</p>
                     <span
                         class="mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                        :class="getStatusClass(team.status)"
+                        :class="getStatusClass(team.status?.name)"
                     >
-                        {{ getStatusLabel(team.status) }}
+                        {{ getStatusLabel(team.status?.name) }}
                     </span>
                 </div>
                 <div>
-                    <p class="text-sm font-medium text-gray-500">Дата создания</p>
-                    <p class="mt-1 text-sm text-gray-900">{{ formatDate(team.created_at) }}</p>
+                    <p class="text-sm font-medium text-gray-500">Дата подачи заявки</p>
+                    <p class="mt-1 text-sm text-gray-900">{{ formatDate(team.submitted_at || team.created_at) }}</p>
                 </div>
                 <div v-if="team.case.deadline">
                     <p class="text-sm font-medium text-gray-500">Дедлайн</p>
@@ -47,32 +50,14 @@
             </div>
         </div>
 
-        <!-- Team Progress -->
+        <!-- Team Statistics -->
         <div class="bg-white shadow-sm rounded-lg p-6 mb-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Прогресс команды</h3>
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Статистика команды</h3>
 
             <div class="space-y-4">
-                <div>
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm font-medium text-gray-700">Общий прогресс</span>
-                        <span class="text-sm font-medium text-gray-900">{{ progress.overall || 0 }}%</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2.5">
-                        <div
-                            class="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
-                            :style="{ width: (progress.overall || 0) + '%' }"
-                        ></div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="border border-gray-200 rounded-lg p-4">
-                        <p class="text-sm font-medium text-gray-500">Задач выполнено</p>
-                        <p class="mt-1 text-2xl font-bold text-gray-900">{{ progress.tasks_completed || 0 }}</p>
-                        <p class="text-xs text-gray-500 mt-1">из {{ progress.tasks_total || 0 }}</p>
-                    </div>
-                    <div class="border border-gray-200 rounded-lg p-4">
-                        <p class="text-sm font-medium text-gray-500">Активность</p>
+                        <p class="text-sm font-medium text-gray-500">Активность команды</p>
                         <p class="mt-1 text-2xl font-bold text-gray-900">{{ progress.activity_score || 0 }}</p>
                         <p class="text-xs text-gray-500 mt-1">балл активности</p>
                     </div>
@@ -88,12 +73,15 @@
         <!-- Team Members -->
         <div class="bg-white shadow-sm rounded-lg p-6 mb-6">
             <h3 class="text-lg font-medium text-gray-900 mb-4">
-                Участники команды ({{ team.team_members.length + 1 }} / {{ team.case.team_size }})
+                Участники команды ({{ (team.team_members?.length || 0) + 1 }} / {{ team.case.required_team_size || team.case.team_size }})
             </h3>
 
             <div class="space-y-4">
                 <!-- Leader -->
-                <div class="flex items-center p-4 border border-gray-200 rounded-lg bg-blue-50">
+                <Link
+                    :href="route('partner.students.show', team.leader.id)"
+                    class="flex items-center p-4 border border-gray-200 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer"
+                >
                     <div class="flex-shrink-0 h-12 w-12">
                         <img
                             class="h-12 w-12 rounded-full object-cover"
@@ -110,30 +98,33 @@
                         </div>
                         <p class="text-sm text-gray-500">{{ team.leader.email }}</p>
                     </div>
-                </div>
+                    <i class="pi pi-arrow-right text-gray-400 ml-4"></i>
+                </Link>
 
                 <!-- Team Members -->
-                <div
+                <Link
                     v-for="member in team.team_members"
                     :key="member.id"
-                    class="flex items-center p-4 border border-gray-200 rounded-lg"
+                    :href="route('partner.students.show', member.user?.id)"
+                    class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                     <div class="flex-shrink-0 h-12 w-12">
                         <img
                             class="h-12 w-12 rounded-full object-cover"
-                            :src="member.user.avatar_url || '/images/default-avatar.png'"
-                            :alt="member.user.name"
+                            :src="member.user?.avatar_url || member.user?.avatar || '/images/default-avatar.png'"
+                            :alt="member.user?.name"
                         />
                     </div>
                     <div class="ml-4 flex-1">
-                        <p class="text-sm font-medium text-gray-900">{{ member.user.name }}</p>
-                        <p class="text-sm text-gray-500">{{ member.user.email }}</p>
+                        <p class="text-sm font-medium text-gray-900">{{ member.user?.name }}</p>
+                        <p class="text-sm text-gray-500">{{ member.user?.email }}</p>
                     </div>
                     <div class="ml-4 text-right">
                         <p class="text-xs text-gray-500">Присоединился</p>
-                        <p class="text-sm text-gray-900">{{ formatDate(member.joined_at) }}</p>
+                        <p class="text-sm text-gray-900">{{ formatDate(member.created_at || member.joined_at) }}</p>
                     </div>
-                </div>
+                    <i class="pi pi-arrow-right text-gray-400 ml-4"></i>
+                </Link>
             </div>
         </div>
 
@@ -171,7 +162,7 @@
                                 <div class="flex-1 min-w-0">
                                     <div>
                                         <p class="text-sm text-gray-900">{{ activity.description }}</p>
-                                        <p class="mt-0.5 text-xs text-gray-500">{{ formatDateTime(activity.created_at) }}</p>
+                                        <p class="mt-0.5 text-xs text-gray-500">{{ formatDateTime(activity.date || activity.created_at) }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -202,6 +193,8 @@ const props = defineProps({
 });
 
 const getStatusClass = (status) => {
+    if (!status) return 'bg-gray-100 text-gray-800';
+    
     switch (status) {
         case 'accepted':
             return 'bg-green-100 text-green-800';
@@ -209,12 +202,16 @@ const getStatusClass = (status) => {
             return 'bg-blue-100 text-blue-800';
         case 'rejected':
             return 'bg-red-100 text-red-800';
+        case 'pending':
+            return 'bg-yellow-100 text-yellow-800';
         default:
             return 'bg-gray-100 text-gray-800';
     }
 };
 
 const getStatusLabel = (status) => {
+    if (!status) return 'Неизвестно';
+    
     switch (status) {
         case 'accepted':
             return 'Активна';
@@ -222,6 +219,8 @@ const getStatusLabel = (status) => {
             return 'Завершена';
         case 'rejected':
             return 'Отклонена';
+        case 'pending':
+            return 'Ожидает';
         default:
             return status;
     }

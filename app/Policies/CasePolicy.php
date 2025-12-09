@@ -29,7 +29,7 @@ class CasePolicy
 
         // Партнер может видеть только свои кейсы
         if ($user->hasRole('partner')) {
-            return $user->partnerProfile?->partner_id === $case->partner_id;
+            return $user->partner?->id === $case->partner_id;
         }
 
         // Студент может видеть только активные кейсы
@@ -111,7 +111,7 @@ class CasePolicy
 
         // Партнер может видеть заявки только на свои кейсы
         if ($user->hasRole('partner')) {
-            return $user->partnerProfile?->partner_id === $case->partner_id;
+            return $user->partner?->id === $case->partner_id;
         }
 
         return false;

@@ -159,6 +159,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/teams', [TeamController::class, 'index'])->name('teams.index');
         Route::get('/teams/{application}', [TeamController::class, 'show'])->name('teams.show');
 
+        // Student Profiles
+        Route::get('/students/{student}', [\App\Http\Controllers\Client\Partner\StudentProfileController::class, 'show'])->name('students.show');
+
         // Analytics
         Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
         Route::get('/analytics/export/cases', [AnalyticsController::class, 'exportCases'])->name('analytics.export.cases');
