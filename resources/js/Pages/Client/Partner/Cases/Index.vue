@@ -44,6 +44,16 @@
         <div class="bg-white shadow-sm rounded-lg p-4 mb-6">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
+                    <SearchInput
+                        v-model="filters.search"
+                        label="Поиск по названию"
+                        placeholder="Поиск кейсов..."
+                        :debounce="0"
+                        @input="debounceSearch"
+                    />
+                </div>
+
+                <div>
                     <Select
                         v-model="filters.status"
                         label="Статус"
@@ -70,16 +80,6 @@
                         label="Дата создания по"
                         placeholder="Дата окончания"
                         @date-select="applyFilters"
-                    />
-                </div>
-
-                <div>
-                    <SearchInput
-                        v-model="filters.search"
-                        label="Поиск по названию"
-                        placeholder="Поиск кейсов..."
-                        :debounce="0"
-                        @input="debounceSearch"
                     />
                 </div>
             </div>
@@ -202,12 +202,35 @@ const props = defineProps({
 
 const page = usePage();
 
+// Функция для правильного парсинга даты без смещения часового пояса
+const parseDateString = (dateString) => {
+    if (!dateString) return null;
+    
+    // Если это уже Date объект, возвращаем как есть
+    if (dateString instanceof Date) {
+        return dateString;
+    }
+    
+    // Парсим дату в формате YYYY-MM-DD как локальную дату
+    // Это предотвращает смещение из-за часового пояса
+    const parts = dateString.split('-');
+    if (parts.length === 3) {
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1; // Месяцы в JS начинаются с 0
+        const day = parseInt(parts[2], 10);
+        return new Date(year, month, day);
+    }
+    
+    // Если формат не распознан, пробуем стандартный парсинг
+    return new Date(dateString);
+};
+
 // Initialize filters with props
 const filters = ref({
     status: props.filters.status || '',
     search: props.filters.search || '',
-    date_from: props.filters.date_from ? new Date(props.filters.date_from) : null,
-    date_to: props.filters.date_to ? new Date(props.filters.date_to) : null
+    date_from: parseDateString(props.filters.date_from),
+    date_to: parseDateString(props.filters.date_to)
 });
 
 const currentTab = computed(() => {
