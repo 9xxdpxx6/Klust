@@ -27,6 +27,14 @@ class CaseApplication extends Model
         'reviewed_at' => 'datetime',
     ];
 
+    /**
+     * Get team size (leader + members)
+     */
+    public function getTeamSizeAttribute(): int
+    {
+        return $this->teamMembers->count() + 1; // +1 for leader
+    }
+
     public function case(): BelongsTo
     {
         return $this->belongsTo(CaseModel::class, 'case_id');

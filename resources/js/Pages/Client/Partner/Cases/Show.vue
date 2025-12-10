@@ -202,14 +202,48 @@
         </div>
 
         <!-- Заявки -->
-        <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+        <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-visible">
             <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
                 <div class="flex items-center justify-between">
                     <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
                         <i class="pi pi-file text-indigo-600"></i>
                         Заявки на кейс
                     </h2>
-                    <div class="flex gap-2">
+                    <div class="flex items-end gap-2">
+                        <!-- Поиск -->
+                        <div class="select-wrapper" style="min-width: 300px;">
+                            <label
+                                for="search-input"
+                                class="block text-sm font-medium mb-1"
+                            >
+                                Поиск
+                            </label>
+                            <div class="relative">
+                                <input
+                                    id="search-input"
+                                    v-model="applicationFilters.search"
+                                    type="text"
+                                    placeholder="По имени участника..."
+                                    class="w-full min-h-[2.5rem] h-[2.6rem] pl-10 pr-3 py-2 border border-border rounded-md shadow-sm text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 box-border leading-[1.5]"
+                                    style="padding-left: 2.75rem;"
+                                    @input="debouncedSearch"
+                                />
+                                <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Сортировка -->
+                        <Select
+                            v-model="applicationFilters.sort"
+                            label="Сортировка"
+                            :options="sortOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="По умолчанию"
+                            @update:modelValue="loadApplications"
+                        />
+                        
+                        <!-- Статус -->
                         <Select
                             v-model="applicationFilters.status"
                             label="Статус"
@@ -219,17 +253,40 @@
                             placeholder="Все статусы"
                             @update:modelValue="loadApplications"
                         />
-                        <a
-                            :href="route('partner.cases.applications.export', { case: caseData.id })"
-                            class="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-                        >
-                            <i class="pi pi-download"></i>
-                            Экспорт (Excel)
-                        </a>
+                        
+                        <!-- Экспорт -->
+                        <div class="select-wrapper">
+                            <label
+                                for="export-button"
+                                class="block text-sm font-medium mb-1"
+                            >
+                                Экспорт
+                            </label>
+                            <a
+                                id="export-button"
+                                :href="route('partner.cases.applications.export', { case: caseData.id, status: applicationFilters.status || '' })"
+                                class="inline-flex items-center justify-center gap-2 w-full min-h-[2.5rem] h-[2.6rem] px-3 py-2 border border-border rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 box-border leading-[1.5]"
+                            >
+                                <i class="pi pi-download"></i>
+                                Excel
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="p-6">
+                <!-- Кнопка сброса фильтров -->
+                <div class="mb-4 flex justify-end">
+                    <button
+                        @click="resetFilters"
+                        :disabled="!hasActiveFilters"
+                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <i class="pi pi-refresh"></i>
+                        Сбросить фильтры
+                    </button>
+                </div>
+                
                 <div v-if="applications.data.length === 0" class="text-center py-12">
                     <div class="max-w-md mx-auto">
                         <div class="mx-auto w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-4">
@@ -237,9 +294,11 @@
                         </div>
                         <h3 class="text-lg font-semibold text-gray-900 mb-2">Заявок пока нет</h3>
                         <p class="text-sm text-gray-500">
-                            {{ applicationFilters.status 
-                                ? `Нет заявок со статусом "${getStatusLabel(applicationFilters.status)}".` 
-                                : 'На этот кейс еще не было подано заявок от студентов.' }}
+                            {{ applicationFilters.search 
+                                ? 'По вашему запросу ничего не найдено.' 
+                                : applicationFilters.status 
+                                    ? `Нет заявок со статусом "${getStatusLabel(applicationFilters.status)}".` 
+                                    : 'На этот кейс еще не было подано заявок от студентов.' }}
                         </p>
                     </div>
                 </div>
@@ -248,7 +307,7 @@
                     <div
                         v-for="application in applications.data"
                         :key="application.id"
-                        class="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
+                        class="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors relative"
                     >
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-4">
@@ -272,19 +331,47 @@
                                 </span>
                                 <div class="flex gap-2">
                                     <button
-                                        v-if="application.status?.name === 'pending'"
+                                        v-if="application.status?.name === 'pending' && isCaseActive"
                                         @click="approveApplication(application.id)"
                                         class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
                                     >
                                         Одобрить
                                     </button>
                                     <button
-                                        v-if="application.status?.name === 'pending'"
+                                        v-if="application.status?.name === 'pending' && isCaseActive"
                                         @click="rejectApplication(application.id)"
                                         class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
                                     >
                                         Отклонить
                                     </button>
+                                    
+                                    <!-- Кнопка с тремя точками для изменения статуса -->
+                                    <div v-if="isCaseActive" class="relative">
+                                        <button
+                                            @click="toggleStatusMenu(application.id)"
+                                            class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors"
+                                            :class="{ 'bg-gray-200 text-gray-900': openStatusMenuId === application.id }"
+                                        >
+                                            <i class="pi pi-ellipsis-v"></i>
+                                        </button>
+                                        
+                                        <!-- Dropdown меню -->
+                                        <div
+                                            v-if="openStatusMenuId === application.id"
+                                            @click.stop
+                                            class="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
+                                        >
+                                            <button
+                                                v-for="statusOption in statusOptions"
+                                                :key="statusOption.value"
+                                                @click="updateApplicationStatus(application.id, statusOption.value)"
+                                                :disabled="application.status?.name === statusOption.value"
+                                                class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50"
+                                            >
+                                                Пометить как {{ statusOption.label }}
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -308,23 +395,39 @@
                 </h2>
             </div>
             <div class="p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div
                         v-for="team in teams"
                         :key="team.id"
                         class="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
                     >
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h4 class="text-md font-semibold text-gray-900">Команда: {{ team.leader?.name }}</h4>
-                                <p class="text-sm text-gray-500 mt-1">Участников: {{ team.members?.length || 0 }}</p>
-                            </div>
+                        <div class="flex justify-between items-start mb-3">
+                            <h4 class="text-md font-semibold text-gray-900">Команда #{{ team.id }}</h4>
                             <Link
                                 :href="route('partner.teams.show', { application: team.id })"
                                 class="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
                             >
-                                Подробнее
+                                Подробнее →
                             </Link>
+                        </div>
+                        
+                        <!-- Состав команды -->
+                        <div>
+                            <p class="text-xs font-medium text-gray-500 mb-1.5">Состав:</p>
+                            <div class="space-y-0.5">
+                                <!-- Лидер -->
+                                <div class="text-sm font-semibold text-gray-900">
+                                    • {{ team.leader?.name }}
+                                </div>
+                                <!-- Участники -->
+                                <div
+                                    v-for="member in team.team_members || []"
+                                    :key="member.id"
+                                    class="text-sm text-gray-700"
+                                >
+                                    • {{ member.user?.name }}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -421,15 +524,25 @@
                 Это действие нельзя отменить. Все данные кейса будут удалены безвозвратно.
             </p>
         </DangerConfirmDialog>
+
+        <!-- Модалка для одобрения/отклонения заявки -->
+        <ApplicationActionDialog
+            :visible="showApplicationModal"
+            :type="applicationModalType"
+            @update:visible="showApplicationModal = $event"
+            @confirm="handleApplicationConfirm"
+            :loading="applicationProcessing"
+        />
     </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { Link, router, Head } from '@inertiajs/vue3';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { Link, router, Head, usePage } from '@inertiajs/vue3';
 import Pagination from '@/Components/Pagination.vue';
 import Select from '@/Components/UI/Select.vue';
 import DangerConfirmDialog from '@/Components/UI/DangerConfirmDialog.vue';
+import ApplicationActionDialog from '@/Components/UI/ApplicationActionDialog.vue';
 import { route } from 'ziggy-js';
 
 const props = defineProps({
@@ -455,8 +568,11 @@ const props = defineProps({
     }
 });
 
+const page = usePage();
 const applicationFilters = ref({
-    status: null
+    search: new URLSearchParams(window.location.search).get('search') || '',
+    status: new URLSearchParams(window.location.search).get('status') || null,
+    sort: new URLSearchParams(window.location.search).get('sort') || 'id_desc'
 });
 
 // Удаление и архивирование кейса
@@ -464,12 +580,58 @@ const showDeleteModal = ref(false);
 const showArchiveModal = ref(false);
 const processing = ref(false);
 
+// Модалка для одобрения/отклонения заявок
+const showApplicationModal = ref(false);
+const applicationModalType = ref('approve'); // 'approve' | 'reject'
+const selectedApplicationId = ref(null);
+const applicationProcessing = ref(false);
+
+// Меню изменения статуса
+const openStatusMenuId = ref(null);
+const statusOptions = [
+    { label: 'Ожидает', value: 'pending' },
+    { label: 'Принято', value: 'accepted' },
+    { label: 'Отклонено', value: 'rejected' },
+];
+
 const statusFilterOptions = computed(() => [
     { label: 'Все статусы', value: '' },
     { label: 'Ожидает', value: 'pending' },
     { label: 'Принято', value: 'accepted' },
     { label: 'Отклонено', value: 'rejected' },
 ]);
+
+const sortOptions = [
+    { label: 'По умолчанию', value: 'id_desc' },
+    { label: 'По дате ↑', value: 'created_at_asc' },
+    { label: 'По дате ↓', value: 'created_at_desc' },
+];
+
+// Проверка наличия активных фильтров
+const hasActiveFilters = computed(() => {
+    return !!(applicationFilters.value.search || 
+              applicationFilters.value.status || 
+              (applicationFilters.value.sort && applicationFilters.value.sort !== 'id_desc'));
+});
+
+// Сброс фильтров
+const resetFilters = () => {
+    applicationFilters.value = {
+        search: '',
+        status: null,
+        sort: 'id_desc'
+    };
+    loadApplications();
+};
+
+// Проверка, что кейс еще активен (дедлайн не прошел)
+const isCaseActive = computed(() => {
+    if (!props.caseData.deadline) return true;
+    const deadline = new Date(props.caseData.deadline);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return deadline >= today;
+});
 
 const getStatusClass = (status) => {
     switch (status) {
@@ -556,36 +718,153 @@ const isDeadlineSoon = (deadline) => {
     }
 };
 
+// Debounce для поиска
+let searchTimeout = null;
+const debouncedSearch = () => {
+    if (searchTimeout) {
+        clearTimeout(searchTimeout);
+    }
+    searchTimeout = setTimeout(() => {
+        loadApplications();
+    }, 500);
+};
+
 const loadApplications = () => {
+    const params = {};
+    
+    if (applicationFilters.value.search) {
+        params.search = applicationFilters.value.search;
+    }
+    
+    if (applicationFilters.value.status) {
+        params.status = applicationFilters.value.status;
+    }
+    
+    // Парсим сортировку (format: "field_order")
+    const sortValue = applicationFilters.value.sort || 'id_desc';
+    const [sortBy, sortOrder] = sortValue.split('_');
+    params.sort_by = sortBy;
+    params.sort_order = sortOrder;
+    
+    // Сохраняем фокус на инпуте, если он есть
+    const searchInput = document.getElementById('search-input');
+    const hadFocus = document.activeElement === searchInput;
+    
     router.get(
         route('partner.cases.show', {
-            case: props.caseData.id,
-            status: applicationFilters.value.status || undefined
+            case: props.caseData.id
         }),
-        {},
+        params,
         {
             preserveState: true,
-            preserveScroll: true
+            preserveScroll: true,
+            replace: true,
+            onFinish: () => {
+                // Восстанавливаем фокус после обновления
+                if (hadFocus && searchInput) {
+                    searchInput.focus();
+                }
+            }
         }
     );
 };
 
 const approveApplication = (applicationId) => {
-    if (confirm('Вы уверены, что хотите одобрить эту заявку?')) {
-        router.post(route('partner.cases.applications.approve', { case: props.caseData.id, application: applicationId }), {}, {
-            preserveState: true,
-            preserveScroll: true
-        });
-    }
+    selectedApplicationId.value = applicationId;
+    applicationModalType.value = 'approve';
+    showApplicationModal.value = true;
 };
 
 const rejectApplication = (applicationId) => {
-    if (confirm('Вы уверены, что хотите отклонить эту заявку?')) {
-        router.post(route('partner.cases.applications.reject', { case: props.caseData.id, application: applicationId }), {}, {
-            preserveState: true,
-            preserveScroll: true
-        });
+    selectedApplicationId.value = applicationId;
+    applicationModalType.value = 'reject';
+    showApplicationModal.value = true;
+};
+
+const toggleStatusMenu = (applicationId) => {
+    if (openStatusMenuId.value === applicationId) {
+        openStatusMenuId.value = null;
+    } else {
+        openStatusMenuId.value = applicationId;
     }
+};
+
+const updateApplicationStatus = (applicationId, newStatus) => {
+    openStatusMenuId.value = null;
+    
+    router.patch(
+        route('partner.cases.applications.status.update', {
+            case: props.caseData.id,
+            application: applicationId
+        }),
+        { status: newStatus },
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                // Перезагружаем заявки
+                router.reload({ only: ['applications', 'statistics'] });
+            }
+        }
+    );
+};
+
+// Закрытие меню при клике вне его
+const handleClickOutside = (event) => {
+    if (openStatusMenuId.value !== null) {
+        const target = event.target;
+        if (!target.closest('.relative')) {
+            openStatusMenuId.value = null;
+        }
+    }
+};
+
+onMounted(() => {
+    document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside);
+    if (searchTimeout) {
+        clearTimeout(searchTimeout);
+    }
+});
+
+const handleApplicationConfirm = (data) => {
+    if (!selectedApplicationId.value) {
+        return;
+    }
+    
+    applicationProcessing.value = true;
+    
+    const routeName = applicationModalType.value === 'approve'
+        ? 'partner.cases.applications.approve'
+        : 'partner.cases.applications.reject';
+    
+    const payload = applicationModalType.value === 'reject'
+        ? { rejection_reason: data.rejection_reason }
+        : {};
+    
+    router.post(
+        route(routeName, { 
+            case: props.caseData.id, 
+            application: selectedApplicationId.value 
+        }), 
+        payload,
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                showApplicationModal.value = false;
+                selectedApplicationId.value = null;
+                applicationProcessing.value = false;
+            },
+            onError: () => {
+                applicationProcessing.value = false;
+            },
+            onFinish: () => {
+                applicationProcessing.value = false;
+            }
+        }
+    );
 };
 
 const confirmArchive = () => {

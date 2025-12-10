@@ -12,7 +12,6 @@ use App\Models\AppNotification;
 use App\Models\CaseApplication;
 use App\Models\CaseModel;
 use App\Models\User;
-use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -69,40 +68,25 @@ class NotificationService
                     $applicationId = $application->id;
                     $partnerEmail = $partnerUser->email;
                     
-                    // В development/local окружении не отправляем email через SMTP
+                    // Отправляем email через очередь (skip в local/testing)
                     if (!app()->environment(['local', 'testing'])) {
-                        // В production отправляем email через очередь
-                        dispatch(function () use ($applicationId, $partnerEmail) {
-                            try {
-                                // Устанавливаем таймаут для выполнения
-                                set_time_limit(15);
-                                
-                                // Загружаем application с нужными связями
-                                $app = CaseApplication::with([
-                                    'leader:id,name,email',
-                                    'case:id,title,required_team_size',
-                                    'teamMembers:id,application_id'
-                                ])->find($applicationId);
-                                
-                                if ($app) {
-                                    try {
-                                        Mail::to($partnerEmail)->send(new ApplicationSubmittedMail($app));
-                                    } catch (\Exception $mailException) {
-                                        Log::error('Failed to send email', [
-                                            'application_id' => $applicationId,
-                                            'partner_email' => $partnerEmail,
-                                            'error' => $mailException->getMessage(),
-                                        ]);
-                                    }
-                                }
-                            } catch (\Exception $e) {
-                                Log::error('Failed to send email in job', [
-                                    'application_id' => $applicationId,
-                                    'partner_email' => $partnerEmail,
-                                    'error' => $e->getMessage(),
-                                ]);
+                        try {
+                            $app = CaseApplication::with([
+                                'leader:id,name,email',
+                                'case:id,title,required_team_size',
+                                'teamMembers:id,application_id'
+                            ])->find($applicationId);
+                            
+                            if ($app) {
+                                Mail::to($partnerEmail)->queue(new ApplicationSubmittedMail($app));
                             }
-                        })->afterResponse();
+                        } catch (\Exception $e) {
+                            Log::error('Failed to queue email to partner', [
+                                'application_id' => $applicationId,
+                                'partner_email' => $partnerEmail,
+                                'error' => $e->getMessage(),
+                            ]);
+                        }
                     }
                 }
             } catch (\Exception $e) {
@@ -139,13 +123,13 @@ class NotificationService
             'action_text' => 'Перейти к команде',
         ]);
 
-        // Send email to leader
-        try {
-            if ($application->leader && $application->leader->email) {
-                Mail::to($application->leader->email)->send(new ApplicationApprovedMail($application));
+        // Send email to leader (async via queue)
+        if (!app()->environment(['local', 'testing']) && $application->leader && $application->leader->email) {
+            try {
+                Mail::to($application->leader->email)->queue(new ApplicationApprovedMail($application));
+            } catch (\Exception $e) {
+                Log::error('Failed to queue application approved email to leader: '.$e->getMessage());
             }
-        } catch (\Exception $e) {
-            Log::error('Failed to send application approved email to leader: '.$e->getMessage());
         }
 
         // Notify team members
@@ -160,13 +144,13 @@ class NotificationService
                 'action_text' => 'Перейти к команде',
             ]);
 
-            // Send email to team member
-            try {
-                if ($teamMember->user && $teamMember->user->email) {
-                    Mail::to($teamMember->user->email)->send(new ApplicationApprovedMail($application));
+            // Send email to team member (async via queue)
+            if (!app()->environment(['local', 'testing']) && $teamMember->user && $teamMember->user->email) {
+                try {
+                    Mail::to($teamMember->user->email)->queue(new ApplicationApprovedMail($application));
+                } catch (\Exception $e) {
+                    Log::error('Failed to queue application approved email to team member: '.$e->getMessage());
                 }
-            } catch (\Exception $e) {
-                Log::error('Failed to send application approved email to team member: '.$e->getMessage());
             }
         }
     }
@@ -229,13 +213,13 @@ class NotificationService
             'action_text' => 'Просмотреть кейс',
         ]);
 
-        // Send email to leader
-        try {
-            if ($application->leader && $application->leader->email) {
-                Mail::to($application->leader->email)->send(new ApplicationRejectedMail($application, $comment));
+        // Send email to leader (async via queue)
+        if (!app()->environment(['local', 'testing']) && $application->leader && $application->leader->email) {
+            try {
+                Mail::to($application->leader->email)->queue(new ApplicationRejectedMail($application, $comment));
+            } catch (\Exception $e) {
+                Log::error('Failed to queue application rejected email to leader: '.$e->getMessage());
             }
-        } catch (\Exception $e) {
-            Log::error('Failed to send application rejected email to leader: '.$e->getMessage());
         }
 
         // Notify team members
@@ -250,13 +234,13 @@ class NotificationService
                 'action_text' => 'Просмотреть кейс',
             ]);
 
-            // Send email to team member
-            try {
-                if ($teamMember->user && $teamMember->user->email) {
-                    Mail::to($teamMember->user->email)->send(new ApplicationRejectedMail($application, $comment));
+            // Send email to team member (async via queue)
+            if (!app()->environment(['local', 'testing']) && $teamMember->user && $teamMember->user->email) {
+                try {
+                    Mail::to($teamMember->user->email)->queue(new ApplicationRejectedMail($application, $comment));
+                } catch (\Exception $e) {
+                    Log::error('Failed to queue application rejected email to team member: '.$e->getMessage());
                 }
-            } catch (\Exception $e) {
-                Log::error('Failed to send application rejected email to team member: '.$e->getMessage());
             }
         }
     }
@@ -312,13 +296,13 @@ class NotificationService
             'action_text' => 'Перейти к команде',
         ]);
 
-        // Send email
-        try {
-            if ($newMember->email) {
-                Mail::to($newMember->email)->send(new TeamMemberAddedMail($newMember, $application));
+        // Send email (async via queue)
+        if (!app()->environment(['local', 'testing']) && $newMember->email) {
+            try {
+                Mail::to($newMember->email)->queue(new TeamMemberAddedMail($newMember, $application));
+            } catch (\Exception $e) {
+                Log::error('Failed to queue team member added email: '.$e->getMessage());
             }
-        } catch (\Exception $e) {
-            Log::error('Failed to send team member added email: '.$e->getMessage());
         }
     }
 

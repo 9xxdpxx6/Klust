@@ -101,20 +101,38 @@
                 </div>
                 <div class="p-6" v-if="recentActivities?.newApplications && recentActivities.newApplications.length > 0">
                     <div class="space-y-3">
-                        <div
+                        <Link
                             v-for="(application, index) in recentActivities.newApplications.slice(0, 5)"
                             :key="application.id || index"
-                            @click="safeVisit('partner.cases.show', application.case_id)"
-                            class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 hover:shadow-md transition-all border border-gray-200 cursor-pointer"
+                            :href="route('partner.cases.show', { case: application.case_id })"
+                            class="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 hover:shadow-md transition-all border border-gray-200 cursor-pointer"
                         >
-                            <div>
-                                <p class="text-sm font-semibold text-gray-900">{{ application.case?.title || 'Кейс' }}</p>
-                                <p class="text-xs text-gray-500">{{ formatDate(application.created_at) }}</p>
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex-1">
+                                    <h4 class="text-sm font-semibold text-gray-900 mb-1">
+                                        Команда #{{ application.id }}
+                                    </h4>
+                                    <p class="text-xs font-medium text-gray-700 mb-2">
+                                        {{ application.case?.title || 'Кейс' }}
+                                    </p>
                             </div>
                             <span class="px-2.5 py-1 bg-amber-100 text-amber-800 text-xs font-semibold rounded-lg border border-amber-200">
                                 Новая
                             </span>
                         </div>
+                            <div class="space-y-0.5">
+                                <p class="text-xs font-semibold text-gray-900">
+                                    • {{ application.leader?.name || 'Неизвестно' }}
+                                </p>
+                                <p
+                                    v-for="member in application.team_members || []"
+                                    :key="member.id"
+                                    class="text-xs text-gray-700"
+                                >
+                                    • {{ member.user?.name || 'Неизвестно' }}
+                                </p>
+                            </div>
+                        </Link>
                     </div>
                 </div>
                 <div v-else class="p-12 text-center text-gray-400">
@@ -158,15 +176,31 @@
                 </div>
                 <div class="p-6" v-if="recentActivities?.newTeams && recentActivities.newTeams.length > 0">
                     <div class="space-y-3">
-                        <div
+                        <Link
                             v-for="(team, index) in recentActivities.newTeams.slice(0, 5)"
                             :key="team.id || index"
-                            @click="safeVisit('partner.teams.index')"
-                            class="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 hover:shadow-md transition-all border border-gray-200 cursor-pointer"
+                            :href="route('partner.teams.show', { application: team.id })"
+                            class="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 hover:shadow-md transition-all border border-gray-200 cursor-pointer"
                         >
-                            <p class="text-sm font-semibold text-gray-900 mb-1">{{ team.case?.title || 'Команда' }}</p>
-                            <p class="text-xs text-gray-500">{{ team.members_count || 0 }} участников</p>
+                            <h4 class="text-sm font-semibold text-gray-900 mb-1">
+                                Команда #{{ team.id }}
+                            </h4>
+                            <p class="text-xs font-medium text-gray-700 mb-2">
+                                {{ team.case?.title || 'Кейс' }}
+                            </p>
+                            <div class="space-y-0.5">
+                                <p class="text-xs font-semibold text-gray-900">
+                                    • {{ team.leader?.name || 'Неизвестно' }}
+                                </p>
+                                <p
+                                    v-for="member in team.team_members || []"
+                                    :key="member.id"
+                                    class="text-xs text-gray-700"
+                                >
+                                    • {{ member.user?.name || 'Неизвестно' }}
+                                </p>
                         </div>
+                        </Link>
                     </div>
                 </div>
                 <div v-else class="p-12 text-center text-gray-400">
@@ -179,7 +213,7 @@
 </template>
 
 <script setup>
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, Link } from '@inertiajs/vue3';
 import CaseCard from '@/Components/CaseCard.vue';
 import { routeExists } from '@/Utils/routes';
 import { route } from 'ziggy-js';
