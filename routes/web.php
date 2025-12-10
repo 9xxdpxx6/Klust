@@ -153,6 +153,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/cases/{case}/applications', [PartnerCasesController::class, 'applications'])->name('cases.applications');
         Route::post('/cases/{case}/applications/{application}/approve', [PartnerCasesController::class, 'approve'])->name('cases.applications.approve');
         Route::post('/cases/{case}/applications/{application}/reject', [PartnerCasesController::class, 'reject'])->name('cases.applications.reject');
+        Route::patch('/cases/{case}/applications/{application}/status', [PartnerCasesController::class, 'updateApplicationStatus'])->name('cases.applications.status.update');
         Route::get('/cases/{case}/applications/export', [PartnerCasesController::class, 'exportApplications'])->name('cases.applications.export');
 
         // Teams

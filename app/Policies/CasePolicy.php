@@ -6,6 +6,7 @@ namespace App\Policies;
 
 use App\Models\CaseModel;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class CasePolicy
 {
@@ -129,8 +130,30 @@ class CasePolicy
 
         // Партнер может одобрять заявки только на свои кейсы
         if ($user->hasRole('partner')) {
-            return $user->partnerProfile?->partner_id === $case->partner_id
-                && $user->hasPermissionTo('cases.approve');
+            return $user->partner?->id === $case->partner_id;
+        }
+
+        return false;
+    }
+
+    /**
+     * Determine whether the user can update application status (only if case deadline hasn't passed).
+     */
+    public function updateApplicationStatus(User $user, CaseModel $case): bool
+    {
+        // Проверяем, что кейс еще не закрыт (дедлайн не прошел)
+        if ($case->deadline && $case->deadline->isPast()) {
+            return false;
+        }
+
+        // Админ и учитель могут менять статусы заявок на все кейсы
+        if ($user->hasAnyRole(['admin', 'teacher'])) {
+            return $user->hasPermissionTo('cases.approve');
+        }
+
+        // Партнер может менять статусы заявок только на свои кейсы
+        if ($user->hasRole('partner')) {
+            return $user->partner?->id === $case->partner_id;
         }
 
         return false;

@@ -66,13 +66,13 @@ class ApplicationService
     public function approveApplication(CaseApplication $application, ?string $comment = null): CaseApplication
     {
         $pendingStatusId = ApplicationStatus::getIdByName('pending');
+        $acceptedStatusId = ApplicationStatus::getIdByName('accepted');
 
         if ($application->status_id !== $pendingStatusId) {
             throw new \Exception('Только заявки со статусом "ожидает" могут быть одобрены');
         }
 
         $oldStatusId = $application->status_id;
-        $acceptedStatusId = ApplicationStatus::getIdByName('accepted');
 
         $application->update([
             'status_id' => $acceptedStatusId,
@@ -89,7 +89,7 @@ class ApplicationService
             $comment ?? 'Заявка одобрена партнером'
         );
 
-        return $application->fresh();
+        return $application->fresh(['status']);
     }
 
     /**
@@ -98,30 +98,87 @@ class ApplicationService
     public function rejectApplication(CaseApplication $application, string $rejectionReason): CaseApplication
     {
         $pendingStatusId = ApplicationStatus::getIdByName('pending');
+        $rejectedStatusId = ApplicationStatus::getIdByName('rejected');
 
         if ($application->status_id !== $pendingStatusId) {
             throw new \Exception('Только заявки со статусом "ожидает" могут быть отклонены');
         }
 
-        $oldStatusId = $application->status_id;
-        $rejectedStatusId = ApplicationStatus::getIdByName('rejected');
+        return DB::transaction(function () use ($application, $rejectionReason, $pendingStatusId, $rejectedStatusId) {
+            $oldStatusId = $application->status_id;
 
-        $application->update([
-            'status_id' => $rejectedStatusId,
-            'rejection_reason' => $rejectionReason,
-            'reviewed_at' => now(),
-        ]);
+            $application->update([
+                'status_id' => $rejectedStatusId,
+                'rejection_reason' => $rejectionReason,
+                'reviewed_at' => now(),
+            ]);
 
-        // Record status history
-        $this->recordStatusChange(
-            $application,
-            $oldStatusId,
-            $rejectedStatusId,
-            Auth::id() ?? $application->case->partner->user_id,
-            $rejectionReason
-        );
+            // Record status history
+            $this->recordStatusChange(
+                $application,
+                $oldStatusId,
+                $rejectedStatusId,
+                Auth::id() ?? $application->case->partner->user_id,
+                $rejectionReason
+            );
 
-        return $application->fresh();
+            return $application->fresh(['status']);
+        });
+    }
+
+    /**
+     * Update application status
+     */
+    public function updateApplicationStatus(CaseApplication $application, string $statusName, ?string $comment = null): CaseApplication
+    {
+        $newStatusId = ApplicationStatus::getIdByName($statusName);
+        
+        if (!$newStatusId) {
+            throw new \Exception("Неизвестный статус: {$statusName}");
+        }
+
+        // Если статус не изменился, ничего не делаем
+        if ($application->status_id === $newStatusId) {
+            return $application;
+        }
+
+        return DB::transaction(function () use ($application, $statusName, $comment, $newStatusId) {
+            $oldStatusId = $application->status_id;
+
+            // Обновляем статус
+            $updateData = [
+                'status_id' => $newStatusId,
+            ];
+
+            // Если меняем на rejected, добавляем причину
+            if ($statusName === 'rejected' && $comment) {
+                $updateData['rejection_reason'] = $comment;
+            }
+
+            // Если меняем на accepted, очищаем rejection_reason
+            if ($statusName === 'accepted') {
+                $updateData['rejection_reason'] = null;
+            }
+
+            // Устанавливаем reviewed_at при изменении статуса с pending
+            $pendingStatusId = ApplicationStatus::getIdByName('pending');
+            if ($oldStatusId === $pendingStatusId) {
+                $updateData['reviewed_at'] = now();
+            }
+
+            $application->update($updateData);
+
+            // Записываем историю изменения статуса
+            $this->recordStatusChange(
+                $application,
+                $oldStatusId,
+                $newStatusId,
+                Auth::id() ?? $application->case->partner->user_id,
+                $comment ?? "Статус изменен на: {$statusName}"
+            );
+
+            return $application->fresh(['status']);
+        });
     }
 
     /**

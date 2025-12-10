@@ -18,7 +18,7 @@ class UserPolicy
         // Viewer must be a partner
         if (! $viewer->hasRole('partner')) {
             return false;
-        }
+    }
 
         // Student must have student role
         if (! $student->hasRole('student')) {

@@ -73,7 +73,7 @@ class PartnerService
                 $query->where('partner_id', $partner->id);
             })
             ->pending()
-            ->with(['case', 'leader'])
+            ->with(['case', 'leader', 'teamMembers.user'])
             ->where('created_at', '>=', now()->subDays(7))
             ->orderBy('created_at', 'desc')
             ->limit(10)
@@ -90,6 +90,16 @@ class PartnerService
                         'id' => $application->leader->id,
                         'name' => $application->leader->name,
                     ] : null,
+                    'team_members' => $application->teamMembers->map(function ($member) {
+                        return [
+                            'id' => $member->id,
+                            'user' => $member->user ? [
+                                'id' => $member->user->id,
+                                'name' => $member->user->name,
+                            ] : null,
+                        ];
+                    })->toArray(),
+                    'members_count' => $application->teamMembers->count() + 1, // +1 для лидера
                     'created_at' => $application->created_at,
                 ];
             });
@@ -116,12 +126,17 @@ class PartnerService
                 $query->where('partner_id', $partner->id);
             })
             ->accepted()
-            ->with(['case', 'teamMembers'])
+            ->with(['case', 'leader', 'teamMembers.user'])
             ->where('created_at', '>=', now()->subDays(7))
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get()
             ->map(function ($application) {
+                $teamMembers = collect([$application->leader])
+                    ->merge($application->teamMembers->pluck('user'))
+                    ->filter()
+                    ->map(fn ($member) => $member->name ?? 'Неизвестно');
+
                 return [
                     'id' => $application->id,
                     'case_id' => $application->case_id,
@@ -129,6 +144,19 @@ class PartnerService
                         'id' => $application->case->id,
                         'title' => $application->case->title,
                     ] : null,
+                    'leader' => $application->leader ? [
+                        'id' => $application->leader->id,
+                        'name' => $application->leader->name,
+                    ] : null,
+                    'team_members' => $application->teamMembers->map(function ($member) {
+                        return [
+                            'id' => $member->id,
+                            'user' => $member->user ? [
+                                'id' => $member->user->id,
+                                'name' => $member->user->name,
+                            ] : null,
+                        ];
+                    })->toArray(),
                     'members_count' => $application->teamMembers->count() + 1, // +1 для лидера
                     'created_at' => $application->created_at,
                 ];

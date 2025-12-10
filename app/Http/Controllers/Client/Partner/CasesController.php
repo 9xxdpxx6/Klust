@@ -10,6 +10,7 @@ use App\Filters\CaseFilter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Partner\Application\ApproveRequest;
 use App\Http\Requests\Partner\Application\RejectRequest;
+use App\Http\Requests\Partner\Application\UpdateStatusRequest;
 use App\Http\Requests\Partner\Case\StoreRequest;
 use App\Http\Requests\Partner\Case\UpdateRequest;
 use App\Models\CaseApplication;
@@ -21,6 +22,7 @@ use App\Services\NotificationService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 use Maatwebsite\Excel\Facades\Excel;
@@ -169,7 +171,7 @@ class CasesController extends Controller
     /**
      * Детали кейса
      */
-    public function show(CaseModel $case): Response
+    public function show(CaseModel $case, Request $request): Response
     {
         try {
             $user = auth()->user();
@@ -191,12 +193,25 @@ class CasesController extends Controller
                 ->with(['leader', 'teamMembers.user'])
                 ->get();
 
-            // Пагинация заявок
-            $applications = $case->applications()
-                ->with(['leader', 'status', 'teamMembers.user', 'statusHistory.changedBy', 'statusHistory.oldStatus', 'statusHistory.newStatus'])
-                ->latest()
+            // Пагинация заявок с фильтрами
+            $applicationsQuery = \App\Models\CaseApplication::query()
+                ->where('case_id', $case->id)
+                ->with(['leader', 'status', 'teamMembers.user', 'statusHistory.changedBy', 'statusHistory.oldStatus', 'statusHistory.newStatus']);
+
+            // Применить фильтры через CaseApplicationFilter
+            $filter = new \App\Filters\CaseApplicationFilter([
+                'search' => $request->query('search'),
+                'status' => $request->query('status'),
+                'sort_by' => $request->query('sort_by', 'id'),
+                'sort_order' => $request->query('sort_order', 'desc'),
+            ]);
+            
+            $applicationsQuery = $filter->apply($applicationsQuery);
+
+            $applications = $applicationsQuery
                 ->paginate(10)
                 ->withQueryString();
+
 
             return Inertia::render('Client/Partner/Cases/Show', [
                 'caseData' => $case,
@@ -339,7 +354,9 @@ class CasesController extends Controller
 
             $applicationFilter = new CaseApplicationFilter($filters);
 
-            $applicationsQuery = $case->applications()
+            // Use direct query to CaseApplication with case_id filter
+            $applicationsQuery = \App\Models\CaseApplication::query()
+                ->where('case_id', $case->id)
                 ->with([
                     'leader',
                     'status',
@@ -375,6 +392,8 @@ class CasesController extends Controller
      */
     public function approve(ApproveRequest $request, CaseModel $case, CaseApplication $application): RedirectResponse
     {
+        $startTime = microtime(true);
+        
         try {
             // Проверить права (кейс принадлежит партнеру)
             $this->authorize('approveApplication', $case);
@@ -388,15 +407,41 @@ class CasesController extends Controller
             }
 
             // Одобрить заявку
-            $this->applicationService->approveApplication($application, $request->comment ?? null);
+            $serviceStart = microtime(true);
+            $updatedApplication = $this->applicationService->approveApplication($application, $request->comment ?? null);
+            $serviceTime = round((microtime(true) - $serviceStart) * 1000, 2);
+            
+            // Перезагрузить кейс с актуальными данными
+            $case->refresh();
 
-            // Отправить уведомления команде
-            $this->notificationService->notifyTeamAboutApproval($application);
+            // Отправить уведомления команде (async)
+            $notificationStart = microtime(true);
+            $this->notificationService->notifyTeamAboutApproval($updatedApplication);
+            $notificationTime = round((microtime(true) - $notificationStart) * 1000, 2);
+            
+            $totalTime = round((microtime(true) - $startTime) * 1000, 2);
+            
+            Log::info('Application status changed: approved', [
+                'application_id' => $updatedApplication->id,
+                'case_id' => $case->id,
+                'user_id' => auth()->id(),
+                'service_time_ms' => $serviceTime,
+                'notification_time_ms' => $notificationTime,
+                'total_time_ms' => $totalTime,
+            ]);
 
             return redirect()
-                ->back()
+                ->route('partner.cases.show', $case)
                 ->with('success', 'Заявка успешно одобрена');
         } catch (\Exception $e) {
+            $totalTime = round((microtime(true) - $startTime) * 1000, 2);
+            
+            Log::error('Error approving application', [
+                'application_id' => $application->id,
+                'case_id' => $case->id,
+                'error' => $e->getMessage(),
+                'total_time_ms' => $totalTime,
+            ]);
             return redirect()
                 ->back()
                 ->with('error', 'Ошибка при одобрении заявки: '.$e->getMessage());
@@ -408,6 +453,8 @@ class CasesController extends Controller
      */
     public function reject(RejectRequest $request, CaseModel $case, CaseApplication $application): RedirectResponse
     {
+        $startTime = microtime(true);
+        
         try {
             // Проверить права
             $this->authorize('rejectApplication', $case);
@@ -421,15 +468,41 @@ class CasesController extends Controller
             }
 
             // Отклонить заявку
-            $this->applicationService->rejectApplication($application, $request->rejection_reason);
+            $serviceStart = microtime(true);
+            $updatedApplication = $this->applicationService->rejectApplication($application, $request->rejection_reason);
+            $serviceTime = round((microtime(true) - $serviceStart) * 1000, 2);
 
-            // Отправить уведомление лидеру команды
-            $this->notificationService->notifyApplicationRejection($application, $request->rejection_reason);
+            // Перезагрузить кейс с актуальными данными
+            $case->refresh();
+
+            // Отправить уведомление лидеру команды (async)
+            $notificationStart = microtime(true);
+            $this->notificationService->notifyApplicationRejection($updatedApplication, $request->rejection_reason);
+            $notificationTime = round((microtime(true) - $notificationStart) * 1000, 2);
+            
+            $totalTime = round((microtime(true) - $startTime) * 1000, 2);
+            
+            Log::info('Application status changed: rejected', [
+                'application_id' => $updatedApplication->id,
+                'case_id' => $case->id,
+                'user_id' => auth()->id(),
+                'service_time_ms' => $serviceTime,
+                'notification_time_ms' => $notificationTime,
+                'total_time_ms' => $totalTime,
+            ]);
 
             return redirect()
-                ->back()
+                ->route('partner.cases.show', $case)
                 ->with('success', 'Заявка отклонена');
         } catch (\Exception $e) {
+            $totalTime = round((microtime(true) - $startTime) * 1000, 2);
+            
+            Log::error('Error rejecting application', [
+                'application_id' => $application->id,
+                'case_id' => $case->id,
+                'error' => $e->getMessage(),
+                'total_time_ms' => $totalTime,
+            ]);
             return redirect()
                 ->back()
                 ->with('error', 'Ошибка при отклонении заявки: '.$e->getMessage());
@@ -437,15 +510,93 @@ class CasesController extends Controller
     }
 
     /**
+     * Изменение статуса заявки
+     */
+    public function updateApplicationStatus(UpdateStatusRequest $request, CaseModel $case, CaseApplication $application): RedirectResponse
+    {
+        $startTime = microtime(true);
+        
+        try {
+            // Проверить права (кейс принадлежит партнеру и дедлайн не прошел)
+            $this->authorize('updateApplicationStatus', $case);
+
+            $newStatus = $request->validated()['status'];
+            $oldStatus = $application->status->name ?? 'unknown';
+
+            // Изменить статус заявки
+            $serviceStart = microtime(true);
+            $updatedApplication = $this->applicationService->updateApplicationStatus(
+                $application,
+                $newStatus,
+                $request->comment ?? null
+            );
+            $serviceTime = round((microtime(true) - $serviceStart) * 1000, 2);
+
+            // Перезагрузить кейс с актуальными данными
+            $case->refresh();
+
+            // Отправить уведомления если нужно (async)
+            $notificationTime = 0;
+            if ($newStatus === 'accepted') {
+                $notificationStart = microtime(true);
+                $this->notificationService->notifyTeamAboutApproval($updatedApplication);
+                $notificationTime = round((microtime(true) - $notificationStart) * 1000, 2);
+            } elseif ($newStatus === 'rejected') {
+                $notificationStart = microtime(true);
+                $this->notificationService->notifyApplicationRejection($updatedApplication, $request->comment);
+                $notificationTime = round((microtime(true) - $notificationStart) * 1000, 2);
+            }
+
+            $totalTime = round((microtime(true) - $startTime) * 1000, 2);
+            
+            Log::info('Application status changed', [
+                'application_id' => $updatedApplication->id,
+                'case_id' => $case->id,
+                'user_id' => auth()->id(),
+                'old_status' => $oldStatus,
+                'new_status' => $newStatus,
+                'service_time_ms' => $serviceTime,
+                'notification_time_ms' => $notificationTime,
+                'total_time_ms' => $totalTime,
+            ]);
+
+            return redirect()
+                ->route('partner.cases.show', $case)
+                ->with('success', "Статус заявки изменен на: " . ($updatedApplication->status->label ?? $newStatus));
+        } catch (\Exception $e) {
+            $totalTime = round((microtime(true) - $startTime) * 1000, 2);
+            
+            Log::error('Error updating application status', [
+                'application_id' => $application->id,
+                'case_id' => $case->id,
+                'error' => $e->getMessage(),
+                'total_time_ms' => $totalTime,
+            ]);
+            return redirect()
+                ->back()
+                ->with('error', 'Ошибка при изменении статуса заявки: '.$e->getMessage());
+        }
+    }
+
+    /**
      * Экспорт заявок на кейс в Excel
      */
-    public function exportApplications(CaseModel $case): BinaryFileResponse
+    public function exportApplications(CaseModel $case, Request $request): BinaryFileResponse
     {
         // Проверить права
         $this->authorize('viewApplications', $case);
 
+        $filters = [
+            'case_id' => $case->id,
+        ];
+
+        // Добавить фильтр по статусу, если передан
+        if ($request->has('status') && $request->get('status') !== '' && $request->get('status') !== null) {
+            $filters['status'] = $request->get('status');
+        }
+
         $filename = 'applications_case_'.$case->id.'_'.date('Y-m-d_H-i-s').'.xlsx';
 
-        return Excel::download(new ApplicationsExport(['case_id' => $case->id]), $filename);
+        return Excel::download(new ApplicationsExport($filters), $filename);
     }
 }

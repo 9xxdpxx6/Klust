@@ -22,7 +22,7 @@ class ApplicationsExport implements FromView, ShouldAutoSize, WithStyles
 
     public function view(): View
     {
-        $query = CaseApplication::with(['case', 'leader', 'members', 'case.partner']);
+        $query = CaseApplication::with(['case', 'leader', 'status', 'teamMembers.user', 'case.partner']);
 
         // Apply filters if provided
         if (! empty($this->filters['status'])) {

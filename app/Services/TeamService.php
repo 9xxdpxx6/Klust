@@ -136,30 +136,30 @@ class TeamService
 
         // 2. Get simulator sessions completed by team members for THIS case's simulator only
         if ($application->case->simulator_id) {
-            $simulatorSessions = SimulatorSession::whereIn('user_id', $teamMemberIds)
+        $simulatorSessions = SimulatorSession::whereIn('user_id', $teamMemberIds)
                 ->where('simulator_id', $application->case->simulator_id)
-                ->whereNotNull('completed_at')
-                ->with(['user', 'simulator'])
+            ->whereNotNull('completed_at')
+            ->with(['user', 'simulator'])
                 ->latest('completed_at')
-                ->get()
-                ->map(function ($session) {
+            ->get()
+            ->map(function ($session) {
                     $userName = $session->user->name;
                     $simulatorTitle = $session->simulator->title;
                     
-                    return [
+                return [
                         'id' => $session->id,
-                        'type' => 'simulator_completed',
-                        'user' => $session->user,
+                    'type' => 'simulator_completed',
+                    'user' => $session->user,
                         'description' => "{$userName} завершил(а) симулятор: {$simulatorTitle}",
-                        'date' => $session->completed_at,
+                    'date' => $session->completed_at,
                         'created_at' => $session->completed_at,
-                        'data' => [
+                    'data' => [
                             'simulator' => $simulatorTitle,
-                            'score' => $session->score,
-                            'time_spent' => $session->time_spent,
-                        ],
-                    ];
-                });
+                        'score' => $session->score,
+                        'time_spent' => $session->time_spent,
+                    ],
+                ];
+            });
 
             $activities = $activities->merge($simulatorSessions);
         }
