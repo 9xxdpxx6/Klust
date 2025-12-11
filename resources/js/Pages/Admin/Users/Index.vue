@@ -334,14 +334,25 @@ const props = defineProps({
         type: Object,
         default: () => ({})
     },
+    filteredStatistics: {
+        type: Object,
+        default: () => ({})
+    },
 })
 
 // Computed свойства для безопасного доступа
 const usersData = computed(() => props.users?.data || [])
-const usersTotal = computed(() => props.statistics?.total_users || props.users?.total || 0)
+// Используем total из пагинации, который всегда учитывает фильтры
+const usersTotal = computed(() => props.users?.total || 0)
 const usersLinks = computed(() => props.users?.links || [])
-const verifiedUsersCount = computed(() => props.statistics?.verified_users || 0)
-const studentsCount = computed(() => props.statistics?.students || 0)
+const verifiedUsersCount = computed(() => {
+    // Если есть отфильтрованная статистика, используем её (когда есть фильтры)
+    return props.filteredStatistics?.verified_users ?? props.statistics?.verified_users ?? 0
+})
+const studentsCount = computed(() => {
+    // Если есть отфильтрованная статистика, используем её (когда есть фильтры)
+    return props.filteredStatistics?.students ?? props.statistics?.students ?? 0
+})
 
 // Безопасная инициализация filters
 const filters = ref({

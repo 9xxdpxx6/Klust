@@ -162,7 +162,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center gap-2">
-                                <div class="p-1.5 bg-blue-100 rounded-lg">
+                                <div class="w-8 h-8 flex items-center justify-center bg-blue-100 rounded-lg flex-shrink-0">
                                     <i class="pi pi-building text-blue-600 text-xs"></i>
                                 </div>
                                 <div>

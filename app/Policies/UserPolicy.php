@@ -10,6 +10,47 @@ use App\Models\User;
 class UserPolicy
 {
     /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->hasAnyRole(['admin', 'teacher']);
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, User $model): bool
+    {
+        return $user->hasAnyRole(['admin', 'teacher']);
+    }
+
+    /**
+     * Determine whether the user can create models.
+     */
+    public function create(User $user): bool
+    {
+        return $user->hasAnyRole(['admin', 'teacher']);
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, User $model): bool
+    {
+        return $user->hasAnyRole(['admin', 'teacher']);
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, User $model): bool
+    {
+        // Только админ может удалять пользователей
+        return $user->hasRole('admin');
+    }
+
+    /**
      * Determine whether the user can view student profile (for partners).
      * Partner can view profile only if student is in accepted team of partner's case.
      */
@@ -18,7 +59,7 @@ class UserPolicy
         // Viewer must be a partner
         if (! $viewer->hasRole('partner')) {
             return false;
-    }
+        }
 
         // Student must have student role
         if (! $student->hasRole('student')) {
