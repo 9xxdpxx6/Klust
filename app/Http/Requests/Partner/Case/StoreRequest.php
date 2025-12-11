@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Partner\Case;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class StoreRequest extends FormRequest
 {
@@ -16,6 +17,30 @@ class StoreRequest extends FormRequest
     {
         // Пример проверки на роль партнера
         return true;
+    }
+
+    /**
+     * Configure the validator instance.
+     */
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function ($validator) {
+            $deadline = $this->input('deadline');
+            $status = $this->input('status', 'draft');
+
+            // Если дедлайн в прошлом, нельзя установить статус 'active'
+            if ($deadline && $status === 'active') {
+                $deadlineDate = \Carbon\Carbon::parse($deadline)->startOfDay();
+                $today = \Carbon\Carbon::today();
+
+                if ($deadlineDate->lt($today)) {
+                    $validator->errors()->add(
+                        'status',
+                        'Нельзя установить статус "Активный" для кейса с дедлайном в прошлом.'
+                    );
+                }
+            }
+        });
     }
 
     /**
