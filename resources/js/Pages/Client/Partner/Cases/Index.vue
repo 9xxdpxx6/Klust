@@ -198,6 +198,7 @@ import DatePicker from '@/Components/UI/DatePicker.vue';
 import Select from '@/Components/UI/Select.vue';
 import Button from 'primevue/button';
 import { route } from 'ziggy-js';
+import { parseLocalDate, formatDateForServer } from '@/Composables/useDateHelper';
 
 const props = defineProps({
     cases: {
@@ -219,35 +220,12 @@ const props = defineProps({
 
 const page = usePage();
 
-// Функция для правильного парсинга даты без смещения часового пояса
-const parseDateString = (dateString) => {
-    if (!dateString) return null;
-    
-    // Если это уже Date объект, возвращаем как есть
-    if (dateString instanceof Date) {
-        return dateString;
-    }
-    
-    // Парсим дату в формате YYYY-MM-DD как локальную дату
-    // Это предотвращает смещение из-за часового пояса
-    const parts = dateString.split('-');
-    if (parts.length === 3) {
-        const year = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10) - 1; // Месяцы в JS начинаются с 0
-        const day = parseInt(parts[2], 10);
-        return new Date(year, month, day);
-    }
-    
-    // Если формат не распознан, пробуем стандартный парсинг
-    return new Date(dateString);
-};
-
 // Initialize filters with props
 const filters = ref({
     status: props.filters.status || '',
     search: props.filters.search || '',
-    date_from: parseDateString(props.filters.date_from),
-    date_to: parseDateString(props.filters.date_to)
+    date_from: parseLocalDate(props.filters.date_from),
+    date_to: parseLocalDate(props.filters.date_to)
 });
 
 const currentTab = computed(() => {
@@ -319,14 +297,6 @@ const formatDate = (dateString) => {
 const debounceSearch = useDebounceFn(() => {
     applyFilters();
 }, 300);
-
-const formatDateForServer = (date) => {
-    if (!date) return null;
-    if (date instanceof Date) {
-        return date.toISOString().split('T')[0];
-    }
-    return date;
-};
 
 const applyFilters = () => {
     const params = {

@@ -18,7 +18,7 @@
                         <p class="text-sm font-medium text-blue-600 mb-1">Всего кейсов</p>
                         <p class="text-3xl font-bold text-blue-900">{{ statistics?.totalCases || 0 }}</p>
                     </div>
-                    <div class="w-12 h-12 flex items-center justify-center bg-blue-500 rounded-xl group-hover:scale-110 transition-transform">
+                    <div class="w-12 h-12 flex items-center justify-center bg-blue-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
                         <i class="pi pi-briefcase text-white text-xl"></i>
                     </div>
                 </div>
@@ -31,7 +31,7 @@
                         <p class="text-sm font-medium text-green-600 mb-1">Активные кейсы</p>
                         <p class="text-3xl font-bold text-green-900">{{ statistics?.activeCases || 0 }}</p>
                     </div>
-                    <div class="w-12 h-12 flex items-center justify-center bg-green-500 rounded-xl group-hover:scale-110 transition-transform">
+                    <div class="w-12 h-12 flex items-center justify-center bg-green-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
                         <i class="pi pi-check-circle text-white text-xl"></i>
                     </div>
                 </div>
@@ -44,7 +44,7 @@
                         <p class="text-sm font-medium text-amber-600 mb-1">Завершенные</p>
                         <p class="text-3xl font-bold text-amber-900">{{ statistics?.completedCases || 0 }}</p>
                     </div>
-                    <div class="w-12 h-12 flex items-center justify-center bg-amber-500 rounded-xl group-hover:scale-110 transition-transform">
+                    <div class="w-12 h-12 flex items-center justify-center bg-amber-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
                         <i class="pi pi-check text-white text-xl"></i>
                     </div>
                 </div>
@@ -57,7 +57,7 @@
                         <p class="text-sm font-medium text-purple-600 mb-1">Команды</p>
                         <p class="text-3xl font-bold text-purple-900">{{ statistics?.teamsCount || 0 }}</p>
                     </div>
-                    <div class="w-12 h-12 flex items-center justify-center bg-purple-500 rounded-xl group-hover:scale-110 transition-transform">
+                    <div class="w-12 h-12 flex items-center justify-center bg-purple-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
                         <i class="pi pi-users text-white text-xl"></i>
                     </div>
                 </div>

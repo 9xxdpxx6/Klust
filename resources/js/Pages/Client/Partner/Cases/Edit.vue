@@ -200,6 +200,7 @@
 import { ref, reactive, onMounted } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import DatePicker from '@/Components/UI/DatePicker.vue';
+import { parseLocalDate, formatDateForServer } from '@/Composables/useDateHelper';
 
 const props = defineProps({
     caseData: {
@@ -219,21 +220,13 @@ const form = reactive({
     reward: props.caseData.reward || '',
     team_size: props.caseData.required_team_size || props.caseData.team_size || 1,
     required_skills: props.caseData.required_skills.map(skill => skill.id),
-    deadline: props.caseData.deadline ? new Date(props.caseData.deadline) : null,
+    deadline: parseLocalDate(props.caseData.deadline),
     status: props.caseData.status
 });
 
 // For handling form errors and processing state
 const processing = ref(false);
 const errors = ref({});
-
-const formatDateForServer = (date) => {
-    if (!date) return null;
-    if (date instanceof Date) {
-        return date.toISOString().split('T')[0];
-    }
-    return date;
-};
 
 const submitForm = () => {
     processing.value = true;

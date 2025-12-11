@@ -182,6 +182,7 @@ import {Head, Link} from '@inertiajs/vue3'
 import {route} from "ziggy-js";
 import DatePicker from '@/Components/UI/DatePicker.vue';
 import Select from '@/Components/UI/Select.vue';
+import { formatDateForServer } from '@/Composables/useDateHelper';
 
 const props = defineProps({
     partners: Array,
@@ -254,13 +255,5 @@ const submitForm = () => {
             processing.value = false
         },
     })
-}
-
-const formatDateForServer = (date) => {
-    if (!date) return null
-    if (date instanceof Date) {
-        return date.toISOString().split('T')[0]
-    }
-    return date
 }
 </script>

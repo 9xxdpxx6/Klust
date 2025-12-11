@@ -18,7 +18,7 @@
                         <p class="text-sm font-medium text-blue-600 mb-1">Всего студентов</p>
                         <p class="text-3xl font-bold text-blue-900">{{ stats?.totalStudents || 0 }}</p>
                     </div>
-                    <div class="w-12 h-12 flex items-center justify-center bg-blue-500 rounded-xl group-hover:scale-110 transition-transform">
+                    <div class="w-12 h-12 flex items-center justify-center bg-blue-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
                         <i class="pi pi-users text-white text-xl"></i>
                     </div>
                 </div>
@@ -31,7 +31,7 @@
                         <p class="text-sm font-medium text-green-600 mb-1">Всего партнеров</p>
                         <p class="text-3xl font-bold text-green-900">{{ stats?.totalPartners || 0 }}</p>
                     </div>
-                    <div class="w-12 h-12 flex items-center justify-center bg-green-500 rounded-xl group-hover:scale-110 transition-transform">
+                    <div class="w-12 h-12 flex items-center justify-center bg-green-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
                         <i class="pi pi-building text-white text-xl"></i>
                     </div>
                 </div>
@@ -44,7 +44,7 @@
                         <p class="text-sm font-medium text-amber-600 mb-1">Активные кейсы</p>
                         <p class="text-3xl font-bold text-amber-900">{{ stats?.activeCases || 0 }}</p>
                     </div>
-                    <div class="w-12 h-12 flex items-center justify-center bg-amber-500 rounded-xl group-hover:scale-110 transition-transform">
+                    <div class="w-12 h-12 flex items-center justify-center bg-amber-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
                         <i class="pi pi-briefcase text-white text-xl"></i>
                     </div>
                 </div>
@@ -276,7 +276,7 @@
                         @click="safeVisit('admin.cases.create')"
                         class="flex flex-col items-center justify-center gap-2 p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl border border-indigo-200 hover:shadow-lg transition-all group"
                     >
-                        <div class="w-12 h-12 flex items-center justify-center bg-indigo-500 rounded-xl group-hover:scale-110 transition-transform">
+                        <div class="w-12 h-12 flex items-center justify-center bg-indigo-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
                             <i class="pi pi-plus text-white text-xl"></i>
                         </div>
                         <span class="text-sm font-semibold text-gray-900">Создать кейс</span>
@@ -285,7 +285,7 @@
                         @click="safeVisit('admin.skills.index')"
                         class="flex flex-col items-center justify-center gap-2 p-6 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl border border-amber-200 hover:shadow-lg transition-all group"
                     >
-                        <div class="w-12 h-12 flex items-center justify-center bg-amber-500 rounded-xl group-hover:scale-110 transition-transform">
+                        <div class="w-12 h-12 flex items-center justify-center bg-amber-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
                             <i class="pi pi-star text-white text-xl"></i>
                         </div>
                         <span class="text-sm font-semibold text-gray-900">Управление навыками</span>
@@ -294,7 +294,7 @@
                         @click="safeVisit('admin.badges.index')"
                         class="flex flex-col items-center justify-center gap-2 p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200 hover:shadow-lg transition-all group"
                     >
-                        <div class="w-12 h-12 flex items-center justify-center bg-purple-500 rounded-xl group-hover:scale-110 transition-transform">
+                        <div class="w-12 h-12 flex items-center justify-center bg-purple-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
                             <i class="pi pi-trophy text-white text-xl"></i>
                         </div>
                         <span class="text-sm font-semibold text-gray-900">Управление бейджами</span>
@@ -303,7 +303,7 @@
                         @click="safeVisit('admin.users.index')"
                         class="flex flex-col items-center justify-center gap-2 p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 hover:shadow-lg transition-all group"
                     >
-                        <div class="w-12 h-12 flex items-center justify-center bg-blue-500 rounded-xl group-hover:scale-110 transition-transform">
+                        <div class="w-12 h-12 flex items-center justify-center bg-blue-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
                             <i class="pi pi-users text-white text-xl"></i>
                         </div>
                         <span class="text-sm font-semibold text-gray-900">Все пользователи</span>

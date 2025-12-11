@@ -184,6 +184,7 @@ import { Head, Link } from '@inertiajs/vue3'
 import { route } from "ziggy-js";
 import DatePicker from '@/Components/UI/DatePicker.vue';
 import Select from '@/Components/UI/Select.vue';
+import { parseLocalDate, formatDateForServer } from '@/Composables/useDateHelper';
 
 const props = defineProps({
     case: Object,
@@ -198,7 +199,7 @@ const form = useForm({
     title: props.case?.title || '',
     description: props.case?.description || '',
     partner_id: props.case?.partner_id || '',
-    deadline: props.case?.deadline ? new Date(props.case.deadline) : null,
+    deadline: parseLocalDate(props.case?.deadline),
     required_team_size: props.case?.required_team_size || '',
     status: props.case?.status || '',
     reward: props.case?.reward || '',
@@ -255,13 +256,5 @@ const submitForm = () => {
             console.log('Ошибки формы:', errors)
         },
     })
-}
-
-const formatDateForServer = (date) => {
-    if (!date) return null
-    if (date instanceof Date) {
-        return date.toISOString().split('T')[0]
-    }
-    return date
 }
 </script>

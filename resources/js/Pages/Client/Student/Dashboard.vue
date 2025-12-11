@@ -17,7 +17,7 @@
                         <p class="text-sm font-medium text-blue-600 mb-1">Уровень</p>
                         <p class="text-3xl font-bold text-blue-900">{{ statistics?.level || 1 }}</p>
                     </div>
-                    <div class="w-12 h-12 flex items-center justify-center bg-blue-500 rounded-xl group-hover:scale-110 transition-transform">
+                    <div class="w-12 h-12 flex items-center justify-center bg-blue-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
                         <i class="pi pi-star text-white text-xl"></i>
                     </div>
                 </div>
@@ -29,7 +29,7 @@
                         <p class="text-sm font-medium text-green-600 mb-1">Рейтинг</p>
                         <p class="text-3xl font-bold text-green-900">{{ statistics?.rating || 0 }}</p>
                     </div>
-                    <div class="w-12 h-12 flex items-center justify-center bg-green-500 rounded-xl group-hover:scale-110 transition-transform">
+                    <div class="w-12 h-12 flex items-center justify-center bg-green-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
                         <i class="pi pi-chart-line text-white text-xl"></i>
                     </div>
                 </div>
@@ -41,7 +41,7 @@
                         <p class="text-sm font-medium text-amber-600 mb-1">Очки</p>
                         <p class="text-3xl font-bold text-amber-900">{{ statistics?.total_points || 0 }}</p>
                     </div>
-                    <div class="w-12 h-12 flex items-center justify-center bg-amber-500 rounded-xl group-hover:scale-110 transition-transform">
+                    <div class="w-12 h-12 flex items-center justify-center bg-amber-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
                         <i class="pi pi-trophy text-white text-xl"></i>
                     </div>
                 </div>
@@ -53,7 +53,7 @@
                         <p class="text-sm font-medium text-purple-600 mb-1">Завершено кейсов</p>
                         <p class="text-3xl font-bold text-purple-900">{{ statistics?.completed_cases || 0 }}</p>
                     </div>
-                    <div class="w-12 h-12 flex items-center justify-center bg-purple-500 rounded-xl group-hover:scale-110 transition-transform">
+                    <div class="w-12 h-12 flex items-center justify-center bg-purple-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
                         <i class="pi pi-check-circle text-white text-xl"></i>
                     </div>
                 </div>
