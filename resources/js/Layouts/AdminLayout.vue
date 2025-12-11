@@ -7,7 +7,6 @@
       logoLink: route('guest.home'),
       logoText: 'КубГТУ',
       logoImage: '/images/logo/logo.png',
-      showSearch: true,
       showNotifications: true,
     }"
   >

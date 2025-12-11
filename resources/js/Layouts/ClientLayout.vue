@@ -6,7 +6,6 @@
       :logo-icon="logoIcon"
       :logo-image="logoImage"
       :logo-image-class="logoImageClass"
-      :show-search="showSearch"
       :show-notifications="showNotifications"
       :show-mobile-menu="showMobileMenu"
       @toggle-mobile-menu="handleToggleMobileMenu"
@@ -51,10 +50,6 @@ const props = defineProps({
   logoImageClass: {
     type: String,
     default: '',
-  },
-  showSearch: {
-    type: Boolean,
-    default: false,
   },
   showNotifications: {
     type: Boolean,
