@@ -43,6 +43,19 @@ class UsersController extends Controller
         // Получаем параметры пагинации
         $paginationParams = $userFilter->getPaginationParams();
 
+        // Создаем отдельный запрос для статистики с учетом фильтров (до пагинации)
+        $filteredStatsQuery = User::query();
+        $filteredStatsQuery = $userFilter->apply($filteredStatsQuery);
+        
+        // Подсчитываем статистику с учетом фильтров
+        $filteredStatistics = [
+            'total_users' => $filteredStatsQuery->count(),
+            'verified_users' => (clone $filteredStatsQuery)->whereNotNull('email_verified_at')->count(),
+            'students' => (clone $filteredStatsQuery)->whereHas('roles', function ($q) {
+                $q->where('name', 'student');
+            })->count(),
+        ];
+
         // Сортировка и пагинация
         $users = $query->paginate($paginationParams['per_page'])
             ->withQueryString();
@@ -103,6 +116,7 @@ class UsersController extends Controller
             'courseColors' => $courseColors,
             'courses' => $courses,
             'statistics' => $statistics,
+            'filteredStatistics' => $filteredStatistics,
         ]);
     }
 
