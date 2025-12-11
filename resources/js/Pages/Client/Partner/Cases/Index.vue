@@ -19,17 +19,18 @@
                     <Link 
                         v-for="tab in tabs" 
                         :key="tab.key" 
-                        :href="route('partner.cases.index', { status: tab.key })"
+                        :href="route('partner.cases.index', tab.key === 'all' ? {} : { status: tab.key })"
                         :class="[
                             currentTab === tab.key
                             ? 'border-blue-500 text-blue-600'
                             : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
                             'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm'
                         ]"
+                        :preserve-state="false"
                     >
                         {{ tab.label }}
                         <span 
-                            v-if="tab.count !== undefined" 
+                            v-if="tab.count !== undefined && tab.count > 0" 
                             class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                             :class="currentTab === tab.key ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'"
                         >
@@ -82,6 +83,18 @@
                         @date-select="applyFilters"
                     />
                 </div>
+            </div>
+            
+            <!-- Кнопка сброса фильтров -->
+            <div class="mt-4 flex justify-end">
+                <button
+                    @click="resetFilters"
+                    :disabled="!hasActiveFilters"
+                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <i class="pi pi-refresh"></i>
+                    Сбросить фильтры
+                </button>
             </div>
         </div>
 
@@ -197,6 +210,10 @@ const props = defineProps({
             status: null,
             search: null
         })
+    },
+    statistics: {
+        type: Object,
+        default: () => ({})
     }
 });
 
@@ -234,21 +251,24 @@ const filters = ref({
 });
 
 const currentTab = computed(() => {
-    return props.filters.status || 'all';
+    // Если status не указан или пустой, значит это "все"
+    const status = props.filters?.status;
+    return (status && status !== '') ? status : 'all';
 });
 
 const tabs = computed(() => {
+    const statistics = props.statistics || {};
     const allTabs = [
         { key: 'all', label: 'Все кейсы' },
-        { key: 'draft', label: 'Черновики', count: props.cases.meta?.draft_count },
-        { key: 'active', label: 'Активные', count: props.cases.meta?.active_count },
-        { key: 'completed', label: 'Завершенные', count: props.cases.meta?.completed_count },
-        { key: 'archived', label: 'Архив', count: props.cases.meta?.archived_count }
+        { key: 'draft', label: 'Черновики', count: statistics.draft_count },
+        { key: 'active', label: 'Активные', count: statistics.active_count },
+        { key: 'completed', label: 'Завершенные', count: statistics.completed_count },
+        { key: 'archived', label: 'Архив', count: statistics.archived_count }
     ];
 
     return allTabs.map(tab => ({
         ...tab,
-        count: tab.count !== undefined ? tab.count : undefined
+        count: tab.count !== undefined && tab.count > 0 ? tab.count : undefined
     }));
 });
 
@@ -324,5 +344,24 @@ const applyFilters = () => {
 
 const goToCase = (caseId) => {
     router.visit(route('partner.cases.show', { case: caseId }));
+};
+
+// Проверка наличия активных фильтров
+const hasActiveFilters = computed(() => {
+    return !!(filters.value.search || 
+              filters.value.status || 
+              filters.value.date_from || 
+              filters.value.date_to);
+});
+
+// Сброс фильтров
+const resetFilters = () => {
+    filters.value = {
+        search: '',
+        status: '',
+        date_from: null,
+        date_to: null
+    };
+    applyFilters();
 };
 </script>

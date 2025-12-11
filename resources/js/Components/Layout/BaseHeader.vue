@@ -38,23 +38,8 @@
       <slot name="menu" />
     </nav>
     
-    <!-- Правая область: поиск, уведомления, профиль -->
+    <!-- Правая область: уведомления, профиль -->
     <div class="base-header__actions">
-      <!-- Поиск (для админки) -->
-      <div v-if="showSearch" class="base-header__search">
-        <slot name="search">
-          <IconField>
-            <InputIcon class="pi pi-search" />
-            <InputText
-              v-model="searchValue"
-              type="text"
-              placeholder="Поиск..."
-              @update:modelValue="handleSearchInput"
-            />
-          </IconField>
-        </slot>
-      </div>
-      
       <!-- Уведомления -->
       <NotificationBell v-if="showNotifications" />
       
@@ -77,14 +62,9 @@
 <script setup>
 import { ref } from 'vue';
 import { Link } from '@inertiajs/vue3';
-import IconField from 'primevue/iconfield';
-import InputIcon from 'primevue/inputicon';
-import InputText from 'primevue/inputtext';
 import UserDropdown from '@/Components/Navigation/UserDropdown.vue';
 import NotificationBell from '@/Components/Navigation/NotificationBell.vue';
 import { useAuth } from '@/Composables/useAuth';
-
-const searchValue = ref('');
 
 const props = defineProps({
   logoText: {
@@ -110,10 +90,6 @@ const props = defineProps({
     default: '',
     // Дополнительные классы для длинного лого
   },
-  showSearch: {
-    type: Boolean,
-    default: false,
-  },
   showNotifications: {
     type: Boolean,
     default: true,
@@ -132,7 +108,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['toggle-mobile-menu', 'search']);
+const emit = defineEmits(['toggle-mobile-menu']);
 
 const { user } = useAuth();
 
@@ -141,10 +117,6 @@ const imageError = ref({ icon: false, image: false });
 const handleImageError = (type) => {
   imageError.value[type] = true;
   // Если изображение не загрузилось, показываем текстовое лого
-};
-
-const handleSearchInput = (value) => {
-  emit('search', value);
 };
 </script>
 

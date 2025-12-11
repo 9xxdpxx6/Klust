@@ -5,7 +5,29 @@
 
         <!-- Filters -->
         <div class="bg-white shadow-sm rounded-lg p-4 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Поиск -->
+                <div class="select-wrapper" style="min-width: 300px;">
+                    <label
+                        for="search-input"
+                        class="block text-sm font-medium mb-1"
+                    >
+                        Поиск
+                    </label>
+                    <div class="relative">
+                        <input
+                            id="search-input"
+                            v-model="filters.search"
+                            type="text"
+                            placeholder="По имени участника..."
+                            class="w-full min-h-[2.5rem] h-[2.6rem] pl-10 pr-3 py-2 border border-border rounded-md shadow-sm text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 box-border leading-[1.5]"
+                            style="padding-left: 2.75rem;"
+                            @input="debouncedSearch"
+                        />
+                        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                    </div>
+                </div>
+                
                 <div>
                     <Select
                         v-model="filters.case_id"
@@ -30,6 +52,18 @@
                     />
                 </div>
             </div>
+            
+            <!-- Кнопка сброса фильтров -->
+            <div class="mt-4 flex justify-end">
+                <button
+                    @click="resetFilters"
+                    :disabled="!hasActiveFilters"
+                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <i class="pi pi-refresh"></i>
+                    Сбросить фильтры
+                </button>
+            </div>
         </div>
 
         <!-- Teams Grid -->
@@ -47,9 +81,9 @@
             <div
                 v-for="team in teams.data"
                 :key="team.id"
-                class="bg-white shadow-sm rounded-lg overflow-hidden border border-gray-200 hover:shadow-md transition-shadow duration-200"
+                class="bg-white shadow-sm rounded-lg overflow-hidden border border-gray-200 hover:shadow-md transition-shadow duration-200 flex flex-col"
             >
-                <div class="p-6">
+                <div class="p-6 flex-1 flex flex-col">
                     <!-- Team Header -->
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex-1">
@@ -88,7 +122,7 @@
                     </div>
 
                     <!-- Team Info -->
-                    <div class="space-y-2 mb-4 pt-3 border-t border-gray-200">
+                    <div class="space-y-2 mb-4 pt-3 border-t border-gray-200 flex-1">
                         <div class="flex items-center text-sm text-gray-500">
                             <svg class="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                 <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
@@ -149,9 +183,21 @@ const props = defineProps({
 });
 
 const filters = ref({
-    case_id: props.filters.case_id || '',
-    status: props.filters.status || ''
+    search: props.filters?.search || '',
+    case_id: props.filters?.case_id || '',
+    status: props.filters?.status || ''
 });
+
+// Debounce для поиска
+let searchTimeout = null;
+const debouncedSearch = () => {
+    if (searchTimeout) {
+        clearTimeout(searchTimeout);
+    }
+    searchTimeout = setTimeout(() => {
+        applyFilters();
+    }, 500);
+};
 
 const getStatusClass = (status) => {
     if (!status) return 'bg-gray-100 text-gray-800';
@@ -194,14 +240,34 @@ const formatDate = (dateString) => {
 };
 
 const applyFilters = () => {
-    const params = {
-        case_id: filters.value.case_id || undefined,
-        status: filters.value.status || undefined
-    };
+    const params = {};
+    
+    if (filters.value.search) {
+        params.search = filters.value.search;
+    }
+    
+    if (filters.value.case_id) {
+        params.case_id = filters.value.case_id;
+    }
+    
+    if (filters.value.status) {
+        params.status = filters.value.status;
+    }
+
+    // Сохраняем фокус на инпуте, если он есть
+    const searchInput = document.getElementById('search-input');
+    const hadFocus = document.activeElement === searchInput;
 
     router.get(route('partner.teams.index'), params, {
         preserveState: true,
-        replace: true
+        preserveScroll: true,
+        replace: true,
+        onFinish: () => {
+            // Восстанавливаем фокус после обновления
+            if (hadFocus && searchInput) {
+                searchInput.focus();
+            }
+        }
     });
 };
 
@@ -218,4 +284,21 @@ const statusFilterOptions = computed(() => [
     { label: 'Активные', value: 'accepted' },
     { label: 'Завершенные', value: 'completed' },
 ])
+
+// Проверка наличия активных фильтров
+const hasActiveFilters = computed(() => {
+    return !!(filters.value.search || 
+              filters.value.case_id || 
+              filters.value.status);
+});
+
+// Сброс фильтров
+const resetFilters = () => {
+    filters.value = {
+        search: '',
+        case_id: '',
+        status: ''
+    };
+    applyFilters();
+};
 </script>
