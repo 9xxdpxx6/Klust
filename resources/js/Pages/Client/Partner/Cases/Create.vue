@@ -191,6 +191,7 @@
 import { ref, reactive } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import DatePicker from '@/Components/UI/DatePicker.vue';
+import { formatDateForServer } from '@/Composables/useDateHelper';
 
 const props = defineProps({
     skills: {
@@ -213,14 +214,6 @@ const form = reactive({
 // For handling form errors and processing state
 const processing = ref(false);
 const errors = ref({});
-
-const formatDateForServer = (date) => {
-    if (!date) return null;
-    if (date instanceof Date) {
-        return date.toISOString().split('T')[0];
-    }
-    return date;
-};
 
 const submitForm = () => {
     processing.value = true;

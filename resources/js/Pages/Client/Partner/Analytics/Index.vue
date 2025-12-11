@@ -254,6 +254,7 @@ import { ref, reactive, onMounted, computed } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 import DatePicker from '@/Components/UI/DatePicker.vue';
 import Select from '@/Components/UI/Select.vue';
+import { parseLocalDate, formatDateForServer } from '@/Composables/useDateHelper';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -299,8 +300,8 @@ const props = defineProps({
 
 const filters = reactive({
     period: props.filters.period || '30',
-    start_date: props.filters.start_date ? new Date(props.filters.start_date) : null,
-    end_date: props.filters.end_date ? new Date(props.filters.end_date) : null
+    start_date: parseLocalDate(props.filters.start_date),
+    end_date: parseLocalDate(props.filters.end_date)
 });
 
 // Extract data from analytics object
@@ -419,14 +420,6 @@ const doughnutChartOptions = {
             position: 'bottom'
         }
     }
-};
-
-const formatDateForServer = (date) => {
-    if (!date) return null;
-    if (date instanceof Date) {
-        return date.toISOString().split('T')[0];
-    }
-    return date;
 };
 
 const applyFilters = () => {
