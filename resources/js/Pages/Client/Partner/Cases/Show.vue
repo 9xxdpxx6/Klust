@@ -399,35 +399,41 @@
                     <div
                         v-for="team in teams"
                         :key="team.id"
-                        class="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
+                        class="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors flex flex-col"
                     >
-                        <div class="flex justify-between items-start mb-3">
-                            <h4 class="text-md font-semibold text-gray-900">Команда #{{ team.id }}</h4>
-                            <Link
-                                :href="route('partner.teams.show', { application: team.id })"
-                                class="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
-                            >
-                                Подробнее →
-                            </Link>
-                        </div>
-                        
-                        <!-- Состав команды -->
-                        <div>
-                            <p class="text-xs font-medium text-gray-500 mb-1.5">Состав:</p>
-                            <div class="space-y-0.5">
-                                <!-- Лидер -->
-                                <div class="text-sm font-semibold text-gray-900">
-                                    • {{ team.leader?.name }}
-                                </div>
-                                <!-- Участники -->
-                                <div
-                                    v-for="member in team.team_members || []"
-                                    :key="member.id"
-                                    class="text-sm text-gray-700"
-                                >
-                                    • {{ member.user?.name }}
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start mb-3">
+                                <h4 class="text-md font-semibold text-gray-900">Команда #{{ team.id }}</h4>
+                            </div>
+                            
+                            <!-- Состав команды -->
+                            <div>
+                                <p class="text-xs font-medium text-gray-500 mb-1.5">Состав:</p>
+                                <div class="space-y-0.5">
+                                    <!-- Лидер -->
+                                    <div class="text-sm font-semibold text-gray-900">
+                                        • {{ team.leader?.name }}
+                                    </div>
+                                    <!-- Участники -->
+                                    <div
+                                        v-for="member in team.team_members || []"
+                                        :key="member.id"
+                                        class="text-sm text-gray-700"
+                                    >
+                                        • {{ member.user?.name }}
+                                    </div>
                                 </div>
                             </div>
+                        </div>
+                        
+                        <!-- Кнопка прижата к низу -->
+                        <div class="mt-4 pt-3 border-t border-gray-200">
+                            <Link
+                                :href="route('partner.teams.show', { application: team.id })"
+                                class="block w-full text-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors"
+                            >
+                                Подробнее
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -740,9 +746,11 @@ const loadApplications = () => {
         params.status = applicationFilters.value.status;
     }
     
-    // Парсим сортировку (format: "field_order")
+    // Парсим сортировку (format: "field_order" или "field_field_order")
     const sortValue = applicationFilters.value.sort || 'id_desc';
-    const [sortBy, sortOrder] = sortValue.split('_');
+    const parts = sortValue.split('_');
+    const sortOrder = parts.pop(); // Последний элемент - это порядок (asc/desc)
+    const sortBy = parts.join('_'); // Остальное - это поле (может быть created_at)
     params.sort_by = sortBy;
     params.sort_order = sortOrder;
     

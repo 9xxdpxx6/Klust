@@ -95,9 +95,19 @@ class CasesController extends Controller
                 ->paginate($pagination['per_page'])
                 ->withQueryString();
 
+            // Получаем статистику для табов
+            $baseQuery = CaseModel::query()->where('partner_id', $partner->id);
+            $statistics = [
+                'draft_count' => (clone $baseQuery)->where('status', 'draft')->count(),
+                'active_count' => (clone $baseQuery)->where('status', 'active')->count(),
+                'completed_count' => (clone $baseQuery)->where('status', 'completed')->count(),
+                'archived_count' => (clone $baseQuery)->where('status', 'archived')->count(),
+            ];
+
             return Inertia::render('Client/Partner/Cases/Index', [
                 'cases' => $cases,
                 'filters' => $filters,
+                'statistics' => $statistics,
             ]);
         } catch (\Exception $e) {
             return Inertia::render('Client/Partner/Cases/Index', [
