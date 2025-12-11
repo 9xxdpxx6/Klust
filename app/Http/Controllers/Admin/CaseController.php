@@ -40,8 +40,8 @@ class CaseController extends Controller
         ];
 
         // Если пользователь - партнер, показывать только его кейсы
-        if ($user->hasRole('partner') && $user->partnerProfile?->partner_id) {
-            $filters['partner_id'] = $user->partnerProfile->partner_id;
+        if ($user->hasRole('partner') && $user->partner?->id) {
+            $filters['partner_id'] = $user->partner->id;
         }
 
         // Получить кейсы через CaseService::getFilteredCases($filters)
@@ -70,8 +70,8 @@ class CaseController extends Controller
         // Получаем общую статистику
         // Если пользователь - партнер, показывать статистику только по его кейсам
         $statisticsQuery = CaseModel::query();
-        if ($user->hasRole('partner') && $user->partnerProfile?->partner_id) {
-            $statisticsQuery->where('partner_id', $user->partnerProfile->partner_id);
+        if ($user->hasRole('partner') && $user->partner?->id) {
+            $statisticsQuery->where('partner_id', $user->partner->id);
         }
         
         $statistics = [

@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Filters\CaseFilter;
 use App\Helpers\FilterHelper;
+use App\Jobs\UpdateCaseStatusByDeadline;
 use App\Models\CaseApplication;
 use App\Models\CaseModel;
 use App\Models\CaseTeamMember;
@@ -13,7 +14,10 @@ use App\Models\Partner;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redis;
 
 class CaseService
 {
@@ -45,6 +49,9 @@ class CaseService
                 $case->skills()->sync($data['required_skills']);
             }
 
+            // Schedule job to update status by deadline if case is active
+            $this->scheduleStatusUpdateJob($case);
+
             return $case->fresh('skills', 'partner');
         });
     }
@@ -63,6 +70,9 @@ class CaseService
     public function updateCase(CaseModel $case, array $data): CaseModel
     {
         return DB::transaction(function () use ($case, $data) {
+            $oldDeadline = $case->deadline;
+            $oldStatus = $case->status;
+
             // Update case fields
             $case->update([
                 'title' => $data['title'] ?? $case->title,
@@ -77,6 +87,18 @@ class CaseService
             // Sync skills if provided
             if (isset($data['required_skills']) && is_array($data['required_skills'])) {
                 $case->skills()->sync($data['required_skills']);
+            }
+
+            // If deadline or status changed, update scheduled job
+            $deadlineChanged = $oldDeadline?->format('Y-m-d') !== $case->deadline?->format('Y-m-d');
+            $statusChanged = $oldStatus !== $case->status;
+
+            if ($deadlineChanged || $statusChanged) {
+                // Cancel old job if exists
+                $this->cancelStatusUpdateJob($case->id);
+
+                // Schedule new job if case is active
+                $this->scheduleStatusUpdateJob($case);
             }
 
             return $case->fresh('skills', 'partner');
@@ -102,6 +124,9 @@ class CaseService
         }
 
         return DB::transaction(function () use ($case) {
+            // Cancel scheduled job if exists
+            $this->cancelStatusUpdateJob($case->id);
+
             // Detach skills
             $case->skills()->detach();
 
@@ -115,6 +140,9 @@ class CaseService
      */
     public function archiveCase(CaseModel $case): CaseModel
     {
+        // Cancel scheduled job if exists
+        $this->cancelStatusUpdateJob($case->id);
+
         $case->update(['status' => 'archived']);
 
         return $case->fresh();
@@ -344,5 +372,127 @@ class CaseService
         });
 
         return round($totalMembers / $acceptedApplications->count(), 2);
+    }
+
+    /**
+     * Schedule job to update case status by deadline
+     */
+    private function scheduleStatusUpdateJob(CaseModel $case): void
+    {
+        // Only schedule for active cases with future deadline
+        if ($case->status !== 'active' || ! $case->deadline || $case->deadline->isPast()) {
+            return;
+        }
+
+        try {
+            $job = new UpdateCaseStatusByDeadline($case->id);
+            
+            // Dispatch job with delay until deadline
+            $job->delay($case->deadline)->dispatch();
+
+            // Store deadline in cache for later cancellation check
+            // This helps identify which jobs to cancel
+            Cache::put("case_status_job_{$case->id}", [
+                'deadline' => $case->deadline->format('Y-m-d H:i:s'),
+                'scheduled_at' => now()->format('Y-m-d H:i:s'),
+            ], $case->deadline->addDays(1));
+
+            Log::info('Scheduled job to update case status by deadline', [
+                'case_id' => $case->id,
+                'deadline' => $case->deadline->format('Y-m-d H:i:s'),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to schedule case status update job', [
+                'case_id' => $case->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Cancel scheduled job for case status update
+     */
+    private function cancelStatusUpdateJob(int $caseId): void
+    {
+        $cacheKey = "case_status_job_{$caseId}";
+        $jobInfo = Cache::get($cacheKey);
+
+        if ($jobInfo) {
+            try {
+                $uniqueId = "update_case_status_{$caseId}";
+                $queueDriver = config('queue.default');
+
+                // Set cancellation flag (Job will check this before execution)
+                // This works for all queue drivers (database, redis, sqs, etc.)
+                Cache::put("case_status_job_cancelled_{$caseId}", true, now()->addDays(30));
+
+                // For database queue driver: try to delete jobs from database
+                if ($queueDriver === 'database') {
+                    try {
+                        DB::table('jobs')
+                            ->where('payload', 'like', "%{$uniqueId}%")
+                            ->delete();
+                    } catch (\Exception $dbException) {
+                        Log::warning('Failed to delete job from database queue', [
+                            'case_id' => $caseId,
+                            'error' => $dbException->getMessage(),
+                        ]);
+                        // Continue - cancellation flag is set, so job won't execute
+                    }
+                }
+                // For Redis queue driver: try to remove from delayed queue
+                elseif ($queueDriver === 'redis') {
+                    try {
+                        $redis = Redis::connection();
+                        $queueName = config('queue.connections.redis.queue', 'default');
+                        
+                        // Laravel stores delayed jobs in sorted sets with key: queues:{queue}:delayed
+                        $delayedKey = "queues:{$queueName}:delayed";
+                        
+                        // Get all delayed jobs
+                        $delayedJobs = $redis->zrange($delayedKey, 0, -1, 'WITHSCORES');
+                        
+                        foreach ($delayedJobs as $job => $score) {
+                            // Decode job payload (Laravel uses base64 encoding)
+                            $decoded = json_decode(base64_decode($job), true);
+                            
+                            // Check if this is our job
+                            if (isset($decoded['data']['commandName']) 
+                                && str_contains($decoded['data']['commandName'], 'UpdateCaseStatusByDeadline')
+                                && isset($decoded['data']['command']['caseId'])
+                                && $decoded['data']['command']['caseId'] === $caseId) {
+                                // Remove job from delayed queue
+                                $redis->zrem($delayedKey, $job);
+                                break;
+                            }
+                        }
+                    } catch (\Exception $redisException) {
+                        Log::warning('Failed to remove job from Redis delayed queue', [
+                            'case_id' => $caseId,
+                            'error' => $redisException->getMessage(),
+                        ]);
+                        // Continue - cancellation flag is set, so job won't execute
+                    }
+                }
+
+                // Remove job info from cache
+                Cache::forget($cacheKey);
+
+                Log::info('Cancelled scheduled job for case status update', [
+                    'case_id' => $caseId,
+                    'unique_id' => $uniqueId,
+                    'queue_driver' => $queueDriver,
+                ]);
+            } catch (\Exception $e) {
+                Log::warning('Failed to cancel case status update job', [
+                    'case_id' => $caseId,
+                    'error' => $e->getMessage(),
+                ]);
+                
+                // Always set cancellation flag as fallback
+                Cache::put("case_status_job_cancelled_{$caseId}", true, now()->addDays(30));
+                Cache::forget($cacheKey);
+            }
+        }
     }
 }

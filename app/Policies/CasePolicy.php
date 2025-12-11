@@ -61,7 +61,7 @@ class CasePolicy
 
         // Партнер может редактировать только свои кейсы
         if ($user->hasRole('partner')) {
-            return $user->partnerProfile?->partner_id === $case->partner_id
+            return $user->partner?->id === $case->partner_id
                 && $user->hasPermissionTo('cases.update');
         }
 
@@ -93,7 +93,7 @@ class CasePolicy
 
         // Партнер может архивировать только свои кейсы
         if ($user->hasRole('partner')) {
-            return $user->partnerProfile?->partner_id === $case->partner_id
+            return $user->partner?->id === $case->partner_id
                 && $user->hasPermissionTo('cases.update');
         }
 
