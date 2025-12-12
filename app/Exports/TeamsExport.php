@@ -14,10 +14,12 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 class TeamsExport implements FromCollection, WithHeadings, WithMapping, WithStyles
 {
     protected int $partnerId;
+    protected array $filters;
 
-    public function __construct(int $partnerId)
+    public function __construct(int $partnerId, array $filters = [])
     {
         $this->partnerId = $partnerId;
+        $this->filters = $filters;
     }
 
     /**
@@ -25,13 +27,22 @@ class TeamsExport implements FromCollection, WithHeadings, WithMapping, WithStyl
      */
     public function collection()
     {
-        return CaseApplication::whereHas('case', function ($query) {
+        $query = CaseApplication::whereHas('case', function ($query) {
             $query->where('partner_id', $this->partnerId);
         })
             ->accepted()
-            ->with(['leader', 'case', 'teamMembers.user'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+            ->with(['leader', 'case', 'teamMembers.user']);
+
+        // Apply date filters if provided
+        if (! empty($this->filters['date_from'])) {
+            $query->whereDate('submitted_at', '>=', $this->filters['date_from']);
+        }
+
+        if (! empty($this->filters['date_to'])) {
+            $query->whereDate('submitted_at', '<=', $this->filters['date_to']);
+        }
+
+        return $query->orderBy('created_at', 'desc')->get();
     }
 
     public function headings(): array

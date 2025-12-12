@@ -14,30 +14,33 @@
                         optionLabel="label"
                         optionValue="value"
                         placeholder="Выберите период"
+                        @update:modelValue="onPeriodChange"
+                    />
+                </div>
+                <div>
+                    <DatePicker
+                        v-model="filters.date_from"
+                        label="Начало"
+                        placeholder="Выберите дату"
                         @update:modelValue="applyFilters"
                     />
                 </div>
                 <div>
                     <DatePicker
-                        v-model="filters.start_date"
-                        label="Начало"
+                        v-model="filters.date_to"
+                        label="Конец"
                         placeholder="Выберите дату"
-                        @date-select="applyFilters"
+                        @update:modelValue="applyFilters"
                     />
                 </div>
                 <div>
-                    <DatePicker
-                        v-model="filters.end_date"
-                        label="Конец"
-                        placeholder="Выберите дату"
-                        @date-select="applyFilters"
-                    />
-                </div>
-                <div class="flex items-end">
+                    <label class="block text-sm font-medium mb-1 text-transparent">
+                        &nbsp;
+                    </label>
                     <div class="relative w-full">
                         <button
                             @click="showExportMenu = !showExportMenu"
-                            class="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out flex items-center justify-center gap-2"
+                            class="w-full h-10 bg-gray-600 hover:bg-gray-700 text-white px-4 rounded-md text-sm font-medium transition duration-150 ease-in-out flex items-center justify-center gap-2"
                         >
                             <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -51,19 +54,19 @@
                         >
                             <div class="py-1">
                                 <a
-                                    :href="route('partner.analytics.export.cases')"
+                                    :href="getExportUrl('partner.analytics.export.cases')"
                                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                                 >
                                     Экспорт кейсов (Excel)
                                 </a>
                                 <a
-                                    :href="route('partner.analytics.export.applications')"
+                                    :href="getExportUrl('partner.analytics.export.applications')"
                                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                                 >
                                     Экспорт заявок (Excel)
                                 </a>
                                 <a
-                                    :href="route('partner.analytics.export.teams')"
+                                    :href="getExportUrl('partner.analytics.export.teams')"
                                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                                 >
                                     Экспорт команд (Excel)
@@ -136,9 +139,9 @@
 
         <!-- Charts -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <!-- Популярность кейсов -->
+            <!-- Распределение кейсов по навыкам -->
             <div class="bg-white p-4 rounded-lg shadow border">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Популярность кейсов (по заявкам)</h3>
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Распределение кейсов по навыкам</h3>
                 <div v-if="chartData.case_popularity" class="h-80">
                     <Bar 
                         :data="chartData.case_popularity" 
@@ -218,7 +221,7 @@
                                 Команды
                             </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Конверсия
+                                Процент одобрения
                             </th>
                         </tr>
                     </thead>
@@ -298,11 +301,31 @@ const props = defineProps({
     }
 });
 
-const filters = reactive({
-    period: props.filters.period || '30',
-    start_date: parseLocalDate(props.filters.start_date),
-    end_date: parseLocalDate(props.filters.end_date)
-});
+// Initialize filters with period-based dates if dates are not provided
+const initializeFilters = () => {
+    const period = props.filters.period || '30';
+    let dateFrom = parseLocalDate(props.filters.date_from);
+    let dateTo = parseLocalDate(props.filters.date_to);
+    
+    // If period is set but dates are not, calculate dates from period
+    if (period && period !== 'all' && !dateFrom && !dateTo) {
+        const days = parseInt(period);
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - days);
+        
+        dateFrom = startDate;
+        dateTo = endDate;
+    }
+    
+    return {
+        period,
+        date_from: dateFrom,
+        date_to: dateTo
+    };
+};
+
+const filters = reactive(initializeFilters());
 
 // Extract data from analytics object
 const statistics = computed(() => props.analytics?.overview || {});
@@ -382,12 +405,73 @@ onMounted(() => {
     });
 });
 
+// Месяцы на русском для tooltip
+const monthNames = {
+    1: 'янв', 2: 'фев', 3: 'мар', 4: 'апр', 5: 'май', 6: 'июн',
+    7: 'июл', 8: 'авг', 9: 'сен', 10: 'окт', 11: 'ноя', 12: 'дек'
+};
+
+// Функция для форматирования даты в tooltip
+const formatDateForTooltip = (label) => {
+    if (!label) return '';
+    
+    // Если label уже в формате "сен 2025", возвращаем как есть
+    if (typeof label === 'string' && /^[а-яё]{3}\s\d{4}$/i.test(label)) {
+        return label;
+    }
+    
+    // Пытаемся распарсить дату из формата "M Y" (например, "Dec 2025" или "Sep 2025")
+    const dateMatch = label?.toString().match(/(\w+)\s(\d{4})/);
+    if (dateMatch) {
+        const monthName = dateMatch[1];
+        const year = dateMatch[2];
+        
+        // Маппинг английских названий месяцев (полные и сокращенные)
+        const monthMap = {
+            'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5, 'June': 6,
+            'July': 7, 'August': 8, 'September': 9, 'October': 10, 'November': 11, 'December': 12,
+            'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
+            'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12
+        };
+        
+        const monthNum = monthMap[monthName];
+        if (monthNum && monthNames[monthNum]) {
+            return `${monthNames[monthNum]} ${year}`;
+        }
+    }
+    
+    return label;
+};
+
 const barChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
         legend: {
             display: false
+        },
+        tooltip: {
+            callbacks: {
+                title: (context) => {
+                    if (context && context.length > 0 && context[0].label) {
+                        return formatDateForTooltip(context[0].label);
+                    }
+                    return '';
+                },
+                label: (context) => {
+                    const value = Math.round(context.parsed.y);
+                    return `Количество: ${value}`;
+                }
+            }
+        }
+    },
+    scales: {
+        y: {
+            beginAtZero: true,
+            ticks: {
+                stepSize: 1,
+                precision: 0
+            }
         }
     }
 };
@@ -398,6 +482,30 @@ const lineChartOptions = {
     plugins: {
         legend: {
             display: false
+        },
+        tooltip: {
+            callbacks: {
+                title: (context) => {
+                    if (context && context.length > 0) {
+                        return formatDateForTooltip(context[0].label);
+                    }
+                    return '';
+                },
+                label: (context) => {
+                    const label = context.dataset.label || 'Заявки';
+                    const value = Math.round(context.parsed.y);
+                    return `${label}: ${value}`;
+                }
+            }
+        }
+    },
+    scales: {
+        y: {
+            beginAtZero: true,
+            ticks: {
+                stepSize: 1,
+                precision: 0
+            }
         }
     }
 };
@@ -407,7 +515,23 @@ const pieChartOptions = {
     maintainAspectRatio: false,
     plugins: {
         legend: {
-            position: 'bottom'
+            position: 'bottom',
+            labels: {
+                usePointStyle: true,
+                padding: 15,
+                font: {
+                    size: 12
+                }
+            }
+        },
+        tooltip: {
+            callbacks: {
+                label: (context) => {
+                    const label = context.label || '';
+                    const value = Math.round(context.parsed || context.raw);
+                    return `${label}: ${value}`;
+                }
+            }
         }
     }
 };
@@ -417,22 +541,84 @@ const doughnutChartOptions = {
     maintainAspectRatio: false,
     plugins: {
         legend: {
-            position: 'bottom'
+            position: 'bottom',
+            labels: {
+                usePointStyle: true,
+                padding: 15,
+                font: {
+                    size: 12
+                }
+            }
+        },
+        tooltip: {
+            callbacks: {
+                label: (context) => {
+                    const label = context.label || '';
+                    const value = context.parsed || context.raw;
+                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                    const percentage = ((value / total) * 100).toFixed(1);
+                    return `${label}: ${value} (${percentage}%)`;
+                }
+            }
         }
     }
+};
+
+const onPeriodChange = () => {
+    // При изменении периода автоматически устанавливаем даты
+    if (filters.period && filters.period !== 'all') {
+        const days = parseInt(filters.period);
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - days);
+        
+        filters.date_from = startDate;
+        filters.date_to = endDate;
+    } else if (filters.period === 'all') {
+        // Для "Весь период" очищаем даты
+        filters.date_from = null;
+        filters.date_to = null;
+    }
+    
+    applyFilters();
 };
 
 const applyFilters = () => {
     const params = {
         period: filters.period || undefined,
-        start_date: formatDateForServer(filters.start_date) || undefined,
-        end_date: formatDateForServer(filters.end_date) || undefined
+        date_from: formatDateForServer(filters.date_from) || undefined,
+        date_to: formatDateForServer(filters.date_to) || undefined
     };
 
     router.get(route('partner.analytics.index'), params, {
         preserveState: true,
         replace: true
     });
+};
+
+const getExportUrl = (routeName) => {
+    const params = new URLSearchParams();
+    
+    if (filters.period) {
+        params.append('period', filters.period);
+    }
+    
+    if (filters.date_from) {
+        const dateFrom = formatDateForServer(filters.date_from);
+        if (dateFrom) {
+            params.append('date_from', dateFrom);
+        }
+    }
+    
+    if (filters.date_to) {
+        const dateTo = formatDateForServer(filters.date_to);
+        if (dateTo) {
+            params.append('date_to', dateTo);
+        }
+    }
+    
+    const queryString = params.toString();
+    return queryString ? `${route(routeName)}?${queryString}` : route(routeName);
 };
 
 const exportData = () => {
@@ -461,10 +647,10 @@ const generateCSV = () => {
     csv += `Активные кейсы,${statistics.value.active_cases || 0}\n`;
     csv += `Завершенные кейсы,${statistics.value.completed_cases || 0}\n`;
     csv += `Всего команд,${statistics.value.total_teams || 0}\n`;
-    csv += `Средняя конверсия,${statistics.value.average_conversion || 0}%\n\n`;
+    csv += `Средний процент одобрения,${statistics.value.average_conversion || 0}%\n\n`;
     
     csv += 'Топ кейсов\n';
-    csv += 'Название,Заявки,Команды,Конверсия\n';
+    csv += 'Название,Заявки,Команды,Процент одобрения\n';
     topCases.value.forEach(topCase => {
         csv += `"${topCase.title}",${topCase.applications_count},${topCase.teams_count},${topCase.conversion_rate}%\n`;
     });

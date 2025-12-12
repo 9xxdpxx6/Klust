@@ -33,6 +33,12 @@ class ApplicationsExport implements FromView, ShouldAutoSize, WithStyles
             $query->where('case_id', $this->filters['case_id']);
         }
 
+        if (! empty($this->filters['partner_id'])) {
+            $query->whereHas('case', function ($q) {
+                $q->where('partner_id', $this->filters['partner_id']);
+            });
+        }
+
         if (! empty($this->filters['date_from'])) {
             $query->whereDate('submitted_at', '>=', $this->filters['date_from']);
         }

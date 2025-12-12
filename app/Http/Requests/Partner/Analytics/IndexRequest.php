@@ -26,6 +26,7 @@ class IndexRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'period' => ['nullable', 'string', 'in:7,30,90,all'],
             'date_from' => ['nullable', 'date', 'date_format:Y-m-d'], // Уточняем формат для удобства
             'date_to' => [
                 'nullable',

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Helpers\FilterHelper;
+use App\Models\ApplicationStatus;
 use App\Models\Partner;
 use Illuminate\Support\Carbon;
 
@@ -15,16 +16,28 @@ class AnalyticsService
      */
     public function getPartnerAnalytics(Partner $partner, array $filters): array
     {
-        // Parse date filters using FilterHelper
-        $dateFrom = FilterHelper::getDateFilter(
-            $filters['date_from'] ?? null,
-            Carbon::now()->subMonths(6)
-        );
+        // Handle period filter - if period is set, calculate dates from it
+        $period = $filters['period'] ?? null;
+        $dateFrom = null;
+        $dateTo = null;
 
-        $dateTo = FilterHelper::getDateFilter(
-            $filters['date_to'] ?? null,
-            Carbon::now()
-        );
+        if ($period && $period !== 'all') {
+            // Calculate dates based on period
+            $days = (int) $period;
+            $dateTo = Carbon::now();
+            $dateFrom = Carbon::now()->subDays($days);
+        } else {
+            // Use explicit date filters or defaults
+            $dateFrom = FilterHelper::getDateFilter(
+                $filters['date_from'] ?? null,
+                Carbon::now()->subMonths(6)
+            );
+
+            $dateTo = FilterHelper::getDateFilter(
+                $filters['date_to'] ?? null,
+                Carbon::now()
+            );
+        }
 
         // Filter by specific case if provided
         $caseId = FilterHelper::getIntegerFilter($filters['case_id'] ?? null);
@@ -37,10 +50,13 @@ class AnalyticsService
             $casesQuery->where('id', $caseId);
         }
 
-        $cases = $casesQuery->with(['applications', 'skills'])->get();
+        $cases = $casesQuery->with(['applications.status', 'skills'])->get();
+
+        // Get status IDs once for reuse
+        $acceptedStatusId = ApplicationStatus::getIdByName('accepted');
 
         // Calculate overview statistics
-        $overview = $this->calculateOverviewStatistics($cases);
+        $overview = $this->calculateOverviewStatistics($cases, $acceptedStatusId);
 
         // Calculate application statistics
         $applicationStats = $this->calculateApplicationStatistics($cases);
@@ -54,11 +70,11 @@ class AnalyticsService
         ];
 
         // Calculate top cases
-        $topCases = $this->getTopCases($cases);
+        $topCases = $this->getTopCases($cases, $acceptedStatusId);
 
         // Calculate total teams
-        $totalTeams = $cases->sum(function ($case) {
-            return $case->applications->where('status', 'accepted')->count();
+        $totalTeams = $cases->sum(function ($case) use ($acceptedStatusId) {
+            return $case->applications->where('status_id', $acceptedStatusId)->count();
         });
 
         // Add total_teams to overview
@@ -80,8 +96,9 @@ class AnalyticsService
      * Calculate overview statistics
      *
      * @param  \Illuminate\Support\Collection  $cases
+     * @param  int  $acceptedStatusId
      */
-    private function calculateOverviewStatistics($cases): array
+    private function calculateOverviewStatistics($cases, int $acceptedStatusId): array
     {
         $totalCases = $cases->count();
         $activeCases = $cases->where('status', 'active')->count();
@@ -91,8 +108,8 @@ class AnalyticsService
             return $case->applications->count();
         });
 
-        $acceptedApplications = $cases->sum(function ($case) {
-            return $case->applications->where('status', 'accepted')->count();
+        $acceptedApplications = $cases->sum(function ($case) use ($acceptedStatusId) {
+            return $case->applications->where('status_id', $acceptedStatusId)->count();
         });
 
         $conversionRate = $totalApplications > 0
@@ -118,6 +135,10 @@ class AnalyticsService
     {
         $allApplications = $cases->flatMap(fn ($case) => $case->applications);
 
+        $pendingStatusId = ApplicationStatus::getIdByName('pending');
+        $acceptedStatusId = ApplicationStatus::getIdByName('accepted');
+        $rejectedStatusId = ApplicationStatus::getIdByName('rejected');
+
         $avgResponseTime = $allApplications
             ->filter(fn ($app) => $app->reviewed_at !== null)
             ->avg(function ($app) {
@@ -125,15 +146,15 @@ class AnalyticsService
             });
 
         $avgTeamSize = $allApplications
-            ->where('status', 'accepted')
+            ->where('status_id', $acceptedStatusId)
             ->avg(function ($app) {
                 return $app->teamMembers()->count() + 1; // +1 for leader
             });
 
         return [
-            'pending' => $allApplications->where('status', 'pending')->count(),
-            'accepted' => $allApplications->where('status', 'accepted')->count(),
-            'rejected' => $allApplications->where('status', 'rejected')->count(),
+            'pending' => $allApplications->where('status_id', $pendingStatusId)->count(),
+            'accepted' => $allApplications->where('status_id', $acceptedStatusId)->count(),
+            'rejected' => $allApplications->where('status_id', $rejectedStatusId)->count(),
             'avg_response_time_hours' => round($avgResponseTime ?? 0, 2),
             'avg_team_size' => round($avgTeamSize ?? 0, 2),
         ];
@@ -166,8 +187,20 @@ class AnalyticsService
             }
         }
 
+        // Format months in Russian
+        $monthNames = [
+            1 => 'янв', 2 => 'фев', 3 => 'мар', 4 => 'апр', 5 => 'май', 6 => 'июн',
+            7 => 'июл', 8 => 'авг', 9 => 'сен', 10 => 'окт', 11 => 'ноя', 12 => 'дек',
+        ];
+
+        $labels = array_map(function ($key) use ($monthNames) {
+            $date = Carbon::parse($key);
+            $month = $monthNames[$date->month] ?? $date->format('M');
+            return $month.' '.$date->year;
+        }, array_keys($months));
+
         return [
-            'labels' => array_map(fn ($key) => Carbon::parse($key)->format('M Y'), array_keys($months)),
+            'labels' => $labels,
             'data' => array_values($months),
         ];
     }
@@ -180,7 +213,7 @@ class AnalyticsService
     private function buildCasesByStatusChart($cases): array
     {
         return [
-            'labels' => ['Active', 'Completed', 'Draft', 'Archived'],
+            'labels' => ['Активные', 'Завершенные', 'Черновики', 'Архивные'],
             'data' => [
                 $cases->where('status', 'active')->count(),
                 $cases->where('status', 'completed')->count(),
@@ -199,12 +232,16 @@ class AnalyticsService
     {
         $allApplications = $cases->flatMap(fn ($case) => $case->applications);
 
-        $pending = $allApplications->where('status', 'pending')->count();
-        $accepted = $allApplications->where('status', 'accepted')->count();
-        $rejected = $allApplications->where('status', 'rejected')->count();
+        $pendingStatusId = ApplicationStatus::getIdByName('pending');
+        $acceptedStatusId = ApplicationStatus::getIdByName('accepted');
+        $rejectedStatusId = ApplicationStatus::getIdByName('rejected');
+
+        $pending = $allApplications->where('status_id', $pendingStatusId)->count();
+        $accepted = $allApplications->where('status_id', $acceptedStatusId)->count();
+        $rejected = $allApplications->where('status_id', $rejectedStatusId)->count();
 
         return [
-            'labels' => ['Pending', 'Accepted', 'Rejected'],
+            'labels' => ['На рассмотрении', 'Принята', 'Отклонена'],
             'data' => [$pending, $accepted, $rejected],
         ];
     }
@@ -239,13 +276,14 @@ class AnalyticsService
      * Get top cases by applications count
      *
      * @param  \Illuminate\Support\Collection  $cases
+     * @param  int  $acceptedStatusId
      */
-    private function getTopCases($cases): array
+    private function getTopCases($cases, int $acceptedStatusId): array
     {
         return $cases
-            ->map(function ($case) {
+            ->map(function ($case) use ($acceptedStatusId) {
                 $applicationsCount = $case->applications->count();
-                $teamsCount = $case->applications->where('status', 'accepted')->count();
+                $teamsCount = $case->applications->where('status_id', $acceptedStatusId)->count();
                 $conversionRate = $applicationsCount > 0
                     ? round(($teamsCount / $applicationsCount) * 100, 2)
                     : 0;
