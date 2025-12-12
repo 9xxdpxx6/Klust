@@ -7,9 +7,12 @@ namespace App\Http\Controllers\Client\Partner;
 use App\Exports\ApplicationsExport;
 use App\Exports\CasesExport;
 use App\Exports\TeamsExport;
+use App\Helpers\FilterHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Partner\Analytics\IndexRequest;
 use App\Services\AnalyticsService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
 use Maatwebsite\Excel\Facades\Excel;
@@ -37,10 +40,12 @@ class AnalyticsController extends Controller
 
             return Inertia::render('Client/Partner/Analytics/Index', [
                 'analytics' => $analytics,
+                'filters' => $request->only(['period', 'date_from', 'date_to']),
             ]);
         } catch (\Exception $e) {
             return Inertia::render('Client/Partner/Analytics/Index', [
                 'analytics' => [],
+                'filters' => $request->only(['period', 'date_from', 'date_to']),
                 'error' => 'Ошибка при загрузке аналитики: '.$e->getMessage(),
             ]);
         }
@@ -49,39 +54,77 @@ class AnalyticsController extends Controller
     /**
      * Экспорт кейсов партнера в Excel
      */
-    public function exportCases(): BinaryFileResponse
+    public function exportCases(Request $request): BinaryFileResponse
     {
         $user = auth()->user();
         $partner = $user->partner;
 
+        $filters = $this->prepareFilters($request);
+        $filters['partner_id'] = $partner->id;
+
         $filename = 'cases_'.date('Y-m-d_H-i-s').'.xlsx';
 
-        return Excel::download(new CasesExport(['partner_id' => $partner->id]), $filename);
+        return Excel::download(new CasesExport($filters), $filename);
     }
 
     /**
      * Экспорт всех заявок партнера в Excel
      */
-    public function exportApplications(): BinaryFileResponse
+    public function exportApplications(Request $request): BinaryFileResponse
     {
         $user = auth()->user();
         $partner = $user->partner;
 
+        $filters = $this->prepareFilters($request);
+        $filters['partner_id'] = $partner->id;
+
         $filename = 'applications_'.date('Y-m-d_H-i-s').'.xlsx';
 
-        return Excel::download(new ApplicationsExport(['partner_id' => $partner->id]), $filename);
+        return Excel::download(new ApplicationsExport($filters), $filename);
     }
 
     /**
      * Экспорт команд партнера в Excel
      */
-    public function exportTeams(): BinaryFileResponse
+    public function exportTeams(Request $request): BinaryFileResponse
     {
         $user = auth()->user();
         $partner = $user->partner;
 
+        $filters = $this->prepareFilters($request);
+
         $filename = 'teams_'.date('Y-m-d_H-i-s').'.xlsx';
 
-        return Excel::download(new TeamsExport($partner->id), $filename);
+        return Excel::download(new TeamsExport($partner->id, $filters), $filename);
+    }
+
+    /**
+     * Подготовить фильтры из запроса (преобразовать period в date_from/date_to)
+     */
+    private function prepareFilters(Request $request): array
+    {
+        $filters = [];
+
+        $period = $request->input('period');
+        $dateFrom = $request->input('date_from');
+        $dateTo = $request->input('date_to');
+
+        // Если указан период, вычисляем даты
+        if ($period && $period !== 'all') {
+            $days = (int) $period;
+            $dateTo = Carbon::now()->toDateString();
+            $dateFrom = Carbon::now()->subDays($days)->toDateString();
+        }
+
+        // Используем явные даты или вычисленные из периода
+        if ($dateFrom) {
+            $filters['date_from'] = $dateFrom;
+        }
+
+        if ($dateTo) {
+            $filters['date_to'] = $dateTo;
+        }
+
+        return $filters;
     }
 }

@@ -2,13 +2,13 @@
     <thead>
         <tr>
             <th>ID</th>
-            <th>Case Title</th>
-            <th>Leader Name</th>
-            <th>Team Size</th>
-            <th>Status</th>
-            <th>Submitted At</th>
-            <th>Rejection Reason</th>
-            <th>Partner</th>
+            <th>Название кейса</th>
+            <th>Лидер команды</th>
+            <th>Размер команды</th>
+            <th>Статус</th>
+            <th>Дата подачи</th>
+            <th>Причина отклонения</th>
+            <th>Партнер</th>
         </tr>
     </thead>
     <tbody>

@@ -7,11 +7,11 @@ namespace App\Exports;
 use App\Models\CaseModel;
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class CasesExport implements FromView, ShouldAutoSize, WithStyles
+class CasesExport implements FromView, WithColumnWidths, WithStyles
 {
     protected array $filters;
 
@@ -22,7 +22,7 @@ class CasesExport implements FromView, ShouldAutoSize, WithStyles
 
     public function view(): View
     {
-        $query = CaseModel::with(['partner', 'required_skills']);
+        $query = CaseModel::with(['partner', 'skills']);
 
         // Apply filters if provided
         if (! empty($this->filters['status'])) {
@@ -46,6 +46,21 @@ class CasesExport implements FromView, ShouldAutoSize, WithStyles
         return view('exports.cases', [
             'cases' => $cases,
         ]);
+    }
+
+    public function columnWidths(): array
+    {
+        return [
+            'A' => 10,  // ID
+            'B' => 30,  // Название
+            'C' => 28,  // Описание (максимум ~200px, 1 единица Excel ≈ 7px)
+            'D' => 25,  // Партнер
+            'E' => 15,  // Статус
+            'F' => 15,  // Размер команды
+            'G' => 18,  // Срок выполнения
+            'H' => 20,  // Дата создания
+            'I' => 40,  // Требуемые навыки
+        ];
     }
 
     public function styles(Worksheet $sheet): array

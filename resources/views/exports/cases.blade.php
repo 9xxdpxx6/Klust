@@ -2,14 +2,14 @@
     <thead>
         <tr>
             <th>ID</th>
-            <th>Title</th>
-            <th>Description</th>
-            <th>Partner</th>
-            <th>Status</th>
-            <th>Team Size</th>
-            <th>Deadline</th>
-            <th>Created At</th>
-            <th>Required Skills</th>
+            <th>Название</th>
+            <th>Описание</th>
+            <th>Партнер</th>
+            <th>Статус</th>
+            <th>Размер команды</th>
+            <th>Срок выполнения</th>
+            <th>Дата создания</th>
+            <th>Требуемые навыки</th>
         </tr>
     </thead>
     <tbody>
@@ -19,11 +19,11 @@
             <td>{{ $case->title }}</td>
             <td>{{ strip_tags($case->description) }}</td>
             <td>{{ $case->partner->company_name ?? 'N/A' }}</td>
-            <td>{{ $case->status }}</td>
+            <td>{{ __('case_statuses.' . $case->status, [], 'ru') }}</td>
             <td>{{ $case->required_team_size }}</td>
             <td>{{ $case->deadline->format('d.m.Y') }}</td>
             <td>{{ $case->created_at->format('d.m.Y H:i') }}</td>
-            <td>{{ $case->required_skills->pluck('name')->join(', ') }}</td>
+            <td>{{ $case->skills->pluck('name')->join(', ') }}</td>
         </tr>
         @endforeach
     </tbody>
