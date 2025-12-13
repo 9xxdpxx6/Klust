@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Partner;
 use App\Models\Simulator;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -11,7 +11,7 @@ class SimulatorSeeder extends Seeder
 {
     public function run(): void
     {
-        $partners = Partner::all();
+        $partners = User::role('partner')->with('partnerProfile')->get();
         $simulatorsData = [
             ['title' => 'Банковская сеть: Оптимизация филиалов', 'partner' => 'Сбер'],
             ['title' => 'Логистический центр: Распределение ресурсов', 'partner' => 'Яндекс'],
@@ -21,10 +21,12 @@ class SimulatorSeeder extends Seeder
         ];
 
         foreach ($simulatorsData as $index => $data) {
-            $partner = $partners->where('name', $data['partner'])->first() ?? $partners->random();
+            $partner = $partners->first(function ($p) use ($data) {
+                return $p->partnerProfile?->company_name === $data['partner'];
+            }) ?? $partners->random();
 
             Simulator::create([
-                'partner_id' => $partner->id,
+                'user_id' => $partner->id,
                 'title' => $data['title'],
                 'slug' => Str::slug($data['title']),
                 'description' => fake()->paragraph(4),

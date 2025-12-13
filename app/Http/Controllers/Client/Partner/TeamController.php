@@ -32,9 +32,9 @@ class TeamController extends Controller
     {
         try {
             $user = auth()->user();
-            $partner = $user->partner;
+            $partnerProfile = $user->partnerProfile;
 
-            if (! $partner) {
+            if (! $partnerProfile) {
                 return redirect()
                     ->route('partner.dashboard')
                     ->with('error', 'Партнер не найден');
@@ -55,8 +55,8 @@ class TeamController extends Controller
             $teamFilter = new TeamFilter($filters);
 
             $teamsQuery = CaseApplication::query()
-                ->whereHas('case', function ($caseQuery) use ($partner): void {
-                    $caseQuery->where('partner_id', $partner->id);
+                ->whereHas('case', function ($caseQuery) use ($user): void {
+                    $caseQuery->where('user_id', $user->id);
                 })
                 ->with(['case.partner', 'leader', 'status', 'teamMembers.user']);
 
@@ -74,7 +74,7 @@ class TeamController extends Controller
                 ->withQueryString();
 
             // Загрузить все кейсы партнера для фильтра
-            $partnerCases = CaseModel::where('partner_id', $partner->id)
+            $partnerCases = CaseModel::where('user_id', $user->id)
                 ->select('id', 'title')
                 ->orderBy('title')
                 ->get();
@@ -98,7 +98,6 @@ class TeamController extends Controller
     {
         try {
             $user = auth()->user();
-            $partner = $user->partner;
 
             // Загрузить кейс для проверки прав
             $application->load('case');

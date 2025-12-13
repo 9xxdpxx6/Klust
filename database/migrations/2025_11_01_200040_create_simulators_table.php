@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('simulators', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('partner_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->string('title');
             $table->string('slug')->unique();
             $table->text('description');
@@ -18,7 +18,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
-            $table->index(['partner_id', 'is_active']);
+            $table->index(['user_id', 'is_active']);
         });
     }
 

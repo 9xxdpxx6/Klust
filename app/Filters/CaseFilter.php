@@ -79,25 +79,28 @@ final class CaseFilter extends BaseFilter
 
     private function applyPartnerFilter(Builder $query): void
     {
-        if (! $this->hasFilter('partner_id')) {
+        if (! $this->hasFilter('partner_id') && ! $this->hasFilter('user_id')) {
             return;
         }
 
-        // Проверяем, не установлено ли уже условие partner_id в запросе
+        // Проверяем, не установлено ли уже условие user_id в запросе
         // Если установлено, не перезаписываем его (защита от перезаписи)
         $wheres = $query->getQuery()->wheres ?? [];
-        $hasPartnerIdCondition = false;
+        $hasUserIdCondition = false;
         
         foreach ($wheres as $where) {
-            if (isset($where['column']) && $where['column'] === 'partner_id') {
-                $hasPartnerIdCondition = true;
+            if (isset($where['column']) && $where['column'] === 'user_id') {
+                $hasUserIdCondition = true;
                 break;
             }
         }
 
-        // Применяем фильтр только если условие partner_id еще не установлено
-        if (! $hasPartnerIdCondition) {
-            $query->where('partner_id', (int) $this->getFilter('partner_id'));
+        // Применяем фильтр только если условие user_id еще не установлено
+        if (! $hasUserIdCondition) {
+            $userId = $this->getFilter('user_id') ?? $this->getFilter('partner_id');
+            if ($userId) {
+                $query->where('user_id', (int) $userId);
+            }
         }
     }
 

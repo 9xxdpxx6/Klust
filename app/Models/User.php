@@ -117,12 +117,6 @@ class User extends Authenticatable
         return $this->hasMany(ProgressLog::class);
     }
 
-    // Partner (if user is a partner)
-    public function partner()
-    {
-        return $this->hasOne(Partner::class);
-    }
-
     // Accessor для удобного доступа к факультету студента
     public function getFacultyAttribute()
     {

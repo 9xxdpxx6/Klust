@@ -26,15 +26,15 @@ class NotificationService
             // Загружаем все необходимые связи одним запросом для избежания N+1
             $application->load([
                 'leader:id,name,email',
-                'case:id,title,partner_id,required_team_size',
-                'case.partner:id,user_id',
+                'case:id,title,user_id,required_team_size',
+                'case.partnerUser:id,name',
                 'teamMembers:id,application_id'
             ]);
 
             $case = $application->case;
-            $partner = $case->partner;
+            $partnerUser = $case->partnerUser;
 
-            if (! $partner || ! $partner->user_id) {
+            if (! $partnerUser) {
                 return;
             }
 
@@ -44,7 +44,7 @@ class NotificationService
                 $caseUrl = url("/partner/cases/{$case->id}");
                 
                 AppNotification::create([
-                    'user_id' => $partner->user_id,
+                    'user_id' => $partnerUser->id,
                     'type' => 'new_application',
                     'title' => 'Новая заявка на кейс',
                     'message' => "Команда {$application->leader->name} подала заявку на ваш кейс \"{$case->title}\"",
@@ -63,7 +63,6 @@ class NotificationService
             // Отправить email в фоне (не блокирует ответ)
             // В development окружении не отправляем email
             try {
-                $partnerUser = User::find($partner->user_id);
                 if ($partnerUser && $partnerUser->email) {
                     $applicationId = $application->id;
                     $partnerEmail = $partnerUser->email;
@@ -110,7 +109,7 @@ class NotificationService
     public function notifyTeamAboutApproval(CaseApplication $application): void
     {
         $case = $application->case;
-        $partnerName = $case->partner->company_name;
+        $partnerName = $case->partnerUser?->partnerProfile?->company_name ?? $case->partnerUser?->name ?? 'Партнер';
 
         // Notify leader
         AppNotification::create([
@@ -177,11 +176,12 @@ class NotificationService
         }
 
         foreach ($students as $student) {
+            $partnerName = $case->partnerUser?->partnerProfile?->company_name ?? $case->partnerUser?->name ?? 'Партнер';
             AppNotification::create([
                 'user_id' => $student->id,
                 'type' => 'new_case',
                 'title' => 'Доступен новый кейс',
-                'message' => "Новый кейс от {$case->partner->company_name}: \"{$case->title}\"",
+                'message' => "Новый кейс от {$partnerName}: \"{$case->title}\"",
                 'link' => route('student.cases.show', $case->id),
                 'icon' => 'pi-briefcase',
                 'action_text' => 'Просмотреть',
@@ -195,7 +195,7 @@ class NotificationService
     public function notifyApplicationRejection(CaseApplication $application, ?string $comment = null): void
     {
         $case = $application->case;
-        $partnerName = $case->partner->company_name;
+        $partnerName = $case->partnerUser?->partnerProfile?->company_name ?? $case->partnerUser?->name ?? 'Партнер';
 
         $message = "Ваша заявка на кейс \"{$case->title}\" от компании {$partnerName} была отклонена";
         if ($comment) {

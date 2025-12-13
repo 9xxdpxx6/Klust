@@ -28,7 +28,7 @@ class SimulatorService
         }
 
         return Simulator::create([
-            'partner_id' => $data['partner_id'],
+            'user_id' => $data['user_id'] ?? null,
             'title' => $data['title'],
             'slug' => $data['slug'],
             'description' => $data['description'],
@@ -53,7 +53,7 @@ class SimulatorService
         }
 
         $simulator->update([
-            'partner_id' => $data['partner_id'] ?? $simulator->partner_id,
+            'user_id' => $data['user_id'] ?? $simulator->user_id,
             'title' => $data['title'] ?? $simulator->title,
             'slug' => $data['slug'] ?? $simulator->slug,
             'description' => $data['description'] ?? $simulator->description,
@@ -121,7 +121,7 @@ class SimulatorService
      */
     public function getFilteredSimulators(array $filters): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        $query = Simulator::with(['partner.user']);
+        $query = Simulator::with(['partnerUser.partnerProfile']);
 
         // Apply search filter
         $search = \App\Helpers\FilterHelper::getStringFilter($filters['search'] ?? null);
@@ -151,8 +151,8 @@ class SimulatorService
 
         // Transform data to include partner contact person
         $paginator->getCollection()->transform(function ($simulator) {
-            if ($simulator->partner && $simulator->partner->user) {
-                $simulator->partner->contact_person = $simulator->partner->user->name;
+            if ($simulator->partnerUser) {
+                $simulator->partner = $simulator->partnerUser->partnerProfile;
             }
 
             return $simulator;
@@ -166,7 +166,7 @@ class SimulatorService
      */
     public function getAvailableSimulators(): \Illuminate\Database\Eloquent\Collection
     {
-        return Simulator::with('partner')
+        return Simulator::with('partnerUser.partnerProfile')
             ->where('is_active', true)
             ->orderBy('title')
             ->get();

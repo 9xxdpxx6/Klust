@@ -28,7 +28,7 @@ class UpdateRequest extends FormRequest
         $simulator = $this->route('simulator');
 
         return [
-            'partner_id' => ['required', 'integer', 'exists:partners,id'],
+            'user_id' => ['required', 'integer', 'exists:users,id'],
             'title' => ['required', 'string', 'max:255'],
             'slug' => [
                 'required',
@@ -58,8 +58,8 @@ class UpdateRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'partner_id.required' => 'Необходимо выбрать партнера.',
-            'partner_id.exists' => 'Выбранный партнер не существует.',
+            'user_id.required' => 'Необходимо выбрать партнера.',
+            'user_id.exists' => 'Выбранный партнер не существует.',
             'title.required' => 'Название симулятора обязательно для заполнения.',
             'slug.required' => 'URL-идентификатор (slug) обязателен для заполнения.',
             'slug.unique' => 'Такой URL-идентификатор уже используется.',

@@ -7,8 +7,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Simulator\StoreRequest;
 use App\Http\Requests\Admin\Simulator\UpdateRequest;
-use App\Models\Partner;
 use App\Models\Simulator;
+use App\Models\User;
 use App\Services\SimulatorService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -39,11 +39,11 @@ class SimulatorController extends Controller
         $simulators = $this->simulatorService->getFilteredSimulators($filters);
 
         // Получить список партнеров для формы
-        $partners = Partner::with('user')->get()->map(function ($partner) {
+        $partners = User::role('partner')->with('partnerProfile')->get()->map(function ($partnerUser) {
             return [
-                'id' => $partner->id,
-                'name' => $partner->name,
-                'contact_person' => $partner->user->name ?? 'Без контакта',
+                'id' => $partnerUser->id,
+                'name' => $partnerUser->partnerProfile?->company_name ?? $partnerUser->name,
+                'contact_person' => $partnerUser->partnerProfile?->contact_person ?? $partnerUser->name ?? 'Без контакта',
             ];
         });
 

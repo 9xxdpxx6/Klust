@@ -45,22 +45,12 @@ class CasesController extends Controller
     {
         try {
             $user = auth()->user();
-            $partner = $user->partner;
 
-            if (! $partner) {
+            if (! $user->hasRole('partner')) {
                 return Inertia::render('Client/Partner/Cases/Index', [
                     'cases' => [],
                     'filters' => [],
                     'error' => 'Партнер не найден',
-                ]);
-            }
-
-            // Дополнительная проверка: убеждаемся, что partner_id корректный
-            if (! $partner->id) {
-                return Inertia::render('Client/Partner/Cases/Index', [
-                    'cases' => [],
-                    'filters' => [],
-                    'error' => 'Неверный идентификатор партнера',
                 ]);
             }
 
@@ -82,9 +72,9 @@ class CasesController extends Controller
 
             $caseFilter = new CaseFilter($filters);
 
-            // Создаем запрос с жестким условием по partner_id
+            // Создаем запрос с жестким условием по user_id
             $casesQuery = CaseModel::query()
-                ->where('partner_id', $partner->id)
+                ->where('user_id', $user->id)
                 ->with(['skills', 'simulator']);
 
             $pagination = $caseFilter->getPaginationParams();
@@ -96,7 +86,7 @@ class CasesController extends Controller
                 ->withQueryString();
 
             // Получаем статистику для табов
-            $baseQuery = CaseModel::query()->where('partner_id', $partner->id);
+            $baseQuery = CaseModel::query()->where('user_id', $user->id);
             $statistics = [
                 'draft_count' => (clone $baseQuery)->where('status', 'draft')->count(),
                 'active_count' => (clone $baseQuery)->where('status', 'active')->count(),
@@ -129,7 +119,7 @@ class CasesController extends Controller
 
             // Получить список симуляторов партнера (опционально)
             $user = auth()->user();
-            $simulators = $user->partner?->simulators ?? collect();
+            $simulators = \App\Models\Simulator::where('user_id', $user->id)->get();
 
             return Inertia::render('Client/Partner/Cases/Create', [
                 'skills' => $skills,
@@ -151,16 +141,15 @@ class CasesController extends Controller
     {
         try {
             $user = auth()->user();
-            $partner = $user->partner;
 
-            if (! $partner) {
+            if (! $user->hasRole('partner')) {
                 return redirect()
                     ->route('partner.cases.index')
                     ->with('error', 'Партнер не найден');
             }
 
             // Создать кейс
-            $case = $this->caseService->createCaseForPartner($partner, $request->validated());
+            $case = $this->caseService->createCaseForPartner($user, $request->validated());
 
             // Если статус 'active', отправить уведомления студентам
             if ($case->status === 'active') {
@@ -185,7 +174,6 @@ class CasesController extends Controller
     {
         try {
             $user = auth()->user();
-            $partner = $user->partner;
 
             // Проверить права (только свой кейс)
             $this->authorize('view', $case);
@@ -260,9 +248,8 @@ class CasesController extends Controller
     {
         try {
             $user = auth()->user();
-            $partner = $user->partner;
 
-            if (! $partner) {
+            if (! $user->hasRole('partner')) {
                 return Inertia::render('Client/Partner/Cases/Applications', [
                     'case' => $case,
                     'applications' => collect(),

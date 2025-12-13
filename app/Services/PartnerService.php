@@ -14,9 +14,7 @@ class PartnerService
      */
     public function getDashboardStatistics(User $user): array
     {
-        $partner = $user->partner;
-
-        if (! $partner) {
+        if (! $user->hasRole('partner')) {
             return [
                 'total_cases' => 0,
                 'active_cases' => 0,
@@ -28,7 +26,7 @@ class PartnerService
             ];
         }
 
-        $cases = $partner->cases();
+        $cases = \App\Models\CaseModel::where('user_id', $user->id);
 
         return [
             'total_cases' => $cases->count(),
@@ -36,13 +34,13 @@ class PartnerService
             'completed_cases' => (clone $cases)->where('status', 'completed')->count(),
             'draft_cases' => (clone $cases)->where('status', 'draft')->count(),
             'archived_cases' => (clone $cases)->where('status', 'archived')->count(),
-            'total_teams' => $partner->cases()
+            'total_teams' => (clone $cases)
                 ->withCount(['applications' => function ($q) {
                     $q->accepted();
                 }])
                 ->get()
                 ->sum('applications_count'),
-            'pending_applications' => $partner->cases()
+            'pending_applications' => (clone $cases)
                 ->withCount(['applications' => function ($q) {
                     $q->pending();
                 }])
@@ -57,9 +55,7 @@ class PartnerService
      */
     public function getRecentActivities(User $user): array
     {
-        $partner = $user->partner;
-
-        if (! $partner) {
+        if (! $user->hasRole('partner')) {
             return [
                 'newApplications' => [],
                 'completedCases' => [],
@@ -69,8 +65,8 @@ class PartnerService
 
         // Новые заявки (pending applications) за последние 7 дней
         $newApplications = CaseApplication::query()
-            ->whereHas('case', function ($query) use ($partner) {
-                $query->where('partner_id', $partner->id);
+            ->whereHas('case', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
             })
             ->pending()
             ->with(['case', 'leader', 'teamMembers.user'])
@@ -105,7 +101,7 @@ class PartnerService
             });
 
         // Завершенные кейсы за последние 7 дней
-        $completedCases = $partner->cases()
+        $completedCases = \App\Models\CaseModel::where('user_id', $user->id)
             ->where('status', 'completed')
             ->where('updated_at', '>=', now()->subDays(7))
             ->orderBy('updated_at', 'desc')
@@ -122,8 +118,8 @@ class PartnerService
 
         // Новые команды (accepted applications) за последние 7 дней
         $newTeams = CaseApplication::query()
-            ->whereHas('case', function ($query) use ($partner) {
-                $query->where('partner_id', $partner->id);
+            ->whereHas('case', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
             })
             ->accepted()
             ->with(['case', 'leader', 'teamMembers.user'])

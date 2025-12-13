@@ -75,7 +75,7 @@ const skillsMatchPercentage = () => {
                 <div class="flex items-center justify-between">
                     <div>
                         <h1 class="text-3xl font-bold mb-2">{{ application.case.title }}</h1>
-                        <p class="text-gray-600">{{ application.case.partner.company_name }}</p>
+                        <p class="text-gray-600">{{ application.case.partner?.company_name || application.case.partnerUser?.name || 'Не указан' }}</p>
                     </div>
                     <Badge variant="success" class="text-lg">
                         Активная команда

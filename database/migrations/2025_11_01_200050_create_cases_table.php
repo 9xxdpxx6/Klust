@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('cases', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('partner_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->string('title');
             $table->text('description');
             $table->foreignId('simulator_id')->nullable()->constrained();
@@ -20,7 +20,7 @@ return new class extends Migration
             $table->enum('status', ['draft', 'active', 'completed', 'archived'])->default('draft');
             $table->timestamps();
 
-            $table->index(['partner_id', 'status']);
+            $table->index(['user_id', 'status']);
         });
     }
 

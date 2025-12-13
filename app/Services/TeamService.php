@@ -6,8 +6,8 @@ namespace App\Services;
 
 use App\Helpers\FilterHelper;
 use App\Models\CaseApplication;
-use App\Models\Partner;
 use App\Models\ProgressLog;
+use App\Models\User;
 use App\Models\SimulatorSession;
 use Illuminate\Support\Collection;
 
@@ -176,12 +176,12 @@ class TeamService
     }
 
     /**
-     * Get all teams for partner
+     * Get all teams for partner user
      */
-    public function getPartnerTeams(Partner $partner, array $filters): Collection
+    public function getPartnerTeams(User $user, array $filters): Collection
     {
-        $query = CaseApplication::whereHas('case', function ($q) use ($partner) {
-            $q->where('partner_id', $partner->id);
+        $query = CaseApplication::whereHas('case', function ($q) use ($user) {
+            $q->where('user_id', $user->id);
         })->accepted();
 
         // Apply case filter

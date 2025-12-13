@@ -100,6 +100,7 @@ class RegisterController extends Controller
                 'contact_person' => $request->contact_person,
                 'contact_phone' => $request->contact_phone,
                 'description' => $request->description ?? '',
+                'is_active' => true,
             ]);
 
             // Назначение роли партнера

@@ -21,7 +21,7 @@ class CaseModel extends Model
     protected $table = 'cases';
 
     protected $fillable = [
-        'partner_id',
+        'user_id',
         'title',
         'description',
         'simulator_id',
@@ -58,9 +58,25 @@ class CaseModel extends Model
         return $this->required_team_size;
     }
 
+    public function partnerUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * Relationship to PartnerProfile through partnerUser
+     */
     public function partner(): BelongsTo
     {
-        return $this->belongsTo(Partner::class);
+        return $this->belongsTo(PartnerProfile::class, 'user_id', 'user_id');
+    }
+
+    /**
+     * Accessor for backward compatibility with Vue components
+     */
+    public function getPartnerAttribute()
+    {
+        return $this->getRelationValue('partner') ?? $this->partnerUser?->partnerProfile;
     }
 
     public function simulator(): BelongsTo
@@ -114,10 +130,10 @@ class CaseModel extends Model
     /**
      * Scope для партнера
      */
-    public function scopeByPartner($query, $partnerId)
+    public function scopeByPartner($query, $userId)
     {
-        if ($partnerId) {
-            return $query->where('partner_id', $partnerId);
+        if ($userId) {
+            return $query->where('user_id', $userId);
         }
 
         return $query;

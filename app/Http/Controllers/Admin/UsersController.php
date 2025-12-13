@@ -171,8 +171,8 @@ class UsersController extends Controller
             ->count();
 
         $activeCasesCount = 0;
-        if ($user->hasRole('partner') && $user->partner) {
-            $activeCasesCount = $user->partner->cases()
+        if ($user->hasRole('partner')) {
+            $activeCasesCount = \App\Models\CaseModel::where('user_id', $user->id)
                 ->where('status', 'active')
                 ->count();
         }

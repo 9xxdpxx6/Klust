@@ -1,6 +1,6 @@
 <template>
   <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all case-card">
-    <div class="p-6 space-y-4">
+    <div class="p-6 space-y-4 flex flex-col flex-1 min-h-0">
       <!-- Header with title and status -->
       <div class="flex items-start justify-between gap-3">
         <div class="flex-1 min-w-0">
@@ -31,7 +31,7 @@
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
           </svg>
-          <span>{{ caseData.partner?.name || caseData.partner?.company_name || caseData.partner?.user?.name || 'Партнер не указан' }}</span>
+          <span>{{ caseData.partner?.company_name || caseData.partnerUser?.name || 'Партнер не указан' }}</span>
         </div>
         <div class="flex items-center gap-1.5">
           <i class="pi pi-calendar text-gray-400" />

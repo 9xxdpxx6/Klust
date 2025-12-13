@@ -6,7 +6,6 @@ namespace App\Services;
 
 use App\Models\CaseApplication;
 use App\Models\CaseModel;
-use App\Models\Partner;
 use App\Models\Skill;
 use App\Models\User;
 use Illuminate\Support\Carbon;
@@ -29,8 +28,10 @@ class DashboardService
             ->count();
 
         // Count partners
-        $totalPartners = Partner::count();
-        $newPartnersThisMonth = Partner::where('created_at', '>=', $lastMonth)->count();
+        $totalPartners = User::role('partner')->count();
+        $newPartnersThisMonth = User::role('partner')
+            ->where('created_at', '>=', $lastMonth)
+            ->count();
 
         // Count cases by status
         $activeCases = CaseModel::where('status', 'active')->count();
@@ -48,7 +49,7 @@ class DashboardService
 
         // Recent activity
         $recentUsers = User::with('roles')->latest()->limit(10)->get();
-        $recentCases = CaseModel::with('partner')->latest()->limit(10)->get();
+        $recentCases = CaseModel::with('partnerUser.partnerProfile')->latest()->limit(10)->get();
         $completedCasesList = CaseModel::where('status', 'completed')
             ->latest('updated_at')
             ->limit(10)
@@ -85,14 +86,14 @@ class DashboardService
                 'cases' => $recentCases->map(fn ($case) => [
                     'id' => $case->id,
                     'title' => $case->title,
-                    'partner' => $case->partner?->name ?? 'Без партнера',
+                    'partner' => $case->partnerUser?->partnerProfile?->company_name ?? $case->partnerUser?->name ?? 'Без партнера',
                     'status' => $case->status,
                     'created_at' => $case->created_at?->toISOString(),
                 ]),
                 'completed_cases' => $completedCasesList->map(fn ($case) => [
                     'id' => $case->id,
                     'title' => $case->title,
-                    'partner' => $case->partner?->name ?? 'Без партнера',
+                    'partner' => $case->partnerUser?->partnerProfile?->company_name ?? $case->partnerUser?->name ?? 'Без партнера',
                     'status' => $case->status,
                     'completed_at' => $case->updated_at?->toISOString(),
                     'updated_at' => $case->updated_at?->toISOString(),

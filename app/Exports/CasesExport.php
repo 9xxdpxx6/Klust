@@ -29,8 +29,9 @@ class CasesExport implements FromView, WithColumnWidths, WithStyles
             $query->where('status', $this->filters['status']);
         }
 
-        if (! empty($this->filters['partner_id'])) {
-            $query->where('partner_id', $this->filters['partner_id']);
+        if (! empty($this->filters['partner_id']) || ! empty($this->filters['user_id'])) {
+            $userId = $this->filters['user_id'] ?? $this->filters['partner_id'];
+            $query->where('user_id', $userId);
         }
 
         if (! empty($this->filters['date_from'])) {

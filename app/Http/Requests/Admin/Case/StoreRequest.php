@@ -26,7 +26,7 @@ class StoreRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
-            'partner_id' => ['required', 'integer', 'exists:partners,id'],
+            'user_id' => ['required', 'integer', 'exists:users,id'],
             'deadline' => ['required', 'date', 'after:today'],
             'reward' => ['required', 'string', 'max:1000'],
             'required_team_size' => ['required', 'integer', 'min:1', 'max:10'],
@@ -47,8 +47,8 @@ class StoreRequest extends FormRequest
         return [
             'title.required' => 'Название кейса обязательно для заполнения.',
             'description.required' => 'Описание кейса обязательно для заполнения.',
-            'partner_id.required' => 'Необходимо выбрать партнера.',
-            'partner_id.exists' => 'Выбранный партнер не существует.',
+            'user_id.required' => 'Необходимо выбрать партнера.',
+            'user_id.exists' => 'Выбранный партнер не существует.',
             'deadline.required' => 'Необходимо указать дедлайн.',
             'deadline.after' => 'Дедлайн должен быть в будущем.',
             'reward.required' => 'Необходимо указать награду.',

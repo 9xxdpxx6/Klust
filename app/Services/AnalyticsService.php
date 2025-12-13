@@ -6,15 +6,15 @@ namespace App\Services;
 
 use App\Helpers\FilterHelper;
 use App\Models\ApplicationStatus;
-use App\Models\Partner;
+use App\Models\User;
 use Illuminate\Support\Carbon;
 
 class AnalyticsService
 {
     /**
-     * Get analytics for partner
+     * Get analytics for partner user
      */
-    public function getPartnerAnalytics(Partner $partner, array $filters): array
+    public function getPartnerAnalytics(User $user, array $filters): array
     {
         // Handle period filter - if period is set, calculate dates from it
         $period = $filters['period'] ?? null;
@@ -43,7 +43,7 @@ class AnalyticsService
         $caseId = FilterHelper::getIntegerFilter($filters['case_id'] ?? null);
 
         // Get cases query
-        $casesQuery = $partner->cases()
+        $casesQuery = \App\Models\CaseModel::where('user_id', $user->id)
             ->whereBetween('created_at', [$dateFrom, $dateTo]);
 
         if ($caseId) {

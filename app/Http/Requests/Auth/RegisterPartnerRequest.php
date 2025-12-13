@@ -24,7 +24,6 @@ class RegisterPartnerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
             'email' => [
                 'required',
                 'string',
@@ -61,8 +60,6 @@ class RegisterPartnerRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'Имя обязательно для заполнения.',
-            'name.max' => 'Имя не должно превышать 255 символов.',
             'email.required' => 'Email обязателен для заполнения.',
             'email.regex' => 'Email должен быть корректным адресом электронной почты (например, user@example.com).',
             'email.unique' => 'Пользователь с таким email уже существует.',

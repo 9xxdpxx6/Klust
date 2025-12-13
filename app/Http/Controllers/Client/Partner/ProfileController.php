@@ -27,12 +27,11 @@ class ProfileController extends Controller
     public function show(): Response
     {
         try {
-            $user = auth()->user()->load(['partnerProfile', 'partner']);
+            $user = auth()->user()->load(['partnerProfile']);
 
             return Inertia::render('Client/Partner/Profile/Index', [
                 'user' => $user,
                 'partnerProfile' => $user->partnerProfile,
-                'partner' => $user->partner,
             ]);
         } catch (\Exception $e) {
             $user = auth()->user();
@@ -40,7 +39,6 @@ class ProfileController extends Controller
             return Inertia::render('Client/Partner/Profile/Index', [
                 'user' => $user,
                 'partnerProfile' => $user->partnerProfile ?? null,
-                'partner' => $user->partner ?? null,
                 'error' => 'Ошибка при загрузке профиля: '.$e->getMessage(),
             ]);
         }
@@ -52,12 +50,11 @@ class ProfileController extends Controller
     public function edit(): Response
     {
         try {
-            $user = auth()->user()->load(['partnerProfile', 'partner']);
+            $user = auth()->user()->load(['partnerProfile']);
 
             return Inertia::render('Client/Partner/Profile/Edit', [
                 'user' => $user,
                 'partnerProfile' => $user->partnerProfile,
-                'partner' => $user->partner,
             ]);
         } catch (\Exception $e) {
             $user = auth()->user();
@@ -65,7 +62,6 @@ class ProfileController extends Controller
             return Inertia::render('Client/Partner/Profile/Edit', [
                 'user' => $user,
                 'partnerProfile' => $user->partnerProfile ?? null,
-                'partner' => $user->partner ?? null,
                 'error' => 'Ошибка при загрузке формы: '.$e->getMessage(),
             ]);
         }

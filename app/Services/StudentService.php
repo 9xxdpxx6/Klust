@@ -170,7 +170,7 @@ class StudentService
         $completedCases = collect();
         if ($allCompletedCaseIds->isNotEmpty()) {
             $completedCases = CaseModel::whereIn('id', $allCompletedCaseIds)
-                ->with(['partner'])
+                ->with(['partnerUser.partnerProfile'])
                 ->latest()
                 ->limit(10)
                 ->get()
@@ -195,7 +195,7 @@ class StudentService
                         'id' => $case->id,
                         'title' => $case->title,
                         'description' => $case->description,
-                        'partner_name' => $case->partner?->company_name,
+                        'partner_name' => $case->partnerUser?->partnerProfile?->company_name ?? $case->partnerUser?->name ?? null,
                         'completed_at' => $application?->reviewed_at?->toISOString() ?? $case->updated_at->toISOString(),
                     ];
                 });

@@ -3,15 +3,15 @@
 namespace Database\Seeders;
 
 use App\Models\CaseModel;
-use App\Models\Partner;
 use App\Models\Simulator;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class CaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $partners = Partner::all();
+        $partners = User::role('partner')->with('partnerProfile')->get();
         $simulators = Simulator::where('is_active', true)->get();
 
         $casesData = [
@@ -27,7 +27,7 @@ class CaseSeeder extends Seeder
 
         foreach ($casesData as $index => $caseData) {
             CaseModel::create([
-                'partner_id' => $partners->random()->id,
+                'user_id' => $partners->random()->id,
                 'title' => $caseData['title'],
                 'description' => fake()->paragraph(5),
                 'simulator_id' => $index < 3 ? $simulators->random()->id : null, // Первые 3 связаны с симуляторами
