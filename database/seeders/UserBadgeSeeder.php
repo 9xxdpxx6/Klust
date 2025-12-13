@@ -24,5 +24,18 @@ class UserBadgeSeeder extends Seeder
                 ]);
             }
         }
+
+        // Создаем много бейджей для тестового студента
+        $testStudent = User::where('email', 'zxc@zxc.zxc')->first();
+        if ($testStudent && $badges->isNotEmpty()) {
+            // Тестовый студент имеет все бейджи
+            foreach ($badges as $badge) {
+                $testStudent->badges()->syncWithoutDetaching([
+                    $badge->id => [
+                        'earned_at' => fake()->dateTimeBetween('-6 months', 'now'),
+                    ]
+                ]);
+            }
+        }
     }
 }

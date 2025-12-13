@@ -136,5 +136,112 @@ class NotificationSeeder extends Seeder
                 }
             }
         }
+
+        // Создаем много уведомлений для тестовых пользователей
+        $testUsers = User::whereIn('email', [
+            'asd@asd.asd', // Админ
+            'qwe@qwe.qwe', // Суперпользователь
+            'zxc@zxc.zxc', // Студент
+            'wer@wer.wer', // Партнер
+            'sdf@sdf.sdf', // Преподаватель
+        ])->get();
+
+        foreach ($testUsers as $testUser) {
+            // 50 уведомлений для каждого тестового пользователя
+            for ($i = 0; $i < 50; $i++) {
+                $createdAt = fake()->dateTimeBetween('-6 months', 'now');
+                
+                $types = [
+                    'info' => 30,
+                    'success' => 25,
+                    'warning' => 20,
+                    'error' => 10,
+                    'application_submitted' => 5,
+                    'application_approved' => 5,
+                    'application_rejected' => 5,
+                ];
+                
+                $type = fake()->randomElement(array_merge(
+                    array_fill(0, $types['info'], 'info'),
+                    array_fill(0, $types['success'], 'success'),
+                    array_fill(0, $types['warning'], 'warning'),
+                    array_fill(0, $types['error'], 'error'),
+                    array_fill(0, $types['application_submitted'], 'application_submitted'),
+                    array_fill(0, $types['application_approved'], 'application_approved'),
+                    array_fill(0, $types['application_rejected'], 'application_rejected')
+                ));
+
+                $message = match ($type) {
+                    'info' => fake()->randomElement([
+                        'Новый кейс доступен для подачи заявок',
+                        'Обновлена информация о кейсе',
+                        'Добавлен новый симулятор',
+                    ]),
+                    'success' => fake()->randomElement([
+                        'Ваша заявка принята!',
+                        'Поздравляем с получением бейджа!',
+                        'Симулятор успешно завершен',
+                    ]),
+                    'warning' => fake()->randomElement([
+                        'Срок подачи заявки истекает',
+                        'Не забудьте завершить симулятор',
+                        'Требуется обновление профиля',
+                    ]),
+                    'error' => fake()->randomElement([
+                        'Заявка отклонена',
+                        'Ошибка при обработке запроса',
+                    ]),
+                    'application_submitted' => 'Ваша заявка на кейс отправлена',
+                    'application_approved' => 'Ваша заявка на кейс одобрена',
+                    'application_rejected' => 'Ваша заявка на кейс отклонена',
+                    default => fake()->sentence(),
+                };
+
+                $title = match ($type) {
+                    'info' => fake()->randomElement([
+                        'Новый кейс доступен',
+                        'Обновление информации',
+                        'Новый симулятор',
+                        'Важная информация',
+                    ]),
+                    'success' => fake()->randomElement([
+                        'Заявка принята',
+                        'Поздравляем!',
+                        'Успешное завершение',
+                        'Достижение разблокировано',
+                    ]),
+                    'warning' => fake()->randomElement([
+                        'Внимание!',
+                        'Срок истекает',
+                        'Требуется действие',
+                        'Напоминание',
+                    ]),
+                    'error' => fake()->randomElement([
+                        'Заявка отклонена',
+                        'Ошибка',
+                        'Требуется внимание',
+                    ]),
+                    'application_submitted' => 'Заявка отправлена',
+                    'application_approved' => 'Заявка одобрена',
+                    'application_rejected' => 'Заявка отклонена',
+                    default => 'Уведомление',
+                };
+
+                AppNotification::create([
+                    'user_id' => $testUser->id,
+                    'type' => $type,
+                    'title' => $title,
+                    'message' => $message,
+                    'link' => fake()->randomElement(['/cases', '/profile', '/learning', '/']),
+                    'icon' => fake()->randomElement(['fa-bell', 'fa-info-circle', 'fa-check-circle', 'fa-exclamation-triangle']),
+                    'action_text' => fake()->randomElement(['Перейти', 'Открыть', 'Просмотреть', 'Узнать больше']),
+                    'is_read' => fake()->boolean(60),
+                    'created_at' => $createdAt,
+                    'updated_at' => fake()->boolean(60) && fake()->boolean(60) 
+                        ? fake()->dateTimeBetween($createdAt, 'now') 
+                        : $createdAt,
+                ]);
+            }
+        }
     }
 }

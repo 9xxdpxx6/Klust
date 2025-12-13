@@ -91,5 +91,69 @@ class CaseApplicationSeeder extends Seeder
                 'updated_at' => $updatedAt,
             ]);
         }
+
+        // Создаем много заявок для тестового студента
+        $testStudent = User::where('email', 'zxc@zxc.zxc')->first();
+        if ($testStudent && $cases->isNotEmpty()) {
+            // 25 заявок для тестового студента
+            for ($i = 0; $i < 25; $i++) {
+                $case = $cases->random();
+                $submittedAt = fake()->dateTimeBetween('-5 months', 'now');
+                
+                $statusWeights = [
+                    'pending' => 20,
+                    'accepted' => 50,
+                    'rejected' => 30,
+                ];
+                
+                $statusId = fake()->randomElement(array_merge(
+                    array_fill(0, $statusWeights['pending'], $pendingId),
+                    array_fill(0, $statusWeights['accepted'], $acceptedId),
+                    array_fill(0, $statusWeights['rejected'], $rejectedId)
+                ));
+
+                $reviewedAt = null;
+                $partnerComment = null;
+                $rejectionReason = null;
+                
+                if ($statusId !== $pendingId) {
+                    $reviewedAt = fake()->dateTimeBetween($submittedAt, min(Carbon::parse($submittedAt)->addDays(14), Carbon::now()));
+                    
+                    if ($statusId === $acceptedId) {
+                        $partnerComment = fake()->randomElement([
+                            'Отличная мотивация и команда!',
+                            'Хорошо проработанная заявка.',
+                            'Команда имеет необходимые навыки.',
+                            'Интересный подход к решению задачи.',
+                            'Рекомендую к принятию.',
+                        ]);
+                    } else {
+                        $rejectionReason = fake()->randomElement([
+                            'Недостаточно опыта у команды.',
+                            'Заявка не соответствует требованиям.',
+                            'Команда не подходит по составу.',
+                            'Уже выбрана другая команда.',
+                            'Кейс закрыт.',
+                        ]);
+                    }
+                }
+
+                $createdAt = $submittedAt;
+                $updatedAt = $reviewedAt ?? $submittedAt;
+
+                CaseApplication::create([
+                    'case_id' => $case->id,
+                    'leader_id' => $testStudent->id,
+                    'motivation' => fake()->paragraphs(2, true),
+                    'status_id' => $statusId,
+                    'rejection_reason' => $rejectionReason,
+                    'partner_comment' => $partnerComment,
+                    'reviewed_at' => $reviewedAt,
+                    'submitted_at' => $submittedAt,
+                    'created_at' => $createdAt,
+                    'updated_at' => $updatedAt,
+                ]);
+            }
+        }
     }
 }
