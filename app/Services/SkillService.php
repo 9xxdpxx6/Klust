@@ -101,6 +101,14 @@ class SkillService
     }
 
     /**
+     * Get maximum level in the system (from all skills)
+     */
+    public function getMaxLevelInSystem(): int
+    {
+        return Skill::max('max_level') ?? 10;
+    }
+
+    /**
      * Calculate progress to next level
      */
     private function calculateProgressToNextLevel(int $points, int $currentLevel, int $maxLevel): array

@@ -1,8 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { Head } from '@inertiajs/vue3'
-import Card from '@/Components/UI/Card.vue'
-import Badge from '@/Components/UI/Badge.vue'
 import ProgressBar from '@/Components/UI/ProgressBar.vue'
 
 const props = defineProps({
@@ -13,6 +11,10 @@ const props = defineProps({
     progressHistory: {
         type: Array,
         default: () => []
+    },
+    maxLevelInSystem: {
+        type: Number,
+        default: 10
     }
 })
 
@@ -53,11 +55,51 @@ const toggleSort = (field) => {
     }
 }
 
-const getLevelColor = (level) => {
-    if (level >= 8) return 'text-purple-600 bg-purple-100'
-    if (level >= 5) return 'text-blue-600 bg-blue-100'
-    if (level >= 3) return 'text-green-600 bg-green-100'
-    return 'text-gray-600 bg-gray-100'
+// Универсальная функция для определения категории уровня на основе процента от максимума
+const getLevelCategory = (level, maxLevel) => {
+    if (!maxLevel || maxLevel === 0) {
+        return { category: 'novice', color: 'gray' }
+    }
+    
+    const percentage = (level / maxLevel) * 100
+    
+    // Используем процентные границы для универсальности
+    if (percentage >= 80) {
+        return { category: 'master', color: 'purple' }  // Мастер/Эксперт (80-100%)
+    } else if (percentage >= 50) {
+        return { category: 'expert', color: 'blue' }    // Опытный (50-80%)
+    } else if (percentage >= 25) {
+        return { category: 'practitioner', color: 'green' } // Практикующий (25-50%)
+    } else {
+        return { category: 'novice', color: 'gray' }    // Новичок (0-25%)
+    }
+}
+
+const getLevelBadgeClass = (level, maxLevel = 10) => {
+    const { color } = getLevelCategory(level, maxLevel)
+    
+    const colorClasses = {
+        purple: 'bg-purple-100 text-purple-800 border-purple-200',
+        blue: 'bg-blue-100 text-blue-800 border-blue-200',
+        green: 'bg-green-100 text-green-800 border-green-200',
+        gray: 'bg-gray-100 text-gray-800 border-gray-200'
+    }
+    
+    return colorClasses[color] || colorClasses.gray
+}
+
+const getProgressColor = (level, maxLevel = 10) => {
+    const { color } = getLevelCategory(level, maxLevel)
+    
+    // ProgressBar поддерживает только: primary, success, warning, danger
+    const colorMap = {
+        purple: 'primary',  // фиолетовый → primary (синий/фиолетовый)
+        blue: 'primary',    // синий → primary
+        green: 'success',   // зеленый → success
+        gray: 'warning'     // серый → warning (желтый для новичков)
+    }
+    
+    return colorMap[color] || 'success'
 }
 
 const formatDate = (dateString) => {
@@ -76,76 +118,185 @@ const averageLevel = computed(() => {
     if (props.skills.length === 0) return 0
     return (props.skills.reduce((sum, skill) => sum + skill.level, 0) / props.skills.length).toFixed(1)
 })
+
+// Используем максимальный уровень из всей системы (приходит с бэкенда)
+const maxLevelInSystem = computed(() => {
+    return props.maxLevelInSystem || 10
+})
+
+// Функция для вычисления границ категорий на основе максимального уровня
+const getLevelRanges = computed(() => {
+    const max = maxLevelInSystem.value
+    
+    // Вычисляем границы на основе процентов
+    const noviceMax = Math.max(1, Math.floor(max * 0.25)) // 0-25%
+    const practitionerMin = noviceMax + 1
+    const practitionerMax = Math.max(practitionerMin, Math.floor(max * 0.5)) // 25-50%
+    const expertMin = practitionerMax + 1
+    const expertMax = Math.max(expertMin, Math.floor(max * 0.8)) // 50-80%
+    const masterMin = expertMax + 1
+    
+    return {
+        novice: {
+            min: 1,
+            max: noviceMax,
+            label: 'Новичок',
+            color: 'gray',
+            bgGradient: 'from-gray-50 to-gray-100',
+            borderColor: 'border-gray-200',
+            badgeBg: 'bg-gray-100',
+            badgeText: 'text-gray-800',
+            badgeBorder: 'border-gray-200',
+            percentageRange: `0-${Math.round((noviceMax / max) * 100)}%`
+        },
+        practitioner: {
+            min: practitionerMin > max ? max : practitionerMin,
+            max: practitionerMax,
+            label: 'Практикующий',
+            color: 'green',
+            bgGradient: 'from-green-50 to-green-100',
+            borderColor: 'border-green-200',
+            badgeBg: 'bg-green-100',
+            badgeText: 'text-green-800',
+            badgeBorder: 'border-green-200',
+            percentageRange: `${Math.round((practitionerMin / max) * 100)}-${Math.round((practitionerMax / max) * 100)}%`
+        },
+        expert: {
+            min: expertMin > max ? max : expertMin,
+            max: expertMax,
+            label: 'Опытный',
+            color: 'blue',
+            bgGradient: 'from-blue-50 to-blue-100',
+            borderColor: 'border-blue-200',
+            badgeBg: 'bg-blue-100',
+            badgeText: 'text-blue-800',
+            badgeBorder: 'border-blue-200',
+            percentageRange: `${Math.round((expertMin / max) * 100)}-${Math.round((expertMax / max) * 100)}%`
+        },
+        master: {
+            min: masterMin > max ? max : masterMin,
+            max: max,
+            label: max > 20 ? 'Эксперт' : 'Мастер',
+            color: 'purple',
+            bgGradient: 'from-purple-50 to-purple-100',
+            borderColor: 'border-purple-200',
+            badgeBg: 'bg-purple-100',
+            badgeText: 'text-purple-800',
+            badgeBorder: 'border-purple-200',
+            percentageRange: `${Math.round((masterMin / max) * 100)}-100%`
+        }
+    }
+})
 </script>
 
 <template>
     <Head title="Мои навыки" />
     <div class="space-y-6">
-        <div class="max-w-7xl mx-auto px-4 py-8">
-            <h1 class="text-3xl font-bold mb-6">Мои навыки</h1>
+        <!-- Заголовок с градиентом -->
+        <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-xl shadow-lg overflow-hidden">
+            <div class="px-6 py-8">
+                <h1 class="text-3xl font-bold text-white mb-2">Мои навыки</h1>
+                <p class="text-indigo-100">Ваш прогресс и достижения по навыкам</p>
+            </div>
+        </div>
 
-            <!-- Stats Overview -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <Card class="text-center">
-                    <p class="text-4xl font-bold text-blue-600">{{ totalSkills }}</p>
-                    <p class="text-gray-600 mt-2">Всего навыков</p>
-                </Card>
-                <Card class="text-center">
-                    <p class="text-4xl font-bold text-green-600">{{ totalPoints }}</p>
-                    <p class="text-gray-600 mt-2">Всего очков</p>
-                </Card>
-                <Card class="text-center">
-                    <p class="text-4xl font-bold text-purple-600">{{ averageLevel }}</p>
-                    <p class="text-gray-600 mt-2">Средний уровень</p>
-                </Card>
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 shadow-md border border-blue-200/50 hover:shadow-lg transition-all group">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-blue-600 mb-1">Всего навыков</p>
+                        <p class="text-3xl font-bold text-blue-900">{{ totalSkills }}</p>
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-blue-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
+                        <i class="pi pi-book text-white text-xl"></i>
+                    </div>
+                </div>
             </div>
 
-            <!-- Sort Controls -->
-            <Card class="mb-6">
-                <div class="flex items-center gap-4">
-                    <span class="text-sm font-medium text-gray-700">Сортировать по:</span>
-                    <button
-                        @click="toggleSort('level')"
-                        :class="[
-                            'px-3 py-1 rounded text-sm font-medium transition-colors',
-                            sortBy === 'level'
-                                ? 'bg-blue-100 text-blue-700'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        ]"
-                    >
-                        Уровень {{ sortBy === 'level' ? (sortOrder === 'desc' ? '↓' : '↑') : '' }}
-                    </button>
-                    <button
-                        @click="toggleSort('points')"
-                        :class="[
-                            'px-3 py-1 rounded text-sm font-medium transition-colors',
-                            sortBy === 'points'
-                                ? 'bg-blue-100 text-blue-700'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        ]"
-                    >
-                        Очки {{ sortBy === 'points' ? (sortOrder === 'desc' ? '↓' : '↑') : '' }}
-                    </button>
-                    <button
-                        @click="toggleSort('name')"
-                        :class="[
-                            'px-3 py-1 rounded text-sm font-medium transition-colors',
-                            sortBy === 'name'
-                                ? 'bg-blue-100 text-blue-700'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        ]"
-                    >
-                        Название {{ sortBy === 'name' ? (sortOrder === 'desc' ? '↓' : '↑') : '' }}
-                    </button>
+            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 shadow-md border border-green-200/50 hover:shadow-lg transition-all group">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-green-600 mb-1">Всего очков</p>
+                        <p class="text-3xl font-bold text-green-900">{{ totalPoints }}</p>
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-green-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
+                        <i class="pi pi-star text-white text-xl"></i>
+                    </div>
                 </div>
-            </Card>
+            </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Skills List -->
-                <div class="lg:col-span-2">
-                    <Card>
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 shadow-md border border-purple-200/50 hover:shadow-lg transition-all group">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-purple-600 mb-1">Средний уровень</p>
+                        <p class="text-3xl font-bold text-purple-900">{{ averageLevel }}</p>
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-purple-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
+                        <i class="pi pi-chart-line text-white text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Skills List -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                    <!-- Header with Sort Controls -->
+                    <div class="px-6 py-4 bg-gradient-to-r from-amber-50 to-amber-100 border-b border-amber-200">
+                        <div class="flex items-center justify-between flex-wrap gap-4">
+                            <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                                <i class="pi pi-list text-amber-600"></i>
+                                Список навыков
+                            </h2>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-medium text-gray-700">Сортировать:</span>
+                                <button
+                                    @click="toggleSort('level')"
+                                    :class="[
+                                        'px-3 py-1.5 rounded-lg text-sm font-medium transition-all',
+                                        sortBy === 'level'
+                                            ? 'bg-amber-500 text-white shadow-md'
+                                            : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                                    ]"
+                                >
+                                    <i class="pi pi-sort-amount-down mr-1"></i>
+                                    Уровень {{ sortBy === 'level' ? (sortOrder === 'desc' ? '↓' : '↑') : '' }}
+                                </button>
+                                <button
+                                    @click="toggleSort('points')"
+                                    :class="[
+                                        'px-3 py-1.5 rounded-lg text-sm font-medium transition-all',
+                                        sortBy === 'points'
+                                            ? 'bg-amber-500 text-white shadow-md'
+                                            : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                                    ]"
+                                >
+                                    <i class="pi pi-star mr-1"></i>
+                                    Очки {{ sortBy === 'points' ? (sortOrder === 'desc' ? '↓' : '↑') : '' }}
+                                </button>
+                                <button
+                                    @click="toggleSort('name')"
+                                    :class="[
+                                        'px-3 py-1.5 rounded-lg text-sm font-medium transition-all',
+                                        sortBy === 'name'
+                                            ? 'bg-amber-500 text-white shadow-md'
+                                            : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                                    ]"
+                                >
+                                    <i class="pi pi-sort-alpha-down mr-1"></i>
+                                    Название {{ sortBy === 'name' ? (sortOrder === 'desc' ? '↓' : '↑') : '' }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Skills Content -->
+                    <div class="p-6">
                         <div v-if="sortedSkills.length === 0" class="text-center py-12">
-                            <p class="text-gray-500">У вас пока нет навыков</p>
+                            <i class="pi pi-book text-4xl text-gray-300 mb-4"></i>
+                            <p class="text-gray-500 font-medium">У вас пока нет навыков</p>
                             <p class="text-sm text-gray-400 mt-2">
                                 Начните проходить симуляторы и работать над кейсами, чтобы получить навыки!
                             </p>
@@ -154,101 +305,131 @@ const averageLevel = computed(() => {
                             <div
                                 v-for="skill in sortedSkills"
                                 :key="skill.id"
-                                class="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
+                                class="p-5 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-lg hover:shadow-lg transition-all hover:border-amber-200"
                             >
-                                <div class="flex items-start justify-between mb-3">
+                                <div class="flex items-start justify-between mb-4">
                                     <div class="flex-1">
-                                        <h3 class="text-lg font-bold">{{ skill.name }}</h3>
-                                        <p v-if="skill.description" class="text-sm text-gray-600 mt-1">
+                                        <h3 class="text-lg font-bold text-gray-900 mb-1">{{ skill.name }}</h3>
+                                        <p v-if="skill.description" class="text-sm text-gray-600">
                                             {{ skill.description }}
                                         </p>
                                     </div>
-                                    <Badge :class="getLevelColor(skill.level)" class="text-lg">
-                                        Уровень {{ skill.level }}
-                                    </Badge>
+                                    <span
+                                        :class="[
+                                            'px-4 py-1.5 rounded-lg text-sm font-semibold border',
+                                            getLevelBadgeClass(skill.level, skill.max_level)
+                                        ]"
+                                    >
+                                        Уровень {{ skill.level }}{{ skill.max_level ? ` / ${skill.max_level}` : '' }}
+                                    </span>
                                 </div>
 
-                                <div class="space-y-2">
+                                <div class="space-y-3">
                                     <div class="flex justify-between items-center text-sm">
-                                        <span class="text-gray-600">
-                                            {{ skill.points }} очков
-                                        </span>
-                                        <span v-if="skill.progress_to_next_level.next_level" class="text-gray-600">
-                                            До уровня {{ skill.progress_to_next_level.next_level }}:
-                                            {{ skill.progress_to_next_level.points_needed }} очков
-                                        </span>
-                                        <span v-else class="text-green-600 font-medium">
-                                            Максимальный уровень!
-                                        </span>
+                                        <div class="flex items-center gap-2 text-gray-600">
+                                            <i class="pi pi-star text-amber-500"></i>
+                                            <span class="font-medium">{{ skill.points }} очков</span>
+                                        </div>
+                                        <div>
+                                            <span v-if="skill.progress_to_next_level.next_level" class="text-gray-600">
+                                                До уровня {{ skill.progress_to_next_level.next_level }}:
+                                                <span class="font-semibold text-gray-900">{{ skill.progress_to_next_level.points_needed }}</span> очков
+                                            </span>
+                                            <span v-else class="text-green-600 font-semibold flex items-center gap-1">
+                                                <i class="pi pi-check-circle"></i>
+                                                Максимальный уровень!
+                                            </span>
+                                        </div>
                                     </div>
                                     <ProgressBar
                                         :value="skill.progress_to_next_level.percentage"
-                                        :color="skill.level >= 7 ? 'purple' : skill.level >= 4 ? 'blue' : 'green'"
+                                        :color="getProgressColor(skill.level, skill.max_level)"
                                     />
                                 </div>
                             </div>
                         </div>
-                    </Card>
+                    </div>
                 </div>
+            </div>
 
-                <!-- Progress History -->
-                <div>
-                    <Card>
-                        <h2 class="text-lg font-bold mb-4">История прогресса</h2>
-                        <div v-if="progressHistory.length === 0" class="text-center py-8 text-gray-500">
-                            Пока нет истории
+            <!-- Progress History -->
+            <div>
+                <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 bg-gradient-to-r from-indigo-50 to-indigo-100 border-b border-indigo-200">
+                        <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                            <i class="pi pi-history text-indigo-600"></i>
+                            История прогресса
+                        </h2>
+                    </div>
+                    <div class="p-6">
+                        <div v-if="progressHistory.length === 0" class="text-center py-8 text-gray-400">
+                            <i class="pi pi-history text-4xl mb-2"></i>
+                            <p class="text-sm">Пока нет истории</p>
                         </div>
                         <div v-else class="space-y-3 max-h-[600px] overflow-y-auto">
                             <div
                                 v-for="log in progressHistory"
                                 :key="log.id"
-                                class="p-3 bg-gray-50 rounded-lg"
+                                class="p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200 hover:shadow-md transition-all"
                             >
-                                <div class="flex items-start justify-between mb-1">
-                                    <p class="text-sm font-medium">{{ log.skill.name }}</p>
-                                    <Badge variant="success" size="sm">
+                                <div class="flex items-start justify-between mb-2">
+                                    <p class="text-sm font-semibold text-gray-900">{{ log.skill?.name || 'Неизвестный навык' }}</p>
+                                    <span class="px-2.5 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-lg border border-green-200">
                                         +{{ log.points_earned }}
-                                    </Badge>
+                                    </span>
                                 </div>
-                                <p class="text-xs text-gray-600">{{ log.description }}</p>
-                                <p class="text-xs text-gray-400 mt-1">{{ formatDate(log.created_at) }}</p>
+                                <p class="text-xs text-gray-600 mb-2">{{ log.description }}</p>
+                                <p class="text-xs text-gray-400 flex items-center gap-1">
+                                    <i class="pi pi-clock"></i>
+                                    {{ formatDate(log.created_at) }}
+                                </p>
                             </div>
                         </div>
-                    </Card>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Level Guide -->
-            <Card class="mt-6">
-                <h3 class="text-lg font-bold mb-4">Уровни навыков</h3>
-                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                    <div class="text-center">
-                        <Badge class="text-gray-600 bg-gray-100 text-lg mb-2">1-2</Badge>
-                        <p class="text-sm text-gray-600">Новичок</p>
-                        <p class="text-xs text-gray-500">0-250 очков</p>
-                    </div>
-                    <div class="text-center">
-                        <Badge class="text-green-600 bg-green-100 text-lg mb-2">3-4</Badge>
-                        <p class="text-sm text-gray-600">Практикующий</p>
-                        <p class="text-xs text-gray-500">250-1000 очков</p>
-                    </div>
-                    <div class="text-center">
-                        <Badge class="text-blue-600 bg-blue-100 text-lg mb-2">5-7</Badge>
-                        <p class="text-sm text-gray-600">Опытный</p>
-                        <p class="text-xs text-gray-500">1000-8000 очков</p>
-                    </div>
-                    <div class="text-center">
-                        <Badge class="text-purple-600 bg-purple-100 text-lg mb-2">8-9</Badge>
-                        <p class="text-sm text-gray-600">Эксперт</p>
-                        <p class="text-xs text-gray-500">8000-32000 очков</p>
-                    </div>
-                    <div class="text-center">
-                        <Badge class="text-yellow-600 bg-yellow-100 text-lg mb-2">10</Badge>
-                        <p class="text-sm text-gray-600">Мастер</p>
-                        <p class="text-xs text-gray-500">32000+ очков</p>
+        <!-- Level Guide -->
+        <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 bg-gradient-to-r from-purple-50 to-purple-100 border-b border-purple-200">
+                <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <i class="pi pi-info-circle text-purple-600"></i>
+                    Уровни навыков
+                </h3>
+            </div>
+            <div class="p-6">
+                <div class="mb-4 text-sm text-gray-600">
+                    <p>Максимальный уровень в системе: <span class="font-semibold text-gray-900">{{ maxLevelInSystem }}</span></p>
+                    <p class="text-xs text-gray-500 mt-1">Категории рассчитываются относительно максимального уровня навыка</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div 
+                        v-for="(range, key) in getLevelRanges" 
+                        :key="key"
+                        :class="[
+                            'text-center p-4 rounded-lg border',
+                            `bg-gradient-to-br ${range.bgGradient}`,
+                            range.borderColor
+                        ]"
+                    >
+                        <span 
+                            :class="[
+                                'inline-block px-4 py-2 rounded-lg border mb-3 text-base font-semibold',
+                                range.badgeBg,
+                                range.badgeText,
+                                range.badgeBorder
+                            ]"
+                        >
+                            {{ range.min }}{{ range.min !== range.max ? `-${range.max}` : '' }}
+                        </span>
+                        <p class="text-sm font-semibold text-gray-900 mb-1">{{ range.label }}</p>
+                        <p class="text-xs text-gray-500">
+                            {{ range.percentageRange }} от максимума
+                        </p>
                     </div>
                 </div>
-            </Card>
+            </div>
         </div>
     </div>
 </template>

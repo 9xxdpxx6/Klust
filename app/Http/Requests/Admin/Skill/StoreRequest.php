@@ -27,7 +27,7 @@ class StoreRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255', 'unique:skills,name'],
             'category' => ['required', 'string', 'in:hard,soft,language,other'],
-            'max_level' => ['required', 'integer', 'min:1', 'max:1000'],
+            'max_level' => ['required', 'integer', 'min:1', 'max:100'],
         ];
     }
 
@@ -46,7 +46,7 @@ class StoreRequest extends FormRequest
             'max_level.required' => 'Максимальный уровень навыка обязателен для заполнения.',
             'max_level.integer' => 'Максимальный уровень должен быть числом.',
             'max_level.min' => 'Максимальный уровень должен быть не меньше 1.',
-            'max_level.max' => 'Максимальный уровень должен быть не больше 1000.',
+            'max_level.max' => 'Максимальный уровень должен быть не больше 100.',
         ];
     }
 }
