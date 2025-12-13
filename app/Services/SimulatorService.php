@@ -28,7 +28,7 @@ class SimulatorService
         }
 
         return Simulator::create([
-            'user_id' => $data['user_id'] ?? $data['partner_id'] ?? null,
+            'user_id' => $data['user_id'] ?? null,
             'title' => $data['title'],
             'slug' => $data['slug'],
             'description' => $data['description'],
@@ -53,7 +53,7 @@ class SimulatorService
         }
 
         $simulator->update([
-            'user_id' => $data['user_id'] ?? $data['partner_id'] ?? $simulator->user_id,
+            'user_id' => $data['user_id'] ?? $simulator->user_id,
             'title' => $data['title'] ?? $simulator->title,
             'slug' => $data['slug'] ?? $simulator->slug,
             'description' => $data['description'] ?? $simulator->description,

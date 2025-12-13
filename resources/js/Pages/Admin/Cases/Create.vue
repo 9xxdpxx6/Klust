@@ -212,8 +212,8 @@ const minDate = computed(() => {
 const partnerOptions = computed(() => [
     { label: 'Выберите партнера', value: '' },
     ...props.partners.map(partner => ({
-        label: `${partner.company_name || partner.name || 'Без названия'}${partner.contact_person ? ` (${partner.contact_person})` : ''}`,
-        value: partner.id
+        label: `${partner.company_name || partner.user?.name || 'Без названия'}${partner.contact_person ? ` (${partner.contact_person})` : ''}`,
+        value: partner.user_id || partner.user?.id
     }))
 ])
 

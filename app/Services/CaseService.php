@@ -33,7 +33,7 @@ class CaseService
 
             // Create case
             $case = CaseModel::create([
-                'user_id' => $data['user_id'] ?? $data['partner_id'] ?? null,
+                'user_id' => $data['user_id'] ?? null,
                 'simulator_id' => $data['simulator_id'] ?? null,
                 'title' => $data['title'],
                 'description' => $data['description'],

@@ -628,7 +628,7 @@ const openCreateModal = () => {
 const openEditModal = (simulator) => {
     editingSimulator.value = simulator
     previewImageUrl.value = null
-    form.user_id = simulator.user_id || simulator.partner_id
+    form.user_id = simulator.user_id
     form.title = simulator.title
     form.slug = simulator.slug
     form.description = simulator.description
