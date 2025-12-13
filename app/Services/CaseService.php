@@ -382,10 +382,9 @@ class CaseService
         }
 
         try {
-            $job = new UpdateCaseStatusByDeadline($case->id);
-            
             // Dispatch job with delay until deadline
-            $job->delay($case->deadline)->dispatch();
+            UpdateCaseStatusByDeadline::dispatch($case->id)
+                ->delay($case->deadline);
 
             // Store deadline in cache for later cancellation check
             // This helps identify which jobs to cancel

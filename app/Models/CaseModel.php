@@ -64,11 +64,19 @@ class CaseModel extends Model
     }
 
     /**
+     * Relationship to PartnerProfile through partnerUser
+     */
+    public function partner(): BelongsTo
+    {
+        return $this->belongsTo(PartnerProfile::class, 'user_id', 'user_id');
+    }
+
+    /**
      * Accessor for backward compatibility with Vue components
      */
     public function getPartnerAttribute()
     {
-        return $this->partnerUser?->partnerProfile;
+        return $this->getRelationValue('partner') ?? $this->partnerUser?->partnerProfile;
     }
 
     public function simulator(): BelongsTo

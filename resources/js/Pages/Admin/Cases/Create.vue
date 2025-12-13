@@ -196,7 +196,7 @@ const processing = ref(false)
 const form = useForm({
     title: '',
     description: '',
-    user_id: '',
+    user_id: null,
     deadline: '',
     required_team_size: '',
     status: 'draft',
@@ -212,8 +212,8 @@ const minDate = computed(() => {
 const partnerOptions = computed(() => [
     { label: 'Выберите партнера', value: '' },
     ...props.partners.map(partner => ({
-        label: `${partner.company_name || partner.user?.name || 'Без названия'}${partner.contact_person ? ` (${partner.contact_person})` : ''}`,
-        value: partner.user_id || partner.user?.id
+        label: `${partner.name || partner.company_name || 'Без названия'}${partner.contact_person ? ` (${partner.contact_person})` : ''}`,
+        value: partner.id
     }))
 ])
 
