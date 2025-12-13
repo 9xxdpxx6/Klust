@@ -67,5 +67,53 @@ class CaseTeamMemberSeeder extends Seeder
                 }
             }
         }
+
+        // Добавляем тестового студента как участника во многие команды
+        $testStudent = User::where('email', 'zxc@zxc.zxc')->first();
+        if ($testStudent) {
+            // Находим заявки, где тестовый студент не является лидером
+            $applicationsForTestStudent = CaseApplication::where('leader_id', '!=', $testStudent->id)
+                ->whereDoesntHave('teamMembers', function ($query) use ($testStudent) {
+                    $query->where('user_id', $testStudent->id);
+                })
+                ->get();
+
+            // Добавляем тестового студента в 20 случайных команд
+            $applicationsToJoin = $applicationsForTestStudent->random(min(20, $applicationsForTestStudent->count()));
+            
+            foreach ($applicationsToJoin as $application) {
+                $case = $application->case;
+                if (!$case) {
+                    continue;
+                }
+
+                // Проверяем, не превышает ли размер команды required_team_size
+                $currentTeamSize = 1 + $application->teamMembers()->count(); // лидер + участники
+                if ($currentTeamSize >= $case->required_team_size) {
+                    continue;
+                }
+
+                $submittedAt = $application->submitted_at ?? $application->created_at;
+                $maxDate = $application->reviewed_at 
+                    ? min($application->reviewed_at, Carbon::now())
+                    : Carbon::now();
+
+                $joinedAt = fake()->dateTimeBetween(
+                    $submittedAt,
+                    min(Carbon::parse($submittedAt)->addDays(7), $maxDate)
+                );
+
+                if ($joinedAt > Carbon::now()) {
+                    $joinedAt = Carbon::now();
+                }
+
+                \DB::table('case_team_members')->insert([
+                    'application_id' => $application->id,
+                    'user_id' => $testStudent->id,
+                    'created_at' => $joinedAt,
+                    'updated_at' => $joinedAt,
+                ]);
+            }
+        }
     }
 }

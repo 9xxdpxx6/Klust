@@ -1,46 +1,58 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
+use App\Models\ProgressLog;
+use App\Models\Skill;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Spatie\Permission\Models\Role;
 
 class ProgressLogFactory extends Factory
 {
+    protected $model = ProgressLog::class;
+
     public function definition(): array
     {
+        // Используем только экшны, которые реально используются в коде
         $actions = [
-            'completed_task',
-            'earned_badge',
-            'applied_to_case',
-            'completed_simulator',
-            'joined_team',
-            'level_up_skill',
+            'simulator_completion',
+            'manual',
         ];
 
         $action = fake()->randomElement($actions);
 
+        // Рассчитываем очки в зависимости от экшна
         $points = match ($action) {
-            'completed_task' => fake()->numberBetween(10, 50),
-            'earned_badge' => fake()->numberBetween(50, 300),
-            'applied_to_case' => fake()->numberBetween(5, 20),
-            'completed_simulator' => fake()->numberBetween(100, 500),
-            'joined_team' => fake()->numberBetween(15, 30),
-            'level_up_skill' => fake()->numberBetween(25, 100),
-            default => fake()->numberBetween(10, 50),
+            'simulator_completion' => fake()->numberBetween(50, 500), // Очки за завершение симулятора
+            'manual' => fake()->numberBetween(10, 100), // Ручное начисление очков
+            default => fake()->numberBetween(10, 100),
         };
 
         return [
-            'user_id' => User::factory(),
+            'user_id' => User::factory()->student(),
             'action' => $action,
-            'loggable_type' => fake()->randomElement([
-                'App\\Models\\SimulatorSession',
-                'App\\Models\\CaseApplication',
-                'App\\Models\\Badge',
-            ]),
-            'loggable_id' => fake()->numberBetween(1, 100),
+            'loggable_type' => Skill::class, // Всегда Skill, так как логи прогресса только для навыков
+            'loggable_id' => Skill::factory(), // Laravel автоматически создаст Skill и использует его ID
             'points_earned' => $points,
-            'created_at' => fake()->dateTimeBetween('-2 months', 'now'),
+            'created_at' => fake()->dateTimeBetween('-6 months', 'now'),
         ];
+    }
+
+    /**
+     * Configure the factory to ensure user has student role
+     */
+    public function configure(): static
+    {
+        return $this->afterCreating(function (ProgressLog $progressLog) {
+            // Ensure user is a student after creation
+            $user = $progressLog->user;
+            if ($user && ! $user->hasRole('student')) {
+                $studentRole = Role::firstOrCreate(['name' => 'student']);
+                $user->assignRole($studentRole);
+            }
+        });
     }
 }

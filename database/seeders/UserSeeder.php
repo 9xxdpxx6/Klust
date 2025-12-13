@@ -16,9 +16,9 @@ class UserSeeder extends Seeder
         $partnerRole = Role::findByName('partner');
         $adminRole = Role::findByName('admin');
 
-        // 150 студентов с разнообразными датами регистрации (от 6 месяцев назад до сейчас)
+        // 374 студента с разнообразными датами регистрации (от 6 месяцев назад до сейчас)
         $students = [];
-        for ($i = 0; $i < 150; $i++) {
+        for ($i = 0; $i < 374; $i++) {
             $createdAt = fake()->dateTimeBetween('-6 months', 'now');
             $student = User::factory()->student()->create([
                 'created_at' => $createdAt,
@@ -29,9 +29,9 @@ class UserSeeder extends Seeder
             $students[] = $student;
         }
 
-        // 8 преподавателей с разными датами регистрации
+        // 28 преподавателей с разными датами регистрации
         $teachers = [];
-        for ($i = 0; $i < 8; $i++) {
+        for ($i = 0; $i < 28; $i++) {
             $createdAt = fake()->dateTimeBetween('-8 months', '-1 month');
             $teacher = User::factory()->teacher()->create([
                 'created_at' => $createdAt,
@@ -42,9 +42,9 @@ class UserSeeder extends Seeder
             $teachers[] = $teacher;
         }
 
-        // 15 партнёров с разными датами регистрации (раньше, чем студенты)
+        // 17 партнёров с разными датами регистрации (раньше, чем студенты)
         $partners = [];
-        for ($i = 0; $i < 15; $i++) {
+        for ($i = 0; $i < 17; $i++) {
             $createdAt = fake()->dateTimeBetween('-10 months', '-2 months');
             $partner = User::factory()->partner()->create([
                 'created_at' => $createdAt,

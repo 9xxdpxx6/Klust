@@ -70,5 +70,53 @@ class SimulatorSessionSeeder extends Seeder
                 'updated_at' => $completedAt ?? $startedAt,
             ]);
         }
+
+        // Создаем много сессий для тестового студента
+        $testStudent = User::where('email', 'zxc@zxc.zxc')->first();
+        if ($testStudent && $simulators->isNotEmpty()) {
+            // 50 сессий для тестового студента
+            for ($i = 0; $i < 50; $i++) {
+                $simulator = $simulators->random();
+                $startedAt = fake()->dateTimeBetween('-6 months', 'now');
+                
+                // 90% сессий завершены для тестового студента
+                $isCompleted = fake()->boolean(90);
+                
+                $completedAt = null;
+                if ($isCompleted) {
+                    $completedAt = fake()->dateTimeBetween(
+                        $startedAt,
+                        min(Carbon::parse($startedAt)->addHours(2), Carbon::now())
+                    );
+                }
+                
+                $timeSpent = $isCompleted 
+                    ? fake()->numberBetween(300, 7200)
+                    : fake()->numberBetween(60, 1800);
+                
+                $score = $isCompleted 
+                    ? fake()->numberBetween(70, 1000) // Высокие очки для тестового студента
+                    : fake()->numberBetween(0, 49);
+                
+                $state = $isCompleted ? [
+                    'level' => fake()->numberBetween(5, 10),
+                    'completed_tasks' => fake()->numberBetween(3, 5),
+                    'score_multiplier' => fake()->randomFloat(2, 1.5, 2.5),
+                ] : null;
+
+                SimulatorSession::create([
+                    'user_id' => $testStudent->id,
+                    'simulator_id' => $simulator->id,
+                    'state' => $state,
+                    'score' => $score,
+                    'time_spent' => $timeSpent,
+                    'is_completed' => $isCompleted,
+                    'started_at' => $startedAt,
+                    'completed_at' => $completedAt,
+                    'created_at' => $startedAt,
+                    'updated_at' => $completedAt ?? $startedAt,
+                ]);
+            }
+        }
     }
 }
