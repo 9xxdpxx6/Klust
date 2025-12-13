@@ -74,7 +74,11 @@ class SkillService
                     'max_level' => $skill->max_level,
                     'level' => $skill->pivot->level,
                     'points' => $skill->pivot->points_earned,
-                    'progress_to_next_level' => $this->calculateProgressToNextLevel($skill->pivot->points_earned, $skill->pivot->level),
+                    'progress_to_next_level' => $this->calculateProgressToNextLevel(
+                        $skill->pivot->points_earned,
+                        $skill->pivot->level,
+                        $skill->max_level
+                    ),
                 ];
             });
     }
@@ -99,25 +103,54 @@ class SkillService
     /**
      * Calculate progress to next level
      */
-    private function calculateProgressToNextLevel(int $points, int $currentLevel): array
+    private function calculateProgressToNextLevel(int $points, int $currentLevel, int $maxLevel): array
     {
-        // Example level thresholds (can be adjusted)
+        // Level thresholds - более плавная прогрессия
+        // Используем полиномиальный рост вместо экспоненциального
         $levelThresholds = [
             1 => 0,
-            2 => 100,
-            3 => 250,
-            4 => 500,
-            5 => 1000,
-            6 => 2000,
-            7 => 4000,
-            8 => 8000,
-            9 => 16000,
-            10 => 32000,
+            2 => 50,
+            3 => 120,
+            4 => 210,
+            5 => 320,
+            6 => 450,
+            7 => 600,
+            8 => 770,
+            9 => 960,
+            10 => 1170,
         ];
 
-        $nextLevel = $currentLevel + 1;
+        // Calculate threshold for levels above 10 using polynomial formula
+        // Формула: base + (level - 10) * multiplier, где multiplier постепенно увеличивается
+        for ($level = 11; $level <= $maxLevel; $level++) {
+            if (!isset($levelThresholds[$level])) {
+                // Более плавный рост: базовое значение + квадратичный рост
+                // Для уровней 11-20: базовое 1170 + (level - 10) * 200 + (level - 10)^2 * 10
+                // Для уровней 21+: более медленный рост
+                $levelDiff = $level - 10;
+                if ($level <= 20) {
+                    $levelThresholds[$level] = 1170 + ($levelDiff * 200) + ($levelDiff * $levelDiff * 10);
+                } elseif ($level <= 50) {
+                    // Для средних уровней: более медленный рост
+                    $base20 = $levelThresholds[20] ?? 1170 + (10 * 200) + (10 * 10 * 10);
+                    $levelDiff20 = $level - 20;
+                    $levelThresholds[$level] = $base20 + ($levelDiff20 * 500) + ($levelDiff20 * $levelDiff20 * 5);
+                } else {
+                    // Для высоких уровней: еще более медленный рост
+                    $base50 = $levelThresholds[50] ?? 0;
+                    if ($base50 === 0) {
+                        // Вычисляем базовое значение для уровня 50
+                        $base20 = 1170 + (10 * 200) + (10 * 10 * 10);
+                        $base50 = $base20 + (30 * 500) + (30 * 30 * 5);
+                    }
+                    $levelDiff50 = $level - 50;
+                    $levelThresholds[$level] = $base50 + ($levelDiff50 * 1000) + ($levelDiff50 * $levelDiff50 * 2);
+                }
+            }
+        }
 
-        if ($nextLevel > 10) {
+        // If user reached max level for this skill, show 100% progress
+        if ($currentLevel >= $maxLevel) {
             return [
                 'percentage' => 100,
                 'points_needed' => 0,
@@ -125,14 +158,39 @@ class SkillService
             ];
         }
 
-        $currentLevelThreshold = $levelThresholds[$currentLevel];
-        $nextLevelThreshold = $levelThresholds[$nextLevel];
+        $nextLevel = $currentLevel + 1;
+
+        // Check if next level would exceed max level
+        if ($nextLevel > $maxLevel) {
+            return [
+                'percentage' => 100,
+                'points_needed' => 0,
+                'next_level' => null,
+            ];
+        }
+
+        // Get thresholds for current and next level
+        $currentLevelThreshold = $levelThresholds[$currentLevel] ?? ($levelThresholds[10] * pow(2, max(0, $currentLevel - 10)));
+        $nextLevelThreshold = $levelThresholds[$nextLevel] ?? ($levelThresholds[10] * pow(2, max(0, $nextLevel - 10)));
+        
         $pointsInCurrentLevel = $points - $currentLevelThreshold;
         $pointsNeededForNextLevel = $nextLevelThreshold - $currentLevelThreshold;
 
+        // Avoid division by zero
+        if ($pointsNeededForNextLevel <= 0) {
+            return [
+                'percentage' => 100,
+                'points_needed' => 0,
+                'next_level' => null,
+            ];
+        }
+
+        // Ensure percentage doesn't exceed 100%
+        $percentage = min(100, round(($pointsInCurrentLevel / $pointsNeededForNextLevel) * 100, 2));
+
         return [
-            'percentage' => round(($pointsInCurrentLevel / $pointsNeededForNextLevel) * 100, 2),
-            'points_needed' => $nextLevelThreshold - $points,
+            'percentage' => $percentage,
+            'points_needed' => max(0, $nextLevelThreshold - $points),
             'next_level' => $nextLevel,
         ];
     }

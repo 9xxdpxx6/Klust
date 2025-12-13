@@ -22,6 +22,11 @@ class PartnerSeeder extends Seeder
             'МТС',
             'Мегафон',
             'VK',
+            'Ростелеком',
+            'Альфа-Банк',
+            'X5 Retail Group',
+            'Магнит',
+            'Wildberries',
         ];
 
         foreach ($partners as $index => $partnerUser) {

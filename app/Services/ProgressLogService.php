@@ -99,13 +99,13 @@ class ProgressLogService
                 'level' => $newLevel,
             ]);
 
-            // Create progress log
+            // Create progress log using polymorphic relationship
             ProgressLog::create([
                 'user_id' => $user->id,
-                'skill_id' => $skill->id,
+                'action' => $source,
+                'loggable_type' => Skill::class,
+                'loggable_id' => $skill->id,
                 'points_earned' => $points,
-                'source' => $source,
-                'description' => $this->generateProgressDescription($source, $skill, $points, $metadata),
             ]);
 
             // Notify if level up
@@ -132,10 +132,11 @@ class ProgressLogService
     public function getSkillProgressHistory(User $user, ?Skill $skill = null): Collection
     {
         $query = ProgressLog::where('user_id', $user->id)
-            ->with('skill');
+            ->forSkills()
+            ->with('loggable');
 
         if ($skill) {
-            $query->where('skill_id', $skill->id);
+            $query->forSkill($skill);
         }
 
         return $query->latest()->get();
