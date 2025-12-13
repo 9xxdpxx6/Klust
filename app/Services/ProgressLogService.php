@@ -83,19 +83,19 @@ class ProgressLogService
                 ],
                 [
                     'level' => 1,
-                    'points' => 0,
+                    'points_earned' => 0,
                 ]
             );
 
             $oldLevel = $userSkill->level;
-            $oldPoints = $userSkill->points;
+            $oldPoints = $userSkill->points_earned;
 
             // Add points
             $newPoints = $oldPoints + $points;
             $newLevel = $this->calculateLevelFromPoints($newPoints);
 
             $userSkill->update([
-                'points' => $newPoints,
+                'points_earned' => $newPoints,
                 'level' => $newLevel,
             ]);
 
@@ -139,7 +139,12 @@ class ProgressLogService
             $query->forSkill($skill);
         }
 
-        return $query->latest()->get();
+        $logs = $query->latest()->get();
+        
+        // Фильтруем записи, где loggable существует (навык не удален)
+        return $logs->filter(function ($log) {
+            return $log->loggable !== null;
+        })->values();
     }
 
     /**

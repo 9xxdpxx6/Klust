@@ -34,18 +34,25 @@ class SkillsController extends Controller
 
         return Inertia::render('Client/Student/Skills/Index', [
             'skills' => $skills,
+            'maxLevelInSystem' => $this->skillService->getMaxLevelInSystem(),
             'progressHistory' => $history->map(function ($log) {
                 $skill = $log->loggable;
+                
+                // Формируем описание с учетом наличия навыка
                 $description = match ($log->action) {
-                    'simulator_completion' => "Получено {$log->points_earned} очков за прохождение симулятора",
-                    'case_completion' => "Получено {$log->points_earned} очков за выполнение кейса",
-                    'manual' => "Начислено {$log->points_earned} очков вручную",
-                    default => "Получено {$log->points_earned} очков",
+                    'simulator_completion' => $skill 
+                        ? "Получено {$log->points_earned} очков в навыке {$skill->name} за прохождение симулятора"
+                        : "Получено {$log->points_earned} очков за прохождение симулятора",
+                    'case_completion' => $skill
+                        ? "Получено {$log->points_earned} очков в навыке {$skill->name} за выполнение кейса"
+                        : "Получено {$log->points_earned} очков за выполнение кейса",
+                    'manual' => $skill
+                        ? "Начислено {$log->points_earned} очков в навыке {$skill->name} вручную"
+                        : "Начислено {$log->points_earned} очков вручную",
+                    default => $skill
+                        ? "Получено {$log->points_earned} очков в навыке {$skill->name}"
+                        : "Получено {$log->points_earned} очков",
                 };
-
-                if ($skill) {
-                    $description = "Получено {$log->points_earned} очков в навыке {$skill->name}";
-                }
 
                 return [
                     'id' => $log->id,
