@@ -24,8 +24,9 @@ class AnalyticsExport implements FromView, ShouldAutoSize, WithStyles
 
     public function view(): View
     {
+        $user = auth()->user();
         $analyticsData = $this->analyticsService->getPartnerAnalytics(
-            auth()->user()->partner->id ?? null,
+            $user,
             $this->filters
         );
 

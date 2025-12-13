@@ -13,12 +13,12 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class TeamsExport implements FromCollection, WithHeadings, WithMapping, WithStyles
 {
-    protected int $partnerId;
+    protected int $userId;
     protected array $filters;
 
-    public function __construct(int $partnerId, array $filters = [])
+    public function __construct(int $userId, array $filters = [])
     {
-        $this->partnerId = $partnerId;
+        $this->userId = $userId;
         $this->filters = $filters;
     }
 
@@ -28,7 +28,7 @@ class TeamsExport implements FromCollection, WithHeadings, WithMapping, WithStyl
     public function collection()
     {
         $query = CaseApplication::whereHas('case', function ($query) {
-            $query->where('partner_id', $this->partnerId);
+            $query->where('user_id', $this->userId);
         })
             ->accepted()
             ->with(['leader', 'case', 'teamMembers.user']);

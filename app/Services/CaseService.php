@@ -10,7 +10,6 @@ use App\Jobs\UpdateCaseStatusByDeadline;
 use App\Models\CaseApplication;
 use App\Models\CaseModel;
 use App\Models\CaseTeamMember;
-use App\Models\Partner;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -24,17 +23,17 @@ class CaseService
     /**
      * Create a new case
      */
-    public function createCase(array $data, ?Partner $partner = null): CaseModel
+    public function createCase(array $data, ?User $user = null): CaseModel
     {
-        return DB::transaction(function () use ($data, $partner) {
-            // If partner is provided, use its ID
-            if ($partner) {
-                $data['partner_id'] = $partner->id;
+        return DB::transaction(function () use ($data, $user) {
+            // If user is provided, use its ID (for partner users)
+            if ($user) {
+                $data['user_id'] = $user->id;
             }
 
             // Create case
             $case = CaseModel::create([
-                'partner_id' => $data['partner_id'],
+                'user_id' => $data['user_id'] ?? $data['partner_id'] ?? null,
                 'simulator_id' => $data['simulator_id'] ?? null,
                 'title' => $data['title'],
                 'description' => $data['description'],
@@ -52,16 +51,16 @@ class CaseService
             // Schedule job to update status by deadline if case is active
             $this->scheduleStatusUpdateJob($case);
 
-            return $case->fresh('skills', 'partner');
+            return $case->fresh('skills', 'partnerUser.partnerProfile');
         });
     }
 
     /**
-     * Create case for specific partner
+     * Create case for specific partner user
      */
-    public function createCaseForPartner(Partner $partner, array $data): CaseModel
+    public function createCaseForPartner(User $user, array $data): CaseModel
     {
-        return $this->createCase($data, $partner);
+        return $this->createCase($data, $user);
     }
 
     /**
@@ -101,7 +100,7 @@ class CaseService
                 $this->scheduleStatusUpdateJob($case);
             }
 
-            return $case->fresh('skills', 'partner');
+            return $case->fresh('skills', 'partnerUser.partnerProfile');
         });
     }
 
@@ -156,7 +155,7 @@ class CaseService
         $caseFilter = new CaseFilter($filters);
 
         $query = CaseModel::query()
-            ->with(['partner.user.partnerProfile', 'skills']);
+            ->with(['partnerUser.partnerProfile', 'skills']);
 
         $query = $caseFilter->apply($query);
 
@@ -190,9 +189,9 @@ class CaseService
         }
 
         // Apply partner filter
-        $partnerId = FilterHelper::getIntegerFilter($filters['partner_id'] ?? null);
-        if ($partnerId) {
-            $query->where('partner_id', $partnerId);
+        $userId = FilterHelper::getIntegerFilter($filters['partner_id'] ?? $filters['user_id'] ?? null);
+        if ($userId) {
+            $query->where('user_id', $userId);
         }
 
         // Apply search filter
@@ -206,7 +205,7 @@ class CaseService
         }
 
         // Eager load relationships
-        $query->with(['partner.user.partnerProfile', 'skills']);
+        $query->with(['partnerUser.partnerProfile', 'skills']);
 
         // Get pagination parameters
         $pagination = FilterHelper::getPaginationParams($filters, 12);
@@ -215,11 +214,11 @@ class CaseService
     }
 
     /**
-     * Get cases for specific partner
+     * Get cases for specific partner user
      */
-    public function getPartnerCases(Partner $partner, array $filters): LengthAwarePaginator
+    public function getPartnerCases(User $user, array $filters): LengthAwarePaginator
     {
-        $query = CaseModel::where('partner_id', $partner->id);
+        $query = CaseModel::where('user_id', $user->id);
 
         // Apply status filter
         $status = FilterHelper::getStringFilter($filters['status'] ?? null);
@@ -251,15 +250,13 @@ class CaseService
      */
     public function getActiveCasesForPartner(User $user): Collection
     {
-        $partner = $user->partner;
-
-        if (! $partner) {
+        if (! $user->hasRole('partner')) {
             return collect();
         }
 
-        return CaseModel::where('partner_id', $partner->id)
+        return CaseModel::where('user_id', $user->id)
             ->where('status', 'active')
-            ->with(['skills', 'partner'])
+            ->with(['skills', 'partnerUser.partnerProfile'])
             ->latest()
             ->get();
     }
@@ -291,7 +288,7 @@ class CaseService
 
         return CaseModel::whereIn('id', $caseIds)
             ->where('status', 'active')
-            ->with(['partner.user.partnerProfile', 'skills'])
+            ->with(['partnerUser.partnerProfile', 'skills'])
             ->latest()
             ->get();
     }
@@ -306,7 +303,7 @@ class CaseService
         if (empty($studentSkillIds)) {
             // Return random active cases if student has no skills
             return CaseModel::where('status', 'active')
-                ->with(['partner', 'skills'])
+                ->with(['partnerUser.partnerProfile', 'skills'])
                 ->inRandomOrder()
                 ->limit($limit)
                 ->get();
@@ -325,7 +322,7 @@ class CaseService
             ->whereHas('skills', function ($q) use ($studentSkillIds) {
                 $q->whereIn('skills.id', $studentSkillIds);
             })
-            ->with(['partner', 'skills'])
+            ->with(['partnerUser.partnerProfile', 'skills'])
             ->withCount([
                 'skills as matching_skills_count' => function ($q) use ($studentSkillIds) {
                     $q->whereIn('skills.id', $studentSkillIds);

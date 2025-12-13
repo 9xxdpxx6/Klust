@@ -18,6 +18,8 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('contact_person')->nullable();
             $table->string('contact_phone')->nullable();
+            $table->string('logo')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

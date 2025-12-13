@@ -33,13 +33,13 @@
 
                         <!-- Партнер -->
                         <Select
-                            v-model="form.partner_id"
+                            v-model="form.user_id"
                             label="Партнер *"
                             :options="partnerOptions"
                             optionLabel="label"
                             optionValue="value"
                             placeholder="Выберите партнера"
-                            :error="form.errors.partner_id"
+                            :error="form.errors.user_id"
                             :required="true"
                         />
 
@@ -198,7 +198,7 @@ const props = defineProps({
 const form = useForm({
     title: props.case?.title || '',
     description: props.case?.description || '',
-    partner_id: props.case?.partner_id || '',
+    user_id: props.case?.user_id || props.case?.partner_id || '',
     deadline: parseLocalDate(props.case?.deadline),
     required_team_size: props.case?.required_team_size || '',
     status: props.case?.status || '',
@@ -214,7 +214,7 @@ const minDate = computed(() => {
 const partnerOptions = computed(() => [
     { label: 'Выберите партнера', value: '' },
     ...props.partners.map(partner => ({
-        label: `${partner.name} (${partner.contact_person})`,
+        label: `${partner.company_name || partner.name || 'Без названия'}${partner.contact_person ? ` (${partner.contact_person})` : ''}`,
         value: partner.id
     }))
 ])

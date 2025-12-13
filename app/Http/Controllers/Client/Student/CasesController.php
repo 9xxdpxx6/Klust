@@ -10,7 +10,6 @@ use App\Http\Requests\Student\Case\AddTeamMemberRequest;
 use App\Http\Requests\Student\Case\ApplyRequest;
 use App\Models\CaseApplication;
 use App\Models\CaseModel;
-use App\Models\Partner;
 use App\Models\Skill;
 use App\Services\ApplicationService;
 use App\Services\CaseService;
@@ -102,12 +101,12 @@ class CasesController extends Controller
         }
 
         // Получаем список партнеров для фильтра
-        $partners = Partner::with('user.partnerProfile')
+        $partners = \App\Models\User::role('partner')->with('partnerProfile')
             ->get()
-            ->map(function ($partner) {
+            ->map(function ($partnerUser) {
                 return [
-                    'id' => $partner->id,
-                    'name' => $partner->company_name ?? 'Без названия',
+                    'id' => $partnerUser->id,
+                    'name' => $partnerUser->partnerProfile?->company_name ?? $partnerUser->name ?? 'Без названия',
                 ];
             });
 

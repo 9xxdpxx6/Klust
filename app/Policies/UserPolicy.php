@@ -66,8 +66,7 @@ class UserPolicy
             return false;
         }
 
-        $partner = $viewer->partner;
-        if (! $partner) {
+        if (! $viewer->hasRole('partner')) {
             return false;
         }
 
@@ -77,17 +76,17 @@ class UserPolicy
         // As leader
         $asLeader = $student->caseApplications()
             ->where('status_id', $acceptedStatusId)
-            ->whereHas('case', function ($q) use ($partner) {
-                $q->where('partner_id', $partner->id);
+            ->whereHas('case', function ($q) use ($viewer) {
+                $q->where('user_id', $viewer->id);
             })
             ->exists();
 
         // As team member
         $asMember = $student->caseTeamMembers()
-            ->whereHas('application', function ($q) use ($acceptedStatusId, $partner) {
+            ->whereHas('application', function ($q) use ($acceptedStatusId, $viewer) {
                 $q->where('status_id', $acceptedStatusId)
-                    ->whereHas('case', function ($caseQ) use ($partner) {
-                        $caseQ->where('partner_id', $partner->id);
+                    ->whereHas('case', function ($caseQ) use ($viewer) {
+                        $caseQ->where('user_id', $viewer->id);
                     });
             })
             ->exists();

@@ -112,7 +112,7 @@ const viewTeam = (application) => {
                         <div class="space-y-4">
                             <div>
                                 <h3 class="text-xl font-bold mb-2">{{ application.case.title }}</h3>
-                                <p class="text-sm text-gray-600">{{ application.case.partner.company_name }}</p>
+                                <p class="text-sm text-gray-600">{{ application.case.partner?.company_name || application.case.partnerUser?.name || 'Не указан' }}</p>
                             </div>
 
                             <div class="flex items-center gap-2">
@@ -165,7 +165,7 @@ const viewTeam = (application) => {
                         <div class="space-y-4">
                             <div>
                                 <h3 class="text-xl font-bold mb-2">{{ application.case.title }}</h3>
-                                <p class="text-sm text-gray-600">{{ application.case.partner.company_name }}</p>
+                                <p class="text-sm text-gray-600">{{ application.case.partner?.company_name || application.case.partnerUser?.name || 'Не указан' }}</p>
                             </div>
 
                             <div class="flex items-center gap-2">
@@ -208,7 +208,7 @@ const viewTeam = (application) => {
                         <div class="space-y-4">
                             <div>
                                 <h3 class="text-xl font-bold mb-2">{{ application.case.title }}</h3>
-                                <p class="text-sm text-gray-600">{{ application.case.partner.company_name }}</p>
+                                <p class="text-sm text-gray-600">{{ application.case.partner?.company_name || application.case.partnerUser?.name || 'Не указан' }}</p>
                             </div>
 
                             <div class="flex items-center gap-2">
@@ -251,7 +251,7 @@ const viewTeam = (application) => {
                         <div class="space-y-4">
                             <div>
                                 <h3 class="text-xl font-bold mb-2">{{ application.case.title }}</h3>
-                                <p class="text-sm text-gray-600">{{ application.case.partner.company_name }}</p>
+                                <p class="text-sm text-gray-600">{{ application.case.partner?.company_name || application.case.partnerUser?.name || 'Не указан' }}</p>
                             </div>
 
                             <div class="flex items-center gap-2">

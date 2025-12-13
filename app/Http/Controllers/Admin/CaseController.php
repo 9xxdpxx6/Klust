@@ -8,9 +8,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Case\StoreRequest;
 use App\Http\Requests\Admin\Case\UpdateRequest;
 use App\Models\CaseModel;
-use App\Models\Partner;
 use App\Models\Simulator;
 use App\Models\Skill;
+use App\Models\User;
 use App\Services\CaseService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -40,21 +40,21 @@ class CaseController extends Controller
         ];
 
         // Если пользователь - партнер, показывать только его кейсы
-        if ($user->hasRole('partner') && $user->partner?->id) {
-            $filters['partner_id'] = $user->partner->id;
+        if ($user->hasRole('partner')) {
+            $filters['partner_id'] = $user->id;
         }
 
         // Получить кейсы через CaseService::getFilteredCases($filters)
         $cases = $this->caseService->getFilteredCases($filters);
 
         // Получаем список партнеров для фильтра
-        $partners = Partner::with('user.partnerProfile')
+        $partners = User::role('partner')->with('partnerProfile')
             ->get()
-            ->map(function ($partner) {
+            ->map(function ($partnerUser) {
                 return [
-                    'id' => $partner->id,
-                    'company_name' => $partner->company_name ?? 'Без названия',
-                    'contact_person' => $partner->contact_person ?? 'Без контакта',
+                    'id' => $partnerUser->id,
+                    'company_name' => $partnerUser->partnerProfile?->company_name ?? 'Без названия',
+                    'contact_person' => $partnerUser->partnerProfile?->contact_person ?? $partnerUser->name ?? 'Без контакта',
                 ];
             });
 
@@ -70,8 +70,8 @@ class CaseController extends Controller
         // Получаем общую статистику
         // Если пользователь - партнер, показывать статистику только по его кейсам
         $statisticsQuery = CaseModel::query();
-        if ($user->hasRole('partner') && $user->partner?->id) {
-            $statisticsQuery->where('partner_id', $user->partner->id);
+        if ($user->hasRole('partner')) {
+            $statisticsQuery->where('user_id', $user->id);
         }
         
         $statistics = [
@@ -96,7 +96,7 @@ class CaseController extends Controller
 
         // Загрузить связи: partner, skills, applications, teams
         $case->load([
-            'partner.user.partnerProfile',
+            'partnerUser.partnerProfile',
             'simulator',
             'skills',
             'applications.leader.studentProfile.faculty',
@@ -147,11 +147,11 @@ class CaseController extends Controller
         $this->authorize('create', CaseModel::class);
 
         // Получить список партнеров и симуляторов
-        $partners = Partner::with('user')->get()->map(function ($partner) {
+        $partners = User::role('partner')->with('partnerProfile')->get()->map(function ($partnerUser) {
             return [
-                'id' => $partner->id,
-                'name' => $partner->name ?? 'Без названия',
-                'contact_person' => $partner->user->name ?? 'Без контакта',
+                'id' => $partnerUser->id,
+                'name' => $partnerUser->partnerProfile?->company_name ?? $partnerUser->name ?? 'Без названия',
+                'contact_person' => $partnerUser->partnerProfile?->contact_person ?? $partnerUser->name ?? 'Без контакта',
             ];
         });
 
@@ -207,11 +207,11 @@ class CaseController extends Controller
         $case->load('skills');
 
         // Получить список партнеров и симуляторов
-        $partners = Partner::with('user')->get()->map(function ($partner) {
+        $partners = User::role('partner')->with('partnerProfile')->get()->map(function ($partnerUser) {
             return [
-                'id' => $partner->id,
-                'name' => $partner->name ?? 'Без названия',
-                'contact_person' => $partner->user->name ?? 'Без контакта',
+                'id' => $partnerUser->id,
+                'name' => $partnerUser->partnerProfile?->company_name ?? $partnerUser->name ?? 'Без названия',
+                'contact_person' => $partnerUser->partnerProfile?->contact_person ?? $partnerUser->name ?? 'Без контакта',
             ];
         });
 

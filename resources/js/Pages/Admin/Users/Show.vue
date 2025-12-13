@@ -370,7 +370,7 @@
                                     <div class="flex justify-between items-start">
                                         <div>
                                             <div class="font-medium text-gray-900">{{ application.case.title }}</div>
-                                            <div class="text-sm text-gray-500 mt-1">Партнер: {{ application.case.partner?.company_name || 'Не указан' }}</div>
+                                            <div class="text-sm text-gray-500 mt-1">Партнер: {{ application.case.partner?.company_name || application.case.partnerUser?.name || 'Не указан' }}</div>
                                             <div class="text-sm text-gray-500">Статус: {{ application.status?.label || getStatusText(application.status?.name) }}</div>
                                         </div>
                                         <span

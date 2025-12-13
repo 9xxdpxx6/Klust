@@ -147,7 +147,7 @@
                                     {{ application.case?.title }}
                                 </h3>
                                 <p class="text-sm text-gray-500 mt-1">
-                                    Партнер: {{ application.case?.partner?.name }}
+                                    Партнер: {{ application.case?.partner?.company_name || application.case?.partnerUser?.name || 'Не указан' }}
                                 </p>
                                 <p class="text-xs text-gray-400 mt-1">
                                     Завершен: {{ formatDate(application.updated_at) }}

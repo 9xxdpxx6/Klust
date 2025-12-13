@@ -167,10 +167,10 @@
                                 </div>
                                 <div>
                                     <div class="text-sm font-medium text-gray-900">
-                                        {{ simulator.partner?.name || 'Не указан' }}
+                                        {{ simulator.partner?.company_name || simulator.partnerUser?.name || 'Не указан' }}
                                     </div>
-                                    <div v-if="simulator.partner?.contact_person" class="text-xs text-gray-500">
-                                        {{ simulator.partner.contact_person }}
+                                    <div v-if="simulator.partner?.contact_person || simulator.partnerUser?.name" class="text-xs text-gray-500">
+                                        {{ simulator.partner?.contact_person || simulator.partnerUser?.name }}
                                     </div>
                                 </div>
                             </div>
@@ -244,12 +244,12 @@
                         <div class="flex items-center justify-between">
                             <span class="text-gray-500">Партнер:</span>
                             <span class="text-gray-900 font-medium">
-                                {{ simulator.partner?.name || 'Не указан' }}
+                                {{ simulator.partner?.company_name || simulator.partnerUser?.name || 'Не указан' }}
                             </span>
                         </div>
-                        <div v-if="simulator.partner?.contact_person" class="flex items-center justify-between">
+                        <div v-if="simulator.partner?.contact_person || simulator.partnerUser?.name" class="flex items-center justify-between">
                             <span class="text-gray-500">Контакт:</span>
-                            <span class="text-gray-600">{{ simulator.partner.contact_person }}</span>
+                            <span class="text-gray-600">{{ simulator.partner?.contact_person || simulator.partnerUser?.name }}</span>
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-gray-500">Статус:</span>
@@ -334,13 +334,13 @@
             <form @submit.prevent="submitForm" novalidate>
                 <div class="space-y-4">
                     <Select
-                        v-model="form.partner_id"
+                        v-model="form.user_id"
                         label="Партнер"
                         :options="partnerOptions"
                         optionLabel="label"
                         optionValue="value"
                         placeholder="Выберите партнера"
-                        :error="form.errors.partner_id"
+                        :error="form.errors.user_id"
                         required
                     />
 
@@ -542,7 +542,7 @@ const previewImageUrl = ref(null)
 
 // Форма создания/редактирования
 const form = useForm({
-    partner_id: null,
+    user_id: null,
     title: '',
     slug: '',
     description: '',
@@ -556,7 +556,7 @@ const deleteForm = useForm({})
 // Опции партнеров
 const partnerOptions = computed(() => {
     return props.partners.map(partner => ({
-        label: `${partner.name}${partner.contact_person ? ` (${partner.contact_person})` : ''}`,
+        label: `${partner.company_name || partner.name || 'Без названия'}${partner.contact_person ? ` (${partner.contact_person})` : ''}`,
         value: partner.id
     }))
 })
@@ -628,7 +628,7 @@ const openCreateModal = () => {
 const openEditModal = (simulator) => {
     editingSimulator.value = simulator
     previewImageUrl.value = null
-    form.partner_id = simulator.partner_id
+    form.user_id = simulator.user_id || simulator.partner_id
     form.title = simulator.title
     form.slug = simulator.slug
     form.description = simulator.description

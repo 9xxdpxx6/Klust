@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Helpers\FilterHelper;
-use App\Models\Partner;
 use App\Models\PartnerProfile;
 use App\Models\StudentProfile;
 use App\Models\TeacherProfile;
@@ -111,15 +110,12 @@ class UserService
         }
 
         if ($user->hasRole('partner')) {
-            $partner = $user->partner;
-            if ($partner) {
-                $activeCases = $partner->cases()
-                    ->where('status', 'active')
-                    ->count();
+            $activeCases = \App\Models\CaseModel::where('user_id', $user->id)
+                ->where('status', 'active')
+                ->count();
 
-                if ($activeCases > 0) {
-                    throw new \Exception('Cannot delete partner with active cases');
-                }
+            if ($activeCases > 0) {
+                throw new \Exception('Cannot delete partner with active cases');
             }
         }
 
@@ -197,11 +193,10 @@ class UserService
                 'badges_count' => $user->badges()->count(),
             ];
         } elseif ($user->hasRole('partner')) {
-            $partner = $user->partner;
             $statistics = [
-                'total_cases' => $partner?->cases()->count() ?? 0,
-                'active_cases' => $partner?->cases()->where('status', 'active')->count() ?? 0,
-                'completed_cases' => $partner?->cases()->where('status', 'completed')->count() ?? 0,
+                'total_cases' => \App\Models\CaseModel::where('user_id', $user->id)->count(),
+                'active_cases' => \App\Models\CaseModel::where('user_id', $user->id)->where('status', 'active')->count(),
+                'completed_cases' => \App\Models\CaseModel::where('user_id', $user->id)->where('status', 'completed')->count(),
             ];
         }
 
@@ -291,22 +286,22 @@ class UserService
                 ]);
             }
 
-            // Update partner company info
-            $partner = $user->partner;
-            if ($partner) {
+            // Update partner profile info
+            $profile = $user->partnerProfile;
+            if ($profile) {
                 // Handle logo upload
                 if (isset($data['logo'])) {
-                    if ($partner->logo) {
-                        $this->fileService->deleteFile($partner->logo);
+                    if ($profile->logo) {
+                        $this->fileService->deleteFile($profile->logo);
                     }
-                    $partner->logo = $this->fileService->storeLogo($data['logo']);
+                    $profile->logo = $this->fileService->storeLogo($data['logo']);
                 }
 
-                $partner->update([
-                    'company_name' => $data['company_name'] ?? $partner->company_name,
-                    'description' => $data['description'] ?? $partner->description,
-                    'website' => $data['website'] ?? $partner->website,
-                    'logo' => $partner->logo,
+                $profile->update([
+                    'company_name' => $data['company_name'] ?? $profile->company_name,
+                    'description' => $data['description'] ?? $profile->description,
+                    'website' => $data['website'] ?? $profile->website,
+                    'logo' => $profile->logo,
                 ]);
             }
 
@@ -456,25 +451,20 @@ class UserService
     }
 
     /**
-     * Create partner profile and partner company
+     * Create partner profile
      */
     private function createPartnerProfile(User $user, array $data): void
     {
-        // Create Partner company first
-        $partner = Partner::create([
+        // Create PartnerProfile
+        PartnerProfile::create([
+            'user_id' => $user->id,
             'company_name' => $data['company_name'] ?? 'Unknown Company',
             'description' => $data['description'] ?? null,
             'website' => $data['website'] ?? null,
+            'contact_person' => $data['contact_person'] ?? $user->name,
+            'contact_phone' => $data['contact_phone'] ?? null,
             'logo' => null,
             'is_active' => true,
-        ]);
-
-        // Create PartnerProfile linking user to partner
-        PartnerProfile::create([
-            'user_id' => $user->id,
-            'partner_id' => $partner->id,
-            'position' => $data['position'] ?? null,
-            'phone' => $data['phone'] ?? null,
         ]);
     }
 
@@ -521,13 +511,13 @@ class UserService
             'telegram' => $data['telegram'] ?? $user->partnerProfile->telegram,
         ]);
 
-        // Update partner company if exists
-        $partner = $user->partner;
-        if ($partner) {
-            $partner->update([
-                'company_name' => $data['company_name'] ?? $partner->company_name,
-                'description' => $data['description'] ?? $partner->description,
-                'website' => $data['website'] ?? $partner->website,
+        // Update partner profile if exists
+        $profile = $user->partnerProfile;
+        if ($profile) {
+            $profile->update([
+                'company_name' => $data['company_name'] ?? $profile->company_name,
+                'description' => $data['description'] ?? $profile->description,
+                'website' => $data['website'] ?? $profile->website,
             ]);
         }
     }

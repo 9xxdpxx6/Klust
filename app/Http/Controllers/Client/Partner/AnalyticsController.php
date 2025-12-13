@@ -33,10 +33,9 @@ class AnalyticsController extends Controller
     {
         try {
             $user = auth()->user();
-            $partner = $user->partner;
 
-            // Получить аналитику через AnalyticsService::getPartnerAnalytics($partner, $request->validated())
-            $analytics = $this->analyticsService->getPartnerAnalytics($partner, $request->validated());
+            // Получить аналитику через AnalyticsService::getPartnerAnalytics($user, $request->validated())
+            $analytics = $this->analyticsService->getPartnerAnalytics($user, $request->validated());
 
             return Inertia::render('Client/Partner/Analytics/Index', [
                 'analytics' => $analytics,
@@ -57,10 +56,9 @@ class AnalyticsController extends Controller
     public function exportCases(Request $request): BinaryFileResponse
     {
         $user = auth()->user();
-        $partner = $user->partner;
 
         $filters = $this->prepareFilters($request);
-        $filters['partner_id'] = $partner->id;
+        $filters['partner_id'] = $user->id;
 
         $filename = 'cases_'.date('Y-m-d_H-i-s').'.xlsx';
 
@@ -73,10 +71,9 @@ class AnalyticsController extends Controller
     public function exportApplications(Request $request): BinaryFileResponse
     {
         $user = auth()->user();
-        $partner = $user->partner;
 
         $filters = $this->prepareFilters($request);
-        $filters['partner_id'] = $partner->id;
+        $filters['partner_id'] = $user->id;
 
         $filename = 'applications_'.date('Y-m-d_H-i-s').'.xlsx';
 
@@ -89,13 +86,12 @@ class AnalyticsController extends Controller
     public function exportTeams(Request $request): BinaryFileResponse
     {
         $user = auth()->user();
-        $partner = $user->partner;
 
         $filters = $this->prepareFilters($request);
 
         $filename = 'teams_'.date('Y-m-d_H-i-s').'.xlsx';
 
-        return Excel::download(new TeamsExport($partner->id, $filters), $filename);
+        return Excel::download(new TeamsExport($user->id, $filters), $filename);
     }
 
     /**

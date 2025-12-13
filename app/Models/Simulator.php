@@ -14,7 +14,7 @@ class Simulator extends Model
     use HasFactory;
 
     protected $fillable = [
-        'partner_id',
+        'user_id',
         'title',
         'slug',
         'description',
@@ -30,9 +30,17 @@ class Simulator extends Model
         'preview_image_url',
     ];
 
-    public function partner(): BelongsTo
+    public function partnerUser(): BelongsTo
     {
-        return $this->belongsTo(Partner::class);
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * Accessor for backward compatibility with Vue components
+     */
+    public function getPartnerAttribute()
+    {
+        return $this->partnerUser?->partnerProfile;
     }
 
     public function sessions(): HasMany

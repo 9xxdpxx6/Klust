@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\CaseModel;
-use App\Models\Partner;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class CaseModelFactory extends Factory
@@ -33,7 +33,7 @@ class CaseModelFactory extends Factory
         ];
 
         return [
-            'partner_id' => Partner::factory(),
+            'user_id' => User::factory()->partner(),
             'title' => fake()->randomElement($titles),
             'description' => fake()->paragraph(5),
             'simulator_id' => null, // Будет установлено в сидере
