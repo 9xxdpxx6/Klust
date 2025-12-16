@@ -58,7 +58,7 @@ class UsersController extends Controller
 
         // Сортировка и пагинация
         $users = $query->paginate($paginationParams['per_page'])
-            ->withQueryString();
+            ->appends($request->query());
 
         // Получаем список ролей для фильтра
         $roles = Role::pluck('name')->toArray();
@@ -136,14 +136,13 @@ class UsersController extends Controller
             'badges',
             'simulatorSessions',
             'caseApplications' => function ($query) {
-                $query->with(['case', 'case.partner', 'status']);
+                $query->with(['case', 'case.partnerUser.partnerProfile', 'status']);
             },
             'caseTeamMembers' => function ($query) {
                 $query->with(['application', 'application.case', 'application.status', 'application.leader']);
             },
             'notifications',
             'progressLogs',
-            'partner',
         ]);
 
         $stats = [
@@ -371,15 +370,75 @@ class UsersController extends Controller
             if ($request->has('specialization')) {
                 $profileData['specialization'] = $request->specialization;
             }
+            if ($request->has('bio')) {
+                $profileData['bio'] = $request->bio;
+            }
             if (!empty($profileData)) {
                 $user->studentProfile->update($profileData);
+            }
+        }
+
+        // Обновляем профиль партнера, если пользователь - партнер
+        if ($user->hasRole('partner') && $user->partnerProfile) {
+            $profileData = [];
+            if ($request->has('company_name')) {
+                $profileData['company_name'] = $request->company_name;
+            }
+            if ($request->has('inn')) {
+                $profileData['inn'] = $request->inn;
+            }
+            if ($request->has('address')) {
+                $profileData['address'] = $request->address;
+            }
+            if ($request->has('website')) {
+                $profileData['website'] = $request->website;
+            }
+            if ($request->has('description')) {
+                $profileData['description'] = $request->description;
+            }
+            if ($request->has('contact_person')) {
+                $profileData['contact_person'] = $request->contact_person;
+            }
+            if ($request->has('contact_phone')) {
+                $profileData['contact_phone'] = $request->contact_phone;
+            }
+
+            // Обработка логотипа
+            if ($request->hasFile('logo')) {
+                // Удаляем старый логотип если есть
+                if ($user->partnerProfile->logo && Storage::disk('public')->exists($user->partnerProfile->logo)) {
+                    Storage::disk('public')->delete($user->partnerProfile->logo);
+                }
+                $logoPath = $request->file('logo')->store('logos', 'public');
+                $profileData['logo'] = $logoPath;
+            }
+
+            if (!empty($profileData)) {
+                $user->partnerProfile->update($profileData);
+            }
+        }
+
+        // Обновляем профиль преподавателя, если пользователь - преподаватель
+        if ($user->hasRole('teacher') && $user->teacherProfile) {
+            $profileData = [];
+            if ($request->has('department')) {
+                $profileData['department'] = $request->department;
+            }
+            if ($request->has('position')) {
+                $profileData['position'] = $request->position;
+            }
+            if ($request->has('bio')) {
+                $profileData['bio'] = $request->bio;
+            }
+            if (!empty($profileData)) {
+                $user->teacherProfile->update($profileData);
             }
         }
 
         // Роль не может быть изменена при редактировании пользователя
         // Она устанавливается только при создании и не должна обновляться здесь
 
-        return redirect()->route('admin.users.index')
+        return redirect()->route('admin.users.show', $user)
             ->with('success', 'Пользователь успешно обновлен.');
     }
 

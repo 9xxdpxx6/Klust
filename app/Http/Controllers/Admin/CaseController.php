@@ -67,12 +67,10 @@ class CaseController extends Controller
             'perPage' => $filters['per_page'] ?? 25,
         ];
 
-        // Получаем общую статистику
-        // Если пользователь - партнер, показывать статистику только по его кейсам
+        // Получаем общую статистику с учетом фильтров
+        $caseFilter = new \App\Filters\CaseFilter($filters);
         $statisticsQuery = CaseModel::query();
-        if ($user->hasRole('partner')) {
-            $statisticsQuery->where('user_id', $user->id);
-        }
+        $statisticsQuery = $caseFilter->apply($statisticsQuery);
         
         $statistics = [
             'total_cases' => $statisticsQuery->count(),

@@ -212,6 +212,9 @@
                     <thead class="bg-gray-50">
                         <tr>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                №
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Название
                             </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -226,7 +229,10 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        <tr v-for="topCase in topCases" :key="topCase.id">
+                        <tr v-for="(topCase, index) in topCases" :key="topCase.id">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ index + 1 }}
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                 {{ topCase.title }}
                             </td>
@@ -241,7 +247,7 @@
                             </td>
                         </tr>
                         <tr v-if="topCases.length === 0">
-                            <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
+                            <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
                                 Нет данных для отображения
                             </td>
                         </tr>
