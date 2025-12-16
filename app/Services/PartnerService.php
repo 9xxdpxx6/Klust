@@ -100,10 +100,9 @@ class PartnerService
                 ];
             });
 
-        // Завершенные кейсы за последние 7 дней
+        // Завершенные кейсы (все, отсортированные по дате завершения)
         $completedCases = \App\Models\CaseModel::where('user_id', $user->id)
             ->where('status', 'completed')
-            ->where('updated_at', '>=', now()->subDays(7))
             ->orderBy('updated_at', 'desc')
             ->limit(10)
             ->get()

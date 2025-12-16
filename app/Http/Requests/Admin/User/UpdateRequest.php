@@ -43,6 +43,7 @@ class UpdateRequest extends FormRequest
             // Поля из основной таблицы users
             'kubgtu_id' => [
                 'sometimes',
+                'nullable',
                 'required_if:role,student',
                 'string',
                 'max:255',
@@ -50,6 +51,7 @@ class UpdateRequest extends FormRequest
             ],
             'course' => [
                 'sometimes',
+                'nullable',
                 'required_if:role,student',
                 'integer',
                 'between:1,6',
@@ -84,6 +86,20 @@ class UpdateRequest extends FormRequest
                 'sometimes',
                 'nullable',
                 'string',
+            ],
+
+            // Поля из teacher_profiles (только для преподавателей)
+            'department' => [
+                'sometimes',
+                'nullable',
+                'string',
+                'max:255',
+            ],
+            'position' => [
+                'sometimes',
+                'nullable',
+                'string',
+                'max:255',
             ],
 
             // Поля из partner_profiles (только для партнеров)

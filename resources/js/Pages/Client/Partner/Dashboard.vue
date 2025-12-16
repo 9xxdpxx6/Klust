@@ -71,6 +71,7 @@
                     <i class="pi pi-briefcase text-indigo-600"></i>
                     Активные кейсы
                 </h2>
+                <p class="text-xs text-gray-600 mt-1">Все активные кейсы</p>
             </div>
             <div class="p-6" v-if="activeCases && activeCases.length > 0">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -98,6 +99,7 @@
                         <i class="pi pi-inbox text-amber-600"></i>
                         Новые заявки
                     </h2>
+                    <p class="text-xs text-gray-600 mt-1">{{ RECENT_PERIOD_LABEL }}</p>
                 </div>
                 <div class="p-6" v-if="recentActivities?.newApplications && recentActivities.newApplications.length > 0">
                     <div class="space-y-3">
@@ -147,6 +149,7 @@
                         <i class="pi pi-check-circle text-green-600"></i>
                         Завершенные кейсы
                     </h2>
+                    <p class="text-xs text-gray-600 mt-1 invisible">Все завершенные кейсы</p>
                 </div>
                 <div class="p-6" v-if="recentActivities?.completedCases && recentActivities.completedCases.length > 0">
                     <div class="space-y-3">
@@ -173,6 +176,7 @@
                         <i class="pi pi-users text-blue-600"></i>
                         Новые команды
                     </h2>
+                    <p class="text-xs text-gray-600 mt-1">{{ RECENT_PERIOD_LABEL }}</p>
                 </div>
                 <div class="p-6" v-if="recentActivities?.newTeams && recentActivities.newTeams.length > 0">
                     <div class="space-y-3">
@@ -232,6 +236,9 @@ const props = defineProps({
         default: () => ({}),
     },
 });
+
+// Константа для периода отображения
+const RECENT_PERIOD_LABEL = 'За последние 7 дней';
 
 const formatDate = (date) => {
     if (!date) return '';
