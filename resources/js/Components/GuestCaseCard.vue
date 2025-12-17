@@ -68,29 +68,31 @@
       >
         Подробнее
       </button>
-      <div v-else class="flex gap-2">
+      <div v-else class="flex gap-2 justify-end">
         <div v-if="hasApplication" class="inline-flex items-center justify-center px-3 h-8 bg-blue-50 border border-blue-200 rounded-md text-sm">
           <i class="pi pi-check-circle text-blue-600 mr-2"></i>
           <span class="font-medium text-blue-700">{{ applicationStatusLabel }}</span>
         </div>
-        <Button
-          v-else-if="canApply"
-          variant="primary"
-          size="sm"
-          :loading="applying"
-          @click.stop.prevent="handleApply"
-        >
-          <i class="pi pi-check mr-2" />
-          Подать заявку
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          @click.stop.prevent="handleView"
-        >
-          <i class="pi pi-eye mr-2" />
-          Просмотр
-        </Button>
+        <template v-else>
+          <Button
+            variant="outline"
+            size="sm"
+            @click.stop.prevent="handleView"
+          >
+            <i class="pi pi-eye mr-2" />
+            Просмотр
+          </Button>
+          <Button
+            v-if="canApply"
+            variant="primary"
+            size="sm"
+            :loading="applying"
+            @click.stop.prevent="handleApply"
+          >
+            <i class="pi pi-check mr-2" />
+            Подать заявку
+          </Button>
+        </template>
       </div>
     </div>
   </div>

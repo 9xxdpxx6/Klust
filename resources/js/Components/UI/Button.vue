@@ -24,7 +24,7 @@ defineProps({
   variant: {
     type: String,
     default: 'primary',
-    validator: (value) => ['primary', 'secondary', 'danger', 'success', 'outline', 'danger-outline'].includes(value),
+    validator: (value) => ['primary', 'secondary', 'danger', 'success', 'outline', 'white-outline', 'danger-outline'].includes(value),
   },
   size: {
     type: String,
@@ -78,6 +78,11 @@ defineEmits(['click']);
   box-sizing: border-box;
 }
 
+.btn-white-outline {
+  @apply border-2 border-white/30 text-white bg-white/10 hover:bg-white/20 hover:text-white;
+  box-sizing: border-box;
+}
+
 .btn-danger-outline {
   @apply border-2 border-red-600 text-red-600 bg-transparent hover:bg-red-600 hover:text-white;
   box-sizing: border-box;
@@ -94,6 +99,11 @@ defineEmits(['click']);
 }
 
 .btn-outline.btn-sm {
+  height: 2rem;
+  padding: calc(0.375rem - 2px) calc(0.75rem - 2px);
+}
+
+.btn-white-outline.btn-sm {
   height: 2rem;
   padding: calc(0.375rem - 2px) calc(0.75rem - 2px);
 }

@@ -21,6 +21,26 @@ use Illuminate\Support\Facades\Redis;
 class CaseService
 {
     /**
+     * Get case IDs where user already has an application (as leader or team member)
+     */
+    public function getAppliedCaseIdsForUser(User $user): Collection
+    {
+        $leaderCaseIds = $user->caseApplications()->pluck('case_id');
+
+        $teamMemberApplicationIds = CaseTeamMember::where('user_id', $user->id)
+            ->pluck('application_id');
+
+        $teamMemberCaseIds = $teamMemberApplicationIds->isEmpty()
+            ? collect()
+            : CaseApplication::whereIn('id', $teamMemberApplicationIds)->pluck('case_id');
+
+        return $leaderCaseIds
+            ->merge($teamMemberCaseIds)
+            ->unique()
+            ->values();
+    }
+
+    /**
      * Create a new case
      */
     public function createCase(array $data, ?User $user = null): CaseModel
@@ -264,7 +284,7 @@ class CaseService
     /**
      * Get active cases for student (as leader or team member)
      */
-    public function getActiveCasesForStudent(User $user): Collection
+    public function getActiveCasesForStudent(User $user, int $limit = 5): Collection
     {
         // Get case IDs where student is leader with accepted application
         $leaderCaseIds = $user->caseApplications()
@@ -290,6 +310,7 @@ class CaseService
             ->where('status', 'active')
             ->with(['partnerUser.partnerProfile', 'skills'])
             ->latest()
+            ->limit($limit)
             ->get();
     }
 
@@ -299,25 +320,28 @@ class CaseService
     public function getRecommendedCases(User $user, int $limit = 5): Collection
     {
         $studentSkillIds = $user->skills()->pluck('skills.id')->toArray();
+        $appliedCaseIds = $this->getAppliedCaseIdsForUser($user);
 
         if (empty($studentSkillIds)) {
             // Return random active cases if student has no skills
             return CaseModel::where('status', 'active')
+                ->whereNotIn('id', $appliedCaseIds)
+                ->where(function ($q) {
+                    $q->whereNull('deadline')
+                        ->orWhere('deadline', '>=', now());
+                })
                 ->with(['partnerUser.partnerProfile', 'skills'])
                 ->inRandomOrder()
                 ->limit($limit)
                 ->get();
         }
 
-        // Get applied case IDs to exclude
-        $appliedCaseIds = $user->caseApplications()->pluck('case_id');
-
         // Find cases with matching skills
         return CaseModel::where('status', 'active')
             ->whereNotIn('id', $appliedCaseIds)
             ->where(function ($q) {
                 $q->whereNull('deadline')
-                    ->orWhere('deadline', '>', now());
+                    ->orWhere('deadline', '>=', now());
             })
             ->whereHas('skills', function ($q) use ($studentSkillIds) {
                 $q->whereIn('skills.id', $studentSkillIds);

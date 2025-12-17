@@ -1,9 +1,13 @@
 <template>
     <div class="space-y-6">
-        <Head title="Каталог кейсов" />
+        <Head :title="recommended ? 'Рекомендованные кейсы' : 'Каталог кейсов'" />
             <div>
-                <h1 class="text-3xl font-bold text-text-primary mb-2">Каталог кейсов</h1>
-                <p class="text-text-secondary">Выберите кейс для подачи заявки</p>
+                <h1 class="text-3xl font-bold text-text-primary mb-2">
+                    {{ recommended ? 'Рекомендованные кейсы' : 'Каталог кейсов' }}
+                </h1>
+                <p class="text-text-secondary">
+                    {{ recommended ? 'Подборка кейсов под ваши навыки' : 'Выберите кейс для подачи заявки' }}
+                </p>
             </div>
 
             <!-- Фильтры -->
@@ -43,7 +47,7 @@
                             @update:modelValue="handleFilter"
                         />
                     </div>
-                    <div class="filter-item">
+                    <div class="filter-item" v-if="!recommended">
                         <Select
                             v-model="filters.status"
                             :options="statusOptions"
@@ -143,6 +147,10 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    recommended: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 // Нормализация skills: преобразуем в массив чисел
@@ -173,6 +181,8 @@ const filters = ref({
     status: normalizeStatus(props.filters?.status),
     per_page: props.filters?.per_page ? String(props.filters.per_page) : '30',
 });
+
+const listRouteName = computed(() => (props.recommended ? 'student.cases.recommended' : 'student.cases.index'));
 
 const showApplyModal = ref(false);
 const selectedCase = ref(null);
@@ -217,7 +227,7 @@ const handleSearch = () => {
 };
 
 const handleFilter = () => {
-    if (routeExists('student.cases.index')) {
+    if (routeExists(listRouteName.value)) {
         const filterParams = {};
         
         // Добавляем только непустые значения
@@ -233,7 +243,7 @@ const handleFilter = () => {
             filterParams.partner_id = filters.value.partner_id;
         }
         
-        if (filters.value.status && filters.value.status !== '') {
+        if (!props.recommended && filters.value.status && filters.value.status !== '') {
             filterParams.status = filters.value.status;
         }
         
@@ -241,7 +251,7 @@ const handleFilter = () => {
             filterParams.per_page = filters.value.per_page;
         }
         
-        router.get(route('student.cases.index'), filterParams, {
+        router.get(route(listRouteName.value), filterParams, {
             preserveState: true,
             preserveScroll: true,
         });
@@ -249,8 +259,8 @@ const handleFilter = () => {
 };
 
 const handlePage = (event) => {
-    if (routeExists('student.cases.index')) {
-        router.get(route('student.cases.index'), {
+    if (routeExists(listRouteName.value)) {
+        router.get(route(listRouteName.value), {
             ...filters.value,
             page: Math.floor(event.first / event.rows) + 1,
         }, {

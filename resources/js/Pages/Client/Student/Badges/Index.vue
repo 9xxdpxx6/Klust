@@ -177,7 +177,7 @@ const recentBadge = computed(() => {
                                     </div>
                                     <ProgressBar
                                         :value="getProgressPercentage(badge)"
-                                        color="blue"
+                                        color="primary"
                                     />
                                     <p class="text-xs text-gray-500">
                                         Осталось: {{ badge.points_needed }} очков

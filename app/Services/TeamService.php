@@ -18,8 +18,14 @@ class TeamService
      */
     public function getTeamProgress(CaseApplication $application): array
     {
-        // Load all team members
-        $application->load(['leader', 'teamMembers.user', 'case']);
+        // Load all required relations without overwriting any preloaded nested relations
+        $application->loadMissing([
+            'leader',
+            'teamMembers.user',
+            'case.skills',
+            'case.partner',
+            'case.partnerUser.partnerProfile',
+        ]);
 
         $allMembers = collect([$application->leader])
             ->merge($application->teamMembers->pluck('user'))
@@ -73,6 +79,7 @@ class TeamService
             'average_skill_points' => $averageSkillPoints,
             'matching_skills_count' => $coveredSkillsCount,
             'case_required_skills' => $requiredSkillsCount,
+            'covered_skill_ids' => array_map('intval', array_values($coveredSkillIds)),
             'overall' => $overallProgress,
             'activity_score' => $activityScore,
             'days_remaining' => $daysRemaining ?? 0,
