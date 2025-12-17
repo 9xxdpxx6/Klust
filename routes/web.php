@@ -18,6 +18,7 @@ use App\Http\Controllers\Client\Partner\TeamController;
 use App\Http\Controllers\Client\Student\BadgesController;
 use App\Http\Controllers\Client\Student\CasesController as StudentCasesController;
 use App\Http\Controllers\Client\Student\DashboardController as StudentDashboardController;
+use App\Http\Controllers\Client\Student\PartnersController as StudentPartnersController;
 use App\Http\Controllers\Client\Student\ProfileController as StudentProfileController;
 use App\Http\Controllers\Client\Student\SimulatorsController;
 use App\Http\Controllers\Client\Student\SkillsController;
@@ -103,6 +104,7 @@ Route::middleware('auth')->group(function () {
 
         // Cases - Catalog
         Route::get('/cases', [StudentCasesController::class, 'index'])->name('cases.index');
+        Route::get('/cases/recommended', [StudentCasesController::class, 'recommended'])->name('cases.recommended');
         Route::get('/cases/my', [StudentCasesController::class, 'myCases'])->name('cases.my');
         Route::get('/cases/{case}', [StudentCasesController::class, 'show'])->name('cases.show');
 
@@ -113,6 +115,9 @@ Route::middleware('auth')->group(function () {
         // Team
         Route::get('/team/{application}', [StudentCasesController::class, 'team'])->name('team.show');
         Route::post('/team/{application}/members', [StudentCasesController::class, 'addTeamMember'])->name('team.addMember');
+
+        // Partners
+        Route::get('/partners/{partner}', [StudentPartnersController::class, 'show'])->name('partners.show');
 
         // Profile
         Route::get('/profile', [StudentProfileController::class, 'show'])->name('profile.show');

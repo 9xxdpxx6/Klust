@@ -108,7 +108,7 @@ const exitSession = () => {
                         <h2 class="text-lg font-bold">Прогресс</h2>
                         <span class="text-sm text-gray-600">0%</span>
                     </div>
-                    <ProgressBar :value="0" color="blue" />
+                    <ProgressBar :value="0" color="primary" />
                 </Card>
 
                 <!-- Simulator Content Area -->

@@ -37,6 +37,7 @@ class CasesController extends Controller
      */
     public function index(Request $request): Response
     {
+        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         $filters = $request->only([
@@ -135,6 +136,128 @@ class CasesController extends Controller
             'filters' => $frontendFilters,
             'partners' => $partners,
             'availableSkills' => $availableSkills,
+            'recommended' => false,
+        ]);
+    }
+
+    /**
+     * Рекомендованные кейсы (подбор по навыкам студента)
+     */
+    public function recommended(Request $request): Response
+    {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        $filters = $request->only([
+            'search',
+            'skills',
+            'partner_id',
+            'deadline_from',
+            'deadline_to',
+            'sort_by',
+            'sort_order',
+            'per_page',
+        ]);
+
+        // Ensure skills is an array
+        if (isset($filters['skills']) && !is_array($filters['skills'])) {
+            $filters['skills'] = is_string($filters['skills'])
+                ? explode(',', $filters['skills'])
+                : [$filters['skills']];
+        }
+
+        // Фиксируем статус: рекомендации только по активным (не даем фильтром сбить выборку)
+        unset($filters['status']);
+
+        $caseFilter = new CaseFilter($filters);
+
+        $studentSkillIds = $user->skills()->pluck('skills.id')->toArray();
+        $appliedCaseIds = $this->caseService->getAppliedCaseIdsForUser($user);
+
+        $casesQuery = CaseModel::query()
+            ->where('status', 'active')
+            ->whereNotIn('id', $appliedCaseIds)
+            ->where(function ($query): void {
+                $query->whereNull('deadline')
+                    ->orWhere('deadline', '>=', now());
+            })
+            ->with(['partner', 'skills']);
+
+        if (!empty($studentSkillIds)) {
+            $casesQuery
+                ->whereHas('skills', function ($q) use ($studentSkillIds) {
+                    $q->whereIn('skills.id', $studentSkillIds);
+                })
+                ->withCount([
+                    'skills as matching_skills_count' => function ($q) use ($studentSkillIds) {
+                        $q->whereIn('skills.id', $studentSkillIds);
+                    },
+                ]);
+        }
+
+        $pagination = $caseFilter->getPaginationParams();
+
+        /** @var \Illuminate\Contracts\Pagination\LengthAwarePaginator $cases */
+        $cases = $caseFilter
+            ->apply($casesQuery)
+            ->reorder()
+            ->when(!empty($studentSkillIds), function ($q) {
+                $q->orderByDesc('matching_skills_count');
+            })
+            ->orderByDesc('id')
+            ->paginate($pagination['per_page'])
+            ->appends($request->query());
+
+        // Добавить информацию о заявках студента для каждого кейса
+        foreach ($cases->items() as $case) {
+            $application = $this->applicationService->getStudentApplicationStatus($user, $case);
+            if ($application) {
+                if (!$application->relationLoaded('status')) {
+                    $application->load('status');
+                }
+                $case->user_application = [
+                    'id' => $application->id,
+                    'status' => $application->status->name ?? null,
+                    'status_label' => $application->status->label ?? null,
+                ];
+            } else {
+                $case->user_application = null;
+            }
+        }
+
+        $partners = \App\Models\User::role('partner')->with('partnerProfile')
+            ->get()
+            ->map(function ($partnerUser) {
+                return [
+                    'id' => $partnerUser->id,
+                    'name' => $partnerUser->partnerProfile?->company_name ?? $partnerUser->name ?? 'Без названия',
+                ];
+            });
+
+        $availableSkills = Skill::query()
+            ->orderBy('name')
+            ->get()
+            ->map(function ($skill) {
+                return [
+                    'id' => $skill->id,
+                    'name' => $skill->name,
+                ];
+            });
+
+        $frontendFilters = [
+            'search' => $filters['search'] ?? '',
+            'skills' => $filters['skills'] ?? [],
+            'partner_id' => $filters['partner_id'] ?? '',
+            'status' => '',
+            'per_page' => $pagination['per_page'],
+        ];
+
+        return Inertia::render('Client/Student/Cases/Index', [
+            'cases' => $cases,
+            'filters' => $frontendFilters,
+            'partners' => $partners,
+            'availableSkills' => $availableSkills,
+            'recommended' => true,
         ]);
     }
 
@@ -274,11 +397,25 @@ class CasesController extends Controller
      */
     public function addTeamMember(AddTeamMemberRequest $request, CaseApplication $application): RedirectResponse
     {
+        // Нельзя менять состав команды после одобрения заявки
+        $pendingStatusId = \App\Models\ApplicationStatus::getIdByName('pending');
+        if ($application->status_id !== $pendingStatusId) {
+            return redirect()
+                ->back()
+                ->with('error', 'Нельзя добавлять/удалять участников после одобрения заявки');
+        }
+
         // Проверить права
         $this->authorize('addTeamMember', $application);
 
-        // Добавить участника команды
-        $teamMember = $this->applicationService->addTeamMember($application, $request->user_id);
+        try {
+            // Добавить участника команды
+            $teamMember = $this->applicationService->addTeamMember($application, $request->user_id);
+        } catch (\Throwable $e) {
+            return redirect()
+                ->back()
+                ->with('error', $e->getMessage());
+        }
 
         // Отправить уведомление новому участнику
         $this->notificationService->notifyUserAboutTeamAddition(
@@ -313,7 +450,14 @@ class CasesController extends Controller
     public function team(CaseApplication $application): Response
     {
         // Загрузить все необходимые связи ДО проверок
-        $application->load(['status', 'case', 'leader', 'teamMembers.user']);
+        $application->load([
+            'status',
+            'case.skills',
+            'case.partner',
+            'case.partnerUser.partnerProfile',
+            'leader',
+            'teamMembers.user',
+        ]);
 
         // Получить ID статуса "accepted"
         $acceptedStatusId = \App\Models\ApplicationStatus::getIdByName('accepted');
@@ -328,8 +472,20 @@ class CasesController extends Controller
 
         // Получить прогресс команды
         $progress = $this->teamService->getTeamProgress($application);
+        $activity = $this->teamService->getTeamActivityHistory($application);
+
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $isLeader = (int) $application->leader_id === (int) $user->id;
 
         return Inertia::render('Client/Student/Cases/Team', [
+            // Current expected props in Team.vue
+            'application' => $application,
+            'teamProgress' => $progress,
+            'teamActivity' => $activity,
+            'isLeader' => $isLeader,
+
+            // Backward compatibility (older builds/components)
             'team' => $application,
             'progress' => $progress,
         ]);

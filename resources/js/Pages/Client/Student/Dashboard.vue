@@ -77,18 +77,29 @@
             <!-- Активные кейсы -->
             <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
                 <div class="px-6 py-4 bg-gradient-to-r from-indigo-50 to-indigo-100 border-b border-indigo-200">
-                    <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
-                        <i class="pi pi-briefcase text-indigo-600"></i>
-                        Активные кейсы
-                    </h2>
+                    <div class="flex items-center justify-between gap-4">
+                        <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                            <i class="pi pi-briefcase text-indigo-600"></i>
+                            Активные кейсы
+                        </h2>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            class="whitespace-nowrap"
+                            @click="safeVisit('student.cases.my')"
+                        >
+                            Смотреть все
+                        </Button>
+                    </div>
                 </div>
                 <div class="p-6" v-if="activeCases && activeCases.length > 0">
                     <div class="space-y-4">
                         <CaseCard
-                            v-for="caseItem in activeCases"
+                            v-for="caseItem in activeCases.slice(0, 5)"
                             :key="caseItem.id"
                             :case-data="caseItem"
-                            :show-actions="false"
+                            :show-actions="true"
+                            @view="handleViewCase(caseItem.id)"
                         />
                     </div>
                 </div>
@@ -101,20 +112,35 @@
             <!-- Рекомендуемые кейсы -->
             <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
                 <div class="px-6 py-4 bg-gradient-to-r from-green-50 to-green-100 border-b border-green-200">
-                    <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
-                        <i class="pi pi-star text-green-600"></i>
-                        Рекомендуемые кейсы
-                    </h2>
+                    <div class="flex items-center justify-between gap-4">
+                        <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                            <i class="pi pi-star text-green-600"></i>
+                            Рекомендуемые кейсы
+                        </h2>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            class="whitespace-nowrap"
+                            @click="safeVisit('student.cases.recommended')"
+                        >
+                            Смотреть все
+                        </Button>
+                    </div>
                 </div>
                 <div class="p-6" v-if="recommendations && recommendations.length > 0">
                     <div class="space-y-4">
-                        <CaseCard
-                            v-for="caseItem in recommendations"
+                        <GuestCaseCard
+                            v-for="caseItem in recommendations.slice(0, 5)"
                             :key="caseItem.id"
                             :case-data="caseItem"
-                            :can-apply="true"
-                            @view="handleViewCase(caseItem.id)"
-                            @apply="handleApplyCase(caseItem.id)"
+                            :show-link="false"
+                            :show-team-size="false"
+                            :show-student-actions="true"
+                            :can-apply="!caseItem.user_application"
+                            :has-application="!!caseItem.user_application"
+                            :application-status="caseItem.user_application"
+                            @view="() => handleViewCase(caseItem.id)"
+                            @apply="() => handleApply(caseItem.id)"
                         />
                     </div>
                 </div>
@@ -252,15 +278,26 @@
                 </div>
             </div>
         </div>
-        </div>
+
+        <!-- Apply Modal -->
+        <ApplyCaseModal
+            v-if="selectedCase"
+            v-model="showApplyModal"
+            :case-data="selectedCase"
+            @success="handleApplySuccess"
+        />
+    </div>
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 import { route } from 'ziggy-js';
 import Badge from '@/Components/UI/Badge.vue';
 import Button from '@/Components/UI/Button.vue';
 import CaseCard from '@/Components/CaseCard.vue';
+import GuestCaseCard from '@/Components/GuestCaseCard.vue';
+import ApplyCaseModal from '@/Components/ApplyCaseModal.vue';
 import SkillCard from '@/Components/SkillCard.vue';
 import { routeExists } from '@/Utils/routes';
 
@@ -295,17 +332,24 @@ const handleViewCase = (caseId) => {
     }
 };
 
-const handleApplyCase = (caseId) => {
+const showApplyModal = ref(false);
+const selectedCase = ref(null);
+
+const handleApply = (caseId) => {
     try {
-        router.post(route('student.cases.apply', caseId), {}, {
-            preserveScroll: true,
-            onSuccess: () => {
-                // Flash message will be shown automatically
-            },
-        });
+        const caseItem = props.recommendations.find(c => c.id === caseId);
+        if (caseItem) {
+            selectedCase.value = caseItem;
+            showApplyModal.value = true;
+        }
     } catch (e) {
-        console.error('Error submitting application:', e);
+        console.error('Error opening apply modal:', e);
     }
+};
+
+const handleApplySuccess = () => {
+    // Обновляем данные после успешной подачи заявки
+    router.reload({ only: ['recommendations'] });
 };
 
 const safeVisit = (routeName, params = {}) => {
