@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { Head, router } from '@inertiajs/vue3'
+import { Head, Link, router } from '@inertiajs/vue3'
 import { route } from 'ziggy-js'
 import Button from '@/Components/UI/Button.vue'
 import Badge from '@/Components/UI/Badge.vue'
@@ -84,9 +84,18 @@ const formatDate = (dateString) => {
                                 <div class="w-16 h-16 bg-white/20 rounded-lg flex items-center justify-center" v-else>
                                     <i class="pi pi-building text-white text-2xl"></i>
                                 </div>
-                                <div>
+                                <div class="min-w-0">
                                     <p class="text-sm text-indigo-100">Партнер</p>
-                                    <p class="text-lg font-semibold text-white">{{ caseData.partner?.company_name || 'Не указан' }}</p>
+                                    <Link
+                                        v-if="caseData.user_id && (caseData.partner?.company_name || caseData.partnerUser?.name) && (caseData.partner?.company_name || caseData.partnerUser?.name) !== 'Не указан'"
+                                        :href="route('student.partners.show', caseData.user_id)"
+                                        class="text-lg font-semibold text-white truncate hover:underline block"
+                                    >
+                                        {{ caseData.partner?.company_name || caseData.partnerUser?.name || 'Не указан' }}
+                                    </Link>
+                                    <p v-else class="text-lg font-semibold text-white truncate">
+                                        {{ caseData.partner?.company_name || caseData.partnerUser?.name || 'Не указан' }}
+                                    </p>
                                 </div>
                             </div>
                         </div>

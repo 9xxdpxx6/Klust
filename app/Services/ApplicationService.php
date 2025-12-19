@@ -289,7 +289,8 @@ class ApplicationService
 
         // Get applications where user is leader
         $leaderApplications = $user->caseApplications()
-            ->with(['case.partner', 'teamMembers.user', 'status'])
+            ->with(['case.partner', 'case.partnerUser.partnerProfile', 'teamMembers.user', 'status'])
+            ->whereHas('case') // Filter out applications with deleted cases
             ->get();
 
         // Get applications where user is team member
@@ -297,11 +298,16 @@ class ApplicationService
             ->pluck('application_id');
 
         $teamMemberApplications = CaseApplication::whereIn('id', $teamMemberApplicationIds)
-            ->with(['case.partner', 'leader', 'teamMembers.user', 'status'])
+            ->with(['case.partner', 'case.partnerUser.partnerProfile', 'leader', 'teamMembers.user', 'status'])
+            ->whereHas('case') // Filter out applications with deleted cases
             ->get();
 
-        // Merge and group
-        $allApplications = $leaderApplications->merge($teamMemberApplications)->unique('id');
+        // Merge and group, filter out applications where case is null
+        $allApplications = $leaderApplications->merge($teamMemberApplications)
+            ->unique('id')
+            ->filter(function ($application) {
+                return $application->case !== null;
+            });
 
         return [
             'current' => $allApplications->where('status_id', $acceptedStatusId)->values(),
