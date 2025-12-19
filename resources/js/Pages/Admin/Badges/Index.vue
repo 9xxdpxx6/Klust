@@ -1,21 +1,21 @@
 <template>
     <div class="space-y-6">
-        <Head title="Управление бейджами"/>
+        <Head title="Управление достижениями"/>
 
         <!-- Заголовок с градиентом -->
         <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg overflow-hidden">
             <div class="px-6 py-8">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h1 class="text-3xl font-bold text-white mb-2">Управление бейджами</h1>
-                        <p class="text-indigo-100">Список всех бейджей в системе</p>
+                        <h1 class="text-3xl font-bold text-white mb-2">Управление достижениями</h1>
+                        <p class="text-indigo-100">Список всех достижений в системе</p>
                     </div>
                     <button
                         @click="openCreateModal"
                         class="inline-flex items-center gap-2 px-6 py-3 bg-white/10 backdrop-blur-sm text-white rounded-lg hover:bg-white/20 focus:outline-none transition-all shadow-lg border border-white/20 font-medium"
                     >
                         <i class="pi pi-plus"></i>
-                        Создать бейдж
+                        Создать достижение
                     </button>
                 </div>
             </div>
@@ -36,7 +36,7 @@
                         <SearchInput
                             v-model="filters.search"
                             label="Поиск"
-                            placeholder="Название бейджа"
+                            placeholder="Название достижения"
                             @input="handleSearch"
                         />
                     </div>
@@ -73,7 +73,7 @@
         <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-5 shadow-md border border-amber-200/50">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-amber-600 mb-1">Всего бейджей</p>
+                    <p class="text-sm font-medium text-amber-600 mb-1">Всего достижений</p>
                     <p class="text-2xl font-bold text-amber-900">{{ badgesTotal }}</p>
                 </div>
                 <div class="w-12 h-12 flex items-center justify-center bg-amber-500 rounded-xl">
@@ -82,13 +82,13 @@
             </div>
         </div>
 
-        <!-- Таблица бейджей -->
+        <!-- Таблица достижений -->
         <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
             <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
                 <div class="flex items-center justify-between">
                     <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
                         <i class="pi pi-list text-indigo-600"></i>
-                        Список бейджей
+                        Список достижений
                     </h2>
                     <span class="text-sm text-gray-600 bg-white px-3 py-1 rounded-lg border border-gray-200">
                         Всего: {{ badgesTotal }}
@@ -191,16 +191,16 @@
             </div>
         </div>
 
-        <!-- Сообщение если нет бейджей -->
+        <!-- Сообщение если нет достижений -->
         <div v-if="!badgesData || badgesData.length === 0" class="bg-white rounded-xl shadow-md border border-gray-200 p-12 text-center">
             <div class="max-w-md mx-auto">
                 <div class="mx-auto w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-4">
                     <i class="pi pi-trophy text-4xl text-gray-400"></i>
                 </div>
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">Бейджи не найдены</h3>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Достижения не найдены</h3>
                 <p class="text-sm text-gray-500 mb-6">
                     <span v-if="hasActiveFilters">Попробуйте изменить параметры фильтрации</span>
-                    <span v-else>Создайте первый бейдж, чтобы начать работу</span>
+                    <span v-else>Создайте первое достижение, чтобы начать работу</span>
                 </p>
                 <div class="flex gap-3 justify-center">
                     <button
@@ -215,7 +215,7 @@
                         @click="openCreateModal"
                         class="px-6 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
                     >
-                        Создать бейдж
+                        Создать достижение
                     </button>
                 </div>
             </div>
@@ -224,7 +224,7 @@
         <!-- Модальное окно создания/редактирования -->
         <Modal
             :visible="modalVisible"
-            :title="editingBadge ? 'Редактировать бейдж' : 'Создать бейдж'"
+            :title="editingBadge ? 'Редактировать достижение' : 'Создать достижение'"
             @update:visible="modalVisible = $event"
             @close="closeModal"
             size="md"
@@ -234,7 +234,7 @@
                     <Input
                         v-model="form.name"
                         label="Название"
-                        placeholder="Введите название бейджа"
+                        placeholder="Введите название достижения"
                         :error="form.errors.name"
                         required
                     />
@@ -242,7 +242,7 @@
                     <Textarea
                         v-model="form.description"
                         label="Описание"
-                        placeholder="Введите описание бейджа"
+                        placeholder="Введите описание достижения"
                         :error="form.errors.description"
                         :rows="3"
                         required
@@ -254,13 +254,13 @@
                         label="Требуемые баллы"
                         placeholder="100"
                         :error="form.errors.required_points"
-                        :hint="`Количество баллов, необходимое для получения бейджа (минимум 1)`"
+                        :hint="`Количество баллов, необходимое для получения достижения (минимум 1)`"
                         required
                     />
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Иконка бейджа
+                            Иконка достижения
                         </label>
                         <div v-if="form.icon || editingBadge?.icon" class="mb-3 flex items-center gap-4">
                             <div
@@ -312,16 +312,16 @@
         >
             <div v-if="badgeToDelete">
                 <p class="text-gray-700 mb-4">
-                    Вы уверены, что хотите удалить бейдж <strong>{{ badgeToDelete.name }}</strong>?
+                    Вы уверены, что хотите удалить достижение <strong>{{ badgeToDelete.name }}</strong>?
                 </p>
                 <p v-if="badgeToDelete.users_count" class="text-sm text-red-600 mb-4">
-                    Внимание! Этот бейдж используется 
+                    Внимание! Это достижение используется 
                     {{ badgeToDelete.users_count }} 
                     {{ pluralize(badgeToDelete.users_count, 'пользователем', 'пользователями', 'пользователями') }}.
                     Удаление невозможно.
                 </p>
                 <p v-else class="text-sm text-gray-600">
-                    Это действие необратимо. Бейдж будет удален.
+                    Это действие необратимо. Достижение будет удалено.
                 </p>
             </div>
 

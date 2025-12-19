@@ -69,7 +69,7 @@
             <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-6 shadow-md border border-amber-200/50 hover:shadow-lg transition-shadow">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-amber-600 mb-1">Бейджей</p>
+                        <p class="text-sm font-medium text-amber-600 mb-1">Достижений</p>
                         <p class="text-3xl font-bold text-amber-900">{{ stats.badges_count || 0 }}</p>
                     </div>
                     <div class="w-12 h-12 flex items-center justify-center bg-amber-500 rounded-xl">
@@ -275,7 +275,7 @@
                     </div>
                 </div>
 
-                <!-- Навыки и бейджи -->
+                <!-- Навыки и достижения -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Навыки -->
                     <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
@@ -309,12 +309,12 @@
                         </div>
                     </div>
 
-                    <!-- Бейджи -->
+                    <!-- Достижения -->
                     <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
                         <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
                             <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
                                 <i class="pi pi-trophy text-amber-500"></i>
-                                Бейджи
+                                Достижения
                             </h2>
                         </div>
                         <div class="px-6 py-6">
@@ -343,7 +343,7 @@
                             </div>
                             <div v-else class="text-center text-gray-500 py-8">
                                 <i class="pi pi-info-circle text-4xl text-gray-300 mb-3"></i>
-                                <p class="text-sm">Бейджи не получены</p>
+                                <p class="text-sm">Достижения не получены</p>
                             </div>
                         </div>
                     </div>

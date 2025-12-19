@@ -62,7 +62,7 @@
             <div class="bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl p-6 shadow-md border border-pink-200/50 hover:shadow-lg transition-all group">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-pink-600 mb-1">Бейджи</p>
+                        <p class="text-sm font-medium text-pink-600 mb-1">Достижения</p>
                         <p class="text-3xl font-bold text-pink-900">{{ statistics?.badges_count || 0 }}</p>
                     </div>
                     <div class="w-12 h-12 flex items-center justify-center bg-pink-500 rounded-xl group-hover:scale-110 transition-transform">
@@ -183,12 +183,12 @@
 
         <!-- Последние достижения -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Полученные бейджи -->
+            <!-- Полученные достижения -->
             <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
                 <div class="px-6 py-4 bg-gradient-to-r from-purple-50 to-purple-100 border-b border-purple-200">
                     <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
                         <i class="pi pi-trophy text-purple-600"></i>
-                        Полученные бейджи
+                        Полученные достижения
                     </h2>
                 </div>
                 <div class="p-6" v-if="recentAchievements?.badges && recentAchievements.badges.length > 0">
@@ -220,7 +220,7 @@
                 </div>
                 <div v-else class="p-12 text-center text-gray-400">
                     <i class="pi pi-trophy text-4xl mb-2"></i>
-                    <p class="text-sm">Нет полученных бейджей</p>
+                    <p class="text-sm">Нет полученных достижений</p>
                 </div>
             </div>
 

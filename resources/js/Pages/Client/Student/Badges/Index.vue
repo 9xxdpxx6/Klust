@@ -51,7 +51,7 @@ const recentBadge = computed(() => {
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <Card class="text-center">
                     <p class="text-4xl font-bold text-blue-600">{{ totalBadges }}</p>
-                    <p class="text-gray-600 mt-2">Получено бейджей</p>
+                    <p class="text-gray-600 mt-2">Получено достижений</p>
                 </Card>
                 <Card class="text-center">
                     <p class="text-4xl font-bold text-green-600">{{ currentPoints }}</p>
@@ -78,7 +78,7 @@ const recentBadge = computed(() => {
                 </Card>
                 <Card class="text-center" v-else>
                     <p class="text-2xl text-gray-400 mb-2">🎯</p>
-                    <p class="text-gray-600">Получите первый бейдж!</p>
+                    <p class="text-gray-600">Получите первое достижение!</p>
                 </Card>
             </div>
 
@@ -86,12 +86,12 @@ const recentBadge = computed(() => {
                 <!-- Earned Badges -->
                 <div class="lg:col-span-2">
                     <Card>
-                        <h2 class="text-xl font-bold mb-6">Полученные бейджи</h2>
+                        <h2 class="text-xl font-bold mb-6">Полученные достижения</h2>
                         <div v-if="earnedBadges.length === 0" class="text-center py-12">
                             <div class="text-6xl mb-4">🏆</div>
-                            <p class="text-gray-500 mb-2">У вас пока нет бейджей</p>
+                            <p class="text-gray-500 mb-2">У вас пока нет достижений</p>
                             <p class="text-sm text-gray-400">
-                                Проходите симуляторы и работайте над кейсами, чтобы получить свой первый бейдж!
+                                Проходите симуляторы и работайте над кейсами, чтобы получить свое первое достижение!
                             </p>
                         </div>
                         <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -140,7 +140,7 @@ const recentBadge = computed(() => {
                         <h2 class="text-lg font-bold mb-4">Следующие цели</h2>
                         <div v-if="upcomingBadges.length === 0" class="text-center py-8 text-gray-500">
                             <p>🎉</p>
-                            <p class="text-sm mt-2">Вы получили все доступные бейджи!</p>
+                            <p class="text-sm mt-2">Вы получили все доступные достижения!</p>
                         </div>
                         <div v-else class="space-y-6 max-h-[700px] overflow-y-auto">
                             <div
@@ -189,7 +189,7 @@ const recentBadge = computed(() => {
 
                     <!-- Tips -->
                     <Card class="mt-6">
-                        <h3 class="text-sm font-bold mb-3">💡 Как получить больше бейджей?</h3>
+                        <h3 class="text-sm font-bold mb-3">💡 Как получить больше достижений?</h3>
                         <ul class="text-xs text-gray-600 space-y-2">
                             <li class="flex items-start">
                                 <span class="mr-2">•</span>

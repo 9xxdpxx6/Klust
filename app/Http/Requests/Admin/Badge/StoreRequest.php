@@ -10,7 +10,7 @@ class StoreRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
-     * Предполагаем, что только администратор может создавать бейджи.
+     * Предполагаем, что только администратор может создавать достижения.
      */
     public function authorize(): bool
     {
@@ -46,9 +46,9 @@ class StoreRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'Название бейджа обязательно для заполнения.',
-            'name.unique' => 'Бейдж с таким названием уже существует.',
-            'description.required' => 'Описание бейджа обязательно для заполнения.',
+            'name.required' => 'Название достижения обязательно для заполнения.',
+            'name.unique' => 'Достижение с таким названием уже существует.',
+            'description.required' => 'Описание достижения обязательно для заполнения.',
             'required_points.required' => 'Необходимо указать количество очков для получения.',
             'required_points.integer' => 'Количество очков должно быть числом.',
             'required_points.min' => 'Количество очков должно быть не меньше 1.',

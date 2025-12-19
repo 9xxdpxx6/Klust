@@ -27,7 +27,7 @@
                     <p class="mt-1 text-3xl font-bold text-gray-900">{{ statistics.skills_count || 0 }}</p>
                 </div>
                 <div class="bg-white shadow-sm rounded-lg p-6">
-                    <p class="text-sm font-medium text-gray-500">Бейджей</p>
+                    <p class="text-sm font-medium text-gray-500">Достижений</p>
                     <p class="mt-1 text-3xl font-bold text-gray-900">{{ statistics.badges_count || 0 }}</p>
                 </div>
                 <div class="bg-white shadow-sm rounded-lg p-6">
@@ -95,7 +95,7 @@
 
             <!-- Badges -->
             <div class="bg-white shadow-sm rounded-lg p-6" v-if="badges && badges.length > 0">
-                <h2 class="text-lg font-medium text-gray-900 mb-4">Бейджи и достижения</h2>
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Достижения</h2>
                 <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                     <div
                         v-for="badge in badges"

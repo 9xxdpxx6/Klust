@@ -46,7 +46,7 @@ class StudentProfileController extends Controller
                 },
             ]);
 
-            // Получить бейджи с правильной обработкой icon_path
+            // Получить достижения с правильной обработкой icon_path
             $badges = $student->badges()
                 ->withPivot('earned_at')
                 ->orderByDesc('pivot_earned_at')

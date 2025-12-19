@@ -54,7 +54,7 @@ class DashboardController extends Controller
             }
         }
 
-        // Получить последние достижения (бейджи, навыки)
+        // Получить последние достижения (достижения, навыки)
         $recentAchievements = $this->studentService->getRecentAchievements($user);
 
         return Inertia::render('Client/Student/Dashboard', [

@@ -18,16 +18,16 @@ class BadgesController extends Controller
     }
 
     /**
-     * Бейджи студента
+     * Достижения студента
      */
     public function index(): Response
     {
         $user = auth()->user();
 
-        // Получить полученные бейджи
+        // Получить полученные достижения
         $badges = $this->badgeService->getStudentBadges($user);
 
-        // Получить условия получения следующих бейджей
+        // Получить условия получения следующих достижений
         $upcoming = $this->badgeService->getUpcomingBadges($user);
 
         return Inertia::render('Client/Student/Badges/Index', [

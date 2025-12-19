@@ -13,7 +13,7 @@ class UserBadgeSeeder extends Seeder
         $students = User::role('student')->get();
         $badges = Badge::all();
 
-        // Каждый студент имеет 1-5 бейджей
+        // Каждый студент имеет 1-5 достижений
         foreach ($students as $student) {
             $badgesCount = fake()->numberBetween(1, 5);
             $randomBadges = $badges->random($badgesCount);
@@ -25,10 +25,10 @@ class UserBadgeSeeder extends Seeder
             }
         }
 
-        // Создаем много бейджей для тестового студента
+        // Создаем много достижений для тестового студента
         $testStudent = User::where('email', 'zxc@zxc.zxc')->first();
         if ($testStudent && $badges->isNotEmpty()) {
-            // Тестовый студент имеет все бейджи
+            // Тестовый студент имеет все достижения
             foreach ($badges as $badge) {
                 $testStudent->badges()->syncWithoutDetaching([
                     $badge->id => [

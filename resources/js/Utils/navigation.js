@@ -28,7 +28,7 @@ export const adminMenuItems = [
     icon: 'pi pi-star',
   },
   {
-    label: 'Бейджи',
+    label: 'Достижения',
     route: 'admin.badges.index',
     icon: 'pi pi-trophy',
   },
@@ -60,17 +60,12 @@ export const studentMenuItems = [
     icon: 'pi pi-search',
   },
   {
-    label: 'Мой профиль',
-    route: 'student.profile.show',
-    icon: 'pi pi-user',
-  },
-  {
     label: 'Навыки',
     route: 'student.skills.index',
     icon: 'pi pi-star',
   },
   {
-    label: 'Бейджи',
+    label: 'Достижения',
     route: 'student.badges.index',
     icon: 'pi pi-trophy',
   },

@@ -65,7 +65,7 @@ class NotificationSeeder extends Seeder
                     ]),
                     'success' => fake()->randomElement([
                         'Ваша заявка принята!',
-                        'Поздравляем с получением бейджа!',
+                        'Поздравляем с получением достижения!',
                         'Симулятор успешно завершен',
                     ]),
                     'warning' => fake()->randomElement([
@@ -179,7 +179,7 @@ class NotificationSeeder extends Seeder
                     ]),
                     'success' => fake()->randomElement([
                         'Ваша заявка принята!',
-                        'Поздравляем с получением бейджа!',
+                        'Поздравляем с получением достижения!',
                         'Симулятор успешно завершен',
                     ]),
                     'warning' => fake()->randomElement([
