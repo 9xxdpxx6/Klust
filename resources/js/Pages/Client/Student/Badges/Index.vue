@@ -1,7 +1,6 @@
 <script setup>
 import { computed } from 'vue'
 import { Head } from '@inertiajs/vue3'
-import Card from '@/Components/UI/Card.vue'
 import ProgressBar from '@/Components/UI/ProgressBar.vue'
 
 const props = defineProps({
@@ -42,111 +41,148 @@ const recentBadge = computed(() => {
 </script>
 
 <template>
-    <Head title="Мои достижения" />
     <div class="space-y-6">
-        <div class="max-w-7xl mx-auto px-4 py-8">
-            <h1 class="text-3xl font-bold mb-6">Мои достижения</h1>
+        <Head title="Мои достижения" />
+        
+        <!-- Header with gradient -->
+        <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-xl shadow-lg overflow-hidden">
+            <div class="px-6 py-8">
+                <h1 class="text-3xl font-bold text-white mb-2">Мои достижения</h1>
+                <p class="text-indigo-100">Ваш прогресс и полученные награды</p>
+            </div>
+        </div>
 
             <!-- Stats Overview -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <Card class="text-center">
-                    <p class="text-4xl font-bold text-blue-600">{{ totalBadges }}</p>
-                    <p class="text-gray-600 mt-2">Получено достижений</p>
-                </Card>
-                <Card class="text-center">
-                    <p class="text-4xl font-bold text-green-600">{{ currentPoints }}</p>
-                    <p class="text-gray-600 mt-2">Всего очков</p>
-                </Card>
-                <Card class="text-center" v-if="recentBadge">
-                    <div class="flex justify-center mb-2">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 shadow-md border border-blue-200/50 hover:shadow-lg transition-all group">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-blue-600 mb-1">Получено достижений</p>
+                        <p class="text-3xl font-bold text-blue-900">{{ totalBadges }}</p>
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-blue-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
+                        <i class="pi pi-trophy text-white text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 shadow-md border border-green-200/50 hover:shadow-lg transition-all group">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-green-600 mb-1">Всего очков</p>
+                        <p class="text-3xl font-bold text-green-900">{{ currentPoints }}</p>
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-green-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
+                        <i class="pi pi-bolt text-white text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-6 shadow-md border border-amber-200/50 hover:shadow-lg transition-all group">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-amber-600 mb-1">Последнее достижение</p>
+                        <p v-if="recentBadge" class="text-lg font-bold text-amber-900 truncate">{{ recentBadge.name }}</p>
+                        <p v-else class="text-lg font-bold text-amber-900">Получите первое!</p>
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-amber-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0 ml-2">
                         <img
-                            v-if="recentBadge.icon_path"
+                            v-if="recentBadge?.icon_path"
                             :src="recentBadge.icon_path"
                             :alt="recentBadge.name"
-                            class="w-12 h-12 object-contain"
+                            class="w-8 h-8 object-contain"
                         />
                         <i
-                            v-else-if="recentBadge.icon && (recentBadge.icon.startsWith('pi-') || recentBadge.icon.startsWith('fa-'))"
-                            :class="['text-[48px] text-yellow-600', recentBadge.icon.startsWith('fa-') ? `pi pi-${recentBadge.icon.replace('fa-', '')}` : `pi ${recentBadge.icon}`]"
+                            v-else-if="recentBadge?.icon && (recentBadge.icon.startsWith('pi-') || recentBadge.icon.startsWith('fa-'))"
+                            :class="['text-white text-xl', recentBadge.icon.startsWith('fa-') ? `pi pi-${recentBadge.icon.replace('fa-', '')}` : `pi ${recentBadge.icon}`]"
                         ></i>
-                        <div v-else class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                            <span class="text-2xl">🏆</span>
-                        </div>
+                        <i v-else class="pi pi-star text-white text-xl"></i>
                     </div>
-                    <p class="text-sm font-medium text-gray-700">{{ recentBadge.name }}</p>
-                    <p class="text-xs text-gray-500 mt-1">Последнее достижение</p>
-                </Card>
-                <Card class="text-center" v-else>
-                    <p class="text-2xl text-gray-400 mb-2">🎯</p>
-                    <p class="text-gray-600">Получите первое достижение!</p>
-                </Card>
+                </div>
+            </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Earned Badges -->
                 <div class="lg:col-span-2">
-                    <Card>
-                        <h2 class="text-xl font-bold mb-6">Полученные достижения</h2>
+                <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 bg-gradient-to-r from-yellow-50 to-yellow-100 border-b border-yellow-200">
+                        <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                            <i class="pi pi-trophy text-yellow-600"></i>
+                            Полученные достижения
+                        </h2>
+                    </div>
+                    <div class="p-6">
                         <div v-if="earnedBadges.length === 0" class="text-center py-12">
-                            <div class="text-6xl mb-4">🏆</div>
+                            <i class="pi pi-trophy text-4xl text-gray-400 mb-4"></i>
                             <p class="text-gray-500 mb-2">У вас пока нет достижений</p>
                             <p class="text-sm text-gray-400">
                                 Проходите симуляторы и работайте над кейсами, чтобы получить свое первое достижение!
                             </p>
                         </div>
-                        <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                        <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                             <div
                                 v-for="badge in earnedBadges"
                                 :key="badge.id"
-                                class="group relative"
+                                class="group relative bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-all hover:scale-[1.02]"
                             >
-                                <div class="text-center p-6 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl hover:shadow-lg transition-all hover:scale-105">
-                                    <div class="relative inline-block mb-4">
+                                <div class="relative inline-block mb-4 w-full flex justify-center">
+                                    <div class="relative">
                                         <img
                                             v-if="badge.icon_path"
                                             :src="badge.icon_path"
                                             :alt="badge.name"
-                                            class="w-24 h-24 object-contain mx-auto"
+                                            class="w-20 h-20 object-contain mx-auto"
                                         />
                                         <div
                                             v-else-if="badge.icon && (badge.icon.startsWith('pi-') || badge.icon.startsWith('fa-'))"
-                                            class="w-24 h-24 bg-yellow-200 rounded-full flex items-center justify-center mx-auto"
+                                            class="w-20 h-20 bg-yellow-200 rounded-full flex items-center justify-center mx-auto"
                                         >
-                                            <i :class="['text-[60px] text-yellow-700', badge.icon.startsWith('fa-') ? `pi pi-${badge.icon.replace('fa-', '')}` : `pi ${badge.icon}`]"></i>
+                                            <i :class="['text-[64px] text-yellow-700', badge.icon.startsWith('fa-') ? `pi pi-${badge.icon.replace('fa-', '')}` : `pi ${badge.icon}`]"></i>
                                         </div>
-                                        <div v-else class="w-24 h-24 bg-yellow-200 rounded-full flex items-center justify-center mx-auto">
+                                        <div v-else class="w-20 h-20 bg-yellow-200 rounded-full flex items-center justify-center mx-auto">
                                             <span class="text-4xl">🏆</span>
                                         </div>
-                                        <div class="absolute -top-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                            </svg>
+                                        <div 
+                                            v-if="badge.level && badge.level > 1"
+                                            class="absolute top-0 right-0 min-w-[1.5rem] h-6 px-1.5 bg-blue-50 border border-blue-300 rounded-full flex items-center justify-center shadow-sm"
+                                        >
+                                            <span class="text-blue-600 font-semibold text-[10px] leading-none">{{ badge.level }}</span>
                                         </div>
                                     </div>
-                                    <h3 class="font-bold text-lg mb-2">{{ badge.name }}</h3>
-                                    <p class="text-sm text-gray-600 mb-3">{{ badge.description }}</p>
+                                </div>
+                                <div class="text-center">
+                                    <h3 class="font-bold text-lg mb-2 text-gray-900">{{ badge.name }}</h3>
+                                    <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ badge.description }}</p>
                                     <p class="text-xs text-gray-500">
                                         Получен {{ formatDate(badge.earned_at) }}
                                     </p>
                                 </div>
                             </div>
                         </div>
-                    </Card>
+                    </div>
+                </div>
                 </div>
 
                 <!-- Upcoming Badges -->
-                <div>
-                    <Card>
-                        <h2 class="text-lg font-bold mb-4">Следующие цели</h2>
+            <div class="space-y-6">
+                <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 bg-gradient-to-r from-purple-50 to-purple-100 border-b border-purple-200">
+                        <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                            <i class="pi pi-star text-purple-600"></i>
+                            Следующие цели
+                        </h2>
+                    </div>
+                    <div class="p-6">
                         <div v-if="upcomingBadges.length === 0" class="text-center py-8 text-gray-500">
-                            <p>🎉</p>
+                            <i class="pi pi-check-circle text-4xl mb-2"></i>
                             <p class="text-sm mt-2">Вы получили все доступные достижения!</p>
                         </div>
-                        <div v-else class="space-y-6 max-h-[700px] overflow-y-auto">
+                        <div v-else class="space-y-4 max-h-[600px] overflow-y-auto">
                             <div
                                 v-for="badge in upcomingBadges"
                                 :key="badge.id"
-                                class="p-4 bg-gray-50 rounded-lg"
+                                class="p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200 hover:shadow-md transition-all"
                             >
                                 <div class="flex items-center gap-3 mb-3">
                                     <img
@@ -164,9 +200,9 @@ const recentBadge = computed(() => {
                                     <div v-else class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center opacity-50">
                                         <span class="text-2xl">🏆</span>
                                     </div>
-                                    <div class="flex-1">
-                                        <h4 class="font-bold text-sm">{{ badge.name }}</h4>
-                                        <p class="text-xs text-gray-600 mt-1">{{ badge.description }}</p>
+                                    <div class="flex-1 min-w-0">
+                                        <h4 class="font-bold text-sm text-gray-900">{{ badge.name }}</h4>
+                                        <p class="text-xs text-gray-600 mt-1 line-clamp-2">{{ badge.description }}</p>
                                     </div>
                                 </div>
 
@@ -185,32 +221,48 @@ const recentBadge = computed(() => {
                                 </div>
                             </div>
                         </div>
-                    </Card>
+                    </div>
+                </div>
 
                     <!-- Tips -->
-                    <Card class="mt-6">
-                        <h3 class="text-sm font-bold mb-3">💡 Как получить больше достижений?</h3>
+                <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 bg-gradient-to-r from-indigo-50 to-indigo-100 border-b border-indigo-200">
+                        <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2">
+                            <i class="pi pi-lightbulb text-indigo-600"></i>
+                            Как получить больше достижений?
+                        </h3>
+                    </div>
+                    <div class="p-6">
                         <ul class="text-xs text-gray-600 space-y-2">
                             <li class="flex items-start">
-                                <span class="mr-2">•</span>
+                                <i class="pi pi-check-circle text-green-600 mr-2 mt-0.5"></i>
                                 <span>Проходите симуляторы и получайте очки</span>
                             </li>
                             <li class="flex items-start">
-                                <span class="mr-2">•</span>
+                                <i class="pi pi-check-circle text-green-600 mr-2 mt-0.5"></i>
                                 <span>Участвуйте в командных кейсах</span>
                             </li>
                             <li class="flex items-start">
-                                <span class="mr-2">•</span>
+                                <i class="pi pi-check-circle text-green-600 mr-2 mt-0.5"></i>
                                 <span>Развивайте навыки до высоких уровней</span>
                             </li>
                             <li class="flex items-start">
-                                <span class="mr-2">•</span>
+                                <i class="pi pi-check-circle text-green-600 mr-2 mt-0.5"></i>
                                 <span>Завершайте кейсы успешно</span>
                             </li>
                         </ul>
-                    </Card>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </template>
+
+<style scoped>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+</style>

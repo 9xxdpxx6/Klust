@@ -248,13 +248,20 @@ class NotificationService
     /**
      * Notify student about badge earned
      */
-    public function notifyBadgeEarned(User $user, string $badgeName): void
+    public function notifyBadgeEarned(User $user, string $badgeName, ?int $level = null, bool $isUpgrade = false): void
     {
+        $title = $isUpgrade ? 'Достижение улучшено!' : 'Получено новое достижение!';
+        
+        $message = $isUpgrade && $level !== null
+            ? "Достижение \"{$badgeName}\" повышено до уровня {$level}!"
+            : "Поздравляем! Вы получили достижение \"{$badgeName}\""
+                . ($level !== null ? " уровня {$level}" : '');
+
         AppNotification::create([
             'user_id' => $user->id,
             'type' => 'badge_earned',
-            'title' => 'Получено новое достижение!',
-            'message' => "Поздравляем! Вы получили достижение \"{$badgeName}\"",
+            'title' => $title,
+            'message' => $message,
             'link' => route('student.badges.index'),
             'icon' => 'pi-star',
             'action_text' => 'Посмотреть достижения',

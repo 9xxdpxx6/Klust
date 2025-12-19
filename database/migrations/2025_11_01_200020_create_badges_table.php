@@ -14,6 +14,8 @@ return new class extends Migration
             $table->string('icon')->nullable();
             $table->text('description');
             $table->integer('required_points')->default(50);
+            $table->integer('points_increment')->default(0);
+            $table->integer('max_level')->nullable();
             $table->timestamps();
         });
     }

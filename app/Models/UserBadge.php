@@ -8,7 +8,15 @@ class UserBadge extends Pivot
 {
     protected $table = 'user_badges';
 
+    protected $fillable = [
+        'user_id',
+        'badge_id',
+        'level',
+        'earned_at',
+    ];
+
     protected $casts = [
         'earned_at' => 'datetime',
+        'level' => 'integer',
     ];
 }

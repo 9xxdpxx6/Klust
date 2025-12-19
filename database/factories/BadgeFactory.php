@@ -35,6 +35,8 @@ class BadgeFactory extends Factory
             'icon' => $badge['icon'],
             'description' => $badge['description'],
             'required_points' => $badge['points'],
+            'points_increment' => fake()->numberBetween(50, 200), // Инкремент от 50 до 200 очков на уровень
+            'max_level' => fake()->boolean(70) ? null : fake()->numberBetween(3, 10), // 70% безлимит, 30% с макс уровнем 3-10
         ];
     }
 }
