@@ -73,26 +73,27 @@
           <i class="pi pi-check-circle text-blue-600 mr-2"></i>
           <span class="font-medium text-blue-700">{{ applicationStatusLabel }}</span>
         </div>
-        <template v-else>
-          <Button
-            variant="outline"
-            size="sm"
-            @click.stop.prevent="handleView"
-          >
-            <i class="pi pi-eye mr-2" />
-            Просмотр
-          </Button>
-          <Button
-            v-if="canApply"
-            variant="primary"
-            size="sm"
-            :loading="applying"
-            @click.stop.prevent="handleApply"
-          >
-            <i class="pi pi-check mr-2" />
-            Подать заявку
-          </Button>
-        </template>
+        <!-- Показываем кнопку "Просмотр" для принятых заявок или если заявки нет -->
+        <Button
+          v-if="!hasApplication || isApplicationAccepted"
+          variant="outline"
+          size="sm"
+          @click.stop.prevent="handleView"
+        >
+          <i class="pi pi-eye mr-2" />
+          Просмотр
+        </Button>
+        <!-- Показываем кнопку "Подать заявку" только если заявки нет -->
+        <Button
+          v-if="!hasApplication && canApply"
+          variant="primary"
+          size="sm"
+          :loading="applying"
+          @click.stop.prevent="handleApply"
+        >
+          <i class="pi pi-check mr-2" />
+          Подать заявку
+        </Button>
       </div>
     </div>
   </div>
@@ -170,6 +171,11 @@ const applicationStatusLabel = computed(() => {
   }
   
   return statusMap[status] || props.applicationStatus.status_label || 'Заявка подана'
+})
+
+const isApplicationAccepted = computed(() => {
+  if (!props.hasApplication || !props.applicationStatus) return false
+  return props.applicationStatus.status === 'accepted'
 })
 </script>
 

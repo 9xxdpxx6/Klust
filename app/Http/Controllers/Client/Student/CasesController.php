@@ -268,9 +268,20 @@ class CasesController extends Controller
     {
         $user = auth()->user();
 
-        // Проверить, что кейс активен
+        // Получить статус заявки студента
+        $applicationStatus = $this->applicationService->getStudentApplicationStatus($user, $case);
+
+        // Если кейс не активен, проверяем, есть ли у студента принятая заявка
         if ($case->status !== 'active') {
-            abort(404);
+            // Разрешаем просмотр только если у студента есть принятая заявка на этот кейс
+            if (!$applicationStatus) {
+                abort(404);
+            }
+
+            $acceptedStatusId = \App\Models\ApplicationStatus::getIdByName('accepted');
+            if ($applicationStatus->status_id !== $acceptedStatusId) {
+                abort(404);
+            }
         }
 
         // Загрузить связи с партнером и его профилем
@@ -280,9 +291,6 @@ class CasesController extends Controller
             },
             'skills'
         ]);
-
-        // Получить статус заявки студента
-        $applicationStatus = $this->applicationService->getStudentApplicationStatus($user, $case);
 
         // Загрузить историю статусов, если заявка существует
         if ($applicationStatus) {
