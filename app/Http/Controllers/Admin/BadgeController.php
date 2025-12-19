@@ -61,7 +61,7 @@ class BadgeController extends Controller
         $this->badgeService->createBadge($data);
 
         return redirect()->route('admin.badges.index')
-            ->with('success', 'Бейдж успешно создан.');
+            ->with('success', 'Достижение успешно создано.');
     }
 
     /**
@@ -76,7 +76,7 @@ class BadgeController extends Controller
         $this->badgeService->updateBadge($badge, $data);
 
         return redirect()->route('admin.badges.index')
-            ->with('success', 'Бейдж успешно обновлен.');
+            ->with('success', 'Достижение успешно обновлено.');
     }
 
     /**
@@ -90,7 +90,7 @@ class BadgeController extends Controller
             $this->badgeService->deleteBadge($badge);
 
             return redirect()->route('admin.badges.index')
-                ->with('success', 'Бейдж успешно удален.');
+                ->with('success', 'Достижение успешно удалено.');
         } catch (\Exception $e) {
             return redirect()->route('admin.badges.index')
                 ->with('error', $e->getMessage());

@@ -273,7 +273,7 @@ const activityUi = (activity) => {
                                         </span>
                                         <span class="inline-flex items-center gap-2">
                                             <i class="pi pi-trophy text-purple-600"></i>
-                                            {{ member.badges_count }} бейджей
+                                            {{ member.badges_count }} достижений
                                         </span>
                                     </div>
                                 </div>

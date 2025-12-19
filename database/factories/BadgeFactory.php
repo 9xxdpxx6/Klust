@@ -20,7 +20,7 @@ class BadgeFactory extends Factory
             ['name' => 'Стратег', 'description' => 'Разработал эффективную стратегию', 'points' => 400, 'icon' => 'pi-th-large'],
             ['name' => 'Эксперт по оптимизации', 'description' => 'Оптимизировал процессы', 'points' => 350, 'icon' => 'pi-arrow-up'],
             ['name' => 'Неутомимый', 'description' => 'Провёл 20+ часов в симуляторах', 'points' => 450, 'icon' => 'pi-circle'],
-            ['name' => 'Быстрый старт', 'description' => 'Получил первый бейдж за первую неделю', 'points' => 100, 'icon' => 'pi-check-circle'],
+            ['name' => 'Быстрый старт', 'description' => 'Получил первое достижение за первую неделю', 'points' => 100, 'icon' => 'pi-check-circle'],
             ['name' => 'Специалист по финансам', 'description' => 'Успешно решил финансовые задачи', 'points' => 200, 'icon' => 'pi-dollar'],
             ['name' => 'Коммуникатор', 'description' => 'Эффективно общался с командой', 'points' => 150, 'icon' => 'pi-comment'],
             ['name' => 'Настойчивый', 'description' => 'Не сдался после 5 неудач', 'points' => 300, 'icon' => 'pi-thumbs-up'],

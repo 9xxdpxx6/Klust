@@ -44,12 +44,12 @@ class PermissionSeeder extends Seeder
             'skills.delete' => 'Удаление навыков',
         ];
 
-        // Права для управления бейджами
+        // Права для управления достижениями
         $badgePermissions = [
-            'badges.view' => 'Просмотр бейджей',
-            'badges.create' => 'Создание бейджей',
-            'badges.update' => 'Обновление бейджей',
-            'badges.delete' => 'Удаление бейджей',
+            'badges.view' => 'Просмотр достижений',
+            'badges.create' => 'Создание достижений',
+            'badges.update' => 'Обновление достижений',
+            'badges.delete' => 'Удаление достижений',
         ];
 
         // Права для управления симуляторами

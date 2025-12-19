@@ -297,7 +297,7 @@
                         <div class="w-12 h-12 flex items-center justify-center bg-purple-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
                             <i class="pi pi-trophy text-white text-xl"></i>
                         </div>
-                        <span class="text-sm font-semibold text-gray-900">Управление бейджами</span>
+                        <span class="text-sm font-semibold text-gray-900">Управление достижениями</span>
                     </button>
                     <button
                         @click="safeVisit('admin.users.index')"

@@ -253,11 +253,11 @@ class NotificationService
         AppNotification::create([
             'user_id' => $user->id,
             'type' => 'badge_earned',
-            'title' => 'Получен новый бейдж!',
-            'message' => "Поздравляем! Вы получили бейдж \"{$badgeName}\"",
+            'title' => 'Получено новое достижение!',
+            'message' => "Поздравляем! Вы получили достижение \"{$badgeName}\"",
             'link' => route('student.badges.index'),
             'icon' => 'pi-star',
-            'action_text' => 'Посмотреть бейджи',
+            'action_text' => 'Посмотреть достижения',
         ]);
     }
 

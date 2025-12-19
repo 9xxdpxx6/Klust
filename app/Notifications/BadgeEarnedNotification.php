@@ -34,10 +34,10 @@ class BadgeEarnedNotification extends Notification implements ShouldQueue
     public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Новый бейдж earned!')
-            ->line("Поздравляем! Вы получили новый бейдж: {$this->badge->name}")
+            ->subject('Новое достижение получено!')
+            ->line("Поздравляем! Вы получили новое достижение: {$this->badge->name}")
             ->line("Описание: {$this->badge->description}")
-            ->action('Просмотреть бейджи', url('/student/badges'))
+            ->action('Просмотреть достижения', url('/student/badges'))
             ->line('Продолжайте в том же духе!');
     }
 
@@ -47,8 +47,8 @@ class BadgeEarnedNotification extends Notification implements ShouldQueue
     public function toArray($notifiable): array
     {
         return [
-            'title' => 'Новый бейдж earned!',
-            'message' => "Поздравляем! Вы получили новый бейдж: {$this->badge->name}",
+            'title' => 'Новое достижение получено!',
+            'message' => "Поздравляем! Вы получили новое достижение: {$this->badge->name}",
             'link' => '/student/badges',
             'badge_id' => $this->badge->id,
             'badge_name' => $this->badge->name,
