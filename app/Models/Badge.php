@@ -16,6 +16,8 @@ class Badge extends Model
         'icon',
         'description',
         'required_points',
+        'points_increment',
+        'max_level',
     ];
 
     /**
@@ -56,7 +58,23 @@ class Badge extends Model
     {
         return $this->belongsToMany(User::class, 'user_badges')
             ->using(UserBadge::class)
-            ->withPivot('earned_at')
+            ->withPivot('earned_at', 'level')
             ->withTimestamps();
+    }
+
+    /**
+     * Calculate required points for a specific level
+     * Formula: required_points + (level - 1) * points_increment
+     * Level 1 = required_points
+     * Level 2 = required_points + points_increment
+     * Level 3 = required_points + 2 * points_increment
+     */
+    public function getRequiredPointsForLevel(int $level): int
+    {
+        if ($level <= 1) {
+            return $this->required_points;
+        }
+
+        return $this->required_points + (($level - 1) * ($this->points_increment ?? 0));
     }
 }

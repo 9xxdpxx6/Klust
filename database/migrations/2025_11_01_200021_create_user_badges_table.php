@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('badge_id')->constrained()->cascadeOnDelete();
+            $table->integer('level')->default(1);
             $table->timestamp('earned_at')->useCurrent();
             $table->timestamps();
 

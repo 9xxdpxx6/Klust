@@ -210,8 +210,16 @@ class ProgressLogService
     {
         $newBadges = $this->badgeService->checkBadgeEligibility($user);
 
-        foreach ($newBadges as $badge) {
-            $this->notificationService->notifyBadgeEarned($user, $badge->name);
+        foreach ($newBadges as $badgeData) {
+            $badge = $badgeData['badge'];
+            $level = $badgeData['level'];
+            $isUpgrade = $badgeData['is_upgrade'] ?? false;
+            
+            $message = $isUpgrade 
+                ? "Получено достижение \"{$badge->name}\" уровня {$level}!" 
+                : "Поздравляем! Вы получили достижение \"{$badge->name}\"";
+            
+            $this->notificationService->notifyBadgeEarned($user, $badge->name, $level, $isUpgrade);
         }
     }
 

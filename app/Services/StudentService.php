@@ -113,6 +113,7 @@ class StudentService
     {
         // Get recent badges (last 10)
         $recentBadges = $user->badges()
+            ->withPivot('earned_at', 'level')
             ->orderByPivot('earned_at', 'desc')
             ->limit(10)
             ->get()
@@ -130,6 +131,7 @@ class StudentService
                     'icon' => $badge->icon,
                     'icon_path' => $iconPath,
                     'image' => $iconPath, // For backward compatibility with Vue component
+                    'level' => $badge->pivot->level ?? 1,
                     'earned_at' => $badge->pivot->earned_at 
                         ? (\Carbon\Carbon::parse($badge->pivot->earned_at)->toISOString())
                         : null,
