@@ -161,7 +161,7 @@
                 <!-- Action Buttons -->
                 <div class="mt-8 flex justify-end space-x-4">
                     <Link 
-                        :href="route('partner.cases.index')" 
+                        :href="getCancelUrl()" 
                         class="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
                     >
                         Отмена
@@ -188,8 +188,8 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { ref, reactive, computed } from 'vue';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import DatePicker from '@/Components/UI/DatePicker.vue';
 import { formatDateForServer } from '@/Composables/useDateHelper';
 
@@ -214,6 +214,20 @@ const form = reactive({
 // For handling form errors and processing state
 const processing = ref(false);
 const errors = ref({});
+
+const page = usePage();
+
+// Получить URL для кнопки "Отмена" с сохранением partner_id
+const getCancelUrl = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const partnerId = urlParams.get('partner_id');
+    
+    if (partnerId) {
+        return route('partner.cases.index', { partner_id: partnerId });
+    }
+    
+    return route('partner.cases.index');
+};
 
 const submitForm = () => {
     processing.value = true;

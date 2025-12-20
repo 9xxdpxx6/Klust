@@ -19,7 +19,7 @@
                     <Link 
                         v-for="tab in tabs" 
                         :key="tab.key" 
-                        :href="route('partner.cases.index', tab.key === 'all' ? {} : { status: tab.key })"
+                        :href="getTabUrl(tab.key)"
                         :class="[
                             currentTab === tab.key
                             ? 'border-blue-500 text-blue-600'
@@ -294,17 +294,40 @@ const formatDate = (dateString) => {
     return date.toLocaleDateString('ru-RU');
 };
 
+// Получить URL для таба с сохранением partner_id
+const getTabUrl = (tabKey) => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const partnerId = urlParams.get('partner_id');
+    
+    const params = tabKey === 'all' ? {} : { status: tabKey };
+    
+    if (partnerId) {
+        params.partner_id = partnerId;
+    }
+    
+    return route('partner.cases.index', params);
+};
+
 const debounceSearch = useDebounceFn(() => {
     applyFilters();
 }, 300);
 
 const applyFilters = () => {
+    // Получаем partner_id из текущего URL, если он есть
+    const urlParams = new URLSearchParams(window.location.search);
+    const partnerId = urlParams.get('partner_id');
+    
     const params = {
         status: filters.value.status || undefined,
         search: filters.value.search || undefined,
         date_from: formatDateForServer(filters.value.date_from) || undefined,
         date_to: formatDateForServer(filters.value.date_to) || undefined
     };
+    
+    // Добавляем partner_id, если он был в URL
+    if (partnerId) {
+        params.partner_id = partnerId;
+    }
 
     router.get(route('partner.cases.index'), params, {
         preserveState: true,

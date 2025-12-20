@@ -35,22 +35,39 @@ class CasesController extends Controller
         private ApplicationService $applicationService,
         private NotificationService $notificationService
     ) {
-        $this->middleware(['auth', 'role:partner']);
+        $this->middleware(['auth', 'role:partner|admin|teacher']);
     }
 
     /**
      * Мои кейсы партнера
      */
-    public function index(Request $request): Response
+    public function index(Request $request): Response|RedirectResponse
     {
         try {
             $user = auth()->user();
 
-            if (! $user->hasRole('partner')) {
+            // Если админ или преподаватель, можно просматривать кейсы любого партнера
+            // Если партнер - только свои кейсы
+            $partnerId = null;
+            if ($user->hasAnyRole(['admin', 'teacher'])) {
+                $partnerId = $request->input('partner_id');
+                // Если partner_id не указан, редиректим на админскую страницу кейсов
+                if (!$partnerId) {
+                    return redirect()->route('admin.cases.index');
+                }
+                // Проверяем, что указанный пользователь действительно партнер
+                $partnerUser = \App\Models\User::find($partnerId);
+                if (!$partnerUser || !$partnerUser->hasRole('partner')) {
+                    return redirect()->route('admin.cases.index')
+                        ->with('error', 'Партнер не найден');
+                }
+            } elseif ($user->hasRole('partner')) {
+                $partnerId = $user->id;
+            } else {
                 return Inertia::render('Client/Partner/Cases/Index', [
                     'cases' => [],
                     'filters' => [],
-                    'error' => 'Партнер не найден',
+                    'error' => 'Доступ запрещен',
                 ]);
             }
 
@@ -72,9 +89,9 @@ class CasesController extends Controller
 
             $caseFilter = new CaseFilter($filters);
 
-            // Создаем запрос с жестким условием по user_id
+            // Создаем запрос с жестким условием по user_id (partner_id)
             $casesQuery = CaseModel::query()
-                ->where('user_id', $user->id)
+                ->where('user_id', $partnerId)
                 ->with(['skills', 'simulator']);
 
             $pagination = $caseFilter->getPaginationParams();
@@ -83,10 +100,11 @@ class CasesController extends Controller
             $cases = $caseFilter
                 ->apply($casesQuery)
                 ->paginate($pagination['per_page'])
+                ->appends($request->only(['partner_id']))
                 ->withQueryString();
 
             // Получаем статистику для табов
-            $baseQuery = CaseModel::query()->where('user_id', $user->id);
+            $baseQuery = CaseModel::query()->where('user_id', $partnerId);
             $statistics = [
                 'draft_count' => (clone $baseQuery)->where('status', 'draft')->count(),
                 'active_count' => (clone $baseQuery)->where('status', 'active')->count(),

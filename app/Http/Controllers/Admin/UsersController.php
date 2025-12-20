@@ -33,7 +33,7 @@ class UsersController extends Controller
         ];
 
         // Строим запрос
-        $query = User::with(['roles', 'studentProfile'])
+        $query = User::with(['roles', 'studentProfile', 'partnerProfile', 'teacherProfile'])
             ->select(['id', 'name', 'email', 'kubgtu_id', 'avatar', 'email_verified_at', 'created_at']);
 
         // Применяем фильтры
