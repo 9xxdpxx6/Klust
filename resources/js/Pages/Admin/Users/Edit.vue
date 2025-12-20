@@ -208,7 +208,7 @@ const props = defineProps({
 const form = useForm({
     name: props.user.name || '',
     email: props.user.email || '',
-    course: props.user.student_profile?.course !== null && props.user.student_profile?.course !== undefined ? Number(props.user.student_profile.course) : null,
+    course: props.user.student_profile?.course != null ? Number(props.user.student_profile.course) : null,
     role: props.currentRole || '',
     password: '',
     password_confirmation: '',
