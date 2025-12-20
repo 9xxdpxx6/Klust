@@ -244,15 +244,24 @@
 
                             <!-- Профиль партнера -->
                             <div v-if="user.partner_profile" class="p-4 bg-green-50 rounded-lg border border-green-200">
-                                <h3 class="text-sm font-semibold text-green-900 mb-3">Профиль партнера</h3>
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="text-sm font-semibold text-green-900">Профиль партнера</h3>
+                                    <Link
+                                        :href="route('partners.show', user.id)"
+                                        class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-green-700 bg-green-100 rounded-lg hover:bg-green-200 transition-colors"
+                                    >
+                                        <i class="pi pi-external-link text-xs"></i>
+                                        Профиль компании
+                                    </Link>
+                                </div>
                                 <div class="space-y-2">
                                     <div>
                                         <p class="text-xs text-green-600 mb-1">Компания</p>
                                         <p class="text-sm font-medium text-green-900">{{ user.partner_profile.company_name || 'Не указана' }}</p>
                                     </div>
                                     <div>
-                                        <p class="text-xs text-green-600 mb-1">Должность</p>
-                                        <p class="text-sm font-medium text-green-900">{{ user.partner_profile.position || 'Не указана' }}</p>
+                                        <p class="text-xs text-green-600 mb-1">Контактное лицо</p>
+                                        <p class="text-sm font-medium text-green-900">{{ user.partner_profile.contact_person || 'Не указано' }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -502,15 +511,24 @@
                                         <i class="pi pi-building text-green-600"></i>
                                     </div>
                                     <div class="flex-1 min-w-0">
-                                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Профиль партнера</p>
+                                        <div class="flex items-center justify-between mb-2">
+                                            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Профиль партнера</p>
+                                            <Link
+                                                :href="route('partners.show', user.id)"
+                                                class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-green-700 bg-green-50 rounded hover:bg-green-100 transition-colors"
+                                            >
+                                                <i class="pi pi-external-link text-xs"></i>
+                                                Профиль
+                                            </Link>
+                                        </div>
                                         <div class="space-y-2">
                                             <div>
                                                 <p class="text-xs text-gray-500 mb-0.5">Компания</p>
                                                 <p class="text-sm font-medium text-gray-900">{{ user.partner_profile.company_name || 'Не указана' }}</p>
                                             </div>
                                             <div>
-                                                <p class="text-xs text-gray-500 mb-0.5">Должность</p>
-                                                <p class="text-sm font-medium text-gray-900">{{ user.partner_profile.position || 'Не указана' }}</p>
+                                                <p class="text-xs text-gray-500 mb-0.5">Контактное лицо</p>
+                                                <p class="text-sm font-medium text-gray-900">{{ user.partner_profile.contact_person || 'Не указано' }}</p>
                                             </div>
                                         </div>
                                     </div>

@@ -36,16 +36,55 @@ final class UserFilter extends BaseFilter
             return;
         }
 
-        $search = (string) $this->getFilter('search');
+        $search = trim((string) $this->getFilter('search'));
 
+        if (empty($search)) {
+            return;
+        }
+
+        // Разбиваем поисковый запрос на отдельные слова
+        $keywords = preg_split('/\s+/', $search, -1, PREG_SPLIT_NO_EMPTY);
+
+        // Если поисковый запрос - одно число, ищем по ID
+        if (count($keywords) === 1 && is_numeric($search)) {
         $query->where(function ($q) use ($search): void {
-            $q->where('name', 'like', "%{$search}%")
-                ->orWhere('email', 'like', "%{$search}%")
+                $q->where('id', (int) $search)
                 ->orWhere('kubgtu_id', 'like', "%{$search}%");
+            });
+            return;
+        }
 
-            // Поиск по числовому ID, если поисковый запрос - число
-            if (is_numeric($search)) {
-                $q->orWhere('id', (int) $search);
+        // Для каждого ключевого слова создаем условие поиска
+        // Все слова должны совпадать (AND логика)
+        $query->where(function ($q) use ($keywords): void {
+            foreach ($keywords as $keyword) {
+                $q->where(function ($wordQuery) use ($keyword): void {
+                    // Поиск по основным полям пользователя
+                    $wordQuery->where('name', 'like', "%{$keyword}%")
+                        ->orWhere('email', 'like', "%{$keyword}%")
+                        ->orWhere('kubgtu_id', 'like', "%{$keyword}%");
+
+                    // Поиск по профилю партнера
+                    $wordQuery->orWhereHas('partnerProfile', function ($profileQuery) use ($keyword): void {
+                        $profileQuery->where('company_name', 'like', "%{$keyword}%")
+                            ->orWhere('contact_person', 'like', "%{$keyword}%")
+                            ->orWhere('contact_phone', 'like', "%{$keyword}%")
+                            ->orWhere('inn', 'like', "%{$keyword}%");
+                    });
+
+                    // Поиск по профилю студента
+                    $wordQuery->orWhereHas('studentProfile', function ($profileQuery) use ($keyword): void {
+                        $profileQuery->where('group', 'like', "%{$keyword}%")
+                            ->orWhere('specialization', 'like', "%{$keyword}%")
+                            ->orWhere('phone', 'like', "%{$keyword}%");
+                    });
+
+                    // Поиск по профилю преподавателя
+                    $wordQuery->orWhereHas('teacherProfile', function ($profileQuery) use ($keyword): void {
+                        $profileQuery->where('department', 'like', "%{$keyword}%")
+                            ->orWhere('position', 'like', "%{$keyword}%");
+                    });
+                });
             }
         });
     }

@@ -97,6 +97,9 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{notification}', [NotificationController::class, 'destroy'])->name('destroy');
     });
 
+    // Partners (для всех авторизованных пользователей)
+    Route::get('/partners/{partner}', [StudentPartnersController::class, 'show'])->name('partners.show');
+
     // Студент
     Route::prefix('student')->middleware('role:student')->name('student.')->group(function () {
         // Dashboard
@@ -116,9 +119,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/team/{application}', [StudentCasesController::class, 'team'])->name('team.show');
         Route::post('/team/{application}/members', [StudentCasesController::class, 'addTeamMember'])->name('team.addMember');
 
-        // Partners
-        Route::get('/partners/{partner}', [StudentPartnersController::class, 'show'])->name('partners.show');
-
         // Profile
         Route::get('/profile', [StudentProfileController::class, 'show'])->name('profile.show');
         Route::get('/profile/edit', [StudentProfileController::class, 'edit'])->name('profile.edit');
@@ -137,7 +137,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Партнер
-    Route::prefix('partner')->middleware('role:partner')->name('partner.')->group(function () {
+    Route::prefix('partner')->middleware('role:partner|admin|teacher')->name('partner.')->group(function () {
         // Dashboard
         Route::get('/dashboard', [PartnerDashboardController::class, 'index'])->name('dashboard');
 

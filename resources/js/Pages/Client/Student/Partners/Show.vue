@@ -60,7 +60,7 @@ const websiteHref = computed(() => {
                     <div class="flex gap-3">
                         <Button
                             variant="white-outline"
-                            @click="$inertia.visit(route('student.cases.index'))"
+                            @click="$inertia.visit(route('partner.cases.index', { partner_id: partnerUser.id }))"
                         >
                             <i class="pi pi-briefcase mr-2"></i>
                             Кейсы

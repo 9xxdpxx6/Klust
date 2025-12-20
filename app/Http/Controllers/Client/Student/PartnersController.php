@@ -13,7 +13,7 @@ class PartnersController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['auth', 'role:student']);
+        $this->middleware(['auth', 'role:student|admin|teacher']);
     }
 
     public function show(User $partner): Response
