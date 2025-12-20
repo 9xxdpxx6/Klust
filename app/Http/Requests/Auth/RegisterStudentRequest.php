@@ -24,7 +24,7 @@ class RegisterStudentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'kubgtu_id' => ['required', 'string', 'max:255', 'unique:users,kubgtu_id'],
+            'kubgtu_id' => ['nullable', 'string', 'max:255', 'unique:users,kubgtu_id'],
             'name' => ['required', 'string', 'max:255'],
             'email' => [
                 'required',
@@ -52,7 +52,6 @@ class RegisterStudentRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'kubgtu_id.required' => 'ID КУБГТУ обязателен для заполнения.',
             'kubgtu_id.unique' => 'Пользователь с таким ID КУБГТУ уже существует.',
             'kubgtu_id.max' => 'ID КУБГТУ не должен превышать 255 символов.',
             'name.required' => 'Имя обязательно для заполнения.',

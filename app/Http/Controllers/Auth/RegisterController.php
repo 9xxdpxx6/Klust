@@ -40,7 +40,7 @@ class RegisterController extends Controller
             DB::beginTransaction();
 
             $user = User::create([
-                'kubgtu_id' => $request->kubgtu_id,
+                'kubgtu_id' => $request->kubgtu_id ?: null,
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
