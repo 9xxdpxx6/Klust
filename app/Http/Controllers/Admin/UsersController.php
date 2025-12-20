@@ -314,8 +314,8 @@ class UsersController extends Controller
 
         $roles = Role::pluck('name')->toArray();
 
-        // Загружаем текущую роль пользователя
-        $user->load('roles');
+        // Загружаем текущую роль пользователя и профиль студента
+        $user->load(['roles', 'studentProfile.faculty']);
         $currentRole = $user->roles->first()->name ?? '';
 
         return Inertia::render('Admin/Users/Edit', [

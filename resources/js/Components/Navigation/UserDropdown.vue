@@ -20,6 +20,18 @@
       @hide="handleMenuHide"
       @show="handleMenuShow"
     />
+
+    <!-- Модалка подтверждения выхода -->
+    <ConfirmDialog
+      v-model:visible="showLogoutConfirm"
+      title="Выход из аккаунта"
+      message="Вы уверены, что хотите выйти из аккаунта?"
+      confirm-text="Выйти"
+      cancel-text="Отмена"
+      confirm-variant="danger"
+      type="warning"
+      @confirm="handleLogout"
+    />
   </div>
 </template>
 
@@ -28,6 +40,7 @@ import { ref, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 import Menu from 'primevue/menu';
 import UserAvatar from '@/Components/Shared/UserAvatar.vue';
+import ConfirmDialog from '@/Components/UI/ConfirmDialog.vue';
 import { useAuth } from '@/Composables/useAuth';
 
 const props = defineProps({
@@ -60,6 +73,7 @@ const userName = computed(() => {
 
 const menu = ref(null);
 const isMenuVisible = ref(false);
+const showLogoutConfirm = ref(false);
 
 const toggle = (event) => {
   menu.value.toggle(event);
@@ -107,12 +121,16 @@ const menuItems = computed(() => {
     label: 'Выйти',
     icon: 'pi pi-sign-out',
     command: () => {
-      router.post(route('logout'));
+      showLogoutConfirm.value = true;
     },
   });
 
   return items;
 });
+
+const handleLogout = () => {
+  router.post(route('logout'));
+};
 </script>
 
 <style scoped>
