@@ -23,7 +23,7 @@ class ApplicationApprovedNotification extends Notification implements ShouldQueu
      */
     public function via($notifiable): array
     {
-        return ['database', 'broadcast'];
+        return ['database', 'mail'];
     }
 
     /**
@@ -45,9 +45,12 @@ class ApplicationApprovedNotification extends Notification implements ShouldQueu
     public function toArray($notifiable): array
     {
         return [
-            'title' => 'Заявка одобрена',
+            'title' => 'Заявка одобрена!',
             'message' => "Ваша заявка на кейс '{$this->application->case->title}' была успешно одобрена",
+            'type' => 'application_approved',
             'link' => "/student/team/{$this->application->id}",
+            'icon' => 'pi-check-circle',
+            'action_text' => 'Перейти к команде',
             'case_id' => $this->application->case->id,
             'application_id' => $this->application->id,
             'status' => $this->application->status->name,
