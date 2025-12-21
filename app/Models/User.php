@@ -106,11 +106,6 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    // Notifications
-    public function notifications()
-    {
-        return $this->hasMany(AppNotification::class);
-    }
 
     // Progress Logs
     public function progressLogs()
