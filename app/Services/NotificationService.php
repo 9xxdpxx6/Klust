@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Mail\ApplicationApprovedMail;
-use App\Mail\ApplicationRejectedMail;
-use App\Mail\ApplicationSubmittedMail;
-use App\Mail\TeamMemberAddedMail;
-use App\Models\AppNotification;
 use App\Models\CaseApplication;
 use App\Models\CaseModel;
 use App\Models\User;
+use App\Notifications\ApplicationApprovedNotification;
+use App\Notifications\ApplicationRejectedNotification;
+use App\Notifications\ApplicationSubmittedNotification;
+use App\Notifications\BadgeEarnedNotification;
+use App\Notifications\NewCasePublishedNotification;
+use App\Notifications\SimulatorCompletedNotification;
+use App\Notifications\SkillLevelUpNotification;
+use App\Notifications\TeamMemberAddedNotification;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 class NotificationService
 {
@@ -38,61 +40,16 @@ class NotificationService
                 return;
             }
 
-            // Создать уведомление в системе
+            // Отправить уведомление через стандартную систему Laravel
             try {
-                // Генерируем URL заранее, чтобы не было проблем с route()
-                $caseUrl = url("/partner/cases/{$case->id}");
-                
-                AppNotification::create([
-                    'user_id' => $partnerUser->id,
-                    'type' => 'new_application',
-                    'title' => 'Новая заявка на кейс',
-                    'message' => "Команда {$application->leader->name} подала заявку на ваш кейс \"{$case->title}\"",
-                    'link' => $caseUrl,
-                    'icon' => 'pi-inbox',
-                    'action_text' => 'Просмотреть',
-                ]);
+                $partnerUser->notify(new ApplicationSubmittedNotification($application));
             } catch (\Exception $e) {
-                Log::error('Failed to create notification', [
+                Log::error('Failed to notify partner about application', [
                     'application_id' => $application->id,
+                    'partner_id' => $partnerUser->id,
                     'error' => $e->getMessage(),
                 ]);
                 // Не прерываем выполнение, если уведомление не создалось
-            }
-
-            // Отправить email в фоне (не блокирует ответ)
-            // В development окружении не отправляем email
-            try {
-                if ($partnerUser && $partnerUser->email) {
-                    $applicationId = $application->id;
-                    $partnerEmail = $partnerUser->email;
-                    
-                    // Отправляем email через очередь (skip в local/testing)
-                    if (!app()->environment(['local', 'testing'])) {
-                        try {
-                            $app = CaseApplication::with([
-                                'leader:id,name,email',
-                                'case:id,title,required_team_size',
-                                'teamMembers:id,application_id'
-                            ])->find($applicationId);
-                            
-                            if ($app) {
-                                Mail::to($partnerEmail)->queue(new ApplicationSubmittedMail($app));
-                            }
-                        } catch (\Exception $e) {
-                            Log::error('Failed to queue email to partner', [
-                                'application_id' => $applicationId,
-                                'partner_email' => $partnerEmail,
-                                'error' => $e->getMessage(),
-                            ]);
-                        }
-                    }
-                }
-            } catch (\Exception $e) {
-                Log::error('Failed to setup email sending', [
-                    'application_id' => $application->id,
-                    'error' => $e->getMessage(),
-                ]);
             }
         } catch (\Exception $e) {
             Log::error('Failed to notify partner', [
@@ -108,47 +65,30 @@ class NotificationService
      */
     public function notifyTeamAboutApproval(CaseApplication $application): void
     {
-        $case = $application->case;
-        $partnerName = $case->partnerUser?->partnerProfile?->company_name ?? $case->partnerUser?->name ?? 'Партнер';
-
         // Notify leader
-        AppNotification::create([
-            'user_id' => $application->leader_id,
-            'type' => 'application_approved',
-            'title' => 'Заявка одобрена!',
-            'message' => "Ваша заявка на кейс \"{$case->title}\" от компании {$partnerName} была одобрена",
-            'link' => route('student.team.show', $application->id),
-            'icon' => 'pi-check-circle',
-            'action_text' => 'Перейти к команде',
-        ]);
-
-        // Send email to leader (async via queue)
-        if (!app()->environment(['local', 'testing']) && $application->leader && $application->leader->email) {
+        if ($application->leader) {
             try {
-                Mail::to($application->leader->email)->queue(new ApplicationApprovedMail($application));
+                $application->leader->notify(new ApplicationApprovedNotification($application));
             } catch (\Exception $e) {
-                Log::error('Failed to queue application approved email to leader: '.$e->getMessage());
+                Log::error('Failed to notify leader about approval', [
+                    'application_id' => $application->id,
+                    'leader_id' => $application->leader_id,
+                    'error' => $e->getMessage(),
+                ]);
             }
         }
 
         // Notify team members
         foreach ($application->teamMembers as $teamMember) {
-            AppNotification::create([
-                'user_id' => $teamMember->user_id,
-                'type' => 'application_approved',
-                'title' => 'Заявка команды одобрена!',
-                'message' => "Заявка вашей команды на кейс \"{$case->title}\" была одобрена",
-                'link' => route('student.team.show', $application->id),
-                'icon' => 'pi-check-circle',
-                'action_text' => 'Перейти к команде',
-            ]);
-
-            // Send email to team member (async via queue)
-            if (!app()->environment(['local', 'testing']) && $teamMember->user && $teamMember->user->email) {
+            if ($teamMember->user) {
                 try {
-                    Mail::to($teamMember->user->email)->queue(new ApplicationApprovedMail($application));
+                    $teamMember->user->notify(new ApplicationApprovedNotification($application));
                 } catch (\Exception $e) {
-                    Log::error('Failed to queue application approved email to team member: '.$e->getMessage());
+                    Log::error('Failed to notify team member about approval', [
+                        'application_id' => $application->id,
+                        'team_member_id' => $teamMember->user_id,
+                        'error' => $e->getMessage(),
+                    ]);
                 }
             }
         }
@@ -176,16 +116,15 @@ class NotificationService
         }
 
         foreach ($students as $student) {
-            $partnerName = $case->partnerUser?->partnerProfile?->company_name ?? $case->partnerUser?->name ?? 'Партнер';
-            AppNotification::create([
-                'user_id' => $student->id,
-                'type' => 'new_case',
-                'title' => 'Доступен новый кейс',
-                'message' => "Новый кейс от {$partnerName}: \"{$case->title}\"",
-                'link' => route('student.cases.show', $case->id),
-                'icon' => 'pi-briefcase',
-                'action_text' => 'Просмотреть',
-            ]);
+            try {
+                $student->notify(new NewCasePublishedNotification($case));
+            } catch (\Exception $e) {
+                Log::error('Failed to notify student about new case', [
+                    'case_id' => $case->id,
+                    'student_id' => $student->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
     }
 
@@ -194,52 +133,30 @@ class NotificationService
      */
     public function notifyApplicationRejection(CaseApplication $application, ?string $comment = null): void
     {
-        $case = $application->case;
-        $partnerName = $case->partnerUser?->partnerProfile?->company_name ?? $case->partnerUser?->name ?? 'Партнер';
-
-        $message = "Ваша заявка на кейс \"{$case->title}\" от компании {$partnerName} была отклонена";
-        if ($comment) {
-            $message .= ". Комментарий: {$comment}";
-        }
-
         // Notify leader
-        AppNotification::create([
-            'user_id' => $application->leader_id,
-            'type' => 'application_rejected',
-            'title' => 'Заявка отклонена',
-            'message' => $message,
-            'link' => route('student.cases.show', $case->id),
-            'icon' => 'pi-times-circle',
-            'action_text' => 'Просмотреть кейс',
-        ]);
-
-        // Send email to leader (async via queue)
-        if (!app()->environment(['local', 'testing']) && $application->leader && $application->leader->email) {
+        if ($application->leader) {
             try {
-                Mail::to($application->leader->email)->queue(new ApplicationRejectedMail($application, $comment));
+                $application->leader->notify(new ApplicationRejectedNotification($application));
             } catch (\Exception $e) {
-                Log::error('Failed to queue application rejected email to leader: '.$e->getMessage());
+                Log::error('Failed to notify leader about rejection', [
+                    'application_id' => $application->id,
+                    'leader_id' => $application->leader_id,
+                    'error' => $e->getMessage(),
+                ]);
             }
         }
 
         // Notify team members
         foreach ($application->teamMembers as $teamMember) {
-            AppNotification::create([
-                'user_id' => $teamMember->user_id,
-                'type' => 'application_rejected',
-                'title' => 'Заявка команды отклонена',
-                'message' => "Заявка вашей команды на кейс \"{$case->title}\" была отклонена",
-                'link' => route('student.cases.show', $case->id),
-                'icon' => 'pi-times-circle',
-                'action_text' => 'Просмотреть кейс',
-            ]);
-
-            // Send email to team member (async via queue)
-            if (!app()->environment(['local', 'testing']) && $teamMember->user && $teamMember->user->email) {
+            if ($teamMember->user) {
                 try {
-                    Mail::to($teamMember->user->email)->queue(new ApplicationRejectedMail($application, $comment));
+                    $teamMember->user->notify(new ApplicationRejectedNotification($application));
                 } catch (\Exception $e) {
-                    Log::error('Failed to queue application rejected email to team member: '.$e->getMessage());
+                    Log::error('Failed to notify team member about rejection', [
+                        'application_id' => $application->id,
+                        'team_member_id' => $teamMember->user_id,
+                        'error' => $e->getMessage(),
+                    ]);
                 }
             }
         }
@@ -248,24 +165,17 @@ class NotificationService
     /**
      * Notify student about badge earned
      */
-    public function notifyBadgeEarned(User $user, string $badgeName, ?int $level = null, bool $isUpgrade = false): void
+    public function notifyBadgeEarned(User $user, \App\Models\Badge $badge): void
     {
-        $title = $isUpgrade ? 'Достижение улучшено!' : 'Получено новое достижение!';
-        
-        $message = $isUpgrade && $level !== null
-            ? "Достижение \"{$badgeName}\" повышено до уровня {$level}!"
-            : "Поздравляем! Вы получили достижение \"{$badgeName}\""
-                . ($level !== null ? " уровня {$level}" : '');
-
-        AppNotification::create([
-            'user_id' => $user->id,
-            'type' => 'badge_earned',
-            'title' => $title,
-            'message' => $message,
-            'link' => route('student.badges.index'),
-            'icon' => 'pi-star',
-            'action_text' => 'Посмотреть достижения',
-        ]);
+        try {
+            $user->notify(new BadgeEarnedNotification($badge));
+        } catch (\Exception $e) {
+            Log::error('Failed to notify user about badge earned', [
+                'user_id' => $user->id,
+                'badge_id' => $badge->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
@@ -273,15 +183,16 @@ class NotificationService
      */
     public function notifySkillLevelUp(User $user, string $skillName, int $newLevel): void
     {
-        AppNotification::create([
-            'user_id' => $user->id,
-            'type' => 'skill_level_up',
-            'title' => 'Повышение уровня навыка!',
-            'message' => "Ваш навык {$skillName} достиг уровня {$newLevel}!",
-            'link' => route('student.skills.index'),
-            'icon' => 'pi-chart-line',
-            'action_text' => 'Посмотреть навыки',
-        ]);
+        try {
+            $user->notify(new SkillLevelUpNotification($skillName, $newLevel));
+        } catch (\Exception $e) {
+            Log::error('Failed to notify user about skill level up', [
+                'user_id' => $user->id,
+                'skill_name' => $skillName,
+                'new_level' => $newLevel,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
@@ -289,27 +200,14 @@ class NotificationService
      */
     public function notifyUserAboutTeamAddition(User $newMember, CaseApplication $application): void
     {
-        $leaderName = $application->leader->name;
-        $caseName = $application->case->title;
-
-        // Create notification
-        AppNotification::create([
-            'user_id' => $newMember->id,
-            'type' => 'team_addition',
-            'title' => 'Вы добавлены в команду',
-            'message' => "{$leaderName} добавил(а) вас в команду для кейса \"{$caseName}\"",
-            'link' => route('student.team.show', $application->id),
-            'icon' => 'pi-users',
-            'action_text' => 'Перейти к команде',
-        ]);
-
-        // Send email (async via queue)
-        if (!app()->environment(['local', 'testing']) && $newMember->email) {
-            try {
-                Mail::to($newMember->email)->queue(new TeamMemberAddedMail($newMember, $application));
-            } catch (\Exception $e) {
-                Log::error('Failed to queue team member added email: '.$e->getMessage());
-            }
+        try {
+            $newMember->notify(new TeamMemberAddedNotification($application));
+        } catch (\Exception $e) {
+            Log::error('Failed to notify user about team addition', [
+                'user_id' => $newMember->id,
+                'application_id' => $application->id,
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 
@@ -318,14 +216,15 @@ class NotificationService
      */
     public function notifySimulatorCompletion(User $student, string $simulatorName, int $pointsEarned): void
     {
-        AppNotification::create([
-            'user_id' => $student->id,
-            'type' => 'simulator_completed',
-            'title' => 'Симулятор пройден!',
-            'message' => "Вы успешно завершили симулятор \"{$simulatorName}\" и получили {$pointsEarned} очков",
-            'link' => route('student.simulators.index'),
-            'icon' => 'pi-trophy',
-            'action_text' => 'Просмотреть',
-        ]);
+        try {
+            $student->notify(new SimulatorCompletedNotification($simulatorName, $pointsEarned));
+        } catch (\Exception $e) {
+            Log::error('Failed to notify student about simulator completion', [
+                'user_id' => $student->id,
+                'simulator_name' => $simulatorName,
+                'points_earned' => $pointsEarned,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }
