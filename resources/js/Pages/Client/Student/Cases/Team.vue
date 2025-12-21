@@ -116,7 +116,7 @@ const activityUi = (activity) => {
                                 <p class="text-sm text-indigo-100">Партнёр</p>
                                 <Link
                                     v-if="application.case?.user_id && partnerName !== 'Не указан'"
-                                    :href="route('student.partners.show', application.case.user_id)"
+                                    :href="route('partners.show', application.case.user_id)"
                                     class="text-lg font-semibold text-white truncate hover:underline"
                                 >
                                     {{ partnerName }}
