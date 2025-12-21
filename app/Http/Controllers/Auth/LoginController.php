@@ -33,6 +33,12 @@ class LoginController extends Controller
 
             $user = Auth::user();
 
+            // Проверить верификацию email
+            if (! $user->hasVerifiedEmail()) {
+                return redirect()->route('verification.notice')
+                    ->with('warning', 'Пожалуйста, подтвердите ваш email адрес перед продолжением.');
+            }
+
             // Редирект на соответствующий dashboard по роли
             if ($user->hasRole(['admin', 'teacher'])) {
                 return redirect()->route('admin.dashboard');

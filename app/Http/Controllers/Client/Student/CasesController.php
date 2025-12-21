@@ -338,6 +338,13 @@ class CasesController extends Controller
     {
         $user = auth()->user();
 
+        // Проверить верификацию email
+        if (! $user->hasVerifiedEmail()) {
+            return redirect()
+                ->route('verification.notice')
+                ->with('error', 'Для подачи заявки на кейс необходимо подтвердить ваш email адрес.');
+        }
+
         // Проверить, что студент не подал уже заявку
         if ($this->applicationService->hasApplication($user, $case)) {
             return redirect()

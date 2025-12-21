@@ -25,20 +25,30 @@
                         <h1 v-else class="text-2xl font-bold text-primary">Кластер</h1>
                     </Link>
                     <div class="flex items-center gap-4">
-                        <Link
-                            v-if="routeExists('login')"
-                            :href="safeRoute('login')"
-                            class="text-sm font-medium text-text-primary hover:text-primary transition-colors"
-                        >
-                            Войти
-                        </Link>
-                        <Link
-                            v-if="routeExists('register')"
-                            :href="safeRoute('register')"
-                            class="px-4 py-2 text-sm font-medium text-kubgtu-white bg-primary rounded-lg hover:bg-primary-light transition-colors shadow-sm"
-                        >
-                            Регистрация
-                        </Link>
+                        <template v-if="$page.props.auth?.user">
+                            <Link
+                                :href="route('dashboard')"
+                                class="px-4 py-2 text-sm font-medium text-kubgtu-white bg-primary rounded-lg hover:bg-primary-light transition-colors shadow-sm"
+                            >
+                                Личный кабинет
+                            </Link>
+                        </template>
+                        <template v-else>
+                            <Link
+                                v-if="routeExists('login')"
+                                :href="safeRoute('login')"
+                                class="text-sm font-medium text-text-primary hover:text-primary transition-colors"
+                            >
+                                Войти
+                            </Link>
+                            <Link
+                                v-if="routeExists('register')"
+                                :href="safeRoute('register')"
+                                class="px-4 py-2 text-sm font-medium text-kubgtu-white bg-primary rounded-lg hover:bg-primary-light transition-colors shadow-sm"
+                            >
+                                Регистрация
+                            </Link>
+                        </template>
                     </div>
                 </div>
             </div>
@@ -64,6 +74,7 @@
 
 <script setup>
 import { Link } from '@inertiajs/vue3';
+import { route } from 'ziggy-js';
 import FlashMessage from '@/Components/Shared/FlashMessage.vue';
 import { routeExists } from '@/Utils/routes';
 
