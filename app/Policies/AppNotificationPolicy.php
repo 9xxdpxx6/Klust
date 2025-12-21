@@ -4,32 +4,32 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Models\AppNotification;
 use App\Models\User;
+use Illuminate\Notifications\DatabaseNotification;
 
-class AppNotificationPolicy
+class NotificationPolicy
 {
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, AppNotification $notification): bool
+    public function view(User $user, DatabaseNotification $notification): bool
     {
-        return $notification->user_id === $user->id;
+        return $notification->notifiable_id === $user->id && $notification->notifiable_type === User::class;
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, AppNotification $notification): bool
+    public function update(User $user, DatabaseNotification $notification): bool
     {
-        return $notification->user_id === $user->id;
+        return $notification->notifiable_id === $user->id && $notification->notifiable_type === User::class;
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, AppNotification $notification): bool
+    public function delete(User $user, DatabaseNotification $notification): bool
     {
-        return $notification->user_id === $user->id;
+        return $notification->notifiable_id === $user->id && $notification->notifiable_type === User::class;
     }
 }
