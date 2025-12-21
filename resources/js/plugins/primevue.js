@@ -1,4 +1,5 @@
 import PrimeVue from 'primevue/config';
+import Tooltip from 'primevue/tooltip';
 import 'primeicons/primeicons.css';
 import Aura from '@primeuix/themes/aura';
 import { ruLocale } from '@/Utils/ruLocale';
@@ -17,5 +18,8 @@ export function setupPrimeVue(app) {
       },
     },
   });
+  
+  // Регистрируем директиву Tooltip
+  app.directive('tooltip', Tooltip);
 }
 

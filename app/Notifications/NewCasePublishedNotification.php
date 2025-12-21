@@ -23,7 +23,7 @@ class NewCasePublishedNotification extends Notification implements ShouldQueue
      */
     public function via($notifiable): array
     {
-        return ['database', 'broadcast'];
+        return ['database', 'mail'];
     }
 
     /**
@@ -47,9 +47,12 @@ class NewCasePublishedNotification extends Notification implements ShouldQueue
     public function toArray($notifiable): array
     {
         return [
-            'title' => 'Новый кейс опубликован',
+            'title' => 'Доступен новый кейс',
             'message' => "Новый кейс '{$this->case->title}' опубликован компанией {$this->case->partner->company_name}",
+            'type' => 'new_case',
             'link' => "/student/cases/{$this->case->id}",
+            'icon' => 'pi-briefcase',
+            'action_text' => 'Просмотреть',
             'case_id' => $this->case->id,
             'partner_name' => $this->case->partner->company_name,
             'deadline' => $this->case->deadline->format('d.m.Y'),

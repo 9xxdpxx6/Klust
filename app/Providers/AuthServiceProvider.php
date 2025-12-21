@@ -19,7 +19,7 @@ class AuthServiceProvider extends ServiceProvider
         \App\Models\User::class => \App\Policies\UserPolicy::class,
         \App\Models\Skill::class => \App\Policies\SkillPolicy::class,
         \App\Models\Simulator::class => \App\Policies\SimulatorPolicy::class,
-        \App\Models\AppNotification::class => \App\Policies\AppNotificationPolicy::class,
+        \Illuminate\Notifications\DatabaseNotification::class => \App\Policies\NotificationPolicy::class,
         \App\Models\SimulatorSession::class => \App\Policies\SimulatorSessionPolicy::class,
     ];
 

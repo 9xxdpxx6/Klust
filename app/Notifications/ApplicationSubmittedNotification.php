@@ -23,7 +23,7 @@ class ApplicationSubmittedNotification extends Notification implements ShouldQue
      */
     public function via($notifiable): array
     {
-        return ['database', 'broadcast'];
+        return ['database', 'mail'];
     }
 
     /**
@@ -48,7 +48,10 @@ class ApplicationSubmittedNotification extends Notification implements ShouldQue
         return [
             'title' => 'Новая заявка на кейс',
             'message' => "На ваш кейс '{$this->application->case->title}' подана новая заявка от {$this->application->leader->name}",
+            'type' => 'new_application',
             'link' => "/partner/cases/{$this->application->case->id}/applications",
+            'icon' => 'pi-inbox',
+            'action_text' => 'Просмотреть',
             'case_id' => $this->application->case->id,
             'application_id' => $this->application->id,
             'leader_name' => $this->application->leader->name,

@@ -64,17 +64,14 @@ class RegisterController extends Controller
             event(new Registered($user));
             
             // Также отправляем письмо напрямую на случай, если событие не сработало
-            // Но только если не используется log driver (чтобы не дублировать)
-            if (config('mail.default') !== 'log') {
-                try {
-                    $user->sendEmailVerificationNotification();
-                } catch (\Exception $e) {
-                    Log::error('Failed to send verification email to student', [
-                        'user_id' => $user->id,
-                        'email' => $user->email,
-                        'error' => $e->getMessage(),
-                    ]);
-                }
+            try {
+                $user->sendEmailVerificationNotification();
+            } catch (\Exception $e) {
+                Log::error('Failed to send verification email to student', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'error' => $e->getMessage(),
+                ]);
             }
 
             // Отправить welcome email (без очереди)
@@ -139,17 +136,14 @@ class RegisterController extends Controller
             event(new Registered($user));
             
             // Также отправляем письмо напрямую на случай, если событие не сработало
-            // Но только если не используется log driver (чтобы не дублировать)
-            if (config('mail.default') !== 'log') {
-                try {
-                    $user->sendEmailVerificationNotification();
-                } catch (\Exception $e) {
-                    Log::error('Failed to send verification email to partner', [
-                        'user_id' => $user->id,
-                        'email' => $user->email,
-                        'error' => $e->getMessage(),
-                    ]);
-                }
+            try {
+                $user->sendEmailVerificationNotification();
+            } catch (\Exception $e) {
+                Log::error('Failed to send verification email to partner', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'error' => $e->getMessage(),
+                ]);
             }
 
             // Отправить welcome email (без очереди)

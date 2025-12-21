@@ -16,7 +16,6 @@ class BadgeEarnedNotification extends Notification implements ShouldQueue
     use Queueable;
 
     public function __construct(
-        private User $user,
         private Badge $badge
     ) {}
 
@@ -25,7 +24,7 @@ class BadgeEarnedNotification extends Notification implements ShouldQueue
      */
     public function via($notifiable): array
     {
-        return ['database', 'broadcast'];
+        return ['database', 'mail'];
     }
 
     /**
@@ -49,7 +48,10 @@ class BadgeEarnedNotification extends Notification implements ShouldQueue
         return [
             'title' => 'Новое достижение получено!',
             'message' => "Поздравляем! Вы получили новое достижение: {$this->badge->name}",
+            'type' => 'badge_earned',
             'link' => '/student/badges',
+            'icon' => 'pi-star',
+            'action_text' => 'Посмотреть достижения',
             'badge_id' => $this->badge->id,
             'badge_name' => $this->badge->name,
             'badge_description' => $this->badge->description,

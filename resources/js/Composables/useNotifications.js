@@ -44,7 +44,7 @@ export function useNotifications(autoLoad = false) {
 
   /**
    * Отметить уведомление как прочитанное
-   * @param {number} notificationId - ID уведомления
+   * @param {string} notificationId - ID уведомления (UUID)
    */
   const markAsRead = async (notificationId) => {
     try {
@@ -52,8 +52,8 @@ export function useNotifications(autoLoad = false) {
 
       // Обновить локальное состояние
       const notification = notifications.value.find(n => n.id === notificationId);
-      if (notification && !notification.is_read) {
-        notification.is_read = true;
+      if (notification && !notification.read_at) {
+        notification.read_at = new Date().toISOString();
         unreadCount.value = Math.max(0, unreadCount.value - 1);
       }
 
@@ -72,8 +72,11 @@ export function useNotifications(autoLoad = false) {
       await axios.post('/notifications/read-all');
 
       // Обновить локальное состояние
+      const now = new Date().toISOString();
       notifications.value.forEach(n => {
-        n.is_read = true;
+        if (!n.read_at) {
+          n.read_at = now;
+        }
       });
       unreadCount.value = 0;
 
@@ -96,7 +99,7 @@ export function useNotifications(autoLoad = false) {
       const index = notifications.value.findIndex(n => n.id === notificationId);
       if (index !== -1) {
         const notification = notifications.value[index];
-        if (!notification.is_read) {
+        if (!notification.read_at) {
           unreadCount.value = Math.max(0, unreadCount.value - 1);
         }
         notifications.value.splice(index, 1);

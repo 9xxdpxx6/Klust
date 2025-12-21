@@ -88,7 +88,7 @@ const formatDate = (dateString) => {
                                     <p class="text-sm text-indigo-100">Партнер</p>
                                     <Link
                                         v-if="caseData.user_id && (caseData.partner?.company_name || caseData.partnerUser?.name) && (caseData.partner?.company_name || caseData.partnerUser?.name) !== 'Не указан'"
-                                        :href="route('student.partners.show', caseData.user_id)"
+                                        :href="route('partners.show', caseData.user_id)"
                                         class="text-lg font-semibold text-white truncate hover:underline block"
                                     >
                                         {{ caseData.partner?.company_name || caseData.partnerUser?.name || 'Не указан' }}

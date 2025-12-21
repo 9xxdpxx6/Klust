@@ -38,10 +38,11 @@
       <slot name="menu" />
     </nav>
     
-    <!-- Правая область: уведомления, профиль -->
+    <!-- Правая область: профиль, уведомления -->
     <div class="base-header__actions">
-      <!-- Уведомления -->
-      <NotificationBell v-if="showNotifications" />
+      
+      <!-- Уведомления - всегда видимы, справа от аватара -->
+      <NotificationBell />
       
       <!-- Профиль пользователя -->
       <UserDropdown v-if="user" :show-name="showUserName" />

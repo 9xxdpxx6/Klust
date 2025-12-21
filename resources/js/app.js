@@ -33,6 +33,16 @@ createInertiaApp({
                         module.default.layout = PartnerLayout;
                     } else if (name.startsWith('Auth/')) {
                         module.default.layout = GuestLayout;
+                    } else if (name.startsWith('Notifications/')) {
+                        // Определяем layout на основе URL
+                        const path = window.location.pathname;
+                        if (path.startsWith('/admin/notifications')) {
+                            module.default.layout = AdminLayout;
+                        } else if (path.startsWith('/partner/notifications')) {
+                            module.default.layout = PartnerLayout;
+                        } else {
+                            module.default.layout = StudentLayout; // По умолчанию для /student/notifications
+                        }
                     }
                 }
                 return module;
@@ -47,6 +57,16 @@ createInertiaApp({
                     page.default.layout = PartnerLayout;
                 } else if (name.startsWith('Auth/')) {
                     page.default.layout = GuestLayout;
+                } else if (name.startsWith('Notifications/')) {
+                    // Определяем layout на основе URL
+                    const path = window.location.pathname;
+                    if (path.startsWith('/admin/notifications')) {
+                        page.default.layout = AdminLayout;
+                    } else if (path.startsWith('/partner/notifications')) {
+                        page.default.layout = PartnerLayout;
+                    } else {
+                        page.default.layout = StudentLayout; // По умолчанию для /student/notifications
+                    }
                 }
             }
         }

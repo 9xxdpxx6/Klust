@@ -1,32 +1,39 @@
 <template>
   <div class="relative">
-    <Popover>
-      <template #target="{ toggle: togglePopover }">
-        <button
-          @click="togglePopover"
-          class="relative p-2 rounded-lg hover:bg-surface-hover transition-colors"
-          aria-label="Уведомления"
-        >
-          <i class="pi pi-bell text-xl text-text-secondary"></i>
-          <Badge
-            v-if="hasUnread"
-            :value="unreadCount"
-            severity="danger"
-            class="absolute -top-1 -right-1"
-          />
-        </button>
-      </template>
-      
+    <button
+      ref="targetButton"
+      @click="togglePopover"
+      class="relative p-2 rounded-lg hover:bg-surface-hover transition-colors flex items-center mt-0.5"
+      aria-label="Уведомления"
+    >
+      <i class="pi pi-bell text-text-secondary" style="font-size: 1.3rem;"></i>
+      <Badge
+        v-if="hasUnread"
+        :value="unreadCount"
+        severity="danger"
+        class="absolute -top-1 -right-1"
+      />
+    </button>
+    
+    <Popover ref="popover">
       <div class="notification-panel w-80 max-w-[90vw]">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-semibold text-text-primary">Уведомления</h3>
-          <button
-            v-if="hasUnread"
-            @click="markAllAsRead"
-            class="text-sm text-primary hover:text-primary-light"
-          >
-            Отметить все как прочитанные
-          </button>
+          <div class="flex items-center gap-2">
+            <Link
+              :href="notificationsRoute"
+              class="text-sm text-primary hover:text-primary-light"
+            >
+              Все уведомления
+            </Link>
+            <button
+              v-if="hasUnread"
+              @click="markAllAsRead"
+              class="text-sm text-primary hover:text-primary-light"
+            >
+              Отметить все
+            </button>
+          </div>
         </div>
         
         <div v-if="loading && notifications.length === 0" class="text-center py-8 text-text-muted">
@@ -45,23 +52,23 @@
             :key="notification.id"
             :class="[
               'notification-item',
-              { 'notification-item--read': notification.is_read }
+              { 'notification-item--read': notification.read_at }
             ]"
             @click="handleNotificationClick(notification)"
           >
             <div class="flex items-start gap-3">
               <!-- Иконка уведомления -->
-              <div v-if="notification.icon" class="flex-shrink-0 mt-1">
-                <i :class="['text-primary', notification.icon]"></i>
+              <div v-if="notification.data?.icon" class="flex-shrink-0 mt-1">
+                <i :class="['pi', notification.data.icon, 'text-primary']"></i>
               </div>
 
               <!-- Контент уведомления -->
               <div class="flex-1 min-w-0">
                 <p class="font-medium text-sm text-text-primary">
-                  {{ notification.title }}
+                  {{ notification.data?.title || 'Уведомление' }}
                 </p>
                 <p class="text-xs text-text-muted mt-1 break-words">
-                  {{ notification.message }}
+                  {{ notification.data?.message || '' }}
                 </p>
                 <p class="text-xs text-text-muted mt-1">
                   {{ formatDate(notification.created_at) }}
@@ -70,7 +77,7 @@
 
               <!-- Кнопка "отметить как прочитанное" -->
               <button
-                v-if="!notification.is_read"
+                v-if="!notification.read_at"
                 @click.stop="markAsRead(notification.id)"
                 class="text-xs text-primary hover:text-primary-light flex-shrink-0"
                 title="Отметить как прочитанное"
@@ -86,10 +93,13 @@
 </template>
 
 <script setup>
+import { ref, computed } from 'vue';
+import { Link } from '@inertiajs/vue3';
 import Badge from 'primevue/badge';
 import Popover from 'primevue/popover';
 import { useNotifications } from '@/Composables/useNotifications';
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
+import { route } from 'ziggy-js';
 
 // Автозагрузка уведомлений при монтировании
 const {
@@ -101,15 +111,40 @@ const {
   loading
 } = useNotifications(true);
 
+const page = usePage();
+const userRoles = computed(() => page.props.auth?.user?.roles || []);
+
+const popover = ref(null);
+const targetButton = ref(null);
+
+const togglePopover = (event) => {
+  if (popover.value && event.currentTarget) {
+    popover.value.toggle(event, event.currentTarget);
+  }
+};
+
+// Определяем маршрут уведомлений на основе роли
+const notificationsRoute = computed(() => {
+  const roles = userRoles.value;
+  if (roles.includes('admin') || roles.includes('teacher')) {
+    return route('admin.notifications.index');
+  } else if (roles.includes('student')) {
+    return route('student.notifications.index');
+  } else if (roles.includes('partner')) {
+    return route('partner.notifications.index');
+  }
+  return route('student.notifications.index'); // По умолчанию
+});
+
 const handleNotificationClick = async (notification) => {
   // Отметить как прочитанное
-  if (!notification.is_read) {
+  if (!notification.read_at) {
     await markAsRead(notification.id);
   }
 
   // Переход по ссылке, если она есть
-  if (notification.link) {
-    router.visit(notification.link);
+  if (notification.data?.link) {
+    router.visit(notification.data.link);
   }
 };
 
@@ -134,6 +169,11 @@ const formatDate = (dateString) => {
 <style scoped>
 .notification-panel {
   min-width: 20rem;
+}
+
+/* Увеличиваем размер иконки колокольчика в 2 раза */
+button .pi-bell {
+  font-size: 1.5rem;
 }
 
 .notification-item {

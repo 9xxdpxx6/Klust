@@ -57,24 +57,6 @@ class VerificationController extends Controller
 
         try {
             $user = $request->user();
-            
-            // Проверяем настройки почты перед отправкой
-            $mailConfig = config('mail.default');
-            if ($mailConfig === 'log') {
-                return redirect()->route('verification.notice')
-                    ->with('success', 'Письмо с подтверждением отправлено на ваш email. (Режим логирования)');
-            }
-            
-            // Проверяем, что SMTP настройки заполнены
-            $smtpHost = config('mail.mailers.smtp.host');
-            $smtpUsername = config('mail.mailers.smtp.username');
-            $smtpPassword = config('mail.mailers.smtp.password');
-            
-            if (empty($smtpHost) || empty($smtpUsername) || empty($smtpPassword)) {
-                return redirect()->route('verification.notice')
-                    ->with('error', 'Настройки SMTP неполные. Проверьте конфигурацию.');
-            }
-            
             $user->sendEmailVerificationNotification();
             
             return redirect()->route('verification.notice')

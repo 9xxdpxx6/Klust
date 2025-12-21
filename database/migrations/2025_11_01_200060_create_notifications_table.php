@@ -8,19 +8,17 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Создаем стандартную таблицу Laravel notifications
         Schema::create('notifications', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->string('title');
-            $table->text('message');
+            $table->uuid('id')->primary();
             $table->string('type');
-            $table->string('link')->nullable();
-            $table->string('icon')->nullable();
-            $table->string('action_text')->nullable();
-            $table->boolean('is_read')->default(false);
+            $table->morphs('notifiable');
+            $table->text('data');
+            $table->timestamp('read_at')->nullable();
             $table->timestamps();
 
-            $table->index(['user_id', 'is_read']);
+            $table->index(['notifiable_type', 'notifiable_id']);
+            $table->index(['notifiable_id', 'read_at']);
         });
     }
 

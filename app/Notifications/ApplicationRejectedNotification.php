@@ -23,7 +23,7 @@ class ApplicationRejectedNotification extends Notification implements ShouldQueu
      */
     public function via($notifiable): array
     {
-        return ['database', 'broadcast'];
+        return ['database', 'mail'];
     }
 
     /**
@@ -47,7 +47,10 @@ class ApplicationRejectedNotification extends Notification implements ShouldQueu
         return [
             'title' => 'Заявка отклонена',
             'message' => "Ваша заявка на кейс '{$this->application->case->title}' была отклонена",
+            'type' => 'application_rejected',
             'link' => '/student/cases',
+            'icon' => 'pi-times-circle',
+            'action_text' => 'Просмотреть кейс',
             'case_id' => $this->application->case->id,
             'application_id' => $this->application->id,
             'rejection_reason' => $this->application->rejection_reason,

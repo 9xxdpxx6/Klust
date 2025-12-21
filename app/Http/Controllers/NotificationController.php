@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\AppNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,7 +21,7 @@ class NotificationController extends Controller
     {
         $user = Auth::user();
 
-        $notifications = AppNotification::where('user_id', $user->id)
+        $notifications = $user->notifications()
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
@@ -37,9 +37,7 @@ class NotificationController extends Controller
     {
         $user = Auth::user();
 
-        $count = AppNotification::where('user_id', $user->id)
-            ->where('is_read', false)
-            ->count();
+        $count = $user->unreadNotifications->count();
 
         return response()->json(['count' => $count]);
     }
@@ -51,11 +49,10 @@ class NotificationController extends Controller
     {
         $user = Auth::user();
 
-        $notifications = AppNotification::where('user_id', $user->id)
-            ->where('is_read', false)
-            ->orderBy('created_at', 'desc')
-            ->limit(5)
-            ->get();
+        $notifications = $user->unreadNotifications
+            ->sortByDesc('created_at')
+            ->take(5)
+            ->values();
 
         return response()->json($notifications);
     }
@@ -63,11 +60,11 @@ class NotificationController extends Controller
     /**
      * Mark a specific notification as read.
      */
-    public function markAsRead(AppNotification $notification): JsonResponse
+    public function markAsRead(DatabaseNotification $notification): JsonResponse
     {
         $this->authorize('update', $notification);
 
-        $notification->update(['is_read' => true]);
+        $notification->markAsRead();
 
         return response()->json([
             'success' => true,
@@ -82,9 +79,7 @@ class NotificationController extends Controller
     {
         $user = Auth::user();
 
-        AppNotification::where('user_id', $user->id)
-            ->where('is_read', false)
-            ->update(['is_read' => true]);
+        $user->unreadNotifications->markAsRead();
 
         return response()->json([
             'success' => true,
@@ -95,7 +90,7 @@ class NotificationController extends Controller
     /**
      * Delete a specific notification.
      */
-    public function destroy(AppNotification $notification): RedirectResponse
+    public function destroy(DatabaseNotification $notification): RedirectResponse
     {
         $this->authorize('delete', $notification);
 
