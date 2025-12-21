@@ -62,9 +62,20 @@ Route::middleware('guest')->group(function () {
     Route::post('/register/partner', [RegisterController::class, 'registerPartner'])->name('register.partner');
 });
 
+// Email Verification
+Route::middleware('auth')->group(function () {
+    Route::get('/email/verify', [\App\Http\Controllers\Auth\VerificationController::class, 'notice'])
+        ->name('verification.notice');
+    Route::get('/email/verify/{id}/{hash}', [\App\Http\Controllers\Auth\VerificationController::class, 'verify'])
+        ->middleware('signed')
+        ->name('verification.verify');
+    Route::post('/email/verification-notification', [\App\Http\Controllers\Auth\VerificationController::class, 'resend'])
+        ->name('verification.send');
+});
+
 // Авторизованные
 Route::middleware('auth')->group(function () {
-    // Редирект на dashboard по роли
+    // Редирект на dashboard по роли (требует верификацию)
     Route::get('/dashboard', function () {
         /** @var User $user */
         $user = Auth::user();
@@ -73,15 +84,30 @@ Route::middleware('auth')->group(function () {
             return redirect()->route('login');
         }
 
+        // Сохраняем flash сообщения при редиректе
+        $redirect = null;
         if ($user->hasRole(['admin', 'teacher'])) {
-            return redirect()->route('admin.dashboard');
+            $redirect = redirect()->route('admin.dashboard');
         } elseif ($user->hasRole('student')) {
-            return redirect()->route('student.dashboard');
+            $redirect = redirect()->route('student.dashboard');
         } elseif ($user->hasRole('partner')) {
-            return redirect()->route('partner.dashboard');
+            $redirect = redirect()->route('partner.dashboard');
+        } else {
+            return redirect()->route('login');
         }
 
-        return redirect()->route('login');
+        // Передаем flash сообщения дальше
+        if (session()->has('success')) {
+            $redirect->with('success', session()->get('success'));
+        }
+        if (session()->has('error')) {
+            $redirect->with('error', session()->get('error'));
+        }
+        if (session()->has('warning')) {
+            $redirect->with('warning', session()->get('warning'));
+        }
+
+        return $redirect;
     })->name('dashboard');
 
     // Выход
@@ -101,7 +127,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/partners/{partner}', [StudentPartnersController::class, 'show'])->name('partners.show');
 
     // Студент
-    Route::prefix('student')->middleware('role:student')->name('student.')->group(function () {
+    Route::prefix('student')->middleware(['role:student', 'verified'])->name('student.')->group(function () {
         // Dashboard
         Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('dashboard');
 
@@ -137,7 +163,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Партнер
-    Route::prefix('partner')->middleware('role:partner|admin|teacher')->name('partner.')->group(function () {
+    Route::prefix('partner')->middleware(['role:partner|admin|teacher', 'verified'])->name('partner.')->group(function () {
         // Dashboard
         Route::get('/dashboard', [PartnerDashboardController::class, 'index'])->name('dashboard');
 
@@ -176,7 +202,7 @@ Route::middleware('auth')->group(function () {
     });
 });
 
-Route::prefix('admin')->middleware(['auth', 'role:admin|teacher'])->name('admin.')->group(function () {
+Route::prefix('admin')->middleware(['auth', 'role:admin|teacher', 'verified'])->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Profile
