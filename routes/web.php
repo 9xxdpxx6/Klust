@@ -113,9 +113,8 @@ Route::middleware('auth')->group(function () {
     // Выход
     Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
 
-    // Notifications (для всех авторизованных пользователей)
+    // API маршруты для уведомлений (используются компонентами)
     Route::prefix('notifications')->name('notifications.')->group(function () {
-        Route::get('/', [NotificationController::class, 'index'])->name('index');
         Route::get('/recent', [NotificationController::class, 'recent'])->name('recent');
         Route::get('/unread-count', [NotificationController::class, 'unreadCount'])->name('unreadCount');
         Route::post('/{notification}/read', [NotificationController::class, 'markAsRead'])->name('read');
@@ -160,6 +159,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/simulators/{simulator}/start', [SimulatorsController::class, 'start'])->name('simulators.start');
         Route::get('/simulators/session/{session}', [SimulatorsController::class, 'session'])->name('simulators.session');
         Route::post('/simulators/session/{session}/complete', [SimulatorsController::class, 'complete'])->name('simulators.complete');
+
+        // Notifications
+        Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     });
 
     // Партнер
@@ -199,6 +201,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/analytics/export/cases', [AnalyticsController::class, 'exportCases'])->name('analytics.export.cases');
         Route::get('/analytics/export/applications', [AnalyticsController::class, 'exportApplications'])->name('analytics.export.applications');
         Route::get('/analytics/export/teams', [AnalyticsController::class, 'exportTeams'])->name('analytics.export.teams');
+
+        // Notifications
+        Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     });
 });
 
@@ -248,4 +253,7 @@ Route::prefix('admin')->middleware(['auth', 'role:admin|teacher', 'verified'])->
 
     // Search
     Route::get('/search', [SearchController::class, 'index'])->name('search.index');
+
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 });
