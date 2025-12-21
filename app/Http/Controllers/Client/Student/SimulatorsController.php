@@ -49,6 +49,13 @@ class SimulatorsController extends Controller
     {
         $user = auth()->user();
 
+        // Проверить верификацию email
+        if (! $user->hasVerifiedEmail()) {
+            return redirect()
+                ->route('verification.notice')
+                ->with('error', 'Для запуска симулятора необходимо подтвердить ваш email адрес.');
+        }
+
         // Проверить, что симулятор активен
         if (! $simulator->is_active) {
             return redirect()

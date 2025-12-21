@@ -129,14 +129,22 @@ class CasesController extends Controller
     /**
      * Форма создания кейса
      */
-    public function create(): Response
+    public function create(): Response|RedirectResponse
     {
+        $user = auth()->user();
+
+        // Проверить верификацию email
+        if (! $user->hasVerifiedEmail()) {
+            return redirect()
+                ->route('verification.notice')
+                ->with('error', 'Для создания кейса необходимо подтвердить ваш email адрес.');
+        }
+
         try {
             // Получить список всех навыков
             $skills = Skill::all();
 
             // Получить список симуляторов партнера (опционально)
-            $user = auth()->user();
             $simulators = \App\Models\Simulator::where('user_id', $user->id)->get();
 
             return Inertia::render('Client/Partner/Cases/Create', [
@@ -159,6 +167,13 @@ class CasesController extends Controller
     {
         try {
             $user = auth()->user();
+
+            // Проверить верификацию email
+            if (! $user->hasVerifiedEmail()) {
+                return redirect()
+                    ->route('verification.notice')
+                    ->with('error', 'Для создания кейса необходимо подтвердить ваш email адрес.');
+            }
 
             if (! $user->hasRole('partner')) {
                 return redirect()
