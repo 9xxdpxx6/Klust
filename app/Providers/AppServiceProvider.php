@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +22,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Кастомизируем письмо верификации email
+        VerifyEmail::toMailUsing(function ($notifiable, $url) {
+            return (new \App\Mail\VerifyEmailMail($url, $notifiable))
+                ->to($notifiable->getEmailForVerification());
+        });
     }
 }
