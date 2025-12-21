@@ -219,7 +219,7 @@ class ProgressLogService
                 ? "Получено достижение \"{$badge->name}\" уровня {$level}!" 
                 : "Поздравляем! Вы получили достижение \"{$badge->name}\"";
             
-            $this->notificationService->notifyBadgeEarned($user, $badge->name, $level, $isUpgrade);
+            $this->notificationService->notifyBadgeEarned($user, $badge);
         }
     }
 
