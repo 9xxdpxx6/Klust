@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\AppNotification;
 use App\Models\User;
+use App\Notifications\GenericNotification;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Carbon;
 
 class NotificationSeeder extends Seeder
 {
@@ -114,20 +113,30 @@ class NotificationSeeder extends Seeder
                     default => 'Уведомление',
                 };
 
-                AppNotification::create([
-                    'user_id' => $user->id,
-                    'type' => $type,
-                    'title' => $title,
-                    'message' => $message,
-                    'link' => fake()->randomElement(['/cases', '/profile', '/learning', '/']),
-                    'icon' => fake()->randomElement(['fa-bell', 'fa-info-circle', 'fa-check-circle', 'fa-exclamation-triangle']),
-                    'action_text' => fake()->randomElement(['Перейти', 'Открыть', 'Просмотреть', 'Узнать больше']),
-                    'is_read' => fake()->boolean(60), // 60% прочитаны
-                    'created_at' => $createdAt,
-                    'updated_at' => fake()->boolean(60) && fake()->boolean(60) 
-                        ? fake()->dateTimeBetween($createdAt, 'now') 
-                        : $createdAt,
-                ]);
+                $notification = new GenericNotification(
+                    $title,
+                    $message,
+                    $type,
+                    fake()->randomElement(['/cases', '/profile', '/learning', '/']),
+                    fake()->randomElement(['pi-bell', 'pi-info-circle', 'pi-check-circle', 'pi-exclamation-triangle']),
+                    fake()->randomElement(['Перейти', 'Открыть', 'Просмотреть', 'Узнать больше'])
+                );
+
+                $user->notify($notification);
+
+                // Устанавливаем created_at вручную для реалистичности
+                $dbNotification = $user->notifications()->latest()->first();
+                if ($dbNotification) {
+                    $dbNotification->created_at = $createdAt;
+                    $dbNotification->updated_at = fake()->boolean(60) && fake()->boolean(60)
+                        ? fake()->dateTimeBetween($createdAt, 'now')
+                        : $createdAt;
+                    // Отмечаем как прочитанное, если нужно
+                    if (fake()->boolean(60)) {
+                        $dbNotification->read_at = fake()->dateTimeBetween($createdAt, 'now');
+                    }
+                    $dbNotification->save();
+                }
                 
                 $notificationsCreated++;
                 
@@ -227,20 +236,30 @@ class NotificationSeeder extends Seeder
                     default => 'Уведомление',
                 };
 
-                AppNotification::create([
-                    'user_id' => $testUser->id,
-                    'type' => $type,
-                    'title' => $title,
-                    'message' => $message,
-                    'link' => fake()->randomElement(['/cases', '/profile', '/learning', '/']),
-                    'icon' => fake()->randomElement(['fa-bell', 'fa-info-circle', 'fa-check-circle', 'fa-exclamation-triangle']),
-                    'action_text' => fake()->randomElement(['Перейти', 'Открыть', 'Просмотреть', 'Узнать больше']),
-                    'is_read' => fake()->boolean(60),
-                    'created_at' => $createdAt,
-                    'updated_at' => fake()->boolean(60) && fake()->boolean(60) 
-                        ? fake()->dateTimeBetween($createdAt, 'now') 
-                        : $createdAt,
-                ]);
+                $notification = new GenericNotification(
+                    $title,
+                    $message,
+                    $type,
+                    fake()->randomElement(['/cases', '/profile', '/learning', '/']),
+                    fake()->randomElement(['pi-bell', 'pi-info-circle', 'pi-check-circle', 'pi-exclamation-triangle']),
+                    fake()->randomElement(['Перейти', 'Открыть', 'Просмотреть', 'Узнать больше'])
+                );
+
+                $testUser->notify($notification);
+
+                // Устанавливаем created_at вручную для реалистичности
+                $dbNotification = $testUser->notifications()->latest()->first();
+                if ($dbNotification) {
+                    $dbNotification->created_at = $createdAt;
+                    $dbNotification->updated_at = fake()->boolean(60) && fake()->boolean(60)
+                        ? fake()->dateTimeBetween($createdAt, 'now')
+                        : $createdAt;
+                    // Отмечаем как прочитанное, если нужно
+                    if (fake()->boolean(60)) {
+                        $dbNotification->read_at = fake()->dateTimeBetween($createdAt, 'now');
+                    }
+                    $dbNotification->save();
+                }
             }
         }
     }
