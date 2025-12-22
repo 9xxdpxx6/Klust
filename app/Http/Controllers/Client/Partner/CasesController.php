@@ -444,9 +444,14 @@ class CasesController extends Controller
             // Перезагрузить кейс с актуальными данными
             $case->refresh();
 
-            // Отправить уведомления команде (async)
+            // Отправить уведомления команде об изменении статуса (async)
             $notificationStart = microtime(true);
-            $this->notificationService->notifyTeamAboutApproval($updatedApplication);
+            $this->notificationService->notifyTeamAboutStatusChange(
+                $updatedApplication,
+                'pending',
+                'accepted',
+                $request->comment ?? null
+            );
             $notificationTime = round((microtime(true) - $notificationStart) * 1000, 2);
             
             $totalTime = round((microtime(true) - $startTime) * 1000, 2);
@@ -505,11 +510,16 @@ class CasesController extends Controller
             // Перезагрузить кейс с актуальными данными
             $case->refresh();
 
-            // Отправить уведомление лидеру команды (async)
+            // Отправить уведомления команде об изменении статуса (async)
             // Обернуто в try-catch чтобы ошибки уведомлений не ломали основной поток
             $notificationStart = microtime(true);
             try {
-                $this->notificationService->notifyApplicationRejection($updatedApplication, $request->rejection_reason);
+                $this->notificationService->notifyTeamAboutStatusChange(
+                    $updatedApplication,
+                    'pending',
+                    'rejected',
+                    $request->rejection_reason
+                );
             } catch (\Exception $notificationError) {
                 // Логируем ошибку уведомления, но не прерываем процесс
                 Log::warning('Failed to send rejection notification, but application was rejected', [
@@ -564,6 +574,11 @@ class CasesController extends Controller
             $this->authorize('updateApplicationStatus', $case);
 
             $newStatus = $request->validated()['status'];
+            
+            // Загружаем статус если еще не загружен
+            if (!$application->relationLoaded('status')) {
+                $application->load('status');
+            }
             $oldStatus = $application->status->name ?? 'unknown';
 
             // Изменить статус заявки
@@ -578,15 +593,16 @@ class CasesController extends Controller
             // Перезагрузить кейс с актуальными данными
             $case->refresh();
 
-            // Отправить уведомления если нужно (async)
+            // Отправить уведомления команде при любом изменении статуса (async)
             $notificationTime = 0;
-            if ($newStatus === 'accepted') {
+            if ($oldStatus !== $newStatus) {
                 $notificationStart = microtime(true);
-                $this->notificationService->notifyTeamAboutApproval($updatedApplication);
-                $notificationTime = round((microtime(true) - $notificationStart) * 1000, 2);
-            } elseif ($newStatus === 'rejected') {
-                $notificationStart = microtime(true);
-                $this->notificationService->notifyApplicationRejection($updatedApplication, $request->comment);
+                $this->notificationService->notifyTeamAboutStatusChange(
+                    $updatedApplication,
+                    $oldStatus,
+                    $newStatus,
+                    $request->comment ?? null
+                );
                 $notificationTime = round((microtime(true) - $notificationStart) * 1000, 2);
             }
 

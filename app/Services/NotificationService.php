@@ -9,6 +9,7 @@ use App\Models\CaseModel;
 use App\Models\User;
 use App\Notifications\ApplicationApprovedNotification;
 use App\Notifications\ApplicationRejectedNotification;
+use App\Notifications\ApplicationStatusChangedNotification;
 use App\Notifications\ApplicationSubmittedNotification;
 use App\Notifications\BadgeEarnedNotification;
 use App\Notifications\NewCasePublishedNotification;
@@ -225,6 +226,71 @@ class NotificationService
                 'points_earned' => $pointsEarned,
                 'error' => $e->getMessage(),
             ]);
+        }
+    }
+
+    /**
+     * Notify team about application status change
+     * Уведомляет всех участников команды (лидера и членов) об изменении статуса заявки
+     */
+    public function notifyTeamAboutStatusChange(
+        CaseApplication $application,
+        string $oldStatusName,
+        string $newStatusName,
+        ?string $comment = null
+    ): void {
+        // Загружаем необходимые связи
+        $application->load([
+            'leader:id,name,email',
+            'teamMembers.user:id,name,email',
+            'case:id,title',
+            'status:id,name,label',
+        ]);
+
+        // Уведомляем лидера
+        if ($application->leader) {
+            try {
+                $application->leader->notify(
+                    new ApplicationStatusChangedNotification(
+                        $application,
+                        $oldStatusName,
+                        $newStatusName,
+                        $comment
+                    )
+                );
+            } catch (\Exception $e) {
+                Log::error('Failed to notify leader about status change', [
+                    'application_id' => $application->id,
+                    'leader_id' => $application->leader_id,
+                    'old_status' => $oldStatusName,
+                    'new_status' => $newStatusName,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        // Уведомляем участников команды
+        foreach ($application->teamMembers as $teamMember) {
+            if ($teamMember->user) {
+                try {
+                    $teamMember->user->notify(
+                        new ApplicationStatusChangedNotification(
+                            $application,
+                            $oldStatusName,
+                            $newStatusName,
+                            $comment
+                        )
+                    );
+                } catch (\Exception $e) {
+                    Log::error('Failed to notify team member about status change', [
+                        'application_id' => $application->id,
+                        'team_member_id' => $teamMember->user_id,
+                        'old_status' => $oldStatusName,
+                        'new_status' => $newStatusName,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
         }
     }
 }
