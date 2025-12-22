@@ -57,6 +57,11 @@ export function useNotifications(autoLoad = false) {
         unreadCount.value = Math.max(0, unreadCount.value - 1);
       }
 
+      // Отправить событие для обновления других экземпляров
+      window.dispatchEvent(new CustomEvent('notification-read', { 
+        detail: { notificationId, unreadCount: unreadCount.value } 
+      }));
+
       return true;
     } catch (error) {
       console.error('Failed to mark notification as read:', error);
@@ -79,6 +84,11 @@ export function useNotifications(autoLoad = false) {
         }
       });
       unreadCount.value = 0;
+
+      // Отправить событие для обновления других экземпляров
+      window.dispatchEvent(new CustomEvent('notifications-all-read', { 
+        detail: { unreadCount: 0 } 
+      }));
 
       return true;
     } catch (error) {
