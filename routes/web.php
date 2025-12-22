@@ -128,6 +128,8 @@ Route::middleware('auth')->group(function () {
 
     // Студент
     Route::prefix('student')->middleware(['role:student', 'verified'])->name('student.')->group(function () {
+        Route::get('/', [StudentDashboardController::class, 'redirect']);
+
         // Dashboard
         Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('dashboard');
 
@@ -167,6 +169,8 @@ Route::middleware('auth')->group(function () {
 
     // Партнер
     Route::prefix('partner')->middleware(['role:partner|admin|teacher', 'verified'])->name('partner.')->group(function () {
+        Route::get('/', [PartnerDashboardController::class, 'redirect']);
+
         // Dashboard
         Route::get('/dashboard', [PartnerDashboardController::class, 'index'])->name('dashboard');
 
@@ -216,6 +220,8 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::prefix('admin')->middleware(['auth', 'role:admin|teacher', 'verified'])->name('admin.')->group(function () {
+    Route::get('/', [DashboardController::class, 'redirect']);
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Profile

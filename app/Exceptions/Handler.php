@@ -9,11 +9,11 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\Request;
 use Illuminate\Session\TokenMismatchException;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -30,45 +30,48 @@ class Handler extends ExceptionHandler
     ];
 
     /**
+     * Исключения, которые не нужно логировать.
+     * ValidationException - это нормальная валидация форм, не ошибка.
+     * NotFoundHttpException (404) - нормальные запросы несуществующих страниц.
+     *
+     * @var array<int, class-string<Throwable>>
+     */
+    protected $dontReport = [
+        ValidationException::class,
+        NotFoundHttpException::class,
+    ];
+
+    /**
      * Register the exception handling callbacks for the application.
      */
     public function register(): void
     {
+        // Фильтруем исключения, которые не нужно логировать
         $this->reportable(function (Throwable $e) {
-            // Пропускаем логирование для .well-known запросов (Chrome DevTools и другие инструменты)
             $request = request();
+            
+            // Исключаем .well-known запросы (Chrome DevTools и другие инструменты)
             if ($request && str_contains($request->path(), '.well-known')) {
-                return;
+                return false;
             }
 
-            // Логируем все исключения
-            Log::error('Exception occurred', [
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString(),
-                'class' => get_class($e),
-            ]);
+            // Не логируем 404 ошибки (нормальные запросы несуществующих страниц)
+            if ($e instanceof NotFoundHttpException) {
+                return false;
+            }
+
+            // Не логируем ValidationException (нормальная валидация форм)
+            if ($e instanceof ValidationException) {
+                return false;
+            }
         });
 
         // Обработка ошибок для Inertia запросов
         $this->renderable(function (Throwable $e, Request $request) {
-            // Пропускаем логирование для .well-known запросов (Chrome DevTools и другие инструменты)
+            // Пропускаем обработку для .well-known запросов
             if (str_contains($request->path(), '.well-known')) {
                 return null;
             }
-
-            // Логируем ошибку перед обработкой
-            Log::error('Inertia error rendering', [
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString(),
-                'class' => get_class($e),
-                'url' => $request->fullUrl(),
-                'method' => $request->method(),
-                'is_inertia' => $request->header('X-Inertia') !== null,
-            ]);
 
             // Проверяем, является ли запрос Inertia запросом
             if (!$request->header('X-Inertia')) {

@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Client\Partner;
 use App\Http\Controllers\Controller;
 use App\Services\CaseService;
 use App\Services\PartnerService;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -17,6 +18,14 @@ class DashboardController extends Controller
         private CaseService $caseService
     ) {
         $this->middleware(['auth', 'role:partner']);
+    }
+
+    /**
+     * Редирект с /partner на dashboard
+     */
+    public function redirect(): RedirectResponse
+    {
+        return redirect()->route('partner.dashboard');
     }
 
     /**
