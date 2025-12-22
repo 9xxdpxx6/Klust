@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Services\ApplicationService;
 use App\Services\CaseService;
 use App\Services\StudentService;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -19,6 +20,14 @@ class DashboardController extends Controller
         private ApplicationService $applicationService
     ) {
         $this->middleware(['auth', 'role:student']);
+    }
+
+    /**
+     * Редирект с /student на dashboard
+     */
+    public function redirect(): RedirectResponse
+    {
+        return redirect()->route('student.dashboard');
     }
 
     /**
