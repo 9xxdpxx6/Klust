@@ -36,7 +36,7 @@
                         :disabled="loading"
                         class="w-full"
                     />
-                    <p v-if="error" class="mt-1 text-sm text-red-600">{{ error }}</p>
+                    <p v-if="error || serverError" class="mt-1 text-sm text-red-600">{{ error || serverError }}</p>
                     <p v-else class="mt-1 text-xs text-gray-500">
                         Минимум 10 символов. Осталось символов: {{ remainingChars }}
                     </p>
@@ -103,6 +103,10 @@ const props = defineProps({
         default: false,
     },
     loadingText: {
+        type: String,
+        default: null,
+    },
+    serverError: {
         type: String,
         default: null,
     },
@@ -179,6 +183,14 @@ const handleClose = () => {
 watch(rejectionReason, () => {
     if (error.value) {
         validate()
+    }
+})
+
+// Очистка серверной ошибки при изменении текста
+watch(rejectionReason, () => {
+    if (props.serverError) {
+        // Серверная ошибка будет очищена при следующем запросе
+        // или можно эмитить событие для очистки на родительском компоненте
     }
 })
 

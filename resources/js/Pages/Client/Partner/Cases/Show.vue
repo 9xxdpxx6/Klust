@@ -311,11 +311,20 @@
                     >
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-4">
-                                <img 
-                                    class="h-12 w-12 rounded-full object-cover" 
-                                    :src="application.leader?.avatar_url || '/images/default-avatar.png'" 
-                                    :alt="application.leader?.name"
-                                />
+                                <div class="flex-shrink-0">
+                                    <img
+                                        v-if="application.leader?.avatar_url"
+                                        class="h-12 w-12 rounded-full object-cover border-2 border-gray-200"
+                                        :src="application.leader.avatar_url"
+                                        :alt="application.leader?.name"
+                                    />
+                                    <div
+                                        v-else
+                                        class="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center border-2 border-gray-200"
+                                    >
+                                        <span class="text-white text-sm font-bold">{{ getUserInitials(application.leader?.name) }}</span>
+                                    </div>
+                                </div>
                                 <div>
                                     <p class="text-sm font-semibold text-gray-900">{{ application.leader?.name }}</p>
                                     <p class="text-xs text-gray-500">{{ application.leader?.email }}</p>
@@ -538,6 +547,7 @@
             @update:visible="showApplicationModal = $event"
             @confirm="handleApplicationConfirm"
             :loading="applicationProcessing"
+            :server-error="page.props.errors?.rejection_reason"
         />
     </div>
 </template>
@@ -860,13 +870,18 @@ const handleApplicationConfirm = (data) => {
         payload,
         {
             preserveScroll: true,
+            preserveState: false, // Перезагружаем состояние после успешного действия
             onSuccess: () => {
                 showApplicationModal.value = false;
                 selectedApplicationId.value = null;
                 applicationProcessing.value = false;
+                // Редирект уже произошел на сервере, Inertia автоматически обновит URL
             },
             onError: () => {
                 applicationProcessing.value = false;
+                // При ошибке валидации модальное окно должно остаться открытым
+                // чтобы пользователь мог видеть ошибки и исправить их
+                // Ошибки валидации доступны через $page.props.errors
             },
             onFinish: () => {
                 applicationProcessing.value = false;
@@ -921,4 +936,14 @@ const deleteCase = () => {
         }
     });
 };
+
+const getUserInitials = (name) => {
+    if (!name) return '??'
+    return name
+        .split(' ')
+        .map(part => part.charAt(0))
+        .join('')
+        .toUpperCase()
+        .substring(0, 2)
+}
 </script>

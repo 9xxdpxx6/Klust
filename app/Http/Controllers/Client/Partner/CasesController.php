@@ -506,8 +506,17 @@ class CasesController extends Controller
             $case->refresh();
 
             // Отправить уведомление лидеру команды (async)
+            // Обернуто в try-catch чтобы ошибки уведомлений не ломали основной поток
             $notificationStart = microtime(true);
-            $this->notificationService->notifyApplicationRejection($updatedApplication, $request->rejection_reason);
+            try {
+                $this->notificationService->notifyApplicationRejection($updatedApplication, $request->rejection_reason);
+            } catch (\Exception $notificationError) {
+                // Логируем ошибку уведомления, но не прерываем процесс
+                Log::warning('Failed to send rejection notification, but application was rejected', [
+                    'application_id' => $updatedApplication->id,
+                    'error' => $notificationError->getMessage(),
+                ]);
+            }
             $notificationTime = round((microtime(true) - $notificationStart) * 1000, 2);
             
             $totalTime = round((microtime(true) - $startTime) * 1000, 2);
@@ -520,9 +529,9 @@ class CasesController extends Controller
                 'notification_time_ms' => $notificationTime,
                 'total_time_ms' => $totalTime,
             ]);
-
+            
             return redirect()
-                ->route('partner.cases.show', $case)
+                ->route('partner.cases.show', $case->id)
                 ->with('success', 'Заявка отклонена');
         } catch (\Exception $e) {
             $totalTime = round((microtime(true) - $startTime) * 1000, 2);
@@ -531,10 +540,14 @@ class CasesController extends Controller
                 'application_id' => $application->id,
                 'case_id' => $case->id,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
                 'total_time_ms' => $totalTime,
+                'exception_class' => get_class($e),
             ]);
+            
+            // Редиректим на страницу кейса вместо back(), чтобы избежать проблем с GET запросами
             return redirect()
-                ->back()
+                ->route('partner.cases.show', $case->id)
                 ->with('error', 'Ошибка при отклонении заявки: '.$e->getMessage());
         }
     }

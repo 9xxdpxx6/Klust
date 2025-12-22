@@ -82,12 +82,19 @@
                     :href="route('partner.students.show', team.leader.id)"
                     class="flex items-center p-4 border border-gray-200 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer"
                 >
-                    <div class="flex-shrink-0 h-12 w-12">
+                    <div class="flex-shrink-0">
                         <img
-                            class="h-12 w-12 rounded-full object-cover"
-                            :src="team.leader.avatar_url || '/images/default-avatar.png'"
+                            v-if="team.leader.avatar_url"
+                            class="h-12 w-12 rounded-full object-cover border-2 border-gray-200"
+                            :src="team.leader.avatar_url"
                             :alt="team.leader.name"
                         />
+                        <div
+                            v-else
+                            class="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center border-2 border-gray-200"
+                        >
+                            <span class="text-white text-sm font-bold">{{ getUserInitials(team.leader.name) }}</span>
+                        </div>
                     </div>
                     <div class="ml-4 flex-1">
                         <div class="flex items-center">
@@ -108,12 +115,19 @@
                     :href="route('partner.students.show', member.user?.id)"
                     class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
                 >
-                    <div class="flex-shrink-0 h-12 w-12">
+                    <div class="flex-shrink-0">
                         <img
-                            class="h-12 w-12 rounded-full object-cover"
-                            :src="member.user?.avatar_url || member.user?.avatar || '/images/default-avatar.png'"
+                            v-if="member.user?.avatar_url || member.user?.avatar"
+                            class="h-12 w-12 rounded-full object-cover border-2 border-gray-200"
+                            :src="member.user?.avatar_url || member.user?.avatar"
                             :alt="member.user?.name"
                         />
+                        <div
+                            v-else
+                            class="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center border-2 border-gray-200"
+                        >
+                            <span class="text-white text-sm font-bold">{{ getUserInitials(member.user?.name) }}</span>
+                        </div>
                     </div>
                     <div class="ml-4 flex-1">
                         <p class="text-sm font-medium text-gray-900">{{ member.user?.name }}</p>
@@ -244,6 +258,16 @@ const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('ru-RU');
 };
+
+const getUserInitials = (name) => {
+    if (!name) return '??'
+    return name
+        .split(' ')
+        .map(part => part.charAt(0))
+        .join('')
+        .toUpperCase()
+        .substring(0, 2)
+}
 
 const formatDateTime = (dateString) => {
     if (!dateString) return 'Не указан';

@@ -31,10 +31,12 @@ class ApplicationRejectedNotification extends Notification implements ShouldQueu
      */
     public function toMail($notifiable): MailMessage
     {
+        $rejectionReason = $this->application->rejection_reason ?? 'Не указана';
+        
         return (new MailMessage)
             ->subject('Заявка отклонена')
             ->line("Ваша заявка на кейс '{$this->application->case->title}' была отклонена.")
-            ->line("Причина: {$this->application->rejection_reason ?? 'Не указана'}")
+            ->line("Причина: {$rejectionReason}")
             ->action('Подать заявку на другой кейс', url('/student/cases'))
             ->line('Спасибо за участие. Попробуйте подать заявку на другой кейс!');
     }
