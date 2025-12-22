@@ -307,10 +307,11 @@
                     <div
                         v-for="application in applications.data"
                         :key="application.id"
-                        class="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors relative"
+                        class="p-5 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
                     >
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-4">
+                        <!-- Верхняя часть: информация о лидере и действия -->
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center gap-4 flex-1">
                                 <div class="flex-shrink-0">
                                     <img
                                         v-if="application.leader?.avatar_url"
@@ -325,15 +326,17 @@
                                         <span class="text-white text-sm font-bold">{{ getUserInitials(application.leader?.name) }}</span>
                                     </div>
                                 </div>
-                                <div>
+                                <div class="flex-1 min-w-0">
                                     <p class="text-sm font-semibold text-gray-900">{{ application.leader?.name }}</p>
                                     <p class="text-xs text-gray-500">{{ application.leader?.email }}</p>
                                     <p class="text-xs text-gray-500 mt-1">Размер команды: {{ application.team_size || 1 }}</p>
+                                    <p class="text-xs text-gray-500 mt-1">Подана: {{ formatDate(application.created_at) }}</p>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-4">
+                            
+                            <div class="flex items-center gap-3 flex-shrink-0">
                                 <span
-                                    class="px-3 py-1 rounded-full text-xs font-medium"
+                                    class="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap"
                                     :class="getStatusClass(application.status?.name)"
                                 >
                                     {{ application.status?.label || application.status?.name }}
@@ -342,14 +345,14 @@
                                     <button
                                         v-if="application.status?.name === 'pending' && isCaseActive"
                                         @click="approveApplication(application.id)"
-                                        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                                        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium whitespace-nowrap"
                                     >
                                         Одобрить
                                     </button>
                                     <button
                                         v-if="application.status?.name === 'pending' && isCaseActive"
                                         @click="rejectApplication(application.id)"
-                                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+                                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium whitespace-nowrap"
                                     >
                                         Отклонить
                                     </button>
@@ -384,8 +387,39 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="mt-3 text-xs text-gray-500">
-                            Подана: {{ formatDate(application.created_at) }}
+                        
+                        <!-- Соответствие навыкам кейса -->
+                        <div v-if="caseData.skills && caseData.skills.length > 0" class="pt-4 border-t border-gray-200">
+                            <div class="flex items-center justify-between mb-3">
+                                <p class="text-xs font-semibold text-gray-700 uppercase tracking-wide">Соответствие навыкам:</p>
+                                <div class="text-xs text-gray-600">
+                                    <span class="inline-flex items-center gap-1.5">
+                                        <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                        Покрыто: {{ getCoveredSkillsCount(application) }}/{{ caseData.skills.length }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <span
+                                    v-for="skill in caseData.skills"
+                                    :key="skill.id"
+                                    :class="[
+                                        'inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors',
+                                        isSkillCovered(application, skill.id)
+                                            ? 'bg-green-100 text-green-800 border-green-300'
+                                            : 'bg-red-100 text-red-800 border-red-300'
+                                    ]"
+                                    :title="isSkillCovered(application, skill.id) ? 'Навык есть у команды' : 'Навык отсутствует у команды'"
+                                >
+                                    <i 
+                                        :class="[
+                                            'mr-1.5 text-xs',
+                                            isSkillCovered(application, skill.id) ? 'pi pi-check-circle' : 'pi pi-times-circle'
+                                        ]"
+                                    ></i>
+                                    {{ skill.name }}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -946,5 +980,23 @@ const getUserInitials = (name) => {
         .join('')
         .toUpperCase()
         .substring(0, 2)
+}
+
+// Проверка, покрыт ли навык командой (для заявки)
+const isSkillCovered = (application, skillId) => {
+    if (!application.covered_skill_ids || !Array.isArray(application.covered_skill_ids)) {
+        return false;
+    }
+    // Преобразуем оба ID в числа для надежного сравнения
+    const skillIdNum = Number(skillId);
+    return application.covered_skill_ids.some(id => Number(id) === skillIdNum);
+}
+
+// Подсчет количества покрытых навыков (для заявки)
+const getCoveredSkillsCount = (application) => {
+    if (!application.covered_skill_ids || !Array.isArray(application.covered_skill_ids)) {
+        return 0;
+    }
+    return application.covered_skill_ids.length;
 }
 </script>
