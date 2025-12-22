@@ -129,7 +129,7 @@
                 </div>
                 <div class="p-6" v-if="recommendations && recommendations.length > 0">
                     <div class="space-y-4">
-                        <GuestCaseCard
+                        <StudentCaseCard
                             v-for="caseItem in recommendations.slice(0, 5)"
                             :key="caseItem.id"
                             :case-data="caseItem"
@@ -296,7 +296,7 @@ import { route } from 'ziggy-js';
 import Badge from '@/Components/UI/Badge.vue';
 import Button from '@/Components/UI/Button.vue';
 import CaseCard from '@/Components/CaseCard.vue';
-import GuestCaseCard from '@/Components/GuestCaseCard.vue';
+import StudentCaseCard from '@/Components/StudentCaseCard.vue';
 import ApplyCaseModal from '@/Components/ApplyCaseModal.vue';
 import SkillCard from '@/Components/SkillCard.vue';
 import { routeExists } from '@/Utils/routes';

@@ -76,7 +76,7 @@
 
             <!-- Кейсы -->
             <div v-if="cases.data && cases.data.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <GuestCaseCard
+                <StudentCaseCard
                     v-for="caseItem in cases.data"
                     :key="caseItem.id"
                     :case-data="caseItem"
@@ -123,7 +123,7 @@ import { Head, router } from '@inertiajs/vue3';
 import Card from '@/Components/UI/Card.vue';
 import SearchInput from '@/Components/UI/SearchInput.vue';
 import Select from '@/Components/UI/Select.vue';
-import GuestCaseCard from '@/Components/GuestCaseCard.vue';
+import StudentCaseCard from '@/Components/StudentCaseCard.vue';
 import ApplyCaseModal from '@/Components/ApplyCaseModal.vue';
 import MultiSelect from 'primevue/multiselect';
 import Paginator from 'primevue/paginator';
