@@ -16,21 +16,23 @@
     </button>
     
     <Popover ref="popover">
-      <div class="notification-panel w-80 max-w-[90vw]">
+      <div class="notification-panel w-[28rem] max-w-[90vw]">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-semibold text-text-primary">Уведомления</h3>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 whitespace-nowrap">
             <Link
               :href="notificationsRoute"
-              class="text-sm text-primary hover:text-primary-light"
+              class="text-sm text-primary hover:text-primary-light whitespace-nowrap"
+              @click="closePopover"
             >
               Все уведомления
             </Link>
             <button
               v-if="hasUnread"
               @click="markAllAsRead"
-              class="text-sm text-primary hover:text-primary-light"
+              class="px-3 py-1.5 text-sm font-medium text-white rounded-lg transition-colors whitespace-nowrap flex items-center gap-1.5 mark-all-button"
             >
+              <i class="pi pi-check"></i>
               Отметить все
             </button>
           </div>
@@ -123,6 +125,12 @@ const togglePopover = (event) => {
   }
 };
 
+const closePopover = () => {
+  if (popover.value) {
+    popover.value.hide();
+  }
+};
+
 // Определяем маршрут уведомлений на основе роли
 const notificationsRoute = computed(() => {
   const roles = userRoles.value;
@@ -168,7 +176,7 @@ const formatDate = (dateString) => {
 
 <style scoped>
 .notification-panel {
-  min-width: 20rem;
+  min-width: 28rem;
 }
 
 /* Увеличиваем размер иконки колокольчика в 2 раза */
@@ -195,6 +203,16 @@ button .pi-bell {
 .notification-item:not(.notification-item--read) {
   border-left-color: var(--color-primary);
   background-color: var(--color-surface-light);
+}
+
+.mark-all-button {
+  background-color: rgb(65 99 223);
+  border: 1px solid rgb(65 99 223);
+}
+
+.mark-all-button:hover {
+  background-color: rgb(51 79 180);
+  border-color: rgb(51 79 180);
 }
 </style>
 
