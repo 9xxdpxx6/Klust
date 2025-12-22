@@ -9,6 +9,7 @@
         @click="markAllAsRead"
         :loading="loading"
         outlined
+        class="mark-all-read-button"
       />
     </div>
 
@@ -192,6 +193,22 @@ const formatDate = (dateString) => {
 
 .notification-card {
   /* Ховер эффект убран */
+}
+
+/* Стили для кнопки "Отметить все как прочитанные" */
+:deep(.mark-all-read-button.p-button-outlined) {
+  color: rgb(65 99 223);
+  border-color: rgb(65 99 223);
+}
+
+:deep(.mark-all-read-button.p-button-outlined:hover) {
+  background-color: rgb(65 99 223 / 0.1);
+  border-color: rgb(65 99 223);
+  color: rgb(65 99 223);
+}
+
+:deep(.mark-all-read-button.p-button-outlined:focus) {
+  box-shadow: 0 0 0 0.2rem rgb(65 99 223 / 0.2);
 }
 </style>
 
