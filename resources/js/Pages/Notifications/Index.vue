@@ -9,6 +9,7 @@
         @click="markAllAsRead"
         :loading="loading"
         outlined
+        class="mark-all-read-button"
       />
     </div>
 
@@ -84,6 +85,7 @@
               <Link
                 :href="notification.data.link"
                 class="text-sm text-primary hover:opacity-80 inline-flex items-center gap-1 transition-opacity"
+                @click="handleLinkClick(notification)"
               >
                 {{ notification.data.action_text || 'Перейти' }}
                 <i class="pi pi-arrow-right text-xs"></i>
@@ -120,6 +122,7 @@ const {
   markAsRead: markAsReadComposable,
   markAllAsRead: markAllAsReadComposable,
   remove: removeComposable,
+  fetchUnreadCount,
   loading,
 } = useNotifications(false);
 
@@ -134,6 +137,8 @@ const markAsRead = async (notificationId) => {
   markingRead.value = notificationId;
   try {
     await markAsReadComposable(notificationId);
+    // Обновить счетчик (событие уже отправлено из composable)
+    await fetchUnreadCount();
     // Обновляем страницу для синхронизации данных
     router.reload({ only: ['notifications'] });
   } finally {
@@ -141,9 +146,18 @@ const markAsRead = async (notificationId) => {
   }
 };
 
+const handleLinkClick = async (notification) => {
+  // Пометить уведомление как прочитанное при клике на ссылку
+  if (!notification.read_at) {
+    await markAsReadComposable(notification.id);
+  }
+};
+
 const markAllAsRead = async () => {
   try {
     await markAllAsReadComposable();
+    // Обновить счетчик (событие уже отправлено из composable)
+    await fetchUnreadCount();
     router.reload({ only: ['notifications'] });
   } catch (error) {
     console.error('Failed to mark all as read:', error);
@@ -192,6 +206,22 @@ const formatDate = (dateString) => {
 
 .notification-card {
   /* Ховер эффект убран */
+}
+
+/* Стили для кнопки "Отметить все как прочитанные" */
+:deep(.mark-all-read-button.p-button-outlined) {
+  color: rgb(65 99 223);
+  border-color: rgb(65 99 223);
+}
+
+:deep(.mark-all-read-button.p-button-outlined:hover) {
+  background-color: rgb(65 99 223 / 0.1);
+  border-color: rgb(65 99 223);
+  color: rgb(65 99 223);
+}
+
+:deep(.mark-all-read-button.p-button-outlined:focus) {
+  box-shadow: 0 0 0 0.2rem rgb(65 99 223 / 0.2);
 }
 </style>
 

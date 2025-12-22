@@ -69,13 +69,12 @@
         Подробнее
       </button>
       <div v-else class="flex gap-2 justify-end">
-        <div v-if="hasApplication" class="inline-flex items-center justify-center px-3 h-8 bg-blue-50 border border-blue-200 rounded-md text-sm">
-          <i class="pi pi-check-circle text-blue-600 mr-2"></i>
-          <span class="font-medium text-blue-700">{{ applicationStatusLabel }}</span>
+        <div v-if="hasApplication" :class="statusBadgeClasses" class="inline-flex items-center justify-center px-3 h-8 rounded-md text-sm">
+          <i :class="statusIconClasses" class="mr-2"></i>
+          <span :class="statusTextClasses" class="font-medium">{{ applicationStatusLabel }}</span>
         </div>
-        <!-- Показываем кнопку "Просмотр" для принятых заявок или если заявки нет -->
+        <!-- Всегда показываем кнопку "Просмотр" -->
         <Button
-          v-if="!hasApplication || isApplicationAccepted"
           variant="outline"
           size="sm"
           @click.stop.prevent="handleView"
@@ -176,6 +175,45 @@ const applicationStatusLabel = computed(() => {
 const isApplicationAccepted = computed(() => {
   if (!props.hasApplication || !props.applicationStatus) return false
   return props.applicationStatus.status === 'accepted'
+})
+
+const statusBadgeClasses = computed(() => {
+  if (!props.hasApplication || !props.applicationStatus) return ''
+  
+  const status = props.applicationStatus.status
+  if (status === 'accepted') {
+    return 'bg-green-50 border border-green-200'
+  } else if (status === 'rejected') {
+    return 'bg-red-50 border border-red-200'
+  }
+  // pending - по умолчанию синий
+  return 'bg-blue-50 border border-blue-200'
+})
+
+const statusIconClasses = computed(() => {
+  if (!props.hasApplication || !props.applicationStatus) return 'pi pi-check-circle text-blue-600'
+  
+  const status = props.applicationStatus.status
+  if (status === 'accepted') {
+    return 'pi pi-check-circle text-green-600'
+  } else if (status === 'rejected') {
+    return 'pi pi-times-circle text-red-600'
+  }
+  // pending
+  return 'pi pi-check-circle text-blue-600'
+})
+
+const statusTextClasses = computed(() => {
+  if (!props.hasApplication || !props.applicationStatus) return 'text-blue-700'
+  
+  const status = props.applicationStatus.status
+  if (status === 'accepted') {
+    return 'text-green-700'
+  } else if (status === 'rejected') {
+    return 'text-red-700'
+  }
+  // pending
+  return 'text-blue-700'
 })
 
 const getPartnerName = () => {

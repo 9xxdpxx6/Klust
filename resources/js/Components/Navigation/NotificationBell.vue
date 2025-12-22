@@ -16,21 +16,23 @@
     </button>
     
     <Popover ref="popover">
-      <div class="notification-panel w-80 max-w-[90vw]">
+      <div class="notification-panel w-[28rem] max-w-[90vw]">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-semibold text-text-primary">Уведомления</h3>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 whitespace-nowrap">
             <Link
               :href="notificationsRoute"
-              class="text-sm text-primary hover:text-primary-light"
+              class="text-sm text-primary hover:text-primary-light whitespace-nowrap"
+              @click="closePopover"
             >
               Все уведомления
             </Link>
             <button
               v-if="hasUnread"
               @click="markAllAsRead"
-              class="text-sm text-primary hover:text-primary-light"
+              class="px-3 py-1.5 text-sm font-medium text-white rounded-lg transition-colors whitespace-nowrap flex items-center gap-1.5 mark-all-button"
             >
+              <i class="pi pi-check"></i>
               Отметить все
             </button>
           </div>
@@ -43,7 +45,7 @@
 
         <div v-else-if="notifications.length === 0" class="text-center py-8 text-text-muted">
           <i class="pi pi-inbox text-4xl mb-2"></i>
-          <p>Нет уведомлений</p>
+          <p>Нет новых уведомлений</p>
         </div>
 
         <div v-else class="space-y-2 max-h-96 overflow-y-auto">
@@ -78,7 +80,7 @@
               <!-- Кнопка "отметить как прочитанное" -->
               <button
                 v-if="!notification.read_at"
-                @click.stop="markAsRead(notification.id)"
+                @click.stop="handleMarkAsRead(notification.id)"
                 class="text-xs text-primary hover:text-primary-light flex-shrink-0"
                 title="Отметить как прочитанное"
               >
@@ -93,7 +95,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import Badge from 'primevue/badge';
 import Popover from 'primevue/popover';
@@ -108,6 +110,8 @@ const {
   hasUnread,
   markAsRead,
   markAllAsRead,
+  fetchUnreadCount,
+  fetchRecentNotifications,
   loading
 } = useNotifications(true);
 
@@ -117,9 +121,20 @@ const userRoles = computed(() => page.props.auth?.user?.roles || []);
 const popover = ref(null);
 const targetButton = ref(null);
 
-const togglePopover = (event) => {
+const togglePopover = async (event) => {
   if (popover.value && event.currentTarget) {
     popover.value.toggle(event, event.currentTarget);
+    // Обновить данные при открытии popover
+    await Promise.all([
+      fetchUnreadCount(),
+      fetchRecentNotifications()
+    ]);
+  }
+};
+
+const closePopover = () => {
+  if (popover.value) {
+    popover.value.hide();
   }
 };
 
@@ -136,10 +151,16 @@ const notificationsRoute = computed(() => {
   return route('student.notifications.index'); // По умолчанию
 });
 
+const handleMarkAsRead = async (notificationId) => {
+  await markAsRead(notificationId);
+  // Обновить счетчик после пометки
+  await fetchUnreadCount();
+};
+
 const handleNotificationClick = async (notification) => {
   // Отметить как прочитанное
   if (!notification.read_at) {
-    await markAsRead(notification.id);
+    await handleMarkAsRead(notification.id);
   }
 
   // Переход по ссылке, если она есть
@@ -164,11 +185,52 @@ const formatDate = (dateString) => {
 
   return date.toLocaleDateString('ru-RU');
 };
+
+// Обновлять счетчик при изменении URL (когда пользователь возвращается на страницу)
+watch(() => page.url, () => {
+  fetchUnreadCount();
+});
+
+// Слушать события обновления уведомлений от других компонентов
+const handleNotificationRead = async (event) => {
+  const { notificationId } = event.detail;
+  // Обновить локальное состояние
+  const notification = notifications.value.find(n => n.id === notificationId);
+  if (notification && !notification.read_at) {
+    notification.read_at = new Date().toISOString();
+  }
+  // Обновить список уведомлений и счетчик через API для точности
+  await Promise.all([
+    fetchUnreadCount(),
+    fetchRecentNotifications()
+  ]);
+};
+
+const handleAllRead = async (event) => {
+  // Обновить все уведомления
+  notifications.value.forEach(n => {
+    if (!n.read_at) {
+      n.read_at = new Date().toISOString();
+    }
+  });
+  // Всегда обновляем счетчик через API для точности
+  await fetchUnreadCount();
+};
+
+onMounted(() => {
+  window.addEventListener('notification-read', handleNotificationRead);
+  window.addEventListener('notifications-all-read', handleAllRead);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('notification-read', handleNotificationRead);
+  window.removeEventListener('notifications-all-read', handleAllRead);
+});
 </script>
 
 <style scoped>
 .notification-panel {
-  min-width: 20rem;
+  min-width: 28rem;
 }
 
 /* Увеличиваем размер иконки колокольчика в 2 раза */
@@ -195,6 +257,16 @@ button .pi-bell {
 .notification-item:not(.notification-item--read) {
   border-left-color: var(--color-primary);
   background-color: var(--color-surface-light);
+}
+
+.mark-all-button {
+  background-color: rgb(65 99 223);
+  border: 1px solid rgb(65 99 223);
+}
+
+.mark-all-button:hover {
+  background-color: rgb(51 79 180);
+  border-color: rgb(51 79 180);
 }
 </style>
 

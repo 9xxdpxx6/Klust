@@ -115,7 +115,7 @@
 import { computed } from 'vue'
 import { Head, Link, usePage } from '@inertiajs/vue3'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
-import GuestCaseCard from '@/Components/GuestCaseCard.vue'
+import GuestCaseCard from '@/Components/StudentCaseCard.vue'
 
 const page = usePage()
 
