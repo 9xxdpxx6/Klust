@@ -810,13 +810,14 @@ const toggleStatusMenu = (applicationId) => {
 const updateApplicationStatus = (applicationId, newStatus) => {
     openStatusMenuId.value = null;
     
-    router.patch(
+    router.visit(
         route('partner.cases.applications.status.update', {
             case: props.caseData.id,
             application: applicationId
         }),
-        { status: newStatus },
         {
+            method: 'patch',
+            data: { status: newStatus },
             preserveScroll: true,
             onSuccess: () => {
                 // Перезагружаем заявки

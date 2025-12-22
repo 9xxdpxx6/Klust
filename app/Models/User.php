@@ -142,4 +142,26 @@ class User extends Authenticatable
             set: fn ($value) => $value, // При сохранении сохраняем как есть (относительный путь)
         );
     }
+
+    /**
+     * Route notifications for the mail channel.
+     * Проверяет валидность email и возвращает валидный email или null.
+     *
+     * @param  \Illuminate\Notifications\Notification  $notification
+     * @return array<string, string>|string|null
+     */
+    public function routeNotificationForMail($notification): array|string|null
+    {
+        $email = $this->email ?? null;
+
+        // Проверяем валидность email
+        if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            // Если email невалидный, возвращаем null
+            // Laravel не отправит письмо, но это лучше чем ошибка
+            return null;
+        }
+
+        // Возвращаем email с именем
+        return [$email => $this->name];
+    }
 }
