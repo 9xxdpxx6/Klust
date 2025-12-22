@@ -22,6 +22,7 @@ use App\Services\NotificationService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -217,17 +218,44 @@ class CasesController extends Controller
             // Получить статистику
             $statistics = $this->caseService->getCaseStatistics($case);
 
-            // Получить команды
+            // Получить команды с навыками
             $acceptedStatusId = \App\Models\ApplicationStatus::getIdByName('accepted');
             $teams = $case->applications()
                 ->where('status_id', $acceptedStatusId)
-                ->with(['leader', 'teamMembers.user'])
-                ->get();
+                ->with(['leader.skills', 'teamMembers.user.skills'])
+                ->get()
+                ->map(function ($application) use ($case) {
+                    // Собираем всех участников команды (лидер + участники)
+                    $allMembers = collect([$application->leader])
+                        ->merge($application->teamMembers->pluck('user'))
+                        ->filter();
+                    
+                    // Собираем все навыки команды (уникальные ID)
+                    $teamSkillIds = $allMembers
+                        ->flatMap(fn($member) => $member->skills->pluck('id'))
+                        ->unique()
+                        ->values()
+                        ->toArray();
+                    
+                    // Получаем навыки кейса
+                    $caseSkillIds = $case->skills->pluck('id')->toArray();
+                    
+                    // Вычисляем покрытые и непокрытые навыки
+                    $coveredSkillIds = array_intersect($caseSkillIds, $teamSkillIds);
+                    $missingSkillIds = array_diff($caseSkillIds, $teamSkillIds);
+                    
+                    // Добавляем информацию о навыках в объект команды через setAttribute
+                    $application->setAttribute('team_skill_ids', $teamSkillIds);
+                    $application->setAttribute('covered_skill_ids', array_values($coveredSkillIds));
+                    $application->setAttribute('missing_skill_ids', array_values($missingSkillIds));
+                    
+                    return $application;
+                });
 
             // Пагинация заявок с фильтрами
             $applicationsQuery = \App\Models\CaseApplication::query()
                 ->where('case_id', $case->id)
-                ->with(['leader', 'status', 'teamMembers.user', 'statusHistory.changedBy', 'statusHistory.oldStatus', 'statusHistory.newStatus']);
+                ->with(['leader.skills', 'status', 'teamMembers.user.skills', 'statusHistory.changedBy', 'statusHistory.oldStatus', 'statusHistory.newStatus']);
 
             // Применить фильтры через CaseApplicationFilter
             $filter = new \App\Filters\CaseApplicationFilter([
@@ -242,6 +270,50 @@ class CasesController extends Controller
             $applications = $applicationsQuery
                 ->paginate(10)
                 ->withQueryString();
+            
+            // Добавляем информацию о навыках для каждой заявки
+            $applications->getCollection()->transform(function ($application) use ($case) {
+                // Собираем ID всех участников команды (лидер + участники)
+                $memberIds = collect();
+                
+                // Добавляем ID лидера
+                if ($application->leader_id) {
+                    $memberIds->push($application->leader_id);
+                }
+                
+                // Добавляем ID участников команды
+                if ($application->teamMembers) {
+                    foreach ($application->teamMembers as $teamMember) {
+                        if ($teamMember->user_id) {
+                            $memberIds->push($teamMember->user_id);
+                        }
+                    }
+                }
+                
+                // Убираем дубликаты
+                $memberIds = $memberIds->unique()->values();
+                
+                // Получаем все навыки команды напрямую из БД
+                $teamSkillIds = DB::table('user_skills')
+                    ->whereIn('user_id', $memberIds->toArray())
+                    ->distinct()
+                    ->pluck('skill_id')
+                    ->toArray();
+                
+                // Получаем навыки кейса
+                $caseSkillIds = $case->skills ? $case->skills->pluck('id')->toArray() : [];
+                
+                // Вычисляем покрытые и непокрытые навыки
+                $coveredSkillIds = array_intersect($caseSkillIds, $teamSkillIds);
+                $missingSkillIds = array_diff($caseSkillIds, $teamSkillIds);
+                
+                // Добавляем информацию о навыках в объект заявки через setAttribute
+                $application->setAttribute('team_skill_ids', $teamSkillIds);
+                $application->setAttribute('covered_skill_ids', array_values($coveredSkillIds));
+                $application->setAttribute('missing_skill_ids', array_values($missingSkillIds));
+                
+                return $application;
+            });
 
 
             return Inertia::render('Client/Partner/Cases/Show', [
