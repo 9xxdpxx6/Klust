@@ -42,10 +42,20 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <div class="flex items-center space-x-4">
-                            <img
-                                :src="student.avatar_url || student.avatar || '/images/default-avatar.png'"
-                                :alt="student.name"
-                                class="h-20 w-20 rounded-full object-cover"
+                            <div class="flex-shrink-0">
+                                <img
+                                    v-if="student.avatar_url || student.avatar"
+                                    class="h-20 w-20 rounded-full object-cover border-2 border-gray-200"
+                                    :src="student.avatar_url || student.avatar"
+                                    :alt="student.name"
+                                />
+                                <div
+                                    v-else
+                                    class="h-20 w-20 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center border-2 border-gray-200"
+                                >
+                                    <span class="text-white text-lg font-bold">{{ getUserInitials(student.name) }}</span>
+                                </div>
+                            </div>
                             />
                             <div>
                                 <p class="text-lg font-semibold text-gray-900">{{ student.name }}</p>
@@ -207,6 +217,16 @@ const getLevelColor = (level) => {
     if (level >= 5) return 'bg-blue-100 text-blue-800'
     if (level >= 3) return 'bg-green-100 text-green-800'
     return 'bg-gray-100 text-gray-800'
+}
+
+const getUserInitials = (name) => {
+    if (!name) return '??'
+    return name
+        .split(' ')
+        .map(part => part.charAt(0))
+        .join('')
+        .toUpperCase()
+        .substring(0, 2)
 }
 
 const formatDate = (dateString) => {

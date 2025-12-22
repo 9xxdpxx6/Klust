@@ -18,6 +18,7 @@ use App\Http\Controllers\Client\Partner\TeamController;
 use App\Http\Controllers\Client\Student\BadgesController;
 use App\Http\Controllers\Client\Student\CasesController as StudentCasesController;
 use App\Http\Controllers\Client\Student\DashboardController as StudentDashboardController;
+use App\Models\CaseModel;
 use App\Http\Controllers\Client\Student\PartnersController as StudentPartnersController;
 use App\Http\Controllers\Client\Student\ProfileController as StudentProfileController;
 use App\Http\Controllers\Client\Student\SimulatorsController;
@@ -186,6 +187,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/cases/{case}/applications', [PartnerCasesController::class, 'applications'])->name('cases.applications');
         Route::post('/cases/{case}/applications/{application}/approve', [PartnerCasesController::class, 'approve'])->name('cases.applications.approve');
         Route::post('/cases/{case}/applications/{application}/reject', [PartnerCasesController::class, 'reject'])->name('cases.applications.reject');
+        // Защита от GET запросов к POST маршрутам - редиректим на страницу кейса
+        Route::get('/cases/{case}/applications/{application}/reject', function (CaseModel $case) {
+            return redirect()->route('partner.cases.show', $case);
+        });
+        Route::get('/cases/{case}/applications/{application}/approve', function (CaseModel $case) {
+            return redirect()->route('partner.cases.show', $case);
+        });
         Route::patch('/cases/{case}/applications/{application}/status', [PartnerCasesController::class, 'updateApplicationStatus'])->name('cases.applications.status.update');
         Route::get('/cases/{case}/applications/export', [PartnerCasesController::class, 'exportApplications'])->name('cases.applications.export');
 

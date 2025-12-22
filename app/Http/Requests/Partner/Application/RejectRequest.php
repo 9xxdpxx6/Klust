@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Partner\Application;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\ValidationException;
 
 class RejectRequest extends FormRequest
 {
@@ -47,5 +50,33 @@ class RejectRequest extends FormRequest
             'rejection_reason.min' => 'Причина отклонения должна содержать минимум 10 символов.',
             'rejection_reason.max' => 'Причина отклонения не должна превышать 1000 символов.',
         ];
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     * Переопределяем чтобы редиректить на страницу кейса вместо back(),
+     * так как back() может попытаться сделать GET запрос к POST маршруту.
+     *
+     * @param  \Illuminate\Contracts\Validation\Validator  $validator
+     * @return void
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    protected function failedValidation(Validator $validator): void
+    {
+        // Получаем case из маршрута
+        $case = $this->route('case');
+        
+        // Для Inertia запросов ValidationException автоматически возвращает JSON с ошибками
+        // и не делает редирект. Для обычных запросов редиректим на страницу кейса.
+        // Важно: не используем back() чтобы избежать GET запроса к POST маршруту
+        $exception = (new ValidationException($validator));
+        
+        // Если это не Inertia запрос, устанавливаем редирект
+        if (!$this->header('X-Inertia')) {
+            $exception->redirectTo(route('partner.cases.show', $case));
+        }
+        
+        throw $exception;
     }
 }
