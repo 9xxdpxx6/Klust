@@ -1,55 +1,92 @@
 <template>
-    <div class="space-y-6">
-        <Head :title="`Кейс: ${caseData.title}`" />
+    <MobileContainer :padding="false">
+        <div :class="[
+            isMobile ? 'space-y-4' : 'space-y-6'
+        ]">
+            <Head :title="`Кейс: ${caseData.title}`" />
 
-        <!-- Заголовок с действиями -->
-        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg overflow-hidden">
-            <div class="px-6 py-8">
-                <div class="flex items-start justify-between">
-                    <div class="flex-1">
-                        <nav class="flex mb-4" aria-label="Breadcrumb">
-                            <ol class="flex items-center space-x-2">
-                                <li>
-                                    <Link :href="route('admin.cases.index')" class="text-indigo-200 hover:text-white transition-colors">
-                                        <span class="text-sm font-medium">Кейсы</span>
-                                    </Link>
-                                </li>
-                                <li>
-                                    <ChevronRightIcon class="h-4 w-4 text-indigo-300" />
-                                </li>
-                                <li>
-                                    <span class="text-sm font-medium text-white">{{ caseData.title }}</span>
-                                </li>
-                            </ol>
-                        </nav>
-                        <h1 class="text-3xl font-bold text-white mb-3">{{ caseData.title }}</h1>
-                        <div class="flex items-center gap-3">
-                            <span :class="[
-                                'px-4 py-1.5 text-sm font-semibold rounded-full shadow-sm',
-                                getStatusBadgeClass(caseData.status)
+            <!-- Заголовок с действиями -->
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg overflow-hidden">
+                <div :class="[
+                    'px-6 py-8',
+                    isMobile ? 'px-4 py-6' : ''
+                ]">
+                    <div :class="[
+                        'flex items-start justify-between',
+                        isMobile ? 'flex-col gap-4' : ''
+                    ]">
+                        <div class="flex-1">
+                            <nav class="flex mb-4" aria-label="Breadcrumb">
+                                <ol :class="[
+                                    'flex items-center',
+                                    isMobile ? 'space-x-1' : 'space-x-2'
+                                ]">
+                                    <li>
+                                        <Link :href="route('admin.cases.index')" :class="[
+                                            'text-indigo-200 hover:text-white transition-colors',
+                                            isMobile ? 'text-xs' : 'text-sm'
+                                        ]">
+                                            <span class="font-medium">Кейсы</span>
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <ChevronRightIcon :class="[
+                                            'text-indigo-300',
+                                            isMobile ? 'h-3 w-3' : 'h-4 w-4'
+                                        ]" />
+                                    </li>
+                                    <li>
+                                        <span :class="[
+                                            'font-medium text-white',
+                                            isMobile ? 'text-xs' : 'text-sm'
+                                        ]">{{ caseData.title }}</span>
+                                    </li>
+                                </ol>
+                            </nav>
+                            <h1 :class="[
+                                'font-bold text-white mb-3',
+                                isMobile ? 'text-2xl' : 'text-3xl'
+                            ]">{{ caseData.title }}</h1>
+                            <div :class="[
+                                'flex items-center',
+                                isMobile ? 'flex-col gap-2' : 'gap-3'
                             ]">
-                                {{ getStatusLabel(caseData.status) }}
-                            </span>
-                            <span class="text-indigo-100 text-sm">
-                                Создан {{ formatDate(caseData.created_at) }}
-                            </span>
+                                <span :class="[
+                                    'px-4 py-1.5 font-semibold rounded-full shadow-sm',
+                                    isMobile ? 'text-xs' : 'text-sm',
+                                    getStatusBadgeClass(caseData.status)
+                                ]">
+                                    {{ getStatusLabel(caseData.status) }}
+                                </span>
+                                <span :class="[
+                                    'text-indigo-100',
+                                    isMobile ? 'text-xs' : 'text-sm'
+                                ]">
+                                    Создан {{ formatDate(caseData.created_at) }}
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="flex gap-2 ml-4">
-                        <Link
-                            :href="route('admin.cases.edit', caseData.id)"
-                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-white/10 backdrop-blur-sm text-white rounded-lg hover:bg-white/20 focus:outline-none transition-all shadow-lg border border-white/20 font-medium"
-                        >
-                            <i class="pi pi-pencil"></i>
-                            Редактировать
-                        </Link>
+                        <div :class="[
+                            'flex gap-2',
+                            isMobile ? 'w-full' : 'ml-4'
+                        ]">
+                            <Link
+                                :href="route('admin.cases.edit', caseData.id)"
+                                :class="[
+                                    'inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white rounded-lg hover:bg-white/20 focus:outline-none transition-all shadow-lg border border-white/20 font-medium',
+                                    isMobile ? 'px-3 py-2 text-sm w-full justify-center' : 'px-4 py-2.5'
+                                ]"
+                            >
+                                <i class="pi pi-pencil"></i>
+                                Редактировать
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Статистика - карточки с градиентами -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Статистика - карточки с градиентами -->
+            <ResponsiveGrid :cols="{ mobile: 1, tablet: 2, desktop: 4 }">
             <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 shadow-md border border-blue-200/50 hover:shadow-lg transition-shadow">
                 <div class="flex items-center justify-between">
                     <div>
@@ -99,12 +136,15 @@
                     </div>
                 </div>
             </div>
-        </div>
+            </ResponsiveGrid>
 
-        <!-- Основной контент -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Описание и навыки -->
-            <div class="lg:col-span-2 space-y-6">
+            <!-- Основной контент -->
+            <ResponsiveGrid :cols="{ mobile: 1, desktop: 3 }" class="gap-6">
+                <!-- Описание и навыки -->
+                <div :class="[
+                    'space-y-6',
+                    isMobile ? '' : 'lg:col-span-2'
+                ]">
                 <!-- Описание кейса -->
                 <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
                     <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
@@ -144,8 +184,8 @@
                 </div>
             </div>
 
-            <!-- Детали кейса - боковая панель -->
-            <div class="space-y-6">
+                <!-- Детали кейса - боковая панель -->
+                <div class="space-y-6">
                 <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden sticky top-6">
                     <div class="px-6 py-4 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-200">
                         <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
@@ -241,9 +281,9 @@
                     </div>
                 </div>
             </div>
-        </div>
+            </ResponsiveGrid>
 
-        <!-- Заявки -->
+            <!-- Заявки -->
         <div class="space-y-6">
             <!-- Одобренные заявки -->
             <div v-if="applicationsByStatus.approved && applicationsByStatus.approved.length > 0">
@@ -419,13 +459,17 @@
                 Это действие нельзя отменить. Все данные кейса будут удалены безвозвратно.
             </p>
         </DangerConfirmDialog>
-    </div>
+        </div>
+    </MobileContainer>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import { router } from '@inertiajs/vue3'
 import { Link, Head } from '@inertiajs/vue3'
+import MobileContainer from '@/Components/Responsive/MobileContainer.vue'
+import ResponsiveGrid from '@/Components/Responsive/ResponsiveGrid.vue'
+import { useResponsive } from '@/Composables/useResponsive'
 import {
     ChevronRightIcon,
     ChevronDownIcon,
@@ -437,6 +481,8 @@ import {
 import ApplicationCard from './Partials/ApplicationCard.vue'
 import DangerConfirmDialog from '@/Components/UI/DangerConfirmDialog.vue'
 import { route } from "ziggy-js";
+
+const { isMobile, padding } = useResponsive()
 
 const props = defineProps({
     caseData: {

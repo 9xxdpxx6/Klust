@@ -10,6 +10,8 @@ import UserAvatar from '@/Components/Shared/UserAvatar.vue'
 import InputMask from 'primevue/inputmask'
 import Select from '@/Components/UI/Select.vue'
 import AvatarEditor from '@/Components/Shared/AvatarEditor.vue'
+import MobileContainer from '@/Components/Responsive/MobileContainer.vue'
+import { useResponsive } from '@/Composables/useResponsive'
 import { router } from '@inertiajs/vue3'
 
 defineOptions({
@@ -196,18 +198,30 @@ const isProfileFilled = computed(() => {
     }
     return false
 })
+
+const { isMobile } = useResponsive()
 </script>
 
 <template>
     <Head title="Профиль администратора" />
-    <div class="space-y-6">
-        <div class="max-w-4xl mx-auto">
-            <div class="flex items-center justify-between mb-6">
-                <h1 class="text-3xl font-bold text-text-primary">Мой профиль</h1>
+    <MobileContainer :padding="false">
+        <div :class="[
+            'max-w-4xl mx-auto',
+            isMobile ? 'space-y-4' : 'space-y-6'
+        ]">
+            <div :class="[
+                'flex items-center mb-6',
+                isMobile ? 'flex-col items-stretch gap-3' : 'justify-between'
+            ]">
+                <h1 :class="[
+                    'font-bold text-text-primary',
+                    isMobile ? 'text-2xl' : 'text-3xl'
+                ]">Мой профиль</h1>
                 <Button
                     v-if="!isEditing"
                     variant="primary"
                     @click="isEditing = true"
+                    :class="isMobile ? 'w-full' : ''"
                 >
                     <i class="pi pi-pencil mr-2"></i>
                     Редактировать
@@ -215,34 +229,47 @@ const isProfileFilled = computed(() => {
             </div>
 
             <!-- View Mode -->
-            <div v-if="!isEditing" class="space-y-6">
+            <div v-if="!isEditing" :class="[
+                isMobile ? 'space-y-4' : 'space-y-6'
+            ]">
                 <!-- Basic Info -->
                 <Card>
-                    <div class="flex items-start gap-6">
+                    <div :class="[
+                        'flex items-start',
+                        isMobile ? 'flex-col gap-4' : 'gap-6'
+                    ]">
                         <UserAvatar
                             :user="user"
-                            size="lg"
+                            :size="isMobile ? 'md' : 'lg'"
                             class="flex-shrink-0"
                         />
-                        <div class="flex-1">
-                            <h2 class="text-2xl font-bold mb-2 text-text-primary">{{ user.name }}</h2>
-                            <div class="space-y-2 text-text-secondary">
-                                <p class="flex items-center gap-2">
-                                    <i class="pi pi-envelope text-sm"></i>
-                                    <span class="font-medium">Email:</span> {{ user.email }}
+                        <div class="flex-1 min-w-0">
+                            <h2 :class="[
+                                'font-bold mb-3 text-text-primary',
+                                isMobile ? 'text-xl' : 'text-2xl'
+                            ]">{{ user.name }}</h2>
+                            <div :class="[
+                                'space-y-2.5 text-text-secondary',
+                                isMobile ? 'text-sm' : ''
+                            ]">
+                                <p class="flex items-center gap-2 flex-wrap">
+                                    <i class="pi pi-envelope text-sm flex-shrink-0"></i>
+                                    <span class="font-medium flex-shrink-0">Email:</span>
+                                    <span class="break-all">{{ user.email }}</span>
                                 </p>
                                 <p v-if="(isStudent && user.student_profile?.phone)" class="flex items-center gap-2">
-                                    <i class="pi pi-phone text-sm"></i>
-                                    <span class="font-medium">Телефон:</span> 
-                                    {{ user.student_profile.phone }}
+                                    <i class="pi pi-phone text-sm flex-shrink-0"></i>
+                                    <span class="font-medium flex-shrink-0">Телефон:</span>
+                                    <span>{{ user.student_profile.phone }}</span>
                                 </p>
                                 <p v-if="isStudent && user.student_profile?.course" class="flex items-center gap-2">
-                                    <i class="pi pi-calendar text-sm"></i>
-                                    <span class="font-medium">Курс:</span> {{ user.student_profile.course }} курс
+                                    <i class="pi pi-calendar text-sm flex-shrink-0"></i>
+                                    <span class="font-medium flex-shrink-0">Курс:</span>
+                                    <span>{{ user.student_profile.course }} курс</span>
                                 </p>
-                                <p class="flex items-center gap-2">
-                                    <i class="pi pi-shield text-sm"></i>
-                                    <span class="font-medium">Роль:</span>
+                                <p class="flex items-center gap-2 flex-wrap">
+                                    <i class="pi pi-shield text-sm flex-shrink-0"></i>
+                                    <span class="font-medium flex-shrink-0">Роль:</span>
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                         {{ getRoleLabel(userRole) }}
                                     </span>
@@ -254,7 +281,10 @@ const isProfileFilled = computed(() => {
 
                 <!-- Teacher Profile Info -->
                 <Card v-if="isTeacher && user.teacher_profile && isProfileFilled">
-                    <h3 class="text-lg font-bold mb-4 text-text-primary">Профиль преподавателя</h3>
+                    <h3 :class="[
+                        'font-bold mb-4 text-text-primary',
+                        isMobile ? 'text-base' : 'text-lg'
+                    ]">Профиль преподавателя</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div v-if="user.teacher_profile.department">
                             <p class="text-sm text-text-muted mb-1">Кафедра</p>
@@ -277,7 +307,10 @@ const isProfileFilled = computed(() => {
 
                 <!-- Student Profile Info -->
                 <Card v-if="isStudent && user.student_profile && isProfileFilled">
-                    <h3 class="text-lg font-bold mb-4 text-text-primary">Учебная информация</h3>
+                    <h3 :class="[
+                        'font-bold mb-4 text-text-primary',
+                        isMobile ? 'text-base' : 'text-lg'
+                    ]">Учебная информация</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div v-if="user.student_profile.faculty">
                             <p class="text-sm text-text-muted mb-1">Факультет</p>
@@ -306,7 +339,10 @@ const isProfileFilled = computed(() => {
 
                 <!-- Partner Profile Info -->
                 <Card v-if="isPartner && user.partner_profile && isProfileFilled">
-                    <h3 class="text-lg font-bold mb-4 text-text-primary">Информация о компании</h3>
+                    <h3 :class="[
+                        'font-bold mb-4 text-text-primary',
+                        isMobile ? 'text-base' : 'text-lg'
+                    ]">Информация о компании</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div v-if="user.partner_profile.company_name">
                             <p class="text-sm text-text-muted mb-1">Название компании</p>
@@ -355,12 +391,21 @@ const isProfileFilled = computed(() => {
 
                 <!-- Пустой профиль -->
                 <Card v-if="!isProfileFilled">
-                    <div class="text-center py-8 text-text-muted">
-                        <i class="pi pi-info-circle text-4xl mb-3"></i>
-                        <p>Вы еще не заполнили информацию о себе</p>
+                    <div :class="[
+                        'text-center text-text-muted',
+                        isMobile ? 'py-6' : 'py-8'
+                    ]">
+                        <i :class="[
+                            'pi pi-info-circle mb-3 block',
+                            isMobile ? 'text-3xl' : 'text-4xl'
+                        ]"></i>
+                        <p :class="[
+                            'mb-4',
+                            isMobile ? 'text-sm' : ''
+                        ]">Вы еще не заполнили информацию о себе</p>
                         <Button
                             variant="secondary"
-                            class="mt-4"
+                            :class="isMobile ? 'w-full' : ''"
                             @click="isEditing = true"
                         >
                             Заполнить профиль
@@ -370,7 +415,9 @@ const isProfileFilled = computed(() => {
             </div>
 
             <!-- Edit Mode -->
-            <form v-else @submit.prevent="submitForm" class="space-y-6">
+            <form v-else @submit.prevent="submitForm" :class="[
+                isMobile ? 'space-y-4' : 'space-y-6'
+            ]">
                 <!-- Avatar Upload -->
                 <AvatarEditor
                     :user="user"
@@ -380,8 +427,13 @@ const isProfileFilled = computed(() => {
 
                 <!-- Basic Info (для всех ролей) -->
                 <Card>
-                    <h3 class="text-lg font-bold mb-4 text-text-primary">Основная информация</h3>
-                    <div class="space-y-4">
+                    <h3 :class="[
+                        'font-bold mb-4 text-text-primary',
+                        isMobile ? 'text-base' : 'text-lg'
+                    ]">Основная информация</h3>
+                    <div :class="[
+                        isMobile ? 'space-y-3' : 'space-y-4'
+                    ]">
                         <Input
                             v-model="form.name"
                             label="ФИО"
@@ -414,8 +466,13 @@ const isProfileFilled = computed(() => {
 
                 <!-- Teacher Profile Fields -->
                 <Card v-if="isTeacher">
-                    <h3 class="text-lg font-bold mb-4 text-text-primary">Профиль преподавателя</h3>
-                    <div class="space-y-4">
+                    <h3 :class="[
+                        'font-bold mb-4 text-text-primary',
+                        isMobile ? 'text-base' : 'text-lg'
+                    ]">Профиль преподавателя</h3>
+                    <div :class="[
+                        isMobile ? 'space-y-3' : 'space-y-4'
+                    ]">
                         <Input
                             v-model="form.department"
                             label="Кафедра"
@@ -440,8 +497,13 @@ const isProfileFilled = computed(() => {
 
                 <!-- Student Profile Fields -->
                 <Card v-if="isStudent">
-                    <h3 class="text-lg font-bold mb-4 text-text-primary">Учебная информация</h3>
-                    <div class="space-y-4">
+                    <h3 :class="[
+                        'font-bold mb-4 text-text-primary',
+                        isMobile ? 'text-base' : 'text-lg'
+                    ]">Учебная информация</h3>
+                    <div :class="[
+                        isMobile ? 'space-y-3' : 'space-y-4'
+                    ]">
                         <Select
                             v-model="form.faculty_id"
                             label="Факультет"
@@ -489,8 +551,13 @@ const isProfileFilled = computed(() => {
 
                 <!-- Partner Profile Fields -->
                 <Card v-if="isPartner">
-                    <h3 class="text-lg font-bold mb-4 text-text-primary">Информация о компании</h3>
-                    <div class="space-y-4">
+                    <h3 :class="[
+                        'font-bold mb-4 text-text-primary',
+                        isMobile ? 'text-base' : 'text-lg'
+                    ]">Информация о компании</h3>
+                    <div :class="[
+                        isMobile ? 'space-y-3' : 'space-y-4'
+                    ]">
                         <Input
                             v-model="form.company_name"
                             label="Название компании"
@@ -550,19 +617,28 @@ const isProfileFilled = computed(() => {
 
                 <!-- Password Change -->
                 <Card>
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-bold text-text-primary">Смена пароля</h3>
+                    <div :class="[
+                        'flex items-center mb-4',
+                        isMobile ? 'flex-col items-stretch gap-3' : 'justify-between'
+                    ]">
+                        <h3 :class="[
+                            'font-bold text-text-primary',
+                            isMobile ? 'text-base' : 'text-lg'
+                        ]">Смена пароля</h3>
                         <Button
                             type="button"
                             variant="outline"
                             size="sm"
+                            :class="isMobile ? 'w-full' : ''"
                             @click="showPasswordFields = !showPasswordFields"
                         >
                             {{ showPasswordFields ? 'Скрыть' : 'Изменить пароль' }}
                         </Button>
                     </div>
 
-                    <div v-if="showPasswordFields" class="space-y-4">
+                    <div v-if="showPasswordFields" :class="[
+                        isMobile ? 'space-y-3' : 'space-y-4'
+                    ]">
                         <Input
                             v-model="form.current_password"
                             type="password"
@@ -593,10 +669,14 @@ const isProfileFilled = computed(() => {
                 </Card>
 
                 <!-- Action Buttons -->
-                <div class="flex justify-end gap-3">
+                <div :class="[
+                    'flex gap-3',
+                    isMobile ? 'flex-col-reverse' : 'justify-end'
+                ]">
                     <Button
                         type="button"
                         variant="secondary"
+                        :class="isMobile ? 'w-full' : ''"
                         @click="cancelEdit"
                         :disabled="form.processing"
                     >
@@ -606,6 +686,7 @@ const isProfileFilled = computed(() => {
                     <Button
                         type="submit"
                         variant="primary"
+                        :class="isMobile ? 'w-full' : ''"
                         :disabled="form.processing"
                     >
                         <i class="pi pi-check mr-2"></i>
@@ -615,5 +696,5 @@ const isProfileFilled = computed(() => {
             </form>
 
         </div>
-    </div>
+    </MobileContainer>
 </template>

@@ -1,178 +1,282 @@
 <template>
-    <div class="space-y-6">
-        <Head title="Управление кейсами"/>
+    <MobileContainer :padding="false">
+        <div :class="[
+            isMobile ? 'space-y-4' : 'space-y-6'
+        ]">
+            <Head title="Управление кейсами"/>
 
-        <!-- Заголовок с градиентом -->
-        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg overflow-hidden">
-            <div class="px-6 py-8">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h1 class="text-3xl font-bold text-white mb-2">Управление кейсами</h1>
-                        <p class="text-indigo-100">Список всех кейсов в системе</p>
-                    </div>
-                    <Link
-                        :href="route('admin.cases.create')"
-                        class="inline-flex items-center gap-2 px-6 py-3 bg-white/10 backdrop-blur-sm text-white rounded-lg hover:bg-white/20 focus:outline-none transition-all shadow-lg border border-white/20 font-medium"
-                    >
-                        <i class="pi pi-plus"></i>
-                        Создать кейс
-                    </Link>
-                </div>
-            </div>
-        </div>
-
-        <!-- Фильтры -->
-        <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-            <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
-                <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
-                    <i class="pi pi-filter text-indigo-600"></i>
-                    Фильтры поиска
-                </h2>
-            </div>
-            <div class="p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                    <!-- Поиск -->
-                    <div class="lg:col-span-2">
-                        <SearchInput
-                            v-model="filters.search"
-                            label="Поиск"
-                            placeholder="Название или описание"
-                            @input="handleSearch"
-                        />
-                    </div>
-
-                    <!-- Фильтр по статусу -->
-                    <div>
-                        <Select
-                            v-model="filters.status"
-                            label="Статус"
-                            :options="statusFilterOptions"
-                            optionLabel="label"
-                            optionValue="value"
-                            placeholder="Все статусы"
-                            @update:modelValue="updateFilters"
-                        />
-                    </div>
-
-                    <!-- Фильтр по партнеру -->
-                    <div>
-                        <Select
-                            v-model="filters.partner_id"
-                            label="Партнер"
-                            :options="partnerFilterOptions"
-                            optionLabel="label"
-                            optionValue="value"
-                            placeholder="Все партнеры"
-                            @update:modelValue="updateFilters"
-                        />
-                    </div>
-
-                    <!-- Количество на странице -->
-                    <div>
-                        <Select
-                            v-model="filters.perPage"
-                            label="На странице"
-                            :options="perPageOptions"
-                            optionLabel="label"
-                            optionValue="value"
-                            placeholder="Выберите количество"
-                            @update:modelValue="updateFilters"
-                        />
-                    </div>
-                </div>
-
-                <!-- Кнопка сброса фильтров -->
-                <div class="mt-4 flex justify-end">
-                    <button
-                        @click="resetFilters"
-                        :disabled="!hasActiveFilters"
-                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        <i class="pi pi-refresh"></i>
-                        Сбросить фильтры
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Статистика -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 shadow-md border border-blue-200/50">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-blue-600 mb-1">Всего кейсов</p>
-                        <p class="text-2xl font-bold text-blue-900">{{ casesTotal }}</p>
-                    </div>
-                    <div class="w-12 h-12 flex items-center justify-center bg-blue-500 rounded-xl">
-                        <i class="pi pi-briefcase text-white text-xl"></i>
+            <!-- Заголовок с градиентом -->
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg overflow-hidden">
+                <div :class="[
+                    'px-6 py-8',
+                    isMobile ? 'px-4 py-6' : ''
+                ]">
+                    <div :class="[
+                        'flex items-center justify-between',
+                        isMobile ? 'flex-col gap-4' : ''
+                    ]">
+                        <div>
+                            <h1 :class="[
+                                'font-bold text-white mb-2',
+                                isMobile ? 'text-2xl' : 'text-3xl'
+                            ]">Управление кейсами</h1>
+                            <p class="text-indigo-100" :class="isMobile ? 'text-sm' : ''">
+                                Список всех кейсов в системе
+                            </p>
+                        </div>
+                        <Link
+                            :href="route('admin.cases.create')"
+                            :class="[
+                                'inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white rounded-lg hover:bg-white/20 focus:outline-none transition-all shadow-lg border border-white/20 font-medium',
+                                isMobile ? 'px-4 py-2 text-sm w-full justify-center' : 'px-6 py-3'
+                            ]"
+                        >
+                            <i class="pi pi-plus"></i>
+                            Создать кейс
+                        </Link>
                     </div>
                 </div>
             </div>
-            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-5 shadow-md border border-green-200/50">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-green-600 mb-1">Активных</p>
-                        <p class="text-2xl font-bold text-green-900">
-                            {{ activeCasesCount }}
-                        </p>
-                    </div>
-                    <div class="w-12 h-12 flex items-center justify-center bg-green-500 rounded-xl">
-                        <i class="pi pi-check-circle text-white text-xl"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-5 shadow-md border border-amber-200/50">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-amber-600 mb-1">Черновиков</p>
-                        <p class="text-2xl font-bold text-amber-900">
-                            {{ draftCasesCount }}
-                        </p>
-                    </div>
-                    <div class="w-12 h-12 flex items-center justify-center bg-amber-500 rounded-xl">
-                        <i class="pi pi-file text-white text-xl"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Таблица кейсов -->
-        <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-            <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
-                        <i class="pi pi-list text-indigo-600"></i>
-                        Список кейсов
+            <!-- Фильтры -->
+            <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                <div :class="[
+                    'px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200',
+                    isMobile ? 'px-4' : ''
+                ]">
+                    <h2 :class="[
+                        'font-bold text-gray-900 flex items-center gap-2',
+                        isMobile ? 'text-base' : 'text-lg'
+                    ]">
+                        <i class="pi pi-filter text-indigo-600"></i>
+                        Фильтры поиска
                     </h2>
-                    <span class="text-sm text-gray-600 bg-white px-3 py-1 rounded-lg border border-gray-200">
-                        Всего: {{ casesTotal }}
-                    </span>
+                </div>
+                <div :class="[
+                    'p-6',
+                    isMobile ? 'p-4' : ''
+                ]">
+                    <ResponsiveGrid :cols="{ mobile: 1, tablet: 2, desktop: 5 }">
+                        <!-- Поиск -->
+                        <div :class="isMobile ? '' : 'lg:col-span-2'">
+                            <SearchInput
+                                v-model="filters.search"
+                                label="Поиск"
+                                placeholder="Название или описание"
+                                @input="handleSearch"
+                            />
+                        </div>
+
+                        <!-- Фильтр по статусу -->
+                        <div>
+                            <Select
+                                v-model="filters.status"
+                                label="Статус"
+                                :options="statusFilterOptions"
+                                optionLabel="label"
+                                optionValue="value"
+                                placeholder="Все статусы"
+                                @update:modelValue="updateFilters"
+                            />
+                        </div>
+
+                        <!-- Фильтр по партнеру -->
+                        <div>
+                            <Select
+                                v-model="filters.partner_id"
+                                label="Партнер"
+                                :options="partnerFilterOptions"
+                                optionLabel="label"
+                                optionValue="value"
+                                placeholder="Все партнеры"
+                                @update:modelValue="updateFilters"
+                            />
+                        </div>
+
+                        <!-- Количество на странице -->
+                        <div>
+                            <Select
+                                v-model="filters.perPage"
+                                label="На странице"
+                                :options="perPageOptions"
+                                optionLabel="label"
+                                optionValue="value"
+                                placeholder="Выберите количество"
+                                @update:modelValue="updateFilters"
+                            />
+                        </div>
+                    </ResponsiveGrid>
+
+                    <!-- Кнопка сброса фильтров -->
+                    <div :class="[
+                        'mt-4 flex',
+                        isMobile ? 'justify-center' : 'justify-end'
+                    ]">
+                        <button
+                            @click="resetFilters"
+                            :disabled="!hasActiveFilters"
+                            :class="[
+                                'inline-flex items-center gap-2 font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
+                                isMobile ? 'px-3 py-2 text-xs w-full justify-center' : 'px-4 py-2 text-sm'
+                            ]"
+                        >
+                            <i class="pi pi-refresh"></i>
+                            Сбросить фильтры
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <div v-if="casesData && casesData.length > 0" class="overflow-x-auto">
+            <!-- Статистика -->
+            <ResponsiveGrid :cols="{ mobile: 1, tablet: 2, desktop: 3 }">
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-md border border-blue-200/50"
+                     :class="isMobile ? 'p-4' : 'p-5'">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p :class="[
+                                'font-medium text-blue-600 mb-1',
+                                isMobile ? 'text-xs' : 'text-sm'
+                            ]">Всего кейсов</p>
+                            <p :class="[
+                                'font-bold text-blue-900',
+                                isMobile ? 'text-xl' : 'text-2xl'
+                            ]">{{ casesTotal }}</p>
+                        </div>
+                        <div :class="[
+                            'flex items-center justify-center bg-blue-500 rounded-xl',
+                            isMobile ? 'w-10 h-10' : 'w-12 h-12'
+                        ]">
+                            <i :class="[
+                                'pi pi-briefcase text-white',
+                                isMobile ? 'text-lg' : 'text-xl'
+                            ]"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl shadow-md border border-green-200/50"
+                     :class="isMobile ? 'p-4' : 'p-5'">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p :class="[
+                                'font-medium text-green-600 mb-1',
+                                isMobile ? 'text-xs' : 'text-sm'
+                            ]">Активных</p>
+                            <p :class="[
+                                'font-bold text-green-900',
+                                isMobile ? 'text-xl' : 'text-2xl'
+                            ]">
+                                {{ activeCasesCount }}
+                            </p>
+                        </div>
+                        <div :class="[
+                            'flex items-center justify-center bg-green-500 rounded-xl',
+                            isMobile ? 'w-10 h-10' : 'w-12 h-12'
+                        ]">
+                            <i :class="[
+                                'pi pi-check-circle text-white',
+                                isMobile ? 'text-lg' : 'text-xl'
+                            ]"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl shadow-md border border-amber-200/50"
+                     :class="isMobile ? 'p-4' : 'p-5'">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p :class="[
+                                'font-medium text-amber-600 mb-1',
+                                isMobile ? 'text-xs' : 'text-sm'
+                            ]">Черновиков</p>
+                            <p :class="[
+                                'font-bold text-amber-900',
+                                isMobile ? 'text-xl' : 'text-2xl'
+                            ]">
+                                {{ draftCasesCount }}
+                            </p>
+                        </div>
+                        <div :class="[
+                            'flex items-center justify-center bg-amber-500 rounded-xl',
+                            isMobile ? 'w-10 h-10' : 'w-12 h-12'
+                        ]">
+                            <i :class="[
+                                'pi pi-file text-white',
+                                isMobile ? 'text-lg' : 'text-xl'
+                            ]"></i>
+                        </div>
+                    </div>
+                </div>
+            </ResponsiveGrid>
+
+            <!-- Таблица кейсов -->
+            <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                <div :class="[
+                    'px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200',
+                    isMobile ? 'px-4' : ''
+                ]">
+                    <div :class="[
+                        'flex items-center justify-between',
+                        isMobile ? 'flex-col gap-2' : ''
+                    ]">
+                        <h2 :class="[
+                            'font-bold text-gray-900 flex items-center gap-2',
+                            isMobile ? 'text-base' : 'text-lg'
+                        ]">
+                            <i class="pi pi-list text-indigo-600"></i>
+                            Список кейсов
+                        </h2>
+                        <span :class="[
+                            'text-gray-600 bg-white rounded-lg border border-gray-200',
+                            isMobile ? 'text-xs px-2 py-1' : 'text-sm px-3 py-1'
+                        ]">
+                            Всего: {{ casesTotal }}
+                        </span>
+                    </div>
+                </div>
+
+                <div v-if="casesData && casesData.length > 0" class="table-responsive overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
                     <tr>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        <th :class="[
+                            'text-left font-bold text-gray-700 uppercase tracking-wider',
+                            isMobile ? 'px-3 py-2 text-xs' : 'px-6 py-4 text-xs'
+                        ]">
                             Кейс
                         </th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        <th :class="[
+                            'text-left font-bold text-gray-700 uppercase tracking-wider',
+                            isMobile ? 'px-3 py-2 text-xs hidden md:table-cell' : 'px-6 py-4 text-xs'
+                        ]">
                             Партнер
                         </th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        <th :class="[
+                            'text-left font-bold text-gray-700 uppercase tracking-wider',
+                            isMobile ? 'px-3 py-2 text-xs hidden lg:table-cell' : 'px-6 py-4 text-xs'
+                        ]">
                             Дедлайн
                         </th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        <th :class="[
+                            'text-left font-bold text-gray-700 uppercase tracking-wider',
+                            isMobile ? 'px-3 py-2 text-xs hidden lg:table-cell' : 'px-6 py-4 text-xs'
+                        ]">
                             Команда
                         </th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        <th :class="[
+                            'text-left font-bold text-gray-700 uppercase tracking-wider',
+                            isMobile ? 'px-3 py-2 text-xs' : 'px-6 py-4 text-xs'
+                        ]">
                             Статус
                         </th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        <th :class="[
+                            'text-left font-bold text-gray-700 uppercase tracking-wider',
+                            isMobile ? 'px-3 py-2 text-xs hidden md:table-cell' : 'px-6 py-4 text-xs'
+                        ]">
                             Заявки
                         </th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        <th :class="[
+                            'text-left font-bold text-gray-700 uppercase tracking-wider',
+                            isMobile ? 'px-3 py-2 text-xs hidden lg:table-cell' : 'px-6 py-4 text-xs'
+                        ]">
                             Создан
                         </th>
                     </tr>
@@ -184,7 +288,7 @@
                         class="hover:bg-indigo-50/50 cursor-pointer transition-all group"
                         @click="goToCase(caseItem.id)"
                     >
-                        <td class="px-6 py-4">
+                        <td :class="isMobile ? 'px-3 py-3' : 'px-6 py-4'">
                             <div class="flex items-start gap-3">
                                 <div class="w-10 h-10 flex items-center justify-center bg-indigo-100 rounded-lg group-hover:bg-indigo-200 transition-colors">
                                     <i class="pi pi-briefcase text-indigo-600"></i>
@@ -300,7 +404,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </MobileContainer>
 </template>
 
 <script setup>
@@ -310,6 +414,9 @@ import Pagination from '@/Components/Pagination.vue'
 import Select from '@/Components/UI/Select.vue'
 import SearchInput from '@/Components/UI/SearchInput.vue'
 import Button from 'primevue/button'
+import MobileContainer from '@/Components/Responsive/MobileContainer.vue'
+import ResponsiveGrid from '@/Components/Responsive/ResponsiveGrid.vue'
+import { useResponsive } from '@/Composables/useResponsive'
 import {route} from "ziggy-js";
 
 const props = defineProps({
@@ -332,6 +439,8 @@ const props = defineProps({
 })
 
 // Computed свойства для безопасного доступа
+const { isMobile, padding } = useResponsive()
+
 const casesData = computed(() => props.cases?.data || [])
 const casesTotal = computed(() => props.statistics?.total_cases || props.cases?.total || 0)
 const casesLinks = computed(() => props.cases?.links || [])
