@@ -279,6 +279,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
+import { route } from 'ziggy-js'
 import FlashMessage from '@/Components/Shared/FlashMessage.vue'
 
 defineProps({

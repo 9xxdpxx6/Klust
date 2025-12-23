@@ -70,22 +70,29 @@
 
                     <!-- Pagination -->
                     <div v-if="cases.last_page > 1" class="flex items-center justify-center gap-2">
-                        <Link
-                            v-for="page in paginationLinks"
-                            :key="page.label"
-                            :href="page.url"
-                            :class="[
-                                'px-4 py-2 rounded-lg font-medium transition-colors',
-                                page.active
-                                    ? 'bg-primary text-white'
-                                    : page.url
-                                    ? 'bg-kubgtu-white text-text-primary border border-border-light hover:bg-surface'
-                                    : 'bg-gray-100 text-text-tertiary cursor-not-allowed'
-                            ]"
-                            :disabled="!page.url"
-                        >
-                            <span v-html="page.label"></span>
-                        </Link>
+                        <template v-for="page in paginationLinks" :key="page.label">
+                            <Link
+                                v-if="page.url"
+                                :href="page.url"
+                                :class="[
+                                    'px-4 py-2 rounded-lg font-medium transition-colors',
+                                    page.active
+                                        ? 'bg-primary text-white'
+                                        : 'bg-kubgtu-white text-text-primary border border-border-light hover:bg-surface'
+                                ]"
+                            >
+                                <span v-html="page.label"></span>
+                            </Link>
+                            <span
+                                v-else
+                                :class="[
+                                    'px-4 py-2 rounded-lg font-medium transition-colors',
+                                    'bg-gray-100 text-text-tertiary cursor-not-allowed'
+                                ]"
+                            >
+                                <span v-html="page.label"></span>
+                            </span>
+                        </template>
                     </div>
                 </div>
             </div>
@@ -114,6 +121,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Head, Link, usePage } from '@inertiajs/vue3'
+import { route } from 'ziggy-js'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 import GuestCaseCard from '@/Components/StudentCaseCard.vue'
 
