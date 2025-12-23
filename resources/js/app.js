@@ -2,6 +2,7 @@ import './bootstrap';
 import '../css/app.css';
 import './Styles/layout.css';
 import './Styles/components.css';
+import './Styles/responsive.css';
 
 import { createApp, h } from 'vue';
 import { createPinia } from 'pinia';

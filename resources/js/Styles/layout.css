@@ -28,6 +28,16 @@
   gap: 1rem;
 }
 
+.base-header--mobile {
+  padding: 0.5rem 1rem !important;
+}
+
+@media (max-width: 767px) {
+  .base-header__actions {
+    gap: 0.5rem;
+  }
+}
+
 .base-header__search {
   display: none;
 }
