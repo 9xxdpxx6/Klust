@@ -1,10 +1,16 @@
 <template>
   <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all case-card">
-    <div class="p-6 space-y-4 flex flex-col flex-1 min-h-0">
+    <div :class="[
+      'space-y-4 flex flex-col flex-1 min-h-0',
+      isMobile ? 'p-4' : 'p-6'
+    ]">
       <!-- Header with title and status -->
       <div class="flex items-start justify-between gap-3">
         <div class="flex-1 min-w-0">
-          <h3 class="text-xl font-bold text-gray-900 mb-2 line-clamp-2">{{ caseData.title }}</h3>
+          <h3 :class="[
+            'font-bold text-gray-900 mb-2 line-clamp-2',
+            isMobile ? 'text-lg' : 'text-xl'
+          ]">{{ caseData.title }}</h3>
         </div>
         <Badge :variant="statusVariant" :text="statusText" class="flex-shrink-0" />
       </div>
@@ -44,18 +50,27 @@
     </div>
     
     <!-- Actions -->
-    <div v-if="showActions" class="px-4 py-3 bg-white border-t border-gray-200 flex items-center justify-between gap-3 relative z-10">
+    <div v-if="showActions" :class="[
+      'bg-white border-t border-gray-200 relative z-10',
+      isMobile ? 'px-3 py-2 flex flex-col gap-2' : 'px-4 py-3 flex items-center justify-between gap-3'
+    ]">
       <button
         v-if="canEdit"
         type="button"
         @click.stop.prevent="handleEdit"
-        class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer relative z-10"
+        :class="[
+          'flex items-center gap-2 font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer relative z-10',
+          isMobile ? 'px-3 py-2 text-xs w-full justify-center' : 'px-4 py-2 text-sm'
+        ]"
       >
-        <i class="pi pi-pencil mr-2" />
+        <i class="pi pi-pencil" :class="isMobile ? '' : 'mr-2'" />
         Редактировать
       </button>
-      <div v-else class="flex-1"></div>
-      <div class="flex gap-2 relative z-10">
+      <div v-else-if="!isMobile" class="flex-1"></div>
+      <div :class="[
+        'flex gap-2 relative z-10',
+        isMobile ? 'w-full' : ''
+      ]">
         <div v-if="hasApplication" class="inline-flex items-center justify-center px-3 h-8 bg-blue-50 border border-blue-200 rounded-md text-sm">
           <i class="pi pi-check-circle text-blue-600 mr-2"></i>
           <span class="font-medium text-blue-700">{{ applicationStatusLabel }}</span>
@@ -63,19 +78,21 @@
         <Button
           v-else-if="canApply"
           variant="primary"
-          size="sm"
+          :size="isMobile ? 'sm' : 'sm'"
           :loading="applying"
+          :class="isMobile ? 'flex-1' : ''"
           @click.stop.prevent="handleApply"
         >
-          <i class="pi pi-check mr-2" />
+          <i class="pi pi-check" :class="isMobile ? '' : 'mr-2'" />
           Подать заявку
         </Button>
         <Button
           variant="outline"
-          size="sm"
+          :size="isMobile ? 'sm' : 'sm'"
+          :class="isMobile ? 'flex-1' : ''"
           @click.stop.prevent="handleView"
         >
-          <i class="pi pi-eye mr-2" />
+          <i class="pi pi-eye" :class="isMobile ? '' : 'mr-2'" />
           Просмотр
         </Button>
       </div>
@@ -87,6 +104,7 @@
 import { computed } from 'vue';
 import Badge from './UI/Badge.vue';
 import Button from './UI/Button.vue';
+import { useResponsive } from '@/Composables/useResponsive';
 
 const props = defineProps({
   caseData: {
@@ -120,6 +138,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['view', 'apply', 'edit']);
+
+const { isMobile } = useResponsive();
 
 const handleView = (event) => {
   if (event) {

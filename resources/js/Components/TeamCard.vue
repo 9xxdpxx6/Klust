@@ -2,8 +2,14 @@
   <Card :hover="true" class="team-card">
     <template #header>
       <div>
-        <h3 class="text-lg font-semibold text-text-primary mb-1">{{ caseTitle || 'Команда' }}</h3>
-        <p v-if="team.leader" class="text-sm text-text-secondary">
+        <h3 :class="[
+          'font-semibold text-text-primary mb-1',
+          isMobile ? 'text-base' : 'text-lg'
+        ]">{{ caseTitle || 'Команда' }}</h3>
+        <p v-if="team.leader" :class="[
+          'text-text-secondary',
+          isMobile ? 'text-xs' : 'text-sm'
+        ]">
           Лидер: {{ team.leader.name }}
         </p>
       </div>
@@ -44,6 +50,7 @@ import Card from './UI/Card.vue';
 import Badge from './UI/Badge.vue';
 import ProgressBar from './UI/ProgressBar.vue';
 import UserAvatar from './Shared/UserAvatar.vue';
+import { useResponsive } from '@/Composables/useResponsive';
 
 const props = defineProps({
   team: {
@@ -55,6 +62,8 @@ const props = defineProps({
     default: null,
   },
 });
+
+const { isMobile } = useResponsive();
 
 const status = computed(() => props.team.status);
 

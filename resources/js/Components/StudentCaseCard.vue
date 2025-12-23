@@ -1,8 +1,14 @@
 <template>
-  <div class="bg-kubgtu-white p-6 rounded-xl shadow-sm border border-border-light hover:shadow-lg transition-shadow flex flex-col case-card">
+  <div :class="[
+    'bg-kubgtu-white rounded-xl shadow-sm border border-border-light hover:shadow-lg transition-shadow flex flex-col case-card',
+    isMobile ? 'p-4' : 'p-6'
+  ]">
     <!-- Case Header -->
     <div class="mb-4">
-      <h3 class="text-xl font-semibold text-text-primary mb-2">
+      <h3 :class="[
+        'font-semibold text-text-primary mb-2',
+        isMobile ? 'text-lg' : 'text-xl'
+      ]">
         {{ caseData.title }}
       </h3>
     </div>
@@ -68,31 +74,43 @@
       >
         Подробнее
       </button>
-      <div v-else class="flex gap-2 justify-end">
-        <div v-if="hasApplication" :class="statusBadgeClasses" class="inline-flex items-center justify-center px-3 h-8 rounded-md text-sm">
-          <i :class="statusIconClasses" class="mr-2"></i>
+      <div :class="[
+        'flex gap-2',
+        isMobile ? 'flex-col' : 'justify-end'
+      ]">
+        <div v-if="hasApplication" :class="[
+          statusBadgeClasses,
+          'inline-flex items-center justify-center rounded-md',
+          isMobile ? 'px-2 h-7 text-xs w-full justify-center' : 'px-3 h-8 text-sm'
+        ]">
+          <i :class="[
+            statusIconClasses,
+            isMobile ? '' : 'mr-2'
+          ]"></i>
           <span :class="statusTextClasses" class="font-medium">{{ applicationStatusLabel }}</span>
         </div>
-        <!-- Всегда показываем кнопку "Просмотр" -->
-        <Button
-          variant="outline"
-          size="sm"
-          @click.stop.prevent="handleView"
-        >
-          <i class="pi pi-eye mr-2" />
-          Просмотр
-        </Button>
-        <!-- Показываем кнопку "Подать заявку" только если заявки нет -->
-        <Button
-          v-if="!hasApplication && canApply"
-          variant="primary"
-          size="sm"
-          :loading="applying"
-          @click.stop.prevent="handleApply"
-        >
-          <i class="pi pi-check mr-2" />
-          Подать заявку
-        </Button>
+              <!-- Всегда показываем кнопку "Просмотр" -->
+              <Button
+                variant="outline"
+                :size="isMobile ? 'sm' : 'sm'"
+                :class="isMobile ? 'w-full' : ''"
+                @click.stop.prevent="handleView"
+              >
+                <i class="pi pi-eye" :class="isMobile ? '' : 'mr-2'" />
+                Просмотр
+              </Button>
+              <!-- Показываем кнопку "Подать заявку" только если заявки нет -->
+              <Button
+                v-if="!hasApplication && canApply"
+                variant="primary"
+                :size="isMobile ? 'sm' : 'sm'"
+                :class="isMobile ? 'w-full' : ''"
+                :loading="applying"
+                @click.stop.prevent="handleApply"
+              >
+                <i class="pi pi-check" :class="isMobile ? '' : 'mr-2'" />
+                Подать заявку
+              </Button>
       </div>
     </div>
   </div>
@@ -103,6 +121,7 @@ import { computed } from 'vue'
 import { Link } from '@inertiajs/vue3'
 import { route } from 'ziggy-js'
 import Button from './UI/Button.vue'
+import { useResponsive } from '@/Composables/useResponsive'
 
 const props = defineProps({
   caseData: {
@@ -144,6 +163,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['view', 'apply'])
+
+const { isMobile } = useResponsive()
 
 const handleView = () => {
   emit('view')
