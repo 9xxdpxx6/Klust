@@ -1,79 +1,155 @@
 <template>
-    <div class="space-y-6">
-        <Head title="Панель студента" />
-        <!-- Заголовок с градиентом -->
-        <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-xl shadow-lg overflow-hidden">
-            <div class="px-6 py-8">
-                <h1 class="text-3xl font-bold text-white mb-2">Панель студента</h1>
-                <p class="text-indigo-100">Ваш прогресс и активность</p>
-            </div>
-        </div>
-
-        <!-- Личная статистика -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 shadow-md border border-blue-200/50 hover:shadow-lg transition-all group">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-blue-600 mb-1">Уровень</p>
-                        <p class="text-3xl font-bold text-blue-900">{{ statistics?.level || 1 }}</p>
-                    </div>
-                    <div class="w-12 h-12 flex items-center justify-center bg-blue-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
-                        <i class="pi pi-star text-white text-xl"></i>
-                    </div>
+    <MobileContainer :padding="false">
+        <div :class="[
+            isMobile ? 'space-y-4' : 'space-y-6'
+        ]">
+            <Head title="Панель студента" />
+            <!-- Заголовок с градиентом -->
+            <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-xl shadow-lg overflow-hidden">
+                <div :class="[
+                    'px-6 py-8',
+                    isMobile ? 'px-4 py-6' : ''
+                ]">
+                    <h1 :class="[
+                        'font-bold text-white mb-2',
+                        isMobile ? 'text-2xl' : 'text-3xl'
+                    ]">Панель студента</h1>
+                    <p class="text-indigo-100" :class="isMobile ? 'text-sm' : ''">
+                        Ваш прогресс и активность
+                    </p>
                 </div>
             </div>
 
-            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 shadow-md border border-green-200/50 hover:shadow-lg transition-all group">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-green-600 mb-1">Рейтинг</p>
-                        <p class="text-3xl font-bold text-green-900">{{ statistics?.rating || 0 }}</p>
-                    </div>
-                    <div class="w-12 h-12 flex items-center justify-center bg-green-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
-                        <i class="pi pi-chart-line text-white text-xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-6 shadow-md border border-amber-200/50 hover:shadow-lg transition-all group">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-amber-600 mb-1">Очки</p>
-                        <p class="text-3xl font-bold text-amber-900">{{ statistics?.total_points || 0 }}</p>
-                    </div>
-                    <div class="w-12 h-12 flex items-center justify-center bg-amber-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
-                        <i class="pi pi-trophy text-white text-xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 shadow-md border border-purple-200/50 hover:shadow-lg transition-all group">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-purple-600 mb-1">Завершено кейсов</p>
-                        <p class="text-3xl font-bold text-purple-900">{{ statistics?.completed_cases || 0 }}</p>
-                    </div>
-                    <div class="w-12 h-12 flex items-center justify-center bg-purple-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
-                        <i class="pi pi-check-circle text-white text-xl"></i>
+            <!-- Личная статистика -->
+            <ResponsiveGrid :cols="{ mobile: 1, tablet: 2, desktop: 5 }">
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-md border border-blue-200/50 hover:shadow-lg transition-all group"
+                     :class="isMobile ? 'p-4' : 'p-6'">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p :class="[
+                                'font-medium text-blue-600 mb-1',
+                                isMobile ? 'text-xs' : 'text-sm'
+                            ]">Уровень</p>
+                            <p :class="[
+                                'font-bold text-blue-900',
+                                isMobile ? 'text-2xl' : 'text-3xl'
+                            ]">{{ statistics?.level || 1 }}</p>
+                        </div>
+                        <div :class="[
+                            'flex items-center justify-center bg-blue-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0',
+                            isMobile ? 'w-10 h-10' : 'w-12 h-12'
+                        ]">
+                            <i :class="[
+                                'pi pi-star text-white',
+                                isMobile ? 'text-lg' : 'text-xl'
+                            ]"></i>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl p-6 shadow-md border border-pink-200/50 hover:shadow-lg transition-all group">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-pink-600 mb-1">Достижения</p>
-                        <p class="text-3xl font-bold text-pink-900">{{ statistics?.badges_count || 0 }}</p>
-                    </div>
-                    <div class="w-12 h-12 flex items-center justify-center bg-pink-500 rounded-xl group-hover:scale-110 transition-transform">
-                        <i class="pi pi-trophy text-white text-xl"></i>
+                <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl shadow-md border border-green-200/50 hover:shadow-lg transition-all group"
+                     :class="isMobile ? 'p-4' : 'p-6'">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p :class="[
+                                'font-medium text-green-600 mb-1',
+                                isMobile ? 'text-xs' : 'text-sm'
+                            ]">Рейтинг</p>
+                            <p :class="[
+                                'font-bold text-green-900',
+                                isMobile ? 'text-2xl' : 'text-3xl'
+                            ]">{{ statistics?.rating || 0 }}</p>
+                        </div>
+                        <div :class="[
+                            'flex items-center justify-center bg-green-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0',
+                            isMobile ? 'w-10 h-10' : 'w-12 h-12'
+                        ]">
+                            <i :class="[
+                                'pi pi-chart-line text-white',
+                                isMobile ? 'text-lg' : 'text-xl'
+                            ]"></i>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Активные кейсы и рекомендации -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl shadow-md border border-amber-200/50 hover:shadow-lg transition-all group"
+                     :class="isMobile ? 'p-4' : 'p-6'">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p :class="[
+                                'font-medium text-amber-600 mb-1',
+                                isMobile ? 'text-xs' : 'text-sm'
+                            ]">Очки</p>
+                            <p :class="[
+                                'font-bold text-amber-900',
+                                isMobile ? 'text-2xl' : 'text-3xl'
+                            ]">{{ statistics?.total_points || 0 }}</p>
+                        </div>
+                        <div :class="[
+                            'flex items-center justify-center bg-amber-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0',
+                            isMobile ? 'w-10 h-10' : 'w-12 h-12'
+                        ]">
+                            <i :class="[
+                                'pi pi-trophy text-white',
+                                isMobile ? 'text-lg' : 'text-xl'
+                            ]"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl shadow-md border border-purple-200/50 hover:shadow-lg transition-all group"
+                     :class="isMobile ? 'p-4' : 'p-6'">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p :class="[
+                                'font-medium text-purple-600 mb-1',
+                                isMobile ? 'text-xs' : 'text-sm'
+                            ]">Завершено кейсов</p>
+                            <p :class="[
+                                'font-bold text-purple-900',
+                                isMobile ? 'text-2xl' : 'text-3xl'
+                            ]">{{ statistics?.completed_cases || 0 }}</p>
+                        </div>
+                        <div :class="[
+                            'flex items-center justify-center bg-purple-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0',
+                            isMobile ? 'w-10 h-10' : 'w-12 h-12'
+                        ]">
+                            <i :class="[
+                                'pi pi-check-circle text-white',
+                                isMobile ? 'text-lg' : 'text-xl'
+                            ]"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl shadow-md border border-pink-200/50 hover:shadow-lg transition-all group"
+                     :class="isMobile ? 'p-4' : 'p-6'">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p :class="[
+                                'font-medium text-pink-600 mb-1',
+                                isMobile ? 'text-xs' : 'text-sm'
+                            ]">Достижения</p>
+                            <p :class="[
+                                'font-bold text-pink-900',
+                                isMobile ? 'text-2xl' : 'text-3xl'
+                            ]">{{ statistics?.badges_count || 0 }}</p>
+                        </div>
+                        <div :class="[
+                            'flex items-center justify-center bg-pink-500 rounded-xl group-hover:scale-110 transition-transform',
+                            isMobile ? 'w-10 h-10' : 'w-12 h-12'
+                        ]">
+                            <i :class="[
+                                'pi pi-trophy text-white',
+                                isMobile ? 'text-lg' : 'text-xl'
+                            ]"></i>
+                        </div>
+                    </div>
+                </div>
+            </ResponsiveGrid>
+
+            <!-- Активные кейсы и рекомендации -->
+            <ResponsiveGrid :cols="{ mobile: 1, desktop: 2 }" class="gap-6">
             <!-- Активные кейсы -->
             <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
                 <div class="px-6 py-4 bg-gradient-to-r from-indigo-50 to-indigo-100 border-b border-indigo-200">
@@ -149,18 +225,27 @@
                     <p class="text-sm">Нет рекомендаций</p>
                 </div>
             </div>
-        </div>
+            </ResponsiveGrid>
 
-        <!-- Прогресс по навыкам -->
-        <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden" v-if="skillsProgress && skillsProgress.length > 0">
-            <div class="px-6 py-4 bg-gradient-to-r from-amber-50 to-amber-100 border-b border-amber-200">
-                <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
-                    <i class="pi pi-chart-line text-amber-600"></i>
-                    Прогресс по навыкам
-                </h2>
-            </div>
-            <div class="p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Прогресс по навыкам -->
+            <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden" v-if="skillsProgress && skillsProgress.length > 0">
+                <div :class="[
+                    'px-6 py-4 bg-gradient-to-r from-amber-50 to-amber-100 border-b border-amber-200',
+                    isMobile ? 'px-4' : ''
+                ]">
+                    <h2 :class="[
+                        'font-bold text-gray-900 flex items-center gap-2',
+                        isMobile ? 'text-base' : 'text-lg'
+                    ]">
+                        <i class="pi pi-chart-line text-amber-600"></i>
+                        Прогресс по навыкам
+                    </h2>
+                </div>
+                <div :class="[
+                    'p-6',
+                    isMobile ? 'p-4' : ''
+                ]">
+                    <ResponsiveGrid :cols="{ mobile: 1, tablet: 2, desktop: 3 }">
                     <SkillCard
                         v-for="skill in skillsProgress.slice(0, 6)"
                         :key="skill.id"
@@ -169,20 +254,20 @@
                         :progress="skill.progress"
                         :points="skill.points"
                     />
-                </div>
-                <div class="mt-6 text-center">
-                    <Button
-                        variant="outline"
-                        @click="safeVisit('student.skills.index')"
-                    >
-                        Посмотреть все навыки
-                    </Button>
+                    </ResponsiveGrid>
+                    <div class="mt-6 text-center">
+                        <Button
+                            variant="outline"
+                            @click="safeVisit('student.skills.index')"
+                        >
+                            Посмотреть все навыки
+                        </Button>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Последние достижения -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Последние достижения -->
+            <ResponsiveGrid :cols="{ mobile: 1, tablet: 2, desktop: 3 }" class="gap-6">
             <!-- Полученные достижения -->
             <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
                 <div class="px-6 py-4 bg-gradient-to-r from-purple-50 to-purple-100 border-b border-purple-200">
@@ -277,16 +362,17 @@
                     <p class="text-sm">Нет завершенных кейсов</p>
                 </div>
             </div>
-        </div>
+            </ResponsiveGrid>
 
-        <!-- Apply Modal -->
-        <ApplyCaseModal
-            v-if="selectedCase"
-            v-model="showApplyModal"
-            :case-data="selectedCase"
-            @success="handleApplySuccess"
-        />
-    </div>
+            <!-- Apply Modal -->
+            <ApplyCaseModal
+                v-if="selectedCase"
+                v-model="showApplyModal"
+                :case-data="selectedCase"
+                @success="handleApplySuccess"
+            />
+        </div>
+    </MobileContainer>
 </template>
 
 <script setup>
@@ -299,6 +385,9 @@ import CaseCard from '@/Components/CaseCard.vue';
 import StudentCaseCard from '@/Components/StudentCaseCard.vue';
 import ApplyCaseModal from '@/Components/ApplyCaseModal.vue';
 import SkillCard from '@/Components/SkillCard.vue';
+import MobileContainer from '@/Components/Responsive/MobileContainer.vue';
+import ResponsiveGrid from '@/Components/Responsive/ResponsiveGrid.vue';
+import { useResponsive } from '@/Composables/useResponsive';
 import { routeExists } from '@/Utils/routes';
 
 const props = defineProps({
@@ -323,6 +412,8 @@ const props = defineProps({
         default: () => [],
     },
 });
+
+const { isMobile, padding } = useResponsive();
 
 const handleViewCase = (caseId) => {
     try {

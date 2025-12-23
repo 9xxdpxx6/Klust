@@ -1,5 +1,8 @@
 <template>
-  <header class="base-header">
+  <header :class="[
+    'base-header',
+    { 'base-header--mobile': isMobile }
+  ]">
     <!-- Логотип -->
     <div class="base-header__logo">
       <slot name="logo">
@@ -10,10 +13,16 @@
               v-if="!imageError.icon"
               :src="logoIcon"
               :alt="logoText"
-              class="h-8 w-8 object-contain"
+              :class="[
+                'object-contain',
+                isMobile ? 'h-6 w-6' : 'h-8 w-8'
+              ]"
               @error="handleImageError('icon')"
             />
-            <span v-else class="text-primary font-bold text-xl">{{ logoText }}</span>
+            <span v-else :class="[
+              'text-primary font-bold',
+              isMobile ? 'text-lg' : 'text-xl'
+            ]">{{ logoText }}</span>
           </template>
           <!-- Длинное лого (весь текст) - если нет иконки -->
           <template v-else-if="logoImage">
@@ -21,14 +30,23 @@
               v-if="!imageError.image"
               :src="logoImage"
               :alt="logoText"
-              class="h-10 object-contain max-w-[200px]"
-              :class="logoImageClass"
+              :class="[
+                'object-contain max-w-[200px]',
+                isMobile ? 'h-8' : 'h-10',
+                logoImageClass
+              ]"
               @error="handleImageError('image')"
             />
-            <span v-else class="text-primary font-bold text-xl">{{ logoText }}</span>
+            <span v-else :class="[
+              'text-primary font-bold',
+              isMobile ? 'text-lg' : 'text-xl'
+            ]">{{ logoText }}</span>
           </template>
           <!-- Текстовое лого по умолчанию -->
-          <span v-else class="text-primary font-bold text-xl">{{ logoText }}</span>
+          <span v-else :class="[
+            'text-primary font-bold',
+            isMobile ? 'text-lg' : 'text-xl'
+          ]">{{ logoText }}</span>
         </Link>
       </slot>
     </div>
@@ -45,7 +63,7 @@
       <NotificationBell />
       
       <!-- Профиль пользователя -->
-      <UserDropdown v-if="user" :show-name="showUserName" />
+      <UserDropdown v-if="user" :show-name="!isMobile && showUserName" />
       
       <!-- Мобильное меню (бургер) -->
       <button
@@ -61,11 +79,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import UserDropdown from '@/Components/Navigation/UserDropdown.vue';
 import NotificationBell from '@/Components/Navigation/NotificationBell.vue';
 import { useAuth } from '@/Composables/useAuth';
+import { useResponsive } from '@/Composables/useResponsive';
 
 const props = defineProps({
   logoText: {
@@ -112,6 +131,7 @@ const props = defineProps({
 const emit = defineEmits(['toggle-mobile-menu']);
 
 const { user } = useAuth();
+const { isMobile } = useResponsive();
 
 const imageError = ref({ icon: false, image: false });
 

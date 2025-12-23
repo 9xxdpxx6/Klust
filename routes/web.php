@@ -51,6 +51,7 @@ Route::get('/', [GuestController::class, 'home'])->name('guest.home');
 Route::get('/about', [GuestController::class, 'about'])->name('guest.about');
 Route::get('/cases', [GuestController::class, 'cases'])->name('guest.cases');
 Route::get('/cases/{case}', [GuestController::class, 'show'])->name('guest.cases.show');
+Route::get('/partners/{partner}', [StudentPartnersController::class, 'show'])->name('partners.show');
 
 // Гость (аутентификация)
 Route::middleware('guest')->group(function () {
@@ -122,9 +123,6 @@ Route::middleware('auth')->group(function () {
         Route::post('/read-all', [NotificationController::class, 'markAllAsRead'])->name('readAll');
         Route::delete('/{notification}', [NotificationController::class, 'destroy'])->name('destroy');
     });
-
-    // Partners (для всех авторизованных пользователей)
-    Route::get('/partners/{partner}', [StudentPartnersController::class, 'show'])->name('partners.show');
 
     // Студент
     Route::prefix('student')->middleware(['role:student', 'verified'])->name('student.')->group(function () {

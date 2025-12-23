@@ -41,6 +41,7 @@ class HandleInertiaRequests extends Middleware
                         'email' => $user->email,
                         'email_verified_at' => $user->email_verified_at?->toIso8601String(),
                         'roles' => $user->getRoleNames(),
+                        'avatar' => $user->avatar,
                     ];
 
                     // Загружаем partner_profile для партнеров

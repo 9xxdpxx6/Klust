@@ -31,7 +31,7 @@ class PartnersController extends Controller
 
         // Определяем, какой шаблон использовать в зависимости от авторизации
         $isAuthenticated = auth()->check();
-        $isStudent = $isAuthenticated && auth()->user()->hasRole('student');
+        $isStudent = $isAuthenticated && ($user = auth()->user()) && $user->hasRole('student');
 
         // Если пользователь авторизован как студент, используем студенческий шаблон
         // Иначе используем гостевой шаблон

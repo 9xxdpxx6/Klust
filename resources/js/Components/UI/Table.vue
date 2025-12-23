@@ -1,5 +1,5 @@
 <template>
-  <div class="table-wrapper">
+  <div class="table-wrapper table-responsive">
     <DataTable
       :value="data"
       :paginator="pagination"

@@ -1,14 +1,23 @@
 <template>
-  <div class="bg-kubgtu-white p-6 rounded-xl shadow-sm border border-border-light hover:shadow-lg transition-shadow flex flex-col case-card">
+  <div :class="[
+    'bg-kubgtu-white rounded-xl shadow-sm border border-border-light hover:shadow-lg transition-shadow flex flex-col case-card',
+    isMobile ? 'p-4' : 'p-6'
+  ]">
     <!-- Case Header -->
     <div class="mb-4">
-      <h3 class="text-xl font-semibold text-text-primary mb-2">
+      <h3 :class="[
+        'font-semibold text-text-primary mb-2',
+        isMobile ? 'text-lg' : 'text-xl'
+      ]">
         {{ caseData.title }}
       </h3>
     </div>
 
     <!-- Description -->
-    <p class="text-text-secondary mb-4 line-clamp-3">
+    <p :class="[
+      'text-text-secondary mb-4 line-clamp-3',
+      isMobile ? 'text-sm' : ''
+    ]">
       {{ caseData.description }}
     </p>
 
@@ -54,47 +63,28 @@
 
     <!-- Footer with button -->
     <div class="border-t border-border-light pt-3">
+      <!-- Для гостей - только кнопка "Подробнее" -->
       <Link
         v-if="showLink && linkUrl"
         :href="linkUrl"
-        class="w-full px-4 py-2 text-sm font-medium text-center text-kubgtu-white bg-primary rounded-lg hover:bg-primary-dark transition-colors inline-block"
+        :class="[
+          'w-full px-4 py-2 text-sm font-medium text-center text-kubgtu-white bg-primary rounded-lg hover:bg-primary-dark transition-colors inline-block',
+          isMobile ? 'text-xs py-1.5' : ''
+        ]"
       >
         Подробнее
       </Link>
+      <!-- Fallback для случаев без linkUrl -->
       <button
-        v-else-if="!showStudentActions"
+        v-else
         @click="handleView"
-        class="w-full px-4 py-2 text-sm font-medium text-center text-kubgtu-white bg-primary rounded-lg hover:bg-primary-dark transition-colors"
+        :class="[
+          'w-full px-4 py-2 text-sm font-medium text-center text-kubgtu-white bg-primary rounded-lg hover:bg-primary-dark transition-colors',
+          isMobile ? 'text-xs py-1.5' : ''
+        ]"
       >
         Подробнее
       </button>
-      <div v-else class="flex gap-2 justify-end">
-        <div v-if="hasApplication" class="inline-flex items-center justify-center px-3 h-8 bg-blue-50 border border-blue-200 rounded-md text-sm">
-          <i class="pi pi-check-circle text-blue-600 mr-2"></i>
-          <span class="font-medium text-blue-700">{{ applicationStatusLabel }}</span>
-        </div>
-        <!-- Показываем кнопку "Просмотр" для принятых заявок или если заявки нет -->
-        <Button
-          v-if="!hasApplication || isApplicationAccepted"
-          variant="outline"
-          size="sm"
-          @click.stop.prevent="handleView"
-        >
-          <i class="pi pi-eye mr-2" />
-          Просмотр
-        </Button>
-        <!-- Показываем кнопку "Подать заявку" только если заявки нет -->
-        <Button
-          v-if="!hasApplication && canApply"
-          variant="primary"
-          size="sm"
-          :loading="applying"
-          @click.stop.prevent="handleApply"
-        >
-          <i class="pi pi-check mr-2" />
-          Подать заявку
-        </Button>
-      </div>
     </div>
   </div>
 </template>
@@ -104,6 +94,7 @@ import { computed } from 'vue'
 import { Link } from '@inertiajs/vue3'
 import { route } from 'ziggy-js'
 import Button from './UI/Button.vue'
+import { useResponsive } from '@/Composables/useResponsive'
 
 const props = defineProps({
   caseData: {
@@ -145,6 +136,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['view', 'apply'])
+const { isMobile } = useResponsive()
 
 const handleView = () => {
   emit('view')

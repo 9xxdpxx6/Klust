@@ -6,6 +6,7 @@ import AvatarCropper from '@/Components/UI/AvatarCropper.vue'
 import Button from '@/Components/UI/Button.vue'
 import Modal from '@/Components/UI/Modal.vue'
 import Card from '@/Components/UI/Card.vue'
+import { useResponsive } from '@/Composables/useResponsive'
 
 const props = defineProps({
     user: {
@@ -120,17 +121,29 @@ const openFilePicker = () => {
 const currentAvatar = computed(() => {
     return avatarPreview.value || props.user?.avatar
 })
+
+const { isMobile } = useResponsive()
 </script>
 
 <template>
     <Card>
-        <h3 class="text-lg font-bold mb-4 text-text-primary">Фотография профиля</h3>
-        <div class="flex items-center gap-6">
+        <h3 :class="[
+            'font-bold mb-4 text-text-primary',
+            isMobile ? 'text-base' : 'text-lg'
+        ]">Фотография профиля</h3>
+        <div :class="[
+            'flex items-center',
+            isMobile ? 'flex-col gap-4' : 'gap-6'
+        ]">
             <UserAvatar
                 :user="{ ...user, avatar: currentAvatar }"
-                size="xl"
+                :size="isMobile ? 'lg' : 'xl'"
+                class="flex-shrink-0"
             />
-            <div v-if="editable" class="flex flex-col gap-2">
+            <div v-if="editable" :class="[
+                'flex flex-col w-full',
+                isMobile ? 'gap-3' : 'gap-2'
+            ]">
                 <input
                     ref="avatarInput"
                     type="file"
@@ -138,10 +151,14 @@ const currentAvatar = computed(() => {
                     @change="handleAvatarChange"
                     class="hidden"
                 />
-                <div class="flex gap-2">
+                <div :class="[
+                    'flex gap-2',
+                    isMobile ? 'flex-col' : ''
+                ]">
                     <Button
                         type="button"
                         variant="secondary"
+                        :class="isMobile ? 'w-full' : ''"
                         @click="openFilePicker"
                     >
                         <i class="pi pi-upload mr-2"></i>
@@ -151,15 +168,24 @@ const currentAvatar = computed(() => {
                         v-if="user.avatar || avatarPreview"
                         type="button"
                         variant="outline"
+                        :class="[
+                            'text-red-600 hover:text-red-700',
+                            isMobile ? 'w-full' : ''
+                        ]"
                         @click="openDeleteModal"
-                        class="text-red-600 hover:text-red-700"
                     >
                         <i class="pi pi-trash mr-2"></i>
                         Удалить
                     </Button>
                 </div>
-                <p class="text-sm text-text-muted">JPG, JPEG, PNG. Макс. 2MB</p>
-                <p v-if="formatError" class="text-sm text-red-600 mt-1">
+                <p :class="[
+                    'text-text-muted',
+                    isMobile ? 'text-xs' : 'text-sm'
+                ]">JPG, JPEG, PNG. Макс. 2MB</p>
+                <p v-if="formatError" :class="[
+                    'text-red-600 mt-1',
+                    isMobile ? 'text-xs' : 'text-sm'
+                ]">
                     {{ formatError }}
                 </p>
             </div>
@@ -190,10 +216,14 @@ const currentAvatar = computed(() => {
         </p>
 
         <template #footer>
-            <div class="flex justify-end gap-2">
+            <div :class="[
+                'flex gap-2',
+                isMobile ? 'flex-col-reverse' : 'justify-end'
+            ]">
                 <Button
                     variant="secondary"
                     type="button"
+                    :class="isMobile ? 'w-full' : ''"
                     @click="closeDeleteModal"
                 >
                     Отмена
@@ -201,6 +231,7 @@ const currentAvatar = computed(() => {
                 <Button
                     severity="danger"
                     type="button"
+                    :class="isMobile ? 'w-full' : ''"
                     @click="deleteAvatar"
                 >
                     Удалить

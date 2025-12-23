@@ -1,9 +1,11 @@
 <script setup>
 import { computed } from 'vue'
-import { Head, Link } from '@inertiajs/vue3'
+import { Head, Link, usePage } from '@inertiajs/vue3'
 import { route } from 'ziggy-js'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
-import GuestCaseCard from '@/Components/StudentCaseCard.vue'
+import GuestCaseCard from '@/Components/GuestCaseCard.vue'
+
+const page = usePage()
 
 const props = defineProps({
     partnerUser: {
@@ -27,6 +29,11 @@ const websiteHref = computed(() => {
     if (!raw) return null
     if (raw.startsWith('http://') || raw.startsWith('https://')) return raw
     return `https://${raw}`
+})
+
+// Проверка авторизации
+const isAuthenticated = computed(() => {
+    return page.props.auth?.user !== null && page.props.auth?.user !== undefined
 })
 </script>
 
@@ -165,8 +172,8 @@ const websiteHref = computed(() => {
                             </div>
                         </div>
 
-                        <!-- CTA Section -->
-                        <div class="bg-blue-50 border border-blue-200 rounded-xl overflow-hidden">
+                        <!-- CTA Section - только для неавторизованных -->
+                        <div v-if="!isAuthenticated" class="bg-blue-50 border border-blue-200 rounded-xl overflow-hidden">
                             <div class="p-6">
                                 <h3 class="text-lg font-semibold text-blue-900 mb-2">
                                     Хотите работать с этим партнёром?

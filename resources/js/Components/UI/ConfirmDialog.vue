@@ -4,23 +4,36 @@
     :modal="true"
     :closable="true"
     :draggable="false"
-    :style="{ width: '500px' }"
+    :style="{ width: isMobile ? '95vw' : '500px', maxWidth: isMobile ? '95vw' : '500px' }"
     :header="title"
+    :breakpoints="{ '960px': '95vw', '640px': '95vw' }"
     @update:visible="$emit('update:visible', $event)"
     @hide="$emit('update:visible', false)"
   >
-    <div class="py-4">
-      <div class="flex items-start gap-4">
+    <div :class="isMobile ? 'py-3' : 'py-4'">
+      <div :class="[
+        'flex items-start',
+        isMobile ? 'gap-2' : 'gap-4'
+      ]">
         <div class="flex-shrink-0">
-          <i :class="iconClass" class="text-3xl"></i>
+          <i :class="[
+            iconClass,
+            isMobile ? 'text-2xl' : 'text-3xl'
+          ]"></i>
         </div>
         <div class="flex-1">
-          <p class="text-gray-700">{{ message }}</p>
+          <p :class="[
+            'text-gray-700',
+            isMobile ? 'text-sm' : ''
+          ]">{{ message }}</p>
         </div>
       </div>
     </div>
     <template #footer>
-      <div class="flex justify-end gap-3">
+      <div :class="[
+        'flex justify-end',
+        isMobile ? 'flex-col gap-2' : 'gap-3'
+      ]">
         <Button 
           variant="secondary" 
           @click="$emit('update:visible', false)"
@@ -45,6 +58,7 @@
 import { computed } from 'vue'
 import Dialog from 'primevue/dialog'
 import Button from './Button.vue'
+import { useResponsive } from '@/Composables/useResponsive'
 
 const props = defineProps({
   visible: {
@@ -88,6 +102,8 @@ const props = defineProps({
 })
 
 defineEmits(['update:visible', 'confirm'])
+
+const { isMobile } = useResponsive()
 
 const iconClass = computed(() => {
   const icons = {

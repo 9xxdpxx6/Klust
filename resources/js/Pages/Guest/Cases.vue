@@ -123,7 +123,7 @@ import { computed } from 'vue'
 import { Head, Link, usePage } from '@inertiajs/vue3'
 import { route } from 'ziggy-js'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
-import GuestCaseCard from '@/Components/StudentCaseCard.vue'
+import GuestCaseCard from '@/Components/GuestCaseCard.vue'
 
 const page = usePage()
 

@@ -2,13 +2,25 @@
   <Card :hover="true" class="skill-card">
     <div class="flex items-start justify-between mb-4">
       <div class="flex-1">
-        <h3 class="text-lg font-semibold text-text-primary mb-1">{{ skill.name }}</h3>
-        <p v-if="skill.description" class="text-sm text-text-secondary line-clamp-2">
+        <h3 :class="[
+          'font-semibold text-text-primary mb-1',
+          isMobile ? 'text-base' : 'text-lg'
+        ]">{{ skill.name }}</h3>
+        <p v-if="skill.description" :class="[
+          'text-text-secondary line-clamp-2',
+          isMobile ? 'text-xs' : 'text-sm'
+        ]">
           {{ skill.description }}
         </p>
       </div>
-      <div v-if="icon" class="ml-4">
-        <i :class="['text-2xl', icon]" />
+      <div v-if="icon" :class="[
+        'ml-4',
+        isMobile ? '' : ''
+      ]">
+        <i :class="[
+          icon,
+          isMobile ? 'text-xl' : 'text-2xl'
+        ]" />
       </div>
     </div>
     
@@ -40,6 +52,7 @@
 import Card from './UI/Card.vue';
 import Badge from './UI/Badge.vue';
 import ProgressBar from './UI/ProgressBar.vue';
+import { useResponsive } from '@/Composables/useResponsive';
 
 defineProps({
   skill: {
@@ -63,6 +76,8 @@ defineProps({
     default: null,
   },
 });
+
+const { isMobile } = useResponsive();
 </script>
 
 <style scoped>
