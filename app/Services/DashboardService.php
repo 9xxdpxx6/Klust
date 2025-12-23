@@ -195,20 +195,29 @@ class DashboardService
         })->toArray();
         $data = $distribution->pluck('count')->toArray();
 
+        // Цвета для курсов (индекс массива = номер курса)
+        $courseColors = [
+            0 => '#374151', // Не указан - темно-серый
+            1 => '#22C55E', // 1 курс - зеленый
+            2 => '#FDE047', // 2 курс - желтый
+            3 => '#F97316', // 3 курс - оранжевый
+            4 => '#EF4444', // 4 курс - красный
+            5 => '#3B82F6', // 5 курс - синий
+            6 => '#EAB308', // 6 курс - золотисто-желтый
+        ];
+
+        // Формируем массив цветов в том же порядке, что и данные
+        $backgroundColor = $distribution->map(function ($item) use ($courseColors) {
+            return $courseColors[$item->course] ?? '#6B7280'; // Серый по умолчанию для неизвестных курсов
+        })->toArray();
+
         return [
             'labels' => $labels,
             'datasets' => [
                 [
                     'label' => __('dashboard.charts.students', [], 'ru'),
                     'data' => $data,
-                    'backgroundColor' => [
-                        '#22C55E', // 1 курс 
-                        '#FDE047', // 2 курс 
-                        '#F97316', // 3 курс 
-                        '#EF4444', // 4 курс 
-                        '#3B82F6', // 5 курс 
-                        '#EAB308', // 6 курс 
-                    ],
+                    'backgroundColor' => $backgroundColor,
                 ],
             ],
         ];
