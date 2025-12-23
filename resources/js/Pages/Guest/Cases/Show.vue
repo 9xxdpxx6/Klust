@@ -7,8 +7,10 @@ import Button from '@/Components/UI/Button.vue'
 import ConfirmDialog from '@/Components/UI/ConfirmDialog.vue'
 import ApplicationStatusTimeline from '@/Components/ApplicationStatusTimeline.vue'
 import ApplyCaseModal from '@/Components/ApplyCaseModal.vue'
+import { useResponsive } from '@/Composables/useResponsive'
 
 const page = usePage()
+const { isMobile } = useResponsive()
 
 const props = defineProps({
     caseData: {
@@ -78,47 +80,83 @@ const formatDate = (dateString) => {
     <PublicLayout>
         <Head :title="`Кейс: ${caseData.title}`" />
         <!-- Hero Section -->
-        <section class="bg-gradient-to-br from-primary to-primary-dark text-white py-16">
+        <section :class="[
+            'bg-gradient-to-br from-primary to-primary-dark text-white',
+            isMobile ? 'py-8' : 'py-16'
+        ]">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <!-- Breadcrumbs -->
-                <nav class="mb-6 text-sm">
+                <nav :class="[
+                    'text-sm mb-4',
+                    isMobile ? 'mb-3' : 'mb-6'
+                ]">
                     <Link :href="route('guest.cases')" class="text-white/80 hover:text-white transition-colors">Каталог кейсов</Link>
                     <span class="mx-2 text-white/60">/</span>
-                    <span class="text-white/90">{{ caseData.title }}</span>
+                    <span class="text-white/90" :class="isMobile ? 'text-xs' : ''">{{ caseData.title }}</span>
                 </nav>
 
-                <div class="flex items-start justify-between gap-6">
+                <div :class="[
+                    'flex items-start gap-6',
+                    isMobile ? 'flex-col gap-4' : ''
+                ]">
                     <div class="flex-1">
-                        <h1 class="text-4xl md:text-5xl font-extrabold mb-4">{{ caseData.title }}</h1>
-                        <div class="flex items-center gap-4">
+                        <h1 :class="[
+                            'font-extrabold mb-4',
+                            isMobile ? 'text-2xl mb-3' : 'text-4xl md:text-5xl'
+                        ]">{{ caseData.title }}</h1>
+                        <div :class="[
+                            'flex items-center gap-4',
+                            isMobile ? 'gap-3' : ''
+                        ]">
                             <img
                                 v-if="caseData.partner?.logo"
                                 :src="caseData.partner.logo"
                                 :alt="caseData.partner?.company_name"
-                                class="w-16 h-16 rounded-lg object-cover bg-white p-1"
+                                :class="[
+                                    'rounded-lg object-cover bg-white p-1',
+                                    isMobile ? 'w-12 h-12' : 'w-16 h-16'
+                                ]"
                             />
-                            <div class="w-16 h-16 bg-white/20 rounded-lg flex items-center justify-center" v-else>
-                                <svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div :class="[
+                                'bg-white/20 rounded-lg flex items-center justify-center',
+                                isMobile ? 'w-12 h-12' : 'w-16 h-16'
+                            ]" v-else>
+                                <svg :class="[
+                                    'text-white',
+                                    isMobile ? 'w-6 h-6' : 'w-8 h-8'
+                                ]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-sm text-white/80">Партнер</p>
+                                <p :class="[
+                                    'text-white/80',
+                                    isMobile ? 'text-xs' : 'text-sm'
+                                ]">Партнер</p>
                                 <template v-if="caseData.user_id">
                                     <Link
                                         :href="route('partners.show', caseData.user_id)"
-                                        class="text-lg font-semibold text-white hover:underline block truncate"
+                                        :class="[
+                                            'font-semibold text-white hover:underline block truncate',
+                                            isMobile ? 'text-sm' : 'text-lg'
+                                        ]"
                                     >
                                         {{ caseData.partner?.company_name || caseData.partner?.user?.name || 'Не указан' }}
                                     </Link>
                                 </template>
-                                <p v-else class="text-lg font-semibold text-white truncate">
+                                <p v-else :class="[
+                                    'font-semibold text-white truncate',
+                                    isMobile ? 'text-sm' : 'text-lg'
+                                ]">
                                     {{ caseData.partner?.company_name || caseData.partner?.user?.name || 'Не указан' }}
                                 </p>
                             </div>
                         </div>
                     </div>
-                    <div v-if="caseData.status === 'active'" class="px-4 py-2 bg-green-500 rounded-lg">
+                    <div v-if="caseData.status === 'active'" :class="[
+                        'bg-green-500 rounded-lg flex-shrink-0',
+                        isMobile ? 'px-3 py-1.5 text-sm' : 'px-4 py-2'
+                    ]">
                         <span class="text-white font-semibold">Активен</span>
                     </div>
                 </div>
@@ -126,9 +164,15 @@ const formatDate = (dateString) => {
         </section>
 
         <!-- Main Content -->
-        <section class="py-12 bg-surface">
+        <section :class="[
+            'bg-surface',
+            isMobile ? 'py-6' : 'py-12'
+        ]">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="space-y-6">
+                <div :class="[
+                    'space-y-6',
+                    isMobile ? 'space-y-4' : ''
+                ]">
 
                     <!-- Application Status - только для авторизованных студентов -->
                     <div v-if="isStudent && applicationStatus" class="bg-kubgtu-white rounded-xl shadow-sm border border-border-light overflow-hidden">
