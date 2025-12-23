@@ -13,7 +13,8 @@ class PartnersController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['auth', 'role:student|admin|teacher']);
+        // Убираем middleware auth, чтобы маршрут был доступен для всех
+        // Проверка авторизации будет внутри метода show
     }
 
     public function show(User $partner): Response
@@ -28,7 +29,26 @@ class PartnersController extends Controller
             abort(404);
         }
 
-        return Inertia::render('Client/Student/Partners/Show', [
+        // Определяем, какой шаблон использовать в зависимости от авторизации
+        $isAuthenticated = auth()->check();
+        $isStudent = $isAuthenticated && auth()->user()->hasRole('student');
+
+        // Если пользователь авторизован как студент, используем студенческий шаблон
+        // Иначе используем гостевой шаблон
+        $template = $isStudent ? 'Client/Student/Partners/Show' : 'Guest/Partners/Show';
+
+        // Получить активные кейсы партнера для гостей
+        $cases = [];
+        if (!$isStudent) {
+            $cases = \App\Models\CaseModel::where('user_id', $partner->id)
+                ->where('status', 'active')
+                ->with(['skills'])
+                ->orderBy('created_at', 'desc')
+                ->limit(6)
+                ->get();
+        }
+
+        return Inertia::render($template, [
             'partnerUser' => [
                 'id' => $partner->id,
                 'name' => $partner->name,
@@ -43,6 +63,7 @@ class PartnersController extends Controller
                 'contact_phone' => $partner->partnerProfile->contact_phone,
                 'logo' => $partner->partnerProfile->logo,
             ],
+            'cases' => $cases,
         ]);
     }
 }
