@@ -30,7 +30,10 @@
         </template>
       </BaseHeader>
       
-      <main class="flex-1 p-6 bg-surface">
+      <main :class="[
+        'flex-1 bg-surface',
+        isMobile ? 'p-4' : 'p-6'
+      ]">
         <FlashMessage />
         <slot />
       </main>
@@ -62,6 +65,7 @@ import MobileMenu from '@/Components/Layout/MobileMenu.vue';
 import FlashMessage from '@/Components/Shared/FlashMessage.vue';
 import { getMenuItemsForRole } from '@/Utils/navigation';
 import { useSidebar } from '@/Composables/useSidebar';
+import { useResponsive } from '@/Composables/useResponsive';
 
 const props = defineProps({
   role: {
@@ -91,6 +95,7 @@ const props = defineProps({
 
 const page = usePage();
 const sidebarState = useSidebar(false);
+const { isMobile } = useResponsive();
 
 const userRoles = computed(() => page.props.auth?.user?.roles || []);
 const menuItems = computed(() => {
