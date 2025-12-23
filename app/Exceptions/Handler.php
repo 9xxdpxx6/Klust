@@ -66,16 +66,16 @@ class Handler extends ExceptionHandler
             }
         });
 
-        // Обработка ошибок для Inertia запросов
+        // Обработка ошибок для всех запросов (включая прямые переходы и перезагрузки)
         $this->renderable(function (Throwable $e, Request $request) {
             // Пропускаем обработку для .well-known запросов
             if (str_contains($request->path(), '.well-known')) {
                 return null;
             }
 
-            // Проверяем, является ли запрос Inertia запросом
-            if (!$request->header('X-Inertia')) {
-                return null; // Используем стандартную обработку Laravel
+            // Validation exceptions обрабатываются стандартным способом
+            if ($e instanceof ValidationException) {
+                return null;
             }
 
             $statusCode = 500;
@@ -101,12 +101,10 @@ class Handler extends ExceptionHandler
             } elseif ($e instanceof TokenMismatchException) {
                 $statusCode = 419;
                 $errorPage = 'Errors/403';
-            } elseif ($e instanceof ValidationException) {
-                // Validation exceptions обрабатываются стандартным способом
-                return null;
             }
 
-            // Рендерим Inertia страницу ошибки без редиректа
+            // Рендерим Inertia страницу ошибки для всех запросов
+            // Это работает как для Inertia запросов, так и для прямых переходов/перезагрузок
             // Важно: используем toResponse() и setStatusCode() для правильной установки статуса
             $response = Inertia::render($errorPage, [
                 'status' => $statusCode,
