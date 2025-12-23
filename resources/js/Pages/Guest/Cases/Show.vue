@@ -104,7 +104,17 @@ const formatDate = (dateString) => {
                             </div>
                             <div>
                                 <p class="text-sm text-white/80">Партнер</p>
-                                <p class="text-lg font-semibold text-white">{{ caseData.partner?.company_name || 'Не указан' }}</p>
+                                <template v-if="caseData.user_id">
+                                    <Link
+                                        :href="route('partners.show', caseData.user_id)"
+                                        class="text-lg font-semibold text-white hover:underline block truncate"
+                                    >
+                                        {{ caseData.partner?.company_name || caseData.partner?.user?.name || 'Не указан' }}
+                                    </Link>
+                                </template>
+                                <p v-else class="text-lg font-semibold text-white truncate">
+                                    {{ caseData.partner?.company_name || caseData.partner?.user?.name || 'Не указан' }}
+                                </p>
                             </div>
                         </div>
                     </div>
