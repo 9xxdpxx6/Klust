@@ -16,13 +16,30 @@
     </button>
     
     <Popover ref="popover">
-      <div class="notification-panel w-[28rem] max-w-[90vw]">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-semibold text-text-primary">Уведомления</h3>
-          <div class="flex items-center gap-2 whitespace-nowrap">
+      <div :class="[
+        'notification-panel',
+        isMobile ? 'w-[90vw] max-w-[90vw]' : 'w-[28rem] max-w-[90vw]'
+      ]">
+        <div :class="[
+          'flex items-center justify-between',
+          isMobile ? 'mb-3' : 'mb-4',
+          isMobile ? 'flex-col items-start gap-2' : ''
+        ]">
+          <h3 :class="[
+            'font-semibold text-text-primary',
+            isMobile ? 'text-base' : 'text-lg'
+          ]">Уведомления</h3>
+          <div :class="[
+            'flex items-center',
+            isMobile ? 'gap-2 w-full justify-between' : 'gap-2 whitespace-nowrap'
+          ]">
             <Link
               :href="notificationsRoute"
-              class="text-sm text-primary hover:text-primary-light whitespace-nowrap"
+              :class="[
+                'text-primary hover:text-primary-light',
+                isMobile ? 'text-xs' : 'text-sm',
+                isMobile ? '' : 'whitespace-nowrap'
+              ]"
               @click="closePopover"
             >
               Все уведомления
@@ -30,49 +47,90 @@
             <button
               v-if="hasUnread"
               @click="markAllAsRead"
-              class="px-3 py-1.5 text-sm font-medium text-white rounded-lg transition-colors whitespace-nowrap flex items-center gap-1.5 mark-all-button"
+              :class="[
+                'font-medium text-white rounded-lg transition-colors flex items-center gap-1.5 mark-all-button',
+                isMobile ? 'px-2 py-1 text-xs' : 'px-3 py-1.5 text-sm',
+                isMobile ? '' : 'whitespace-nowrap'
+              ]"
             >
               <i class="pi pi-check"></i>
-              Отметить все
+              <span :class="isMobile ? 'hidden sm:inline' : ''">Отметить все</span>
+              <span :class="isMobile ? 'sm:hidden' : 'hidden'">Все</span>
             </button>
           </div>
         </div>
         
-        <div v-if="loading && notifications.length === 0" class="text-center py-8 text-text-muted">
-          <i class="pi pi-spin pi-spinner text-4xl mb-2"></i>
-          <p>Загрузка...</p>
+        <div v-if="loading && notifications.length === 0" :class="[
+          'text-center text-text-muted',
+          isMobile ? 'py-6' : 'py-8'
+        ]">
+          <i :class="[
+            'pi pi-spin pi-spinner mb-2',
+            isMobile ? 'text-2xl' : 'text-4xl'
+          ]"></i>
+          <p :class="isMobile ? 'text-sm' : ''">Загрузка...</p>
         </div>
 
-        <div v-else-if="notifications.length === 0" class="text-center py-8 text-text-muted">
-          <i class="pi pi-inbox text-4xl mb-2"></i>
-          <p>Нет новых уведомлений</p>
+        <div v-else-if="notifications.length === 0" :class="[
+          'text-center text-text-muted',
+          isMobile ? 'py-6' : 'py-8'
+        ]">
+          <i :class="[
+            'pi pi-inbox mb-2',
+            isMobile ? 'text-2xl' : 'text-4xl'
+          ]"></i>
+          <p :class="isMobile ? 'text-sm' : ''">Нет новых уведомлений</p>
         </div>
 
-        <div v-else class="space-y-2 max-h-96 overflow-y-auto">
+        <div v-else :class="[
+          'space-y-2 overflow-y-auto',
+          isMobile ? 'max-h-80' : 'max-h-96'
+        ]">
           <div
             v-for="notification in notifications"
             :key="notification.id"
             :class="[
               'notification-item',
-              { 'notification-item--read': notification.read_at }
+              { 'notification-item--read': notification.read_at },
+              isMobile ? 'p-2' : 'p-3'
             ]"
             @click="handleNotificationClick(notification)"
           >
-            <div class="flex items-start gap-3">
+            <div :class="[
+              'flex items-start',
+              isMobile ? 'gap-2' : 'gap-3'
+            ]">
               <!-- Иконка уведомления -->
-              <div v-if="notification.data?.icon" class="flex-shrink-0 mt-1">
-                <i :class="['pi', notification.data.icon, 'text-primary']"></i>
+              <div v-if="notification.data?.icon" :class="[
+                'flex-shrink-0',
+                isMobile ? 'mt-0.5' : 'mt-1'
+              ]">
+                <i :class="[
+                  'pi',
+                  notification.data.icon,
+                  'text-primary',
+                  isMobile ? 'text-sm' : ''
+                ]"></i>
               </div>
 
               <!-- Контент уведомления -->
               <div class="flex-1 min-w-0">
-                <p class="font-medium text-sm text-text-primary">
+                <p :class="[
+                  'font-medium text-text-primary',
+                  isMobile ? 'text-xs' : 'text-sm'
+                ]">
                   {{ notification.data?.title || 'Уведомление' }}
                 </p>
-                <p class="text-xs text-text-muted mt-1 break-words">
+                <p :class="[
+                  'text-text-muted mt-1 break-words',
+                  isMobile ? 'text-xs' : 'text-xs'
+                ]">
                   {{ notification.data?.message || '' }}
                 </p>
-                <p class="text-xs text-text-muted mt-1">
+                <p :class="[
+                  'text-text-muted mt-1',
+                  isMobile ? 'text-xs' : 'text-xs'
+                ]">
                   {{ formatDate(notification.created_at) }}
                 </p>
               </div>
@@ -81,7 +139,10 @@
               <button
                 v-if="!notification.read_at"
                 @click.stop="handleMarkAsRead(notification.id)"
-                class="text-xs text-primary hover:text-primary-light flex-shrink-0"
+                :class="[
+                  'text-primary hover:text-primary-light flex-shrink-0',
+                  isMobile ? 'text-xs p-1' : 'text-xs'
+                ]"
                 title="Отметить как прочитанное"
               >
                 <i class="pi pi-check"></i>
@@ -102,6 +163,7 @@ import Popover from 'primevue/popover';
 import { useNotifications } from '@/Composables/useNotifications';
 import { router, usePage } from '@inertiajs/vue3';
 import { route } from 'ziggy-js';
+import { useResponsive } from '@/Composables/useResponsive';
 
 // Автозагрузка уведомлений при монтировании
 const {
@@ -117,6 +179,7 @@ const {
 
 const page = usePage();
 const userRoles = computed(() => page.props.auth?.user?.roles || []);
+const { isMobile } = useResponsive();
 
 const popover = ref(null);
 const targetButton = ref(null);
@@ -231,6 +294,12 @@ onUnmounted(() => {
 <style scoped>
 .notification-panel {
   min-width: 28rem;
+}
+
+@media (max-width: 767px) {
+  .notification-panel {
+    min-width: auto;
+  }
 }
 
 /* Увеличиваем размер иконки колокольчика в 2 раза */
