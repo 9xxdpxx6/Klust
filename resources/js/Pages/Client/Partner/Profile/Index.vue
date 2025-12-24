@@ -239,10 +239,6 @@ const props = defineProps({
     partnerProfile: {
         type: Object,
         required: true
-    },
-    partner: {
-        type: Object,
-        required: true
     }
 });
 
