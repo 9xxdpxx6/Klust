@@ -32,7 +32,7 @@
       
       <main :class="[
         'flex-1 bg-surface',
-        isMobile ? 'p-4' : 'p-6'
+        isMobile ? 'p-2 sm:p-4' : 'p-6'
       ]">
         <FlashMessage />
         <slot />
