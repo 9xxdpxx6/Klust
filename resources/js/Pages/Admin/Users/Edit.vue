@@ -3,7 +3,7 @@
         <Head :title="`Редактирование пользователя - ${user.name}`" />
 
         <!-- Хлебные крошки -->
-        <div class="mb-6">
+        <div class="mb-6 hidden md:block">
             <nav class="flex" aria-label="Breadcrumb">
                 <ol class="flex items-center space-x-4">
                     <li>
@@ -31,7 +31,7 @@
             </nav>
         </div>
 
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-6xl mx-auto px-2 sm:px-4 lg:px-8">
             <div class="bg-white shadow rounded-lg">
                 <div class="px-4 py-5 sm:p-6">
                     <div class="flex justify-between items-center mb-6">
@@ -140,32 +140,33 @@
                         </div>
 
                         <!-- Кнопки -->
-                        <div class="mt-8 flex justify-between">
-                            <div>
+                        <div class="mt-8 space-y-3 md:space-y-0 md:flex md:justify-between md:items-center">
+                            <!-- Сохранить - на мобильных сверху на всю ширину, на десктопе справа -->
+                            <button
+                                type="submit"
+                                :disabled="form.processing"
+                                class="w-full md:w-auto inline-flex items-center justify-center h-10 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none disabled:opacity-50 md:order-3"
+                            >
+                                <span v-if="form.processing">Сохранение...</span>
+                                <span v-else class="whitespace-nowrap">Сохранить изменения</span>
+                            </button>
+                            
+                            <!-- Удалить и Отмена - на мобильных снизу в ряд, на десктопе слева и справа -->
+                            <div class="flex items-center space-x-3 md:order-1">
                                 <button
                                     type="button"
                                     @click="confirmDelete"
-                                    class="px-4 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50"
+                                    class="flex-1 md:flex-none inline-flex items-center justify-center h-10 px-4 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50"
                                     :disabled="form.processing"
                                 >
                                     Удалить пользователя
                                 </button>
-                            </div>
-                            <div class="flex space-x-3">
                                 <Link
                                     :href="route('admin.users.show', user.id)"
-                                    class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+                                    class="flex-1 md:flex-none inline-flex items-center justify-center h-10 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
                                 >
                                     Отмена
                                 </Link>
-                                <button
-                                    type="submit"
-                                    :disabled="form.processing"
-                                    class="inline-flex justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none disabled:opacity-50"
-                                >
-                                    <span v-if="form.processing">Сохранение...</span>
-                                    <span v-else>Сохранить изменения</span>
-                                </button>
                             </div>
                         </div>
                     </form>
