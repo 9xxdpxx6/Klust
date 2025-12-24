@@ -203,56 +203,166 @@
         </div>
 
         <!-- Топ кейсов -->
-        <div class="bg-white shadow-sm rounded-lg overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900">Топ кейсов</h3>
+        <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <i class="pi pi-trophy text-amber-500"></i>
+                    Топ кейсов
+                </h3>
             </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                №
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Название
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Заявки
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Команды
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Процент одобрения
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <tr v-for="(topCase, index) in topCases" :key="topCase.id">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ index + 1 }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {{ topCase.title }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ topCase.applications_count }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ topCase.teams_count }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ topCase.conversion_rate }}%
-                            </td>
-                        </tr>
-                        <tr v-if="topCases.length === 0">
-                            <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
-                                Нет данных для отображения
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+
+            <div v-if="topCases && topCases.length > 0">
+                <!-- Заголовки для планшетной/лаптопной версии (md до xl) -->
+                <div class="hidden md:grid xl:hidden md:grid-cols-4 gap-4 px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                    <div class="col-span-2 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Название
+                    </div>
+                    <div class="col-span-1 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Заявки
+                    </div>
+                    <div class="col-span-1 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Команды / %
+                    </div>
+                </div>
+
+                <!-- Заголовки для десктопной версии (xl+) -->
+                <div class="hidden xl:grid xl:grid-cols-5 gap-4 px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                    <div class="col-span-1 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        №
+                    </div>
+                    <div class="col-span-2 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Название
+                    </div>
+                    <div class="col-span-1 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Заявки
+                    </div>
+                    <div class="col-span-1 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Команды
+                    </div>
+                    <div class="col-span-1 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Процент одобрения
+                    </div>
+                </div>
+
+                <!-- Список кейсов -->
+                <div class="divide-y divide-gray-200">
+                    <!-- Карточка кейса (мобильная) / Строка кейса (десктоп) -->
+                    <div
+                        v-for="(topCase, index) in topCases"
+                        :key="topCase.id"
+                        class="hover:bg-indigo-50/50 transition-all group"
+                    >
+                        <!-- Мобильная версия (карточка) - только для маленьких экранов -->
+                        <div class="md:hidden p-5 sm:p-6">
+                            <div class="flex items-start gap-4 mb-4">
+                                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
+                                    <span class="text-white text-sm font-bold">{{ index + 1 }}</span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-sm font-semibold text-gray-900">{{ topCase.title }}</div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <!-- Заявки -->
+                                <div class="flex items-center gap-3">
+                                    <i class="pi pi-file text-gray-400 text-sm flex-shrink-0"></i>
+                                    <div class="flex-1">
+                                        <span class="text-xs text-gray-500 font-medium">Заявки:</span>
+                                        <span class="text-sm text-gray-900 font-semibold ml-2">{{ topCase.applications_count }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Команды -->
+                                <div class="flex items-center gap-3">
+                                    <i class="pi pi-users text-gray-400 text-sm flex-shrink-0"></i>
+                                    <div class="flex-1">
+                                        <span class="text-xs text-gray-500 font-medium">Команды:</span>
+                                        <span class="text-sm text-gray-900 font-semibold ml-2">{{ topCase.teams_count }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Процент одобрения -->
+                                <div class="flex items-center gap-3">
+                                    <i class="pi pi-percentage text-gray-400 text-sm flex-shrink-0"></i>
+                                    <div class="flex-1">
+                                        <span class="text-xs text-gray-500 font-medium">Процент одобрения:</span>
+                                        <span class="text-sm text-gray-900 font-semibold ml-2">{{ topCase.conversion_rate }}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Планшетная/лаптопная версия (md до xl) - упрощенная таблица -->
+                        <div class="hidden md:grid xl:hidden md:grid-cols-4 gap-4 px-4 py-4 items-center">
+                            <!-- Название -->
+                            <div class="col-span-2">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
+                                        <span class="text-white text-xs font-bold">{{ index + 1 }}</span>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="text-sm font-semibold text-gray-900 truncate">{{ topCase.title }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Заявки -->
+                            <div class="col-span-1">
+                                <div class="text-sm text-gray-900 font-semibold">{{ topCase.applications_count }}</div>
+                            </div>
+
+                            <!-- Команды / Процент -->
+                            <div class="col-span-1">
+                                <div class="text-sm text-gray-900 font-semibold">{{ topCase.teams_count }}</div>
+                                <div class="text-xs text-gray-500">{{ topCase.conversion_rate }}%</div>
+                            </div>
+                        </div>
+
+                        <!-- Десктопная версия (xl+) - полная таблица -->
+                        <div class="hidden xl:grid xl:grid-cols-5 gap-4 px-6 py-5 items-center">
+                            <!-- № -->
+                            <div class="col-span-1">
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
+                                    <span class="text-white text-sm font-bold">{{ index + 1 }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Название -->
+                            <div class="col-span-2">
+                                <div class="text-sm font-semibold text-gray-900 truncate">{{ topCase.title }}</div>
+                            </div>
+
+                            <!-- Заявки -->
+                            <div class="col-span-1">
+                                <div class="text-sm text-gray-900">{{ topCase.applications_count }}</div>
+                            </div>
+
+                            <!-- Команды -->
+                            <div class="col-span-1">
+                                <div class="text-sm text-gray-900">{{ topCase.teams_count }}</div>
+                            </div>
+
+                            <!-- Процент одобрения -->
+                            <div class="col-span-1">
+                                <div class="text-sm text-gray-900 font-semibold">{{ topCase.conversion_rate }}%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Сообщение если нет данных -->
+            <div v-if="!topCases || topCases.length === 0" class="p-12 text-center">
+                <div class="max-w-md mx-auto">
+                    <div class="mx-auto w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-4">
+                        <i class="pi pi-chart-bar text-4xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Нет данных для отображения</h3>
+                    <p class="text-sm text-gray-500">
+                        Попробуйте изменить параметры фильтрации
+                    </p>
+                </div>
             </div>
         </div>
     </div>

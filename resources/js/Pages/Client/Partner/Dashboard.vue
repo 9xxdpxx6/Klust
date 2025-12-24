@@ -20,8 +20,8 @@
                 </div>
             </div>
 
-            <!-- Статистика компании -->
-            <ResponsiveGrid :cols="{ mobile: 1, tablet: 2, desktop: 4 }">
+            <!-- Статистика -->
+            <ResponsiveGrid :cols="{ mobile: 1, tablet: 2, desktop: 2, large: 4 }">
                 <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-md border border-blue-200/50 hover:shadow-lg transition-all cursor-pointer group"
                      :class="isMobile ? 'p-4' : 'p-6'"
                      @click="safeVisit('partner.cases.index')">
@@ -131,7 +131,7 @@
             <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
                 <div :class="[
                     'px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200',
-                    isMobile ? 'px-4' : ''
+                    isMobile ? 'px-4 py-3' : 'px-6 py-4'
                 ]">
                     <h2 :class="[
                         'font-bold text-gray-900 flex items-center gap-2',
@@ -159,22 +159,22 @@
                 </div>
                 <div v-else :class="[
                     'text-center text-gray-400',
-                    isMobile ? 'p-8' : 'p-12'
+                    isMobile ? 'p-6' : 'p-12'
                 ]">
                     <i :class="[
                         'pi pi-briefcase mb-2',
-                        isMobile ? 'text-3xl' : 'text-4xl'
+                        isMobile ? 'text-2xl' : 'text-4xl'
                     ]"></i>
-                    <p class="text-sm">Нет активных кейсов</p>
+                    <p :class="isMobile ? 'text-xs' : 'text-sm'">Нет активных кейсов</p>
                 </div>
             </div>
 
             <!-- Последние активности -->
-            <ResponsiveGrid :cols="{ mobile: 1, tablet: 2, desktop: 3 }" class="gap-6">
+            <ResponsiveGrid :cols="{ mobile: 1, tablet: 2, desktop: 3 }" :class="isMobile ? 'gap-4' : 'gap-6'">
                 <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
                     <div :class="[
-                        'px-6 py-4 bg-gradient-to-r from-amber-50 to-amber-100 border-b border-amber-200',
-                        isMobile ? 'px-4' : ''
+                        'py-4 bg-gradient-to-r from-amber-50 to-amber-100 border-b border-amber-200',
+                        isMobile ? 'px-4 py-3' : 'px-6 py-4'
                     ]">
                         <h2 :class="[
                             'font-bold text-gray-900 flex items-center gap-2',
@@ -186,8 +186,7 @@
                         <p class="text-xs text-gray-600 mt-1">{{ RECENT_PERIOD_LABEL }}</p>
                     </div>
                     <div :class="[
-                        'p-6',
-                        isMobile ? 'p-4' : ''
+                        isMobile ? 'p-4' : 'p-6'
                     ]" v-if="recentActivities?.newApplications && recentActivities.newApplications.length > 0">
                     <div class="space-y-3">
                         <Link
@@ -226,20 +225,20 @@
                     </div>
                     <div v-else :class="[
                         'text-center text-gray-400',
-                        isMobile ? 'p-8' : 'p-12'
+                        isMobile ? 'p-6' : 'p-12'
                     ]">
                         <i :class="[
                             'pi pi-inbox mb-2',
-                            isMobile ? 'text-3xl' : 'text-4xl'
+                            isMobile ? 'text-2xl' : 'text-4xl'
                         ]"></i>
-                        <p class="text-sm">Нет новых заявок</p>
+                        <p :class="isMobile ? 'text-xs' : 'text-sm'">Нет новых заявок</p>
                     </div>
                 </div>
 
                 <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
                     <div :class="[
-                        'px-6 py-4 bg-gradient-to-r from-green-50 to-green-100 border-b border-green-200',
-                        isMobile ? 'px-4' : ''
+                        'py-4 bg-gradient-to-r from-green-50 to-green-100 border-b border-green-200',
+                        isMobile ? 'px-4 py-3' : 'px-6 py-4'
                     ]">
                         <h2 :class="[
                             'font-bold text-gray-900 flex items-center gap-2',
@@ -251,8 +250,7 @@
                         <p class="text-xs text-gray-600 mt-1 invisible">Все завершенные кейсы</p>
                     </div>
                     <div :class="[
-                        'p-6',
-                        isMobile ? 'p-4' : ''
+                        isMobile ? 'p-4' : 'p-6'
                     ]" v-if="recentActivities?.completedCases && recentActivities.completedCases.length > 0">
                     <div class="space-y-3">
                         <div
@@ -268,20 +266,20 @@
                     </div>
                     <div v-else :class="[
                         'text-center text-gray-400',
-                        isMobile ? 'p-8' : 'p-12'
+                        isMobile ? 'p-6' : 'p-12'
                     ]">
                         <i :class="[
                             'pi pi-check-circle mb-2',
-                            isMobile ? 'text-3xl' : 'text-4xl'
+                            isMobile ? 'text-2xl' : 'text-4xl'
                         ]"></i>
-                        <p class="text-sm">Нет завершенных кейсов</p>
+                        <p :class="isMobile ? 'text-xs' : 'text-sm'">Нет завершенных кейсов</p>
                     </div>
                 </div>
 
                 <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
                     <div :class="[
-                        'px-6 py-4 bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200',
-                        isMobile ? 'px-4' : ''
+                        'py-4 bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200',
+                        isMobile ? 'px-4 py-3' : 'px-6 py-4'
                     ]">
                         <h2 :class="[
                             'font-bold text-gray-900 flex items-center gap-2',
@@ -293,8 +291,7 @@
                         <p class="text-xs text-gray-600 mt-1">{{ RECENT_PERIOD_LABEL }}</p>
                     </div>
                     <div :class="[
-                        'p-6',
-                        isMobile ? 'p-4' : ''
+                        isMobile ? 'p-4' : 'p-6'
                     ]" v-if="recentActivities?.newTeams && recentActivities.newTeams.length > 0">
                     <div class="space-y-3">
                         <Link
@@ -326,16 +323,123 @@
                     </div>
                     <div v-else :class="[
                         'text-center text-gray-400',
-                        isMobile ? 'p-8' : 'p-12'
+                        isMobile ? 'p-6' : 'p-12'
                     ]">
                         <i :class="[
                             'pi pi-users mb-2',
-                            isMobile ? 'text-3xl' : 'text-4xl'
+                            isMobile ? 'text-2xl' : 'text-4xl'
                         ]"></i>
-                        <p class="text-sm">Нет новых команд</p>
+                        <p :class="isMobile ? 'text-xs' : 'text-sm'">Нет новых команд</p>
                     </div>
                 </div>
             </ResponsiveGrid>
+
+            <!-- Быстрые действия -->
+            <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                <div :class="[
+                    'py-4 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-indigo-200',
+                    isMobile ? 'px-4 py-3' : 'px-6 py-4'
+                ]">
+                    <h2 :class="[
+                        'font-bold text-gray-900 flex items-center gap-2',
+                        isMobile ? 'text-base' : 'text-lg'
+                    ]">
+                        <i class="pi pi-bolt text-indigo-600"></i>
+                        Быстрые действия
+                    </h2>
+                </div>
+                <div :class="[
+                    'p-6',
+                    isMobile ? 'p-4' : ''
+                ]">
+                    <ResponsiveGrid :cols="{ mobile: 2, tablet: 2, desktop: 4 }">
+                        <button
+                            @click="safeVisit('partner.cases.create')"
+                            :class="[
+                                'flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl border border-indigo-200 hover:shadow-lg transition-all group',
+                                isMobile ? 'p-4' : 'p-6'
+                            ]"
+                        >
+                            <div :class="[
+                                'flex items-center justify-center bg-indigo-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0',
+                                isMobile ? 'w-10 h-10' : 'w-12 h-12'
+                            ]">
+                                <i :class="[
+                                    'pi pi-plus text-white',
+                                    isMobile ? 'text-lg' : 'text-xl'
+                                ]"></i>
+                            </div>
+                            <span :class="[
+                                'font-semibold text-gray-900',
+                                isMobile ? 'text-xs' : 'text-sm'
+                            ]">Создать кейс</span>
+                        </button>
+                        <button
+                            @click="safeVisit('partner.cases.index')"
+                            :class="[
+                                'flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 hover:shadow-lg transition-all group',
+                                isMobile ? 'p-4' : 'p-6'
+                            ]"
+                        >
+                            <div :class="[
+                                'flex items-center justify-center bg-blue-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0',
+                                isMobile ? 'w-10 h-10' : 'w-12 h-12'
+                            ]">
+                                <i :class="[
+                                    'pi pi-briefcase text-white',
+                                    isMobile ? 'text-lg' : 'text-xl'
+                                ]"></i>
+                            </div>
+                            <span :class="[
+                                'font-semibold text-gray-900',
+                                isMobile ? 'text-xs' : 'text-sm'
+                            ]">Все кейсы</span>
+                        </button>
+                        <button
+                            @click="safeVisit('partner.teams.index')"
+                            :class="[
+                                'flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200 hover:shadow-lg transition-all group',
+                                isMobile ? 'p-4' : 'p-6'
+                            ]"
+                        >
+                            <div :class="[
+                                'flex items-center justify-center bg-purple-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0',
+                                isMobile ? 'w-10 h-10' : 'w-12 h-12'
+                            ]">
+                                <i :class="[
+                                    'pi pi-users text-white',
+                                    isMobile ? 'text-lg' : 'text-xl'
+                                ]"></i>
+                            </div>
+                            <span :class="[
+                                'font-semibold text-gray-900',
+                                isMobile ? 'text-xs' : 'text-sm'
+                            ]">Команды</span>
+                        </button>
+                        <button
+                            @click="safeVisit('partner.analytics.index')"
+                            :class="[
+                                'flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl border border-amber-200 hover:shadow-lg transition-all group',
+                                isMobile ? 'p-4' : 'p-6'
+                            ]"
+                        >
+                            <div :class="[
+                                'flex items-center justify-center bg-amber-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0',
+                                isMobile ? 'w-10 h-10' : 'w-12 h-12'
+                            ]">
+                                <i :class="[
+                                    'pi pi-chart-bar text-white',
+                                    isMobile ? 'text-lg' : 'text-xl'
+                                ]"></i>
+                            </div>
+                            <span :class="[
+                                'font-semibold text-gray-900',
+                                isMobile ? 'text-xs' : 'text-sm'
+                            ]">Аналитика</span>
+                        </button>
+                    </ResponsiveGrid>
+                </div>
+            </div>
         </div>
     </MobileContainer>
 </template>
