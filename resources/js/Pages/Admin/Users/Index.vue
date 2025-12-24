@@ -21,6 +21,47 @@
             </div>
         </div>
 
+        <!-- Статистика -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 shadow-md border border-blue-200/50">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-blue-600 mb-1">Всего пользователей</p>
+                        <p class="text-2xl font-bold text-blue-900">{{ usersTotal }}</p>
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-blue-500 rounded-xl">
+                        <i class="pi pi-users text-white text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-5 shadow-md border border-green-200/50">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-green-600 mb-1">Верифицированных</p>
+                        <p class="text-2xl font-bold text-green-900">
+                            {{ verifiedUsersCount }}
+                        </p>
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-green-500 rounded-xl">
+                        <i class="pi pi-check-circle text-white text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-5 shadow-md border border-amber-200/50">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-amber-600 mb-1">Студентов</p>
+                        <p class="text-2xl font-bold text-amber-900">
+                            {{ studentsCount }}
+                        </p>
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-amber-500 rounded-xl">
+                        <i class="pi pi-graduation-cap text-white text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Фильтры -->
         <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
             <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
@@ -95,48 +136,7 @@
             </div>
         </div>
 
-        <!-- Статистика -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 shadow-md border border-blue-200/50">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-blue-600 mb-1">Всего пользователей</p>
-                        <p class="text-2xl font-bold text-blue-900">{{ usersTotal }}</p>
-                    </div>
-                    <div class="w-12 h-12 flex items-center justify-center bg-blue-500 rounded-xl">
-                        <i class="pi pi-users text-white text-xl"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-5 shadow-md border border-green-200/50">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-green-600 mb-1">Верифицированных</p>
-                        <p class="text-2xl font-bold text-green-900">
-                            {{ verifiedUsersCount }}
-                        </p>
-                    </div>
-                    <div class="w-12 h-12 flex items-center justify-center bg-green-500 rounded-xl">
-                        <i class="pi pi-check-circle text-white text-xl"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-5 shadow-md border border-amber-200/50">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-amber-600 mb-1">Студентов</p>
-                        <p class="text-2xl font-bold text-amber-900">
-                            {{ studentsCount }}
-                        </p>
-                    </div>
-                    <div class="w-12 h-12 flex items-center justify-center bg-amber-500 rounded-xl">
-                        <i class="pi pi-graduation-cap text-white text-xl"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Таблица пользователей -->
+        <!-- Список пользователей -->
         <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
             <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
                 <div class="flex items-center justify-between">
@@ -150,117 +150,310 @@
                 </div>
             </div>
 
-            <div v-if="usersData && usersData.length > 0" class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
-                    <tr>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                            Пользователь
-                        </th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                            Контакты
-                        </th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                            Курс
-                        </th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                            Роли
-                        </th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                            Статус
-                        </th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                            Дата регистрации
-                        </th>
-                    </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-100">
-                    <tr
+            <div v-if="usersData && usersData.length > 0">
+                <!-- Заголовки для планшетной/лаптопной версии (md до xl) -->
+                <div class="hidden md:grid xl:hidden md:grid-cols-6 gap-4 px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                    <div class="col-span-3 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Пользователь
+                    </div>
+                    <div class="col-span-2 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Роли
+                    </div>
+                    <div class="col-span-1 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Статус
+                    </div>
+                </div>
+
+                <!-- Заголовки для десктопной версии (xl+) -->
+                <div class="hidden xl:grid xl:grid-cols-12 gap-4 px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                    <div class="col-span-3 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Пользователь
+                    </div>
+                    <div class="col-span-3 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Контакты
+                    </div>
+                    <div class="col-span-1 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Курс
+                    </div>
+                    <div class="col-span-2 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Роли
+                    </div>
+                    <div class="col-span-2 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Статус
+                    </div>
+                    <div class="col-span-1 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Дата регистрации
+                    </div>
+                </div>
+
+                <!-- Список пользователей -->
+                <div class="divide-y divide-gray-200">
+                    <!-- Карточка пользователя (мобильная) / Строка пользователя (десктоп) -->
+                    <div
                         v-for="user in usersData"
                         :key="user.id"
                         class="hover:bg-indigo-50/50 transition-all group"
                     >
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <Link :href="route('admin.users.show', user.id)" class="flex items-center gap-3 group-hover:text-indigo-600 transition-colors">
-                                <div class="flex-shrink-0">
-                                    <img
-                                        v-if="user.avatar"
-                                        class="h-12 w-12 rounded-full border-2 border-gray-200 group-hover:border-indigo-300 transition-colors"
-                                        :src="user.avatar"
-                                        alt=""
-                                    />
-                                    <div
-                                        v-else
-                                        class="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center border-2 border-gray-200 group-hover:border-indigo-300 transition-colors"
-                                    >
-                                        <span class="text-white text-sm font-bold">{{ getUserInitials(user.name) }}</span>
+                        <!-- Мобильная версия (карточка) - только для маленьких экранов -->
+                        <div class="md:hidden p-5 sm:p-6">
+                            <Link :href="route('admin.users.show', user.id)" class="block">
+                                <div class="flex items-start gap-4 mb-5">
+                                    <div class="flex-shrink-0">
+                                        <img
+                                            v-if="user.avatar"
+                                            class="h-12 w-12 rounded-full border-2 border-gray-200 group-hover:border-indigo-300 transition-colors"
+                                            :src="user.avatar"
+                                            alt=""
+                                        />
+                                        <div
+                                            v-else
+                                            class="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center border-2 border-gray-200 group-hover:border-indigo-300 transition-colors"
+                                        >
+                                            <span class="text-white text-sm font-bold">{{ getUserInitials(user.name) }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">{{ user.name }}</div>
+                                        <div v-if="user.kubgtu_id" class="text-xs text-gray-500 mt-1">
+                                            ID: {{ user.kubgtu_id }}
+                                        </div>
                                     </div>
                                 </div>
-                                <div>
-                                    <div class="text-sm font-semibold text-gray-900">{{ user.name }}</div>
-                                    <div v-if="user.kubgtu_id" class="text-xs text-gray-500">
-                                        ID: {{ user.kubgtu_id }}
+
+                                <div class="space-y-3.5">
+                                    <!-- Email -->
+                                    <div class="flex items-center gap-3">
+                                        <i class="pi pi-envelope text-gray-400 text-sm flex-shrink-0"></i>
+                                        <div class="text-sm text-gray-900 truncate">{{ user.email }}</div>
+                                    </div>
+
+                                    <!-- Курс -->
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-xs text-gray-500 font-medium min-w-[70px]">Курс:</span>
+                                        <span
+                                            v-if="user.student_profile?.course"
+                                            :style="getCourseBadgeStyle(user.student_profile.course)"
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border"
+                                        >
+                                            <i class="pi pi-calendar text-xs"></i>
+                                            {{ user.student_profile.course }} курс
+                                        </span>
+                                        <span v-else class="text-sm text-gray-400">—</span>
+                                    </div>
+
+                                    <!-- Роли -->
+                                    <div class="flex items-start gap-3">
+                                        <span class="text-xs text-gray-500 font-medium min-w-[70px] pt-1">Роли:</span>
+                                        <div class="flex flex-wrap gap-1.5 flex-1">
+                                            <span
+                                                v-for="role in user.roles"
+                                                :key="role.id"
+                                                :style="getRoleBadgeStyle(role.name)"
+                                                class="px-2.5 py-1 text-xs font-semibold rounded-lg border"
+                                            >
+                                                {{ props.roleTranslations[role.name] || role.name }}
+                                            </span>
+                                            <span
+                                                v-if="!user.roles || user.roles.length === 0"
+                                                class="text-xs text-gray-400"
+                                            >
+                                                Нет ролей
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Статус -->
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-xs text-gray-500 font-medium min-w-[70px]">Статус:</span>
+                                        <span
+                                            v-if="user.email_verified_at"
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-green-100 text-green-800 border border-green-200"
+                                        >
+                                            <i class="pi pi-check-circle text-xs"></i>
+                                            Верифицирован
+                                        </span>
+                                        <span
+                                            v-else
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-100 text-red-800 border border-red-200"
+                                        >
+                                            <i class="pi pi-times-circle text-xs"></i>
+                                            Не верифицирован
+                                        </span>
+                                    </div>
+
+                                    <!-- Дата регистрации -->
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-xs text-gray-500 font-medium min-w-[70px]">Дата:</span>
+                                        <div class="text-sm text-gray-500">{{ formatDate(user.created_at) }}</div>
                                     </div>
                                 </div>
                             </Link>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center gap-2">
-                                <i class="pi pi-envelope text-gray-400 text-sm"></i>
-                                <div class="text-sm text-gray-900">{{ user.email }}</div>
+                        </div>
+
+                        <!-- Планшетная/лаптопная версия (md до xl) - упрощенная таблица -->
+                        <div class="hidden md:grid xl:hidden md:grid-cols-6 gap-4 px-4 py-4 items-center">
+                            <!-- Пользователь -->
+                            <div class="col-span-3">
+                                <Link :href="route('admin.users.show', user.id)" class="flex items-center gap-3 group-hover:text-indigo-600 transition-colors">
+                                    <div class="flex-shrink-0">
+                                        <img
+                                            v-if="user.avatar"
+                                            class="h-10 w-10 rounded-full border-2 border-gray-200 group-hover:border-indigo-300 transition-colors"
+                                            :src="user.avatar"
+                                            alt=""
+                                        />
+                                        <div
+                                            v-else
+                                            class="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center border-2 border-gray-200 group-hover:border-indigo-300 transition-colors"
+                                        >
+                                            <span class="text-white text-xs font-bold">{{ getUserInitials(user.name) }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="text-sm font-semibold text-gray-900 truncate">{{ user.name }}</div>
+                                        <div v-if="user.kubgtu_id" class="text-xs text-gray-500 truncate">
+                                            ID: {{ user.kubgtu_id }}
+                                        </div>
+                                        <div class="text-xs text-gray-500 truncate mt-0.5">
+                                            {{ user.email }}
+                                        </div>
+                                    </div>
+                                </Link>
                             </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span
-                                v-if="user.student_profile?.course"
-                                :style="getCourseBadgeStyle(user.student_profile.course)"
-                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border"
-                            >
-                                <i class="pi pi-calendar text-xs"></i>
-                                {{ user.student_profile.course }} курс
-                            </span>
-                            <span v-else class="text-sm text-gray-400">—</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex flex-wrap gap-1.5">
+
+                            <!-- Роли -->
+                            <div class="col-span-2">
+                                <div class="flex flex-wrap gap-1.5">
+                                    <span
+                                        v-for="role in user.roles"
+                                        :key="role.id"
+                                        :style="getRoleBadgeStyle(role.name)"
+                                        class="px-2 py-1 text-xs font-semibold rounded-lg border"
+                                    >
+                                        {{ props.roleTranslations[role.name] || role.name }}
+                                    </span>
+                                    <span
+                                        v-if="!user.roles || user.roles.length === 0"
+                                        class="text-xs text-gray-400"
+                                    >
+                                        Нет ролей
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Статус -->
+                            <div class="col-span-1">
                                 <span
-                                    v-for="role in user.roles"
-                                    :key="role.id"
-                                    :style="getRoleBadgeStyle(role.name)"
-                                    class="px-2.5 py-1 text-xs font-semibold rounded-lg border"
+                                    v-if="user.email_verified_at"
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg bg-green-100 text-green-800 border border-green-200 whitespace-nowrap"
                                 >
-                                    {{ props.roleTranslations[role.name] || role.name }}
+                                    <i class="pi pi-check-circle text-xs"></i>
+                                    Вериф.
                                 </span>
                                 <span
-                                    v-if="!user.roles || user.roles.length === 0"
-                                    class="text-xs text-gray-400"
+                                    v-else
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg bg-red-100 text-red-800 border border-red-200 whitespace-nowrap"
                                 >
-                                    Нет ролей
+                                    <i class="pi pi-times-circle text-xs"></i>
+                                    Не вериф.
                                 </span>
                             </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span
-                                v-if="user.email_verified_at"
-                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-green-100 text-green-800 border border-green-200"
-                            >
-                                <i class="pi pi-check-circle text-xs"></i>
-                                Верифицирован
-                            </span>
-                            <span
-                                v-else
-                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-100 text-red-800 border border-red-200"
-                            >
-                                <i class="pi pi-times-circle text-xs"></i>
-                                Не верифицирован
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-500">{{ formatDate(user.created_at) }}</div>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+                        </div>
+
+                        <!-- Десктопная версия (xl+) - полная таблица -->
+                        <div class="hidden xl:grid xl:grid-cols-12 gap-4 px-6 py-5 items-center">
+                            <!-- Пользователь -->
+                            <div class="col-span-3">
+                                <Link :href="route('admin.users.show', user.id)" class="flex items-center gap-3 group-hover:text-indigo-600 transition-colors">
+                                    <div class="flex-shrink-0">
+                                        <img
+                                            v-if="user.avatar"
+                                            class="h-12 w-12 rounded-full border-2 border-gray-200 group-hover:border-indigo-300 transition-colors"
+                                            :src="user.avatar"
+                                            alt=""
+                                        />
+                                        <div
+                                            v-else
+                                            class="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center border-2 border-gray-200 group-hover:border-indigo-300 transition-colors"
+                                        >
+                                            <span class="text-white text-sm font-bold">{{ getUserInitials(user.name) }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="text-sm font-semibold text-gray-900 truncate">{{ user.name }}</div>
+                                        <div v-if="user.kubgtu_id" class="text-xs text-gray-500">
+                                            ID: {{ user.kubgtu_id }}
+                                        </div>
+                                    </div>
+                                </Link>
+                            </div>
+
+                            <!-- Контакты -->
+                            <div class="col-span-3">
+                                <div class="flex items-center gap-2">
+                                    <i class="pi pi-envelope text-gray-400 text-sm flex-shrink-0"></i>
+                                    <div class="text-sm text-gray-900 truncate">{{ user.email }}</div>
+                                </div>
+                            </div>
+
+                            <!-- Курс -->
+                            <div class="col-span-1">
+                                <span
+                                    v-if="user.student_profile?.course"
+                                    :style="getCourseBadgeStyle(user.student_profile.course)"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border whitespace-nowrap"
+                                >
+                                    <i class="pi pi-calendar text-xs"></i>
+                                    {{ user.student_profile.course }} курс
+                                </span>
+                                <span v-else class="text-sm text-gray-400">—</span>
+                            </div>
+
+                            <!-- Роли -->
+                            <div class="col-span-2">
+                                <div class="flex flex-wrap gap-1.5">
+                                    <span
+                                        v-for="role in user.roles"
+                                        :key="role.id"
+                                        :style="getRoleBadgeStyle(role.name)"
+                                        class="px-2.5 py-1 text-xs font-semibold rounded-lg border"
+                                    >
+                                        {{ props.roleTranslations[role.name] || role.name }}
+                                    </span>
+                                    <span
+                                        v-if="!user.roles || user.roles.length === 0"
+                                        class="text-xs text-gray-400"
+                                    >
+                                        Нет ролей
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Статус -->
+                            <div class="col-span-2">
+                                <span
+                                    v-if="user.email_verified_at"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-green-100 text-green-800 border border-green-200 whitespace-nowrap"
+                                >
+                                    <i class="pi pi-check-circle text-xs"></i>
+                                    Верифицирован
+                                </span>
+                                <span
+                                    v-else
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-100 text-red-800 border border-red-200 whitespace-nowrap"
+                                >
+                                    <i class="pi pi-times-circle text-xs"></i>
+                                    Не верифицирован
+                                </span>
+                            </div>
+
+                            <!-- Дата регистрации -->
+                            <div class="col-span-1">
+                                <div class="text-sm text-gray-500 whitespace-nowrap">{{ formatDate(user.created_at) }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Пагинация -->

@@ -4,15 +4,15 @@
 
         <!-- Заголовок с градиентом -->
         <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg overflow-hidden">
-            <div class="px-6 py-8">
-                <div class="flex items-center justify-between">
+            <div class="px-4 sm:px-6 py-6 sm:py-8">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                        <h1 class="text-3xl font-bold text-white mb-2">Управление навыками</h1>
-                        <p class="text-indigo-100">Список всех навыков в системе</p>
+                        <h1 class="text-2xl sm:text-3xl font-bold text-white mb-2">Управление навыками</h1>
+                        <p class="text-sm sm:text-base text-indigo-100">Список всех навыков в системе</p>
                     </div>
                     <button
                         @click="openCreateModal"
-                        class="inline-flex items-center gap-2 px-6 py-3 bg-white/10 backdrop-blur-sm text-white rounded-lg hover:bg-white/20 focus:outline-none transition-all shadow-lg border border-white/20 font-medium"
+                        class="inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-white/10 backdrop-blur-sm text-white rounded-lg hover:bg-white/20 focus:outline-none transition-all shadow-lg border border-white/20 font-medium text-sm sm:text-base w-full sm:w-auto"
                     >
                         <i class="pi pi-plus"></i>
                         Создать навык
@@ -41,34 +41,36 @@
                         />
                     </div>
 
-                <!-- Фильтр по категории -->
-                <div>
-                    <Select
-                        v-model="filters.category"
-                        label="Категория"
-                        :options="categoryFilterOptions"
-                        optionLabel="label"
-                        optionValue="value"
-                        placeholder="Все категории"
-                        @update:modelValue="updateFilters"
-                    />
-                </div>
+                    <!-- Фильтр по категории -->
+                    <div>
+                        <Select
+                            v-model="filters.category"
+                            label="Категория"
+                            :options="categoryFilterOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Все категории"
+                            @update:modelValue="updateFilters"
+                        />
+                    </div>
 
-                <!-- Количество на странице -->
-                <div>
-                    <Select
-                        v-model="filters.perPage"
-                        label="На странице"
-                        :options="perPageOptions"
-                        optionLabel="label"
-                        optionValue="value"
-                        placeholder="Выберите количество"
-                        @update:modelValue="updateFilters"
-                    />
+                    <!-- Количество на странице -->
+                    <div>
+                        <Select
+                            v-model="filters.perPage"
+                            label="На странице"
+                            :options="perPageOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Выберите количество"
+                            @update:modelValue="updateFilters"
+                        />
+                    </div>
                 </div>
             </div>
 
-                <!-- Кнопка сброса фильтров -->
+            <!-- Кнопка сброса фильтров -->
+            <div class="px-6 pb-6">
                 <div class="mt-4 flex justify-end">
                     <button
                         @click="resetFilters"
@@ -125,80 +127,254 @@
 
         <!-- Таблица навыков -->
         <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-            <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+            <div class="px-4 md:px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                <div :class="['flex items-center', 'flex-col gap-2 items-start md:flex-row md:justify-between md:items-center']">
+                    <h2 class="text-base md:text-lg font-bold text-gray-900 flex items-center gap-2">
                         <i class="pi pi-list text-indigo-600"></i>
                         Список навыков
                     </h2>
-                    <span class="text-sm text-gray-600 bg-white px-3 py-1 rounded-lg border border-gray-200">
+                    <span class="text-xs md:text-sm text-gray-600 bg-white px-2 md:px-3 py-1 rounded-lg border border-gray-200 whitespace-nowrap">
                         Всего: {{ skillsTotal }}
                     </span>
                 </div>
             </div>
 
-            <div v-if="skillsData && skillsData.length > 0" class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
-                    <tr>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                            Навык
-                        </th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                            Категория
-                        </th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                            Макс. уровень
-                        </th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                            Используется
-                        </th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                            Создан
-                        </th>
-                        <th class="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
-                            Действия
-                        </th>
-                    </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-100">
-                    <tr
+            <div v-if="skillsData && skillsData.length > 0">
+                <!-- Заголовки для планшетной/лаптопной версии (md до xl) -->
+                <div class="hidden md:grid xl:hidden md:grid-cols-5 gap-4 px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                    <div class="col-span-2 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Навык
+                    </div>
+                    <div class="col-span-1 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Категория
+                    </div>
+                    <div class="col-span-1 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Используется
+                    </div>
+                    <div class="col-span-1 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Действия
+                    </div>
+                </div>
+
+                <!-- Заголовки для десктопной версии (xl+) -->
+                <div class="hidden xl:grid xl:grid-cols-6 gap-4 px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                    <div class="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Навык
+                    </div>
+                    <div class="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Категория
+                    </div>
+                    <div class="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Макс. уровень
+                    </div>
+                    <div class="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Используется
+                    </div>
+                    <div class="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Создан
+                    </div>
+                    <div class="text-xs font-bold text-gray-700 uppercase tracking-wider text-right">
+                        Действия
+                    </div>
+                </div>
+
+                <!-- Список навыков -->
+                <div class="divide-y divide-gray-200">
+                    <!-- Карточка навыка (мобильная) / Строка навыка (планшет/десктоп) -->
+                    <div
                         v-for="skill in skillsData"
                         :key="skill.id"
                         class="hover:bg-indigo-50/50 transition-all group"
                     >
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 flex items-center justify-center bg-indigo-100 rounded-lg group-hover:bg-indigo-200 transition-colors">
+                        <!-- Мобильная версия (карточка) -->
+                        <div class="md:hidden p-5 sm:p-6">
+                            <div class="flex items-start gap-4 mb-5">
+                                <div class="w-10 h-10 flex items-center justify-center bg-indigo-100 rounded-lg group-hover:bg-indigo-200 transition-colors flex-shrink-0">
                                     <i class="pi pi-star text-indigo-600"></i>
                                 </div>
-                                <div class="text-sm font-semibold text-gray-900">
-                                    {{ skill.name }}
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-sm font-semibold text-gray-900">
+                                        {{ skill.name }}
+                                    </div>
                                 </div>
                             </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span
-                                :class="[
-                                    'px-3 py-1.5 inline-flex text-xs font-semibold rounded-lg border',
-                                    getCategoryBadgeClass(skill.category)
-                                ]"
-                            >
-                                {{ getCategoryLabel(skill.category) }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center gap-2">
-                                <div class="w-10 h-10 flex items-center justify-center bg-blue-100 rounded-lg">
-                                    <i class="pi pi-chart-line text-blue-600 text-xs"></i>
+
+                            <div class="space-y-3.5">
+                                <!-- Категория -->
+                                <div class="flex items-center gap-3">
+                                    <span class="text-xs text-gray-500 font-medium min-w-[70px]">Категория:</span>
+                                    <span
+                                        :class="[
+                                            'px-3 py-1.5 inline-flex text-xs font-semibold rounded-lg border',
+                                            getCategoryBadgeClass(skill.category)
+                                        ]"
+                                    >
+                                        {{ getCategoryLabel(skill.category) }}
+                                    </span>
                                 </div>
-                                <span class="text-sm font-medium text-gray-900">
-                                    {{ skill.max_level }}
+
+                                <!-- Макс. уровень -->
+                                <div class="flex items-center gap-3">
+                                    <span class="text-xs text-gray-500 font-medium min-w-[70px]">Уровень:</span>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-8 h-8 flex items-center justify-center bg-blue-100 rounded-lg flex-shrink-0">
+                                            <i class="pi pi-chart-line text-blue-600 text-xs"></i>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-900">
+                                            {{ skill.max_level }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Используется -->
+                                <div class="flex items-start gap-3">
+                                    <span class="text-xs text-gray-500 font-medium min-w-[70px] pt-1">Используется:</span>
+                                    <div class="flex-1">
+                                        <div v-if="skill.users_count || skill.cases_count" class="flex flex-wrap gap-2">
+                                            <span v-if="skill.users_count" class="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-lg border border-blue-200">
+                                                <i class="pi pi-users text-xs"></i>
+                                                {{ skill.users_count }} {{ pluralize(skill.users_count, 'пользователь', 'пользователя', 'пользователей') }}
+                                            </span>
+                                            <span v-if="skill.cases_count" class="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-100 text-indigo-800 text-xs font-semibold rounded-lg border border-indigo-200">
+                                                <i class="pi pi-briefcase text-xs"></i>
+                                                {{ skill.cases_count }} {{ pluralize(skill.cases_count, 'кейс', 'кейса', 'кейсов') }}
+                                            </span>
+                                        </div>
+                                        <span v-else class="text-xs text-gray-400">Не используется</span>
+                                    </div>
+                                </div>
+
+                                <!-- Дата создания -->
+                                <div class="flex items-center gap-3">
+                                    <span class="text-xs text-gray-500 font-medium min-w-[70px]">Создан:</span>
+                                    <div class="text-sm text-gray-500">{{ formatDate(skill.created_at) }}</div>
+                                </div>
+
+                                <!-- Действия -->
+                                <div class="flex items-center gap-3 pt-2 border-t border-gray-200">
+                                    <span class="text-xs text-gray-500 font-medium min-w-[70px]">Действия:</span>
+                                    <div class="flex gap-2">
+                                        <button
+                                            @click.stop="openEditModal(skill)"
+                                            class="p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-lg transition-colors focus:outline-none border border-transparent hover:border-indigo-200"
+                                            title="Редактировать"
+                                        >
+                                            <i class="pi pi-pencil text-sm"></i>
+                                        </button>
+                                        <button
+                                            @click.stop="confirmDelete(skill)"
+                                            class="p-2 text-gray-400 hover:text-red-600 hover:text-red-900 hover:bg-red-50 rounded-lg transition-colors focus:outline-none border border-transparent hover:border-red-200"
+                                            title="Удалить"
+                                        >
+                                            <i class="pi pi-trash text-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Планшетная/лаптопная версия (md до xl) - упрощенная таблица -->
+                        <div class="hidden md:grid xl:hidden md:grid-cols-5 gap-4 px-4 py-4 items-center">
+                            <!-- Навык -->
+                            <div class="col-span-2">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 flex items-center justify-center bg-indigo-100 rounded-lg group-hover:bg-indigo-200 transition-colors flex-shrink-0">
+                                        <i class="pi pi-star text-indigo-600"></i>
+                                    </div>
+                                    <div class="text-sm font-semibold text-gray-900 min-w-0">
+                                        <div class="truncate">{{ skill.name }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Категория -->
+                            <div class="col-span-1">
+                                <span
+                                    :class="[
+                                        'px-2.5 py-1 inline-flex text-xs font-semibold rounded-lg border whitespace-nowrap',
+                                        getCategoryBadgeClass(skill.category)
+                                    ]"
+                                >
+                                    {{ getCategoryLabel(skill.category) }}
                                 </span>
                             </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900">
+
+                            <!-- Используется -->
+                            <div class="col-span-1">
+                                <div v-if="skill.users_count || skill.cases_count" class="flex flex-wrap gap-1.5">
+                                    <span v-if="skill.users_count" class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-lg border border-blue-200">
+                                        <i class="pi pi-users text-xs"></i>
+                                        {{ skill.users_count }}
+                                    </span>
+                                    <span v-if="skill.cases_count" class="inline-flex items-center gap-1 px-2 py-1 bg-indigo-100 text-indigo-800 text-xs font-semibold rounded-lg border border-indigo-200">
+                                        <i class="pi pi-briefcase text-xs"></i>
+                                        {{ skill.cases_count }}
+                                    </span>
+                                </div>
+                                <span v-else class="text-xs text-gray-400">Не используется</span>
+                            </div>
+
+                            <!-- Действия -->
+                            <div class="col-span-1">
+                                <div class="flex justify-end gap-2">
+                                    <button
+                                        @click.stop="openEditModal(skill)"
+                                        class="p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-lg transition-colors focus:outline-none border border-transparent hover:border-indigo-200"
+                                        title="Редактировать"
+                                    >
+                                        <i class="pi pi-pencil text-sm"></i>
+                                    </button>
+                                    <button
+                                        @click.stop="confirmDelete(skill)"
+                                        class="p-2 text-gray-400 group-hover:text-red-600 hover:text-red-900 hover:bg-red-50 rounded-lg transition-colors focus:outline-none border border-transparent hover:border-red-200 opacity-50 group-hover:opacity-100"
+                                        title="Удалить"
+                                    >
+                                        <i class="pi pi-trash text-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Десктопная версия (xl+) - полная таблица -->
+                        <div class="hidden xl:grid xl:grid-cols-6 gap-4 px-6 py-5 items-center">
+                            <!-- Навык -->
+                            <div>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 flex items-center justify-center bg-indigo-100 rounded-lg group-hover:bg-indigo-200 transition-colors flex-shrink-0">
+                                        <i class="pi pi-star text-indigo-600"></i>
+                                    </div>
+                                    <div class="text-sm font-semibold text-gray-900">
+                                        {{ skill.name }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Категория -->
+                            <div>
+                                <span
+                                    :class="[
+                                        'px-3 py-1.5 inline-flex text-xs font-semibold rounded-lg border whitespace-nowrap',
+                                        getCategoryBadgeClass(skill.category)
+                                    ]"
+                                >
+                                    {{ getCategoryLabel(skill.category) }}
+                                </span>
+                            </div>
+
+                            <!-- Макс. уровень -->
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-10 h-10 flex items-center justify-center bg-blue-100 rounded-lg flex-shrink-0">
+                                        <i class="pi pi-chart-line text-blue-600 text-xs"></i>
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-900 whitespace-nowrap">
+                                        {{ skill.max_level }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Используется -->
+                            <div>
                                 <div v-if="skill.users_count || skill.cases_count" class="flex items-center gap-2 flex-wrap">
                                     <span v-if="skill.users_count" class="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-lg border border-blue-200">
                                         <i class="pi pi-users text-xs"></i>
@@ -211,35 +387,38 @@
                                 </div>
                                 <span v-else class="text-xs text-gray-400">Не используется</span>
                             </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-500">{{ formatDate(skill.created_at) }}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right">
-                            <div class="flex justify-end gap-2">
-                                <button
-                                    @click.stop="openEditModal(skill)"
-                                    class="p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-lg transition-colors focus:outline-none border border-transparent hover:border-indigo-200"
-                                    title="Редактировать"
-                                >
-                                    <i class="pi pi-pencil text-sm"></i>
-                                </button>
-                                <button
-                                    @click.stop="confirmDelete(skill)"
-                                    class="p-2 text-gray-400 group-hover:text-red-600 hover:text-red-900 hover:bg-red-50 rounded-lg transition-colors focus:outline-none border border-transparent hover:border-red-200 opacity-50 group-hover:opacity-100"
-                                    title="Удалить"
-                                >
-                                    <i class="pi pi-trash text-sm"></i>
-                                </button>
+
+                            <!-- Создан -->
+                            <div>
+                                <div class="text-sm text-gray-500 whitespace-nowrap">{{ formatDate(skill.created_at) }}</div>
                             </div>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+
+                            <!-- Действия -->
+                            <div class="text-right">
+                                <div class="flex justify-end gap-2">
+                                    <button
+                                        @click.stop="openEditModal(skill)"
+                                        class="p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-lg transition-colors focus:outline-none border border-transparent hover:border-indigo-200"
+                                        title="Редактировать"
+                                    >
+                                        <i class="pi pi-pencil text-sm"></i>
+                                    </button>
+                                    <button
+                                        @click.stop="confirmDelete(skill)"
+                                        class="p-2 text-gray-400 group-hover:text-red-600 hover:text-red-900 hover:bg-red-50 rounded-lg transition-colors focus:outline-none border border-transparent hover:border-red-200 opacity-50 group-hover:opacity-100"
+                                        title="Удалить"
+                                    >
+                                        <i class="pi pi-trash text-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Пагинация -->
-            <div v-if="skillsLinks && skillsLinks.length > 0" class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+            <div v-if="skillsLinks && skillsLinks.length > 0" :class="['border-t border-gray-200 bg-gray-50', 'px-4 md:px-6 py-4']">
                 <Pagination :links="skillsLinks" />
             </div>
         </div>

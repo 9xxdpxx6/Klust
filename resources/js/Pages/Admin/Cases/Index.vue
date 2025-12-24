@@ -1,8 +1,6 @@
 <template>
     <MobileContainer :padding="false">
-        <div :class="[
-            isMobile ? 'space-y-4' : 'space-y-6'
-        ]">
+        <div :class="isMobile ? 'space-y-4' : 'space-y-6'">
             <Head title="Управление кейсами"/>
 
             <!-- Заголовок с градиентом -->
@@ -214,8 +212,8 @@
                     isMobile ? 'px-4' : ''
                 ]">
                     <div :class="[
-                        'flex items-center justify-between',
-                        isMobile ? 'flex-col gap-2' : ''
+                        'flex items-center',
+                        isMobile ? 'flex-col items-start gap-2' : 'flex-row justify-between gap-4'
                     ]">
                         <h2 :class="[
                             'font-bold text-gray-900 flex items-center gap-2',
@@ -225,7 +223,7 @@
                             Список кейсов
                         </h2>
                         <span :class="[
-                            'text-gray-600 bg-white rounded-lg border border-gray-200',
+                            'text-gray-600 bg-white rounded-lg border border-gray-200 whitespace-nowrap',
                             isMobile ? 'text-xs px-2 py-1' : 'text-sm px-3 py-1'
                         ]">
                             Всего: {{ casesTotal }}
@@ -233,174 +231,337 @@
                     </div>
                 </div>
 
-                <div v-if="casesData && casesData.length > 0" class="table-responsive overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
-                    <tr>
-                        <th :class="[
-                            'text-left font-bold text-gray-700 uppercase tracking-wider',
-                            isMobile ? 'px-3 py-2 text-xs' : 'px-6 py-4 text-xs'
-                        ]">
+                <div v-if="casesData && casesData.length > 0">
+                    <!-- Заголовки для планшетной/лаптопной версии (md до xl) -->
+                    <div class="hidden md:grid xl:hidden md:grid-cols-6 gap-4 px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                        <div class="col-span-3 text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Кейс
-                        </th>
-                        <th :class="[
-                            'text-left font-bold text-gray-700 uppercase tracking-wider',
-                            isMobile ? 'px-3 py-2 text-xs hidden md:table-cell' : 'px-6 py-4 text-xs'
-                        ]">
-                            Партнер
-                        </th>
-                        <th :class="[
-                            'text-left font-bold text-gray-700 uppercase tracking-wider',
-                            isMobile ? 'px-3 py-2 text-xs hidden lg:table-cell' : 'px-6 py-4 text-xs'
-                        ]">
-                            Дедлайн
-                        </th>
-                        <th :class="[
-                            'text-left font-bold text-gray-700 uppercase tracking-wider',
-                            isMobile ? 'px-3 py-2 text-xs hidden lg:table-cell' : 'px-6 py-4 text-xs'
-                        ]">
-                            Команда
-                        </th>
-                        <th :class="[
-                            'text-left font-bold text-gray-700 uppercase tracking-wider',
-                            isMobile ? 'px-3 py-2 text-xs' : 'px-6 py-4 text-xs'
-                        ]">
+                        </div>
+                        <div class="col-span-2 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                            Партнер / Дедлайн
+                        </div>
+                        <div class="col-span-1 text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Статус
-                        </th>
-                        <th :class="[
-                            'text-left font-bold text-gray-700 uppercase tracking-wider',
-                            isMobile ? 'px-3 py-2 text-xs hidden md:table-cell' : 'px-6 py-4 text-xs'
-                        ]">
+                        </div>
+                    </div>
+
+                    <!-- Заголовки для десктопной версии (xl+) -->
+                    <div class="hidden xl:grid xl:grid-cols-12 gap-4 px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                        <div class="col-span-3 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                            Кейс
+                        </div>
+                        <div class="col-span-2 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                            Партнер
+                        </div>
+                        <div class="col-span-2 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                            Дедлайн
+                        </div>
+                        <div class="col-span-1 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                            Команда
+                        </div>
+                        <div class="col-span-1 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                            Статус
+                        </div>
+                        <div class="col-span-2 text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Заявки
-                        </th>
-                        <th :class="[
-                            'text-left font-bold text-gray-700 uppercase tracking-wider',
-                            isMobile ? 'px-3 py-2 text-xs hidden lg:table-cell' : 'px-6 py-4 text-xs'
-                        ]">
+                        </div>
+                        <div class="col-span-1 text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Создан
-                        </th>
-                    </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-100">
-                    <tr
-                        v-for="caseItem in casesData"
-                        :key="caseItem.id"
-                        class="hover:bg-indigo-50/50 cursor-pointer transition-all group"
-                        @click="goToCase(caseItem.id)"
-                    >
-                        <td :class="isMobile ? 'px-3 py-3' : 'px-6 py-4'">
-                            <div class="flex items-start gap-3">
-                                <div class="w-10 h-10 flex items-center justify-center bg-indigo-100 rounded-lg group-hover:bg-indigo-200 transition-colors">
-                                    <i class="pi pi-briefcase text-indigo-600"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
-                                        {{ caseItem.title }}
+                        </div>
+                    </div>
+
+                    <!-- Список кейсов -->
+                    <div class="divide-y divide-gray-200">
+                        <!-- Карточка кейса (мобильная) / Строка кейса (десктоп) -->
+                        <div
+                            v-for="caseItem in casesData"
+                            :key="caseItem.id"
+                            class="hover:bg-indigo-50/50 cursor-pointer transition-all group"
+                            @click="goToCase(caseItem.id)"
+                        >
+                            <!-- Мобильная версия (карточка) - только для маленьких экранов -->
+                            <div class="md:hidden p-5 sm:p-6">
+                                <div class="flex items-start gap-4 mb-5">
+                                    <div class="w-10 h-10 flex items-center justify-center bg-indigo-100 rounded-lg group-hover:bg-indigo-200 transition-colors flex-shrink-0">
+                                        <i class="pi pi-briefcase text-indigo-600"></i>
                                     </div>
-                                    <div class="text-xs text-gray-500 mt-1 line-clamp-2">
-                                        {{ caseItem.description }}
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                                            {{ caseItem.title }}
+                                        </div>
+                                        <div class="text-xs text-gray-500 mt-1 line-clamp-2">
+                                            {{ caseItem.description }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-3.5">
+                                    <!-- Партнер -->
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-xs text-gray-500 font-medium min-w-[70px]">Партнер:</span>
+                                        <div class="flex items-center gap-2 flex-1 min-w-0">
+                                            <div class="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-lg flex-shrink-0">
+                                                <i class="pi pi-building text-gray-600 text-xs"></i>
+                                            </div>
+                                            <div class="min-w-0 flex-1">
+                                                <div class="text-sm font-medium text-gray-900 truncate">{{ caseItem.partner?.company_name || caseItem.partner?.name || 'Не указан' }}</div>
+                                                <div class="text-xs text-gray-500 truncate">{{ caseItem.partner?.contact_person || caseItem.partner?.user?.name || 'Без контакта' }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Дедлайн -->
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-xs text-gray-500 font-medium min-w-[70px]">Дедлайн:</span>
+                                        <div class="flex items-center gap-2 flex-1">
+                                            <div class="w-8 h-8 flex items-center justify-center bg-red-100 rounded-lg flex-shrink-0">
+                                                <i class="pi pi-calendar text-red-600 text-xs"></i>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-medium text-gray-900">{{ formatDate(caseItem.deadline) }}</div>
+                                                <div
+                                                    :class="[
+                                                        'text-xs font-medium mt-0.5',
+                                                        isDeadlineSoon(caseItem.deadline) ? 'text-red-600' : 'text-gray-500'
+                                                    ]"
+                                                >
+                                                    {{ daysUntilDeadline(caseItem.deadline) }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Команда -->
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-xs text-gray-500 font-medium min-w-[70px]">Команда:</span>
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-100 text-blue-800 border border-blue-200">
+                                            <i class="pi pi-users text-xs"></i>
+                                            {{ caseItem.required_team_size }} чел.
+                                        </span>
+                                    </div>
+
+                                    <!-- Статус -->
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-xs text-gray-500 font-medium min-w-[70px]">Статус:</span>
+                                        <span
+                                            :class="[
+                                                'px-3 py-1.5 inline-flex text-xs font-semibold rounded-lg border',
+                                                getStatusBadgeClass(caseItem.status)
+                                            ]"
+                                        >
+                                            {{ getStatusLabel(caseItem.status) }}
+                                        </span>
+                                    </div>
+
+                                    <!-- Заявки -->
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-xs text-gray-500 font-medium min-w-[70px]">Заявки:</span>
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-8 h-8 flex items-center justify-center bg-purple-100 rounded-lg flex-shrink-0">
+                                                <i class="pi pi-file-edit text-purple-600 text-xs"></i>
+                                            </div>
+                                            <span class="text-sm font-medium text-gray-900">
+                                                {{ caseItem.applications_count || 0 }} заявок
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Дата создания -->
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-xs text-gray-500 font-medium min-w-[70px]">Создан:</span>
+                                        <div class="text-sm text-gray-500">{{ formatDate(caseItem.created_at) }}</div>
                                     </div>
                                 </div>
                             </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center gap-2">
-                                <div class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-lg">
-                                    <i class="pi pi-building text-gray-600 text-xs"></i>
-                                </div>
-                                <div>
-                                    <div class="text-sm font-medium text-gray-900">{{ caseItem.partner?.company_name || caseItem.partner?.name || 'Не указан' }}</div>
-                                    <div class="text-xs text-gray-500">{{
-                                            caseItem.partner?.contact_person || caseItem.partner?.user?.name || 'Без контакта'
-                                        }}
+
+                            <!-- Планшетная/лаптопная версия (md до xl) - упрощенная таблица -->
+                            <div class="hidden md:grid xl:hidden md:grid-cols-6 gap-4 px-4 py-4 items-center">
+                                <!-- Кейс -->
+                                <div class="col-span-3">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-10 h-10 flex items-center justify-center bg-indigo-100 rounded-lg group-hover:bg-indigo-200 transition-colors flex-shrink-0">
+                                            <i class="pi pi-briefcase text-indigo-600"></i>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors truncate">
+                                                {{ caseItem.title }}
+                                            </div>
+                                            <div class="text-xs text-gray-500 mt-1 line-clamp-1">
+                                                {{ caseItem.description }}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center gap-2">
-                                <div class="w-10 h-10 flex items-center justify-center bg-red-100 rounded-lg">
-                                    <i class="pi pi-calendar text-red-600 text-xs"></i>
+
+                                <!-- Партнер и Дедлайн -->
+                                <div class="col-span-2">
+                                    <div class="space-y-1.5">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-lg flex-shrink-0">
+                                                <i class="pi pi-building text-gray-600 text-xs"></i>
+                                            </div>
+                                            <div class="min-w-0 flex-1">
+                                                <div class="text-xs font-medium text-gray-900 truncate">{{ caseItem.partner?.company_name || caseItem.partner?.name || 'Не указан' }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-8 h-8 flex items-center justify-center bg-red-100 rounded-lg flex-shrink-0">
+                                                <i class="pi pi-calendar text-red-600 text-xs"></i>
+                                            </div>
+                                            <div class="min-w-0 flex-1">
+                                                <div class="text-xs font-medium text-gray-900 truncate">{{ formatDate(caseItem.deadline) }}</div>
+                                                <div
+                                                    :class="[
+                                                        'text-xs font-medium mt-0.5',
+                                                        isDeadlineSoon(caseItem.deadline) ? 'text-red-600' : 'text-gray-500'
+                                                    ]"
+                                                >
+                                                    {{ daysUntilDeadline(caseItem.deadline) }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <div class="text-sm font-medium text-gray-900">{{ formatDate(caseItem.deadline) }}</div>
-                                    <div
+
+                                <!-- Статус -->
+                                <div class="col-span-1">
+                                    <span
                                         :class="[
-                                            'text-xs font-medium mt-0.5',
-                                            isDeadlineSoon(caseItem.deadline) ? 'text-red-600' : 'text-gray-500'
+                                            'px-2.5 py-1 inline-flex text-xs font-semibold rounded-lg border whitespace-nowrap',
+                                            getStatusBadgeClass(caseItem.status)
                                         ]"
                                     >
-                                        {{ daysUntilDeadline(caseItem.deadline) }}
+                                        {{ getStatusLabel(caseItem.status) }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Десктопная версия (xl+) - полная таблица -->
+                            <div class="hidden xl:grid xl:grid-cols-12 gap-4 px-6 py-5 items-center">
+                                <!-- Кейс -->
+                                <div class="col-span-3">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-10 h-10 flex items-center justify-center bg-indigo-100 rounded-lg group-hover:bg-indigo-200 transition-colors flex-shrink-0">
+                                            <i class="pi pi-briefcase text-indigo-600"></i>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors truncate">
+                                                {{ caseItem.title }}
+                                            </div>
+                                            <div class="text-xs text-gray-500 mt-1 line-clamp-2">
+                                                {{ caseItem.description }}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-100 text-blue-800 border border-blue-200">
-                                <i class="pi pi-users text-xs"></i>
-                                {{ caseItem.required_team_size }} чел.
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span
-                                :class="[
-                                    'px-3 py-1.5 inline-flex text-xs font-semibold rounded-lg border',
-                                    getStatusBadgeClass(caseItem.status)
-                                ]"
-                            >
-                                {{ getStatusLabel(caseItem.status) }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center gap-2">
-                                <div class="w-10 h-10 flex items-center justify-center bg-purple-100 rounded-lg">
-                                    <i class="pi pi-file-edit text-purple-600 text-xs"></i>
+
+                                <!-- Партнер -->
+                                <div class="col-span-2">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-lg flex-shrink-0">
+                                            <i class="pi pi-building text-gray-600 text-xs"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <div class="text-sm font-medium text-gray-900 truncate">{{ caseItem.partner?.company_name || caseItem.partner?.name || 'Не указан' }}</div>
+                                            <div class="text-xs text-gray-500 truncate">{{ caseItem.partner?.contact_person || caseItem.partner?.user?.name || 'Без контакта' }}</div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <span class="text-sm font-medium text-gray-900">
-                                    {{ caseItem.applications_count || 0 }} заявок
-                                </span>
+
+                                <!-- Дедлайн -->
+                                <div class="col-span-2">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-10 h-10 flex items-center justify-center bg-red-100 rounded-lg flex-shrink-0">
+                                            <i class="pi pi-calendar text-red-600 text-xs"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900 whitespace-nowrap">{{ formatDate(caseItem.deadline) }}</div>
+                                            <div
+                                                :class="[
+                                                    'text-xs font-medium mt-0.5',
+                                                    isDeadlineSoon(caseItem.deadline) ? 'text-red-600' : 'text-gray-500'
+                                                ]"
+                                            >
+                                                {{ daysUntilDeadline(caseItem.deadline) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Команда -->
+                                <div class="col-span-1">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-100 text-blue-800 border border-blue-200 whitespace-nowrap">
+                                        <i class="pi pi-users text-xs"></i>
+                                        {{ caseItem.required_team_size }} чел.
+                                    </span>
+                                </div>
+
+                                <!-- Статус -->
+                                <div class="col-span-1">
+                                    <span
+                                        :class="[
+                                            'px-3 py-1.5 inline-flex text-xs font-semibold rounded-lg border whitespace-nowrap',
+                                            getStatusBadgeClass(caseItem.status)
+                                        ]"
+                                    >
+                                        {{ getStatusLabel(caseItem.status) }}
+                                    </span>
+                                </div>
+
+                                <!-- Заявки -->
+                                <div class="col-span-2">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-10 h-10 flex items-center justify-center bg-purple-100 rounded-lg flex-shrink-0">
+                                            <i class="pi pi-file-edit text-purple-600 text-xs"></i>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-900 whitespace-nowrap">
+                                            {{ caseItem.applications_count || 0 }} заявок
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Дата создания -->
+                                <div class="col-span-1">
+                                    <div class="text-sm text-gray-500 whitespace-nowrap">{{ formatDate(caseItem.created_at) }}</div>
+                                </div>
                             </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-500">{{ formatDate(caseItem.created_at) }}</div>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Пагинация -->
-            <div v-if="casesLinks && casesLinks.length > 0" class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                <Pagination :links="casesLinks" />
-            </div>
-        </div>
-
-        <!-- Сообщение если нет кейсов -->
-        <div v-if="!casesData || casesData.length === 0" class="bg-white rounded-xl shadow-md border border-gray-200 p-12 text-center">
-            <div class="max-w-md mx-auto">
-                <div class="mx-auto w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-4">
-                    <i class="pi pi-inbox text-4xl text-gray-400"></i>
+                        </div>
+                    </div>
                 </div>
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">Кейсы не найдены</h3>
-                <p class="text-sm text-gray-500 mb-6">
-                    <span v-if="hasActiveFilters">Попробуйте изменить параметры фильтрации</span>
-                    <span v-else>Создайте первый кейс, чтобы начать работу</span>
-                </p>
-                <div class="flex gap-3 justify-center">
-                    <button
-                        v-if="hasActiveFilters"
-                        @click="resetFilters"
-                        class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                    >
-                        Сбросить фильтры
-                    </button>
-                    <Link
-                        v-else
-                        :href="route('admin.cases.create')"
-                        class="px-6 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
-                    >
-                        Создать кейс
-                    </Link>
+
+                <!-- Пагинация -->
+                <div v-if="casesLinks && casesLinks.length > 0" :class="['px-6 py-4 border-t border-gray-200 bg-gray-50', isMobile ? 'px-4' : '']">
+                    <Pagination :links="casesLinks" />
+                </div>
+            </div>
+
+            <!-- Сообщение если нет кейсов -->
+            <div v-if="!casesData || casesData.length === 0" class="bg-white rounded-xl shadow-md border border-gray-200 p-12 text-center">
+                <div class="max-w-md mx-auto">
+                    <div class="mx-auto w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-4">
+                        <i class="pi pi-inbox text-4xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Кейсы не найдены</h3>
+                    <p class="text-sm text-gray-500 mb-6">
+                        <span v-if="hasActiveFilters">Попробуйте изменить параметры фильтрации</span>
+                        <span v-else>Создайте первый кейс, чтобы начать работу</span>
+                    </p>
+                    <div class="flex gap-3 justify-center">
+                        <button
+                            v-if="hasActiveFilters"
+                            @click="resetFilters"
+                            class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                        >
+                            Сбросить фильтры
+                        </button>
+                        <Link
+                            v-else
+                            :href="route('admin.cases.create')"
+                            class="px-6 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
+                        >
+                            Создать кейс
+                        </Link>
+                    </div>
                 </div>
             </div>
         </div>
