@@ -1,159 +1,362 @@
 <template>
-    <div class="space-y-6">
-        <Head :title="`Команда #${team.id}`" />
-        <div class="flex justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900">Команда #{{ team.id }}</h1>
-                <p class="text-lg font-medium text-gray-700 mt-1">{{ team.case.title }}</p>
-            </div>
-            <Link
-                :href="route('partner.teams.index')"
-                class="text-blue-600 hover:text-blue-900 text-sm font-medium"
-            >
-                ← Назад к командам
-            </Link>
-        </div>
-
-        <!-- Case Info -->
-        <div class="bg-white shadow-sm rounded-lg p-6 mb-6">
-            <div class="flex items-start justify-between">
-                <div class="flex-1">
-                    <h2 class="text-lg font-medium text-gray-900 mb-2">{{ team.case.title }}</h2>
-                    <p class="text-sm text-gray-500">{{ team.case.description }}</p>
-                </div>
-                <Link
-                    :href="route('partner.cases.show', { case: team.case.id })"
-                    class="ml-4 text-blue-600 hover:text-blue-900 text-sm font-medium whitespace-nowrap"
-                >
-                    Перейти к кейсу →
-                </Link>
-            </div>
-
-            <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <p class="text-sm font-medium text-gray-500">Статус команды</p>
-                    <span
-                        class="mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                        :class="getStatusClass(team.status?.name)"
-                    >
-                        {{ getStatusLabel(team.status?.name) }}
-                    </span>
-                </div>
-                <div>
-                    <p class="text-sm font-medium text-gray-500">Дата подачи заявки</p>
-                    <p class="mt-1 text-sm text-gray-900">{{ formatDate(team.submitted_at || team.created_at) }}</p>
-                </div>
-                <div v-if="team.case.deadline">
-                    <p class="text-sm font-medium text-gray-500">Дедлайн</p>
-                    <p class="mt-1 text-sm text-gray-900">{{ formatDate(team.case.deadline) }}</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Team Statistics -->
-        <div class="bg-white shadow-sm rounded-lg p-6 mb-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Статистика команды</h3>
-
-            <div class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="border border-gray-200 rounded-lg p-4">
-                        <p class="text-sm font-medium text-gray-500">Активность команды</p>
-                        <p class="mt-1 text-2xl font-bold text-gray-900">{{ progress.activity_score || 0 }}</p>
-                        <p class="text-xs text-gray-500 mt-1">балл активности</p>
-                    </div>
-                    <div class="border border-gray-200 rounded-lg p-4">
-                        <p class="text-sm font-medium text-gray-500">Дней до дедлайна</p>
-                        <p class="mt-1 text-2xl font-bold text-gray-900">{{ progress.days_remaining || 0 }}</p>
-                        <p class="text-xs text-gray-500 mt-1">осталось</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Team Members -->
-        <div class="bg-white shadow-sm rounded-lg p-6 mb-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">
-                Участники команды ({{ (team.team_members?.length || 0) + 1 }} / {{ team.case.required_team_size || team.case.team_size }})
-            </h3>
-
-            <div class="space-y-4">
-                <!-- Leader -->
-                <Link
-                    :href="route('partner.students.show', team.leader.id)"
-                    class="flex items-center p-4 border border-gray-200 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer"
-                >
-                    <div class="flex-shrink-0">
-                        <img
-                            v-if="team.leader.avatar_url"
-                            class="h-12 w-12 rounded-full object-cover border-2 border-gray-200"
-                            :src="team.leader.avatar_url"
-                            :alt="team.leader.name"
-                        />
-                        <div
-                            v-else
-                            class="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center border-2 border-gray-200"
-                        >
-                            <span class="text-white text-sm font-bold">{{ getUserInitials(team.leader.name) }}</span>
+    <MobileContainer :padding="false">
+        <div :class="[
+            isMobile ? 'space-y-4' : 'space-y-6'
+        ]">
+            <Head :title="`Команда #${team.id}`" />
+            
+            <!-- Заголовок -->
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg overflow-hidden">
+                <div :class="[
+                    'px-6 py-8',
+                    isMobile ? 'px-4 py-6' : ''
+                ]">
+                    <div :class="[
+                        'flex items-start justify-between',
+                        isMobile ? 'flex-col gap-4' : ''
+                    ]">
+                        <div class="flex-1">
+                            <nav class="flex mb-4" aria-label="Breadcrumb">
+                                <ol :class="[
+                                    'flex items-center',
+                                    isMobile ? 'space-x-1' : 'space-x-2'
+                                ]">
+                                    <li>
+                                        <Link :href="route('partner.teams.index')" :class="[
+                                            'text-indigo-200 hover:text-white transition-colors',
+                                            isMobile ? 'text-xs' : 'text-sm'
+                                        ]">
+                                            <span class="font-medium">Команды</span>
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <i :class="[
+                                            'pi pi-chevron-right text-indigo-300',
+                                            isMobile ? 'text-xs' : ''
+                                        ]"></i>
+                                    </li>
+                                    <li>
+                                        <span :class="[
+                                            'font-medium text-white',
+                                            isMobile ? 'text-xs' : 'text-sm'
+                                        ]">Команда #{{ team.id }}</span>
+                                    </li>
+                                </ol>
+                            </nav>
+                            <h1 :class="[
+                                'font-bold text-white mb-2',
+                                isMobile ? 'text-2xl' : 'text-3xl'
+                            ]">Команда #{{ team.id }}</h1>
+                            <p :class="[
+                                'text-indigo-100',
+                                isMobile ? 'text-sm' : 'text-lg'
+                            ]">{{ team.case.title }}</p>
                         </div>
                     </div>
-                    <div class="ml-4 flex-1">
-                        <div class="flex items-center">
-                            <p class="text-sm font-medium text-gray-900">{{ team.leader.name }}</p>
-                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                                Лидер
+                </div>
+            </div>
+
+            <!-- Case Info -->
+            <div :class="[
+                'bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden',
+                isMobile ? 'p-4' : 'p-6'
+            ]">
+                <div :class="[
+                    'px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200',
+                    isMobile ? 'px-4' : ''
+                ]">
+                    <div :class="[
+                        'flex items-start justify-between',
+                        isMobile ? 'flex-col gap-3' : ''
+                    ]">
+                        <div class="flex-1">
+                            <h2 :class="[
+                                'font-medium text-gray-900 mb-2',
+                                isMobile ? 'text-base' : 'text-lg'
+                            ]">{{ team.case.title }}</h2>
+                            <p :class="[
+                                'text-gray-500',
+                                isMobile ? 'text-xs' : 'text-sm'
+                            ]">{{ team.case.description }}</p>
+                        </div>
+                        <Link
+                            :href="route('partner.cases.show', { case: team.case.id })"
+                            :class="[
+                                'text-blue-600 hover:text-blue-900 font-medium whitespace-nowrap',
+                                isMobile ? 'text-xs w-full text-center' : 'ml-4 text-sm'
+                            ]"
+                        >
+                            Перейти к кейсу →
+                        </Link>
+                    </div>
+                </div>
+                <div :class="[
+                    'p-6',
+                    isMobile ? 'p-4' : ''
+                ]">
+                    <ResponsiveGrid :cols="{ mobile: 1, tablet: 3 }">
+                        <div>
+                            <p :class="[
+                                'font-medium text-gray-500',
+                                isMobile ? 'text-xs' : 'text-sm'
+                            ]">Статус команды</p>
+                            <span
+                                :class="[
+                                    'mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full font-medium',
+                                    isMobile ? 'text-xs' : 'text-xs',
+                                    getStatusClass(team.status?.name)
+                                ]"
+                            >
+                                {{ getStatusLabel(team.status?.name) }}
                             </span>
                         </div>
-                        <p class="text-sm text-gray-500">{{ team.leader.email }}</p>
-                    </div>
-                    <i class="pi pi-arrow-right text-gray-400 ml-4"></i>
-                </Link>
-
-                <!-- Team Members -->
-                <Link
-                    v-for="member in team.team_members"
-                    :key="member.id"
-                    :href="route('partner.students.show', member.user?.id)"
-                    class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
-                >
-                    <div class="flex-shrink-0">
-                        <img
-                            v-if="member.user?.avatar_url || member.user?.avatar"
-                            class="h-12 w-12 rounded-full object-cover border-2 border-gray-200"
-                            :src="member.user?.avatar_url || member.user?.avatar"
-                            :alt="member.user?.name"
-                        />
-                        <div
-                            v-else
-                            class="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center border-2 border-gray-200"
-                        >
-                            <span class="text-white text-sm font-bold">{{ getUserInitials(member.user?.name) }}</span>
+                        <div>
+                            <p :class="[
+                                'font-medium text-gray-500',
+                                isMobile ? 'text-xs' : 'text-sm'
+                            ]">Дата подачи заявки</p>
+                            <p :class="[
+                                'mt-1 text-gray-900',
+                                isMobile ? 'text-xs' : 'text-sm'
+                            ]">{{ formatDate(team.submitted_at || team.created_at) }}</p>
                         </div>
-                    </div>
-                    <div class="ml-4 flex-1">
-                        <p class="text-sm font-medium text-gray-900">{{ member.user?.name }}</p>
-                        <p class="text-sm text-gray-500">{{ member.user?.email }}</p>
-                    </div>
-                    <div class="ml-4 text-right">
-                        <p class="text-xs text-gray-500">Присоединился</p>
-                        <p class="text-sm text-gray-900">{{ formatDate(member.created_at || member.joined_at) }}</p>
-                    </div>
-                    <i class="pi pi-arrow-right text-gray-400 ml-4"></i>
-                </Link>
-            </div>
-        </div>
-
-        <!-- Activity History -->
-        <div class="bg-white shadow-sm rounded-lg p-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">История активности</h3>
-
-            <div v-if="activityHistory.length === 0" class="text-center py-8 text-gray-500">
-                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <p class="mt-2 text-sm">Нет записей о активности</p>
+                        <div v-if="team.case.deadline">
+                            <p :class="[
+                                'font-medium text-gray-500',
+                                isMobile ? 'text-xs' : 'text-sm'
+                            ]">Дедлайн</p>
+                            <p :class="[
+                                'mt-1 text-gray-900',
+                                isMobile ? 'text-xs' : 'text-sm'
+                            ]">{{ formatDate(team.case.deadline) }}</p>
+                        </div>
+                    </ResponsiveGrid>
+                </div>
             </div>
 
-            <div v-else class="flow-root">
+            <!-- Team Statistics -->
+            <div :class="[
+                'bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden',
+                isMobile ? 'p-4' : 'p-6'
+            ]">
+                <div :class="[
+                    'px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200',
+                    isMobile ? 'px-4' : ''
+                ]">
+                    <h3 :class="[
+                        'font-medium text-gray-900',
+                        isMobile ? 'text-base' : 'text-lg'
+                    ]">Статистика команды</h3>
+                </div>
+                <div :class="[
+                    'p-6',
+                    isMobile ? 'p-4' : ''
+                ]">
+                    <ResponsiveGrid :cols="{ mobile: 1, tablet: 2 }">
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <p :class="[
+                                'font-medium text-gray-500',
+                                isMobile ? 'text-xs' : 'text-sm'
+                            ]">Активность команды</p>
+                            <p :class="[
+                                'mt-1 font-bold text-gray-900',
+                                isMobile ? 'text-xl' : 'text-2xl'
+                            ]">{{ progress.activity_score || 0 }}</p>
+                            <p :class="[
+                                'text-gray-500 mt-1',
+                                isMobile ? 'text-xs' : 'text-xs'
+                            ]">балл активности</p>
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <p :class="[
+                                'font-medium text-gray-500',
+                                isMobile ? 'text-xs' : 'text-sm'
+                            ]">Дней до дедлайна</p>
+                            <p :class="[
+                                'mt-1 font-bold text-gray-900',
+                                isMobile ? 'text-xl' : 'text-2xl'
+                            ]">{{ progress.days_remaining || 0 }}</p>
+                            <p :class="[
+                                'text-gray-500 mt-1',
+                                isMobile ? 'text-xs' : 'text-xs'
+                            ]">осталось</p>
+                        </div>
+                    </ResponsiveGrid>
+                </div>
+            </div>
+
+            <!-- Team Members -->
+            <div :class="[
+                'bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden',
+                isMobile ? 'p-4' : 'p-6'
+            ]">
+                <div :class="[
+                    'px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200',
+                    isMobile ? 'px-4' : ''
+                ]">
+                    <h3 :class="[
+                        'font-medium text-gray-900',
+                        isMobile ? 'text-base' : 'text-lg'
+                    ]">
+                        Участники команды ({{ (team.team_members?.length || 0) + 1 }} / {{ team.case.required_team_size || team.case.team_size }})
+                    </h3>
+                </div>
+                <div :class="[
+                    'space-y-4',
+                    isMobile ? 'p-4' : 'p-6'
+                ]">
+                    <!-- Leader -->
+                    <Link
+                        :href="route('partner.students.show', team.leader.id)"
+                        :class="[
+                            'flex items-center border border-gray-200 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer',
+                            isMobile ? 'p-3' : 'p-4'
+                        ]"
+                    >
+                        <div class="flex-shrink-0">
+                            <img
+                                v-if="team.leader.avatar_url"
+                                :class="[
+                                    'rounded-full object-cover border-2 border-gray-200',
+                                    isMobile ? 'h-10 w-10' : 'h-12 w-12'
+                                ]"
+                                :src="team.leader.avatar_url"
+                                :alt="team.leader.name"
+                            />
+                            <div
+                                v-else
+                                :class="[
+                                    'rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center border-2 border-gray-200',
+                                    isMobile ? 'h-10 w-10' : 'h-12 w-12'
+                                ]"
+                            >
+                                <span :class="[
+                                    'text-white font-bold',
+                                    isMobile ? 'text-xs' : 'text-sm'
+                                ]">{{ getUserInitials(team.leader.name) }}</span>
+                            </div>
+                        </div>
+                        <div :class="[
+                            'flex-1 min-w-0',
+                            isMobile ? 'ml-3' : 'ml-4'
+                        ]">
+                            <div class="flex items-center flex-wrap gap-2">
+                                <p :class="[
+                                    'font-medium text-gray-900 truncate',
+                                    isMobile ? 'text-xs' : 'text-sm'
+                                ]">{{ team.leader.name }}</p>
+                                <span :class="[
+                                    'inline-flex items-center px-2 py-0.5 rounded font-medium bg-blue-100 text-blue-800 flex-shrink-0',
+                                    isMobile ? 'text-xs' : 'text-xs'
+                                ]">
+                                    Лидер
+                                </span>
+                            </div>
+                            <p :class="[
+                                'text-gray-500 truncate',
+                                isMobile ? 'text-xs' : 'text-sm'
+                            ]">{{ team.leader.email }}</p>
+                        </div>
+                        <i :class="[
+                            'pi pi-arrow-right text-gray-400 flex-shrink-0',
+                            isMobile ? 'ml-2' : 'ml-4'
+                        ]"></i>
+                    </Link>
+
+                    <!-- Team Members -->
+                    <Link
+                        v-for="member in team.team_members"
+                        :key="member.id"
+                        :href="route('partner.students.show', member.user?.id)"
+                        :class="[
+                            'flex items-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer',
+                            isMobile ? 'p-3' : 'p-4'
+                        ]"
+                    >
+                        <div class="flex-shrink-0">
+                            <img
+                                v-if="member.user?.avatar_url || member.user?.avatar"
+                                :class="[
+                                    'rounded-full object-cover border-2 border-gray-200',
+                                    isMobile ? 'h-10 w-10' : 'h-12 w-12'
+                                ]"
+                                :src="member.user?.avatar_url || member.user?.avatar"
+                                :alt="member.user?.name"
+                            />
+                            <div
+                                v-else
+                                :class="[
+                                    'rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center border-2 border-gray-200',
+                                    isMobile ? 'h-10 w-10' : 'h-12 w-12'
+                                ]"
+                            >
+                                <span :class="[
+                                    'text-white font-bold',
+                                    isMobile ? 'text-xs' : 'text-sm'
+                                ]">{{ getUserInitials(member.user?.name) }}</span>
+                            </div>
+                        </div>
+                        <div :class="[
+                            'flex-1 min-w-0',
+                            isMobile ? 'ml-3' : 'ml-4'
+                        ]">
+                            <p :class="[
+                                'font-medium text-gray-900 truncate',
+                                isMobile ? 'text-xs' : 'text-sm'
+                            ]">{{ member.user?.name }}</p>
+                            <p :class="[
+                                'text-gray-500 truncate',
+                                isMobile ? 'text-xs' : 'text-sm'
+                            ]">{{ member.user?.email }}</p>
+                            <p v-if="isMobile" :class="[
+                                'text-gray-400 mt-1 text-xs'
+                            ]">Присоединился: {{ formatDate(member.created_at || member.joined_at) }}</p>
+                        </div>
+                        <div v-if="!isMobile" class="text-right ml-4">
+                            <p class="text-gray-500 text-xs">Присоединился</p>
+                            <p class="text-gray-900 text-sm">{{ formatDate(member.created_at || member.joined_at) }}</p>
+                        </div>
+                        <i :class="[
+                            'pi pi-arrow-right text-gray-400 flex-shrink-0',
+                            isMobile ? 'ml-2' : 'ml-4'
+                        ]"></i>
+                    </Link>
+                </div>
+            </div>
+
+            <!-- Activity History -->
+            <div :class="[
+                'bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden',
+                isMobile ? 'p-4' : 'p-6'
+            ]">
+                <div :class="[
+                    'px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200',
+                    isMobile ? 'px-4' : ''
+                ]">
+                    <h3 :class="[
+                        'font-medium text-gray-900',
+                        isMobile ? 'text-base' : 'text-lg'
+                    ]">История активности</h3>
+                </div>
+                <div :class="[
+                    'p-6',
+                    isMobile ? 'p-4' : ''
+                ]">
+
+                    <div v-if="activityHistory.length === 0" :class="[
+                        'text-center text-gray-500',
+                        isMobile ? 'py-6' : 'py-8'
+                    ]">
+                        <div class="mx-auto w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-3">
+                            <i class="pi pi-clock text-3xl text-gray-400"></i>
+                        </div>
+                        <p :class="[
+                            'mt-2',
+                            isMobile ? 'text-xs' : 'text-sm'
+                        ]">Нет записей о активности</p>
+                    </div>
+
+                    <div v-else class="flow-root">
                 <ul role="list" class="-mb-8">
                     <li v-for="(activity, idx) in activityHistory" :key="activity.id">
                         <div class="relative pb-8">
@@ -175,21 +378,33 @@
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <div>
-                                        <p class="text-sm text-gray-900">{{ activity.description }}</p>
-                                        <p class="mt-0.5 text-xs text-gray-500">{{ formatDateTime(activity.date || activity.created_at) }}</p>
+                                        <p :class="[
+                                            'text-gray-900',
+                                            isMobile ? 'text-xs' : 'text-sm'
+                                        ]">{{ activity.description }}</p>
+                                        <p :class="[
+                                            'mt-0.5 text-gray-500',
+                                            isMobile ? 'text-xs' : 'text-xs'
+                                        ]">{{ formatDateTime(activity.date || activity.created_at) }}</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </li>
                 </ul>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+    </MobileContainer>
 </template>
 
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
+import MobileContainer from '@/Components/Responsive/MobileContainer.vue';
+import ResponsiveGrid from '@/Components/Responsive/ResponsiveGrid.vue';
+import { useResponsive } from '@/Composables/useResponsive';
+import { route } from 'ziggy-js';
 
 const props = defineProps({
     team: {
@@ -205,6 +420,8 @@ const props = defineProps({
         required: true
     }
 });
+
+const { isMobile, padding } = useResponsive();
 
 const getStatusClass = (status) => {
     if (!status) return 'bg-gray-100 text-gray-800';

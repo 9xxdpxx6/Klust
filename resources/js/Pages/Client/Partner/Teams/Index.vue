@@ -1,106 +1,170 @@
 <template>
-    <div class="space-y-6">
-        <Head title="Команды" />
-        <h1 class="text-2xl font-bold text-gray-900">Команды</h1>
-
-        <!-- Filters -->
-        <div class="bg-white shadow-sm rounded-lg p-4 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- Поиск -->
-                <div class="select-wrapper" style="min-width: 300px;">
-                    <label
-                        for="search-input"
-                        class="block text-sm font-medium mb-1"
-                    >
-                        Поиск
-                    </label>
-                    <div class="relative">
-                        <input
-                            id="search-input"
-                            v-model="filters.search"
-                            type="text"
-                            placeholder="По имени участника..."
-                            class="w-full min-h-[2.5rem] h-[2.6rem] pl-10 pr-3 py-2 border border-border rounded-md shadow-sm text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 box-border leading-[1.5]"
-                            style="padding-left: 2.75rem;"
-                            @input="debouncedSearch"
-                        />
-                        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
-                    </div>
-                </div>
-                
-                <div>
-                    <Select
-                        v-model="filters.case_id"
-                        label="Кейс"
-                        :options="caseFilterOptions"
-                        optionLabel="label"
-                        optionValue="value"
-                        placeholder="Все кейсы"
-                        @update:modelValue="applyFilters"
-                    />
-                </div>
-
-                <div>
-                    <Select
-                        v-model="filters.status"
-                        label="Статус"
-                        :options="statusFilterOptions"
-                        optionLabel="label"
-                        optionValue="value"
-                        placeholder="Все статусы"
-                        @update:modelValue="applyFilters"
-                    />
-                </div>
-            </div>
+    <MobileContainer :padding="false">
+        <div :class="[
+            isMobile ? 'space-y-4' : 'space-y-6'
+        ]">
+            <Head title="Команды" />
             
-            <!-- Кнопка сброса фильтров -->
-            <div class="mt-4 flex justify-end">
-                <button
-                    @click="resetFilters"
-                    :disabled="!hasActiveFilters"
-                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    <i class="pi pi-refresh"></i>
-                    Сбросить фильтры
-                </button>
+            <!-- Заголовок -->
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg overflow-hidden">
+                <div :class="[
+                    'px-6 py-8',
+                    isMobile ? 'px-4 py-6' : ''
+                ]">
+                    <h1 :class="[
+                        'font-bold text-white',
+                        isMobile ? 'text-2xl' : 'text-3xl'
+                    ]">Команды</h1>
+                    <p class="text-indigo-100 mt-2" :class="isMobile ? 'text-sm' : ''">
+                        Управление командами студентов
+                    </p>
+                </div>
             </div>
-        </div>
 
-        <!-- Teams Grid -->
-        <div v-if="teams.data.length === 0" class="bg-white shadow-sm rounded-lg p-12 text-center">
-            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900">Команд нет</h3>
-            <p class="mt-1 text-sm text-gray-500">
-                Пока нет одобренных команд.
-            </p>
-        </div>
-
-        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div
-                v-for="team in teams.data"
-                :key="team.id"
-                class="bg-white shadow-sm rounded-lg overflow-hidden border border-gray-200 hover:shadow-md transition-shadow duration-200 flex flex-col"
-            >
-                <div class="p-6 flex-1 flex flex-col">
-                    <!-- Team Header -->
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="flex-1">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2">
-                                Команда #{{ team.id }}
-                            </h3>
-                            <p class="text-sm font-medium text-gray-700 mb-3">
-                                {{ team.case.title }}
-                            </p>
+            <!-- Filters -->
+            <div :class="[
+                'bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden',
+                isMobile ? 'p-4' : 'p-6'
+            ]">
+                <div :class="[
+                    'px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200',
+                    isMobile ? 'px-4' : ''
+                ]">
+                    <h2 :class="[
+                        'font-bold text-gray-900 flex items-center gap-2',
+                        isMobile ? 'text-base' : 'text-lg'
+                    ]">
+                        <i class="pi pi-filter text-indigo-600"></i>
+                        Фильтры поиска
+                    </h2>
+                </div>
+                <div :class="[
+                    'p-6',
+                    isMobile ? 'p-4' : ''
+                ]">
+                    <ResponsiveGrid :cols="{ mobile: 1, tablet: 2, desktop: 3 }">
+                        <!-- Поиск -->
+                        <div class="select-wrapper w-full">
+                            <label
+                                for="search-input"
+                                class="block text-sm font-medium mb-1"
+                            >
+                                Поиск
+                            </label>
+                            <div class="relative">
+                                <input
+                                    id="search-input"
+                                    v-model="filters.search"
+                                    type="text"
+                                    placeholder="По имени участника..."
+                                    class="w-full min-h-[2.5rem] h-[2.6rem] pl-10 pr-3 py-2 border border-border rounded-md shadow-sm text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 box-border leading-[1.5]"
+                                    style="padding-left: 2.75rem;"
+                                    @input="debouncedSearch"
+                                />
+                                <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                            </div>
                         </div>
-                        <span
-                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                            :class="getStatusClass(team.status?.name)"
+                        
+                        <div class="select-wrapper w-full">
+                            <Select
+                                v-model="filters.case_id"
+                                label="Кейс"
+                                :options="caseFilterOptions"
+                                optionLabel="label"
+                                optionValue="value"
+                                placeholder="Все кейсы"
+                                @update:modelValue="applyFilters"
+                            />
+                        </div>
+
+                        <div class="select-wrapper w-full">
+                            <Select
+                                v-model="filters.status"
+                                label="Статус"
+                                :options="statusFilterOptions"
+                                optionLabel="label"
+                                optionValue="value"
+                                placeholder="Все статусы"
+                                @update:modelValue="applyFilters"
+                            />
+                        </div>
+                    </ResponsiveGrid>
+                    
+                    <!-- Кнопка сброса фильтров -->
+                    <div :class="[
+                        'mt-4 flex',
+                        isMobile ? 'justify-center' : 'justify-end'
+                    ]">
+                        <button
+                            @click="resetFilters"
+                            :disabled="!hasActiveFilters"
+                            :class="[
+                                'inline-flex items-center gap-2 font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
+                                isMobile ? 'px-3 py-2 text-xs w-full justify-center' : 'px-4 py-2 text-sm'
+                            ]"
                         >
-                            {{ getStatusLabel(team.status?.name) }}
-                        </span>
+                            <i class="pi pi-refresh"></i>
+                            Сбросить фильтры
+                        </button>
                     </div>
+                </div>
+            </div>
+
+            <!-- Teams Grid -->
+            <div v-if="teams.data.length === 0" :class="[
+                'bg-white rounded-xl shadow-md border border-gray-200 p-12 text-center',
+                isMobile ? 'p-8' : ''
+            ]">
+                <div class="max-w-md mx-auto">
+                    <div class="mx-auto w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-4">
+                        <i class="pi pi-users text-4xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Команд нет</h3>
+                    <p class="text-sm text-gray-500">
+                        Пока нет одобренных команд.
+                    </p>
+                </div>
+            </div>
+
+            <ResponsiveGrid v-else :cols="{ mobile: 1, tablet: 2, desktop: 3 }" :class="isMobile ? 'gap-4' : 'gap-6'">
+                <div
+                    v-for="team in teams.data"
+                    :key="team.id"
+                    class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-200 flex flex-col"
+                >
+                    <div :class="[
+                        'p-6 flex-1 flex flex-col',
+                        isMobile ? 'p-4' : ''
+                    ]">
+                        <!-- Team Header -->
+                        <div :class="[
+                            'flex items-start mb-4',
+                            isMobile ? 'flex-col gap-3' : 'justify-between'
+                        ]">
+                            <div class="flex-1">
+                                <h3 :class="[
+                                    'font-semibold text-gray-900 mb-2',
+                                    isMobile ? 'text-base' : 'text-lg'
+                                ]">
+                                    Команда #{{ team.id }}
+                                </h3>
+                                <p :class="[
+                                    'font-medium text-gray-700 mb-3',
+                                    isMobile ? 'text-xs' : 'text-sm'
+                                ]">
+                                    {{ team.case.title }}
+                                </p>
+                            </div>
+                            <span
+                                :class="[
+                                    'inline-flex items-center px-2.5 py-0.5 rounded-full font-medium',
+                                    isMobile ? 'text-xs w-fit' : 'text-xs',
+                                    getStatusClass(team.status?.name)
+                                ]"
+                            >
+                                {{ getStatusLabel(team.status?.name) }}
+                            </span>
+                        </div>
 
                     <!-- Team Members -->
                     <div class="mb-4">
@@ -145,20 +209,24 @@
                         </div>
                     </div>
 
-                    <!-- Action Button -->
-                    <Link
-                        :href="route('partner.teams.show', { application: team.id })"
-                        class="block w-full text-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
-                    >
-                        Подробнее
-                    </Link>
+                        <!-- Action Button -->
+                        <Link
+                            :href="route('partner.teams.show', { application: team.id })"
+                            :class="[
+                                'block w-full text-center border border-transparent rounded-lg shadow-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none transition-colors',
+                                isMobile ? 'px-3 py-2 text-xs' : 'px-4 py-2 text-sm'
+                            ]"
+                        >
+                            Подробнее
+                        </Link>
+                    </div>
                 </div>
-            </div>
-        </div>
+            </ResponsiveGrid>
 
-        <!-- Pagination -->
-        <Pagination v-if="teams.links && teams.links.length > 2" :links="teams.links" class="mt-6" />
-    </div>
+            <!-- Pagination -->
+            <Pagination v-if="teams.links && teams.links.length > 2" :links="teams.links" :class="['mt-6', isMobile ? '' : '']" />
+        </div>
+    </MobileContainer>
 </template>
 
 <script setup>
@@ -166,6 +234,10 @@ import { ref, computed } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import Select from '@/Components/UI/Select.vue';
 import Pagination from '@/Components/Pagination.vue';
+import MobileContainer from '@/Components/Responsive/MobileContainer.vue';
+import ResponsiveGrid from '@/Components/Responsive/ResponsiveGrid.vue';
+import { useResponsive } from '@/Composables/useResponsive';
+import { route } from 'ziggy-js';
 
 const props = defineProps({
     teams: {
@@ -181,6 +253,8 @@ const props = defineProps({
         default: () => []
     }
 });
+
+const { isMobile, padding } = useResponsive();
 
 const filters = ref({
     search: props.filters?.search || '',
