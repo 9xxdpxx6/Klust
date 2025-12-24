@@ -126,7 +126,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-3">
                             Статус
                         </label>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <label class="flex items-center p-4 border rounded-lg cursor-pointer">
                                 <input
                                     type="radio"
@@ -159,17 +159,17 @@
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="mt-8 flex justify-end space-x-4">
+                <div class="mt-8 flex flex-col md:flex-row md:justify-end gap-3 md:gap-4">
                     <Link 
                         :href="getCancelUrl()" 
-                        class="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+                        class="w-full md:w-auto px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none text-center"
                     >
                         Отмена
                     </Link>
                     <button
                         type="submit"
                         :disabled="processing"
-                        class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none disabled:opacity-50"
+                        class="w-full md:w-auto inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none disabled:opacity-50"
                     >
                         <span v-if="processing">
                             <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
