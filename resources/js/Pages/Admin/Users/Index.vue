@@ -151,8 +151,21 @@
             </div>
 
             <div v-if="usersData && usersData.length > 0">
-                <!-- Заголовки для десктопной версии (скрыты на мобильных) -->
-                <div class="hidden lg:grid lg:grid-cols-12 gap-4 px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                <!-- Заголовки для планшетной/лаптопной версии (md до xl) -->
+                <div class="hidden md:grid xl:hidden md:grid-cols-6 gap-4 px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                    <div class="col-span-3 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Пользователь
+                    </div>
+                    <div class="col-span-2 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Роли
+                    </div>
+                    <div class="col-span-1 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Статус
+                    </div>
+                </div>
+
+                <!-- Заголовки для десктопной версии (xl+) -->
+                <div class="hidden xl:grid xl:grid-cols-12 gap-4 px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
                     <div class="col-span-3 text-xs font-bold text-gray-700 uppercase tracking-wider">
                         Пользователь
                     </div>
@@ -181,8 +194,8 @@
                         :key="user.id"
                         class="hover:bg-indigo-50/50 transition-all group"
                     >
-                        <!-- Мобильная версия (карточка) -->
-                        <div class="lg:hidden p-5 sm:p-6">
+                        <!-- Мобильная версия (карточка) - только для маленьких экранов -->
+                        <div class="md:hidden p-5 sm:p-6">
                             <Link :href="route('admin.users.show', user.id)" class="block">
                                 <div class="flex items-start gap-4 mb-5">
                                     <div class="flex-shrink-0">
@@ -277,8 +290,78 @@
                             </Link>
                         </div>
 
-                        <!-- Десктопная версия (grid, как таблица) -->
-                        <div class="hidden lg:grid lg:grid-cols-12 gap-4 px-6 py-5 items-center">
+                        <!-- Планшетная/лаптопная версия (md до xl) - упрощенная таблица -->
+                        <div class="hidden md:grid xl:hidden md:grid-cols-6 gap-4 px-4 py-4 items-center">
+                            <!-- Пользователь -->
+                            <div class="col-span-3">
+                                <Link :href="route('admin.users.show', user.id)" class="flex items-center gap-3 group-hover:text-indigo-600 transition-colors">
+                                    <div class="flex-shrink-0">
+                                        <img
+                                            v-if="user.avatar"
+                                            class="h-10 w-10 rounded-full border-2 border-gray-200 group-hover:border-indigo-300 transition-colors"
+                                            :src="user.avatar"
+                                            alt=""
+                                        />
+                                        <div
+                                            v-else
+                                            class="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center border-2 border-gray-200 group-hover:border-indigo-300 transition-colors"
+                                        >
+                                            <span class="text-white text-xs font-bold">{{ getUserInitials(user.name) }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="text-sm font-semibold text-gray-900 truncate">{{ user.name }}</div>
+                                        <div v-if="user.kubgtu_id" class="text-xs text-gray-500 truncate">
+                                            ID: {{ user.kubgtu_id }}
+                                        </div>
+                                        <div class="text-xs text-gray-500 truncate mt-0.5">
+                                            {{ user.email }}
+                                        </div>
+                                    </div>
+                                </Link>
+                            </div>
+
+                            <!-- Роли -->
+                            <div class="col-span-2">
+                                <div class="flex flex-wrap gap-1.5">
+                                    <span
+                                        v-for="role in user.roles"
+                                        :key="role.id"
+                                        :style="getRoleBadgeStyle(role.name)"
+                                        class="px-2 py-1 text-xs font-semibold rounded-lg border"
+                                    >
+                                        {{ props.roleTranslations[role.name] || role.name }}
+                                    </span>
+                                    <span
+                                        v-if="!user.roles || user.roles.length === 0"
+                                        class="text-xs text-gray-400"
+                                    >
+                                        Нет ролей
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Статус -->
+                            <div class="col-span-1">
+                                <span
+                                    v-if="user.email_verified_at"
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg bg-green-100 text-green-800 border border-green-200 whitespace-nowrap"
+                                >
+                                    <i class="pi pi-check-circle text-xs"></i>
+                                    Вериф.
+                                </span>
+                                <span
+                                    v-else
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg bg-red-100 text-red-800 border border-red-200 whitespace-nowrap"
+                                >
+                                    <i class="pi pi-times-circle text-xs"></i>
+                                    Не вериф.
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Десктопная версия (xl+) - полная таблица -->
+                        <div class="hidden xl:grid xl:grid-cols-12 gap-4 px-6 py-5 items-center">
                             <!-- Пользователь -->
                             <div class="col-span-3">
                                 <Link :href="route('admin.users.show', user.id)" class="flex items-center gap-3 group-hover:text-indigo-600 transition-colors">

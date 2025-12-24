@@ -21,7 +21,7 @@
             </div>
 
             <!-- Статистика -->
-            <ResponsiveGrid :cols="{ mobile: 1, tablet: 2, desktop: 4 }">
+            <ResponsiveGrid :cols="{ mobile: 1, tablet: 2, desktop: 2, large: 4 }">
                 <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-md border border-blue-200/50 hover:shadow-lg transition-all cursor-pointer group"
                      :class="isMobile ? 'p-4' : 'p-6'"
                      @click="safeVisit('admin.users.index', { role: 'student' })">

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\Request;
@@ -39,6 +40,7 @@ class Handler extends ExceptionHandler
     protected $dontReport = [
         ValidationException::class,
         NotFoundHttpException::class,
+        AuthenticationException::class,
     ];
 
     /**
@@ -64,6 +66,11 @@ class Handler extends ExceptionHandler
             if ($e instanceof ValidationException) {
                 return false;
             }
+
+            // Не логируем AuthenticationException (нормальная ситуация - неавторизованный пользователь)
+            if ($e instanceof AuthenticationException) {
+                return false;
+            }
         });
 
         // Обработка ошибок для всех запросов (включая прямые переходы и перезагрузки)
@@ -84,6 +91,7 @@ class Handler extends ExceptionHandler
             if ($e instanceof HttpException) {
                 $statusCode = $e->getStatusCode();
                 $errorPage = match ($statusCode) {
+                    401 => 'Errors/401',
                     403 => 'Errors/403',
                     404 => 'Errors/404',
                     419 => 'Errors/403', // CSRF token mismatch
@@ -91,8 +99,12 @@ class Handler extends ExceptionHandler
                     503 => 'Errors/503',
                     default => 'Errors/500',
                 };
+            } elseif ($e instanceof AuthenticationException) {
+                // Для AuthenticationException (неавторизован) возвращаем 401
+                $statusCode = 401;
+                $errorPage = 'Errors/401';
             } elseif ($e instanceof AuthorizationException) {
-                // Для AuthorizationException всегда возвращаем 403 без редиректа
+                // Для AuthorizationException (нет прав) всегда возвращаем 403 без редиректа
                 $statusCode = 403;
                 $errorPage = 'Errors/403';
             } elseif ($e instanceof ModelNotFoundException) {

@@ -232,8 +232,21 @@
                 </div>
 
                 <div v-if="casesData && casesData.length > 0">
-                    <!-- Заголовки для десктопной версии (скрыты на мобильных) -->
-                    <div class="hidden lg:grid lg:grid-cols-12 gap-4 px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                    <!-- Заголовки для планшетной/лаптопной версии (md до xl) -->
+                    <div class="hidden md:grid xl:hidden md:grid-cols-6 gap-4 px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                        <div class="col-span-3 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                            Кейс
+                        </div>
+                        <div class="col-span-2 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                            Партнер / Дедлайн
+                        </div>
+                        <div class="col-span-1 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                            Статус
+                        </div>
+                    </div>
+
+                    <!-- Заголовки для десктопной версии (xl+) -->
+                    <div class="hidden xl:grid xl:grid-cols-12 gap-4 px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
                         <div class="col-span-3 text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Кейс
                         </div>
@@ -266,8 +279,8 @@
                             class="hover:bg-indigo-50/50 cursor-pointer transition-all group"
                             @click="goToCase(caseItem.id)"
                         >
-                            <!-- Мобильная версия (карточка) -->
-                            <div class="lg:hidden p-5 sm:p-6">
+                            <!-- Мобильная версия (карточка) - только для маленьких экранов -->
+                            <div class="md:hidden p-5 sm:p-6">
                                 <div class="flex items-start gap-4 mb-5">
                                     <div class="w-10 h-10 flex items-center justify-center bg-indigo-100 rounded-lg group-hover:bg-indigo-200 transition-colors flex-shrink-0">
                                         <i class="pi pi-briefcase text-indigo-600"></i>
@@ -361,8 +374,70 @@
                                 </div>
                             </div>
 
-                            <!-- Десктопная версия (grid, как таблица) -->
-                            <div class="hidden lg:grid lg:grid-cols-12 gap-4 px-6 py-5 items-center">
+                            <!-- Планшетная/лаптопная версия (md до xl) - упрощенная таблица -->
+                            <div class="hidden md:grid xl:hidden md:grid-cols-6 gap-4 px-4 py-4 items-center">
+                                <!-- Кейс -->
+                                <div class="col-span-3">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-10 h-10 flex items-center justify-center bg-indigo-100 rounded-lg group-hover:bg-indigo-200 transition-colors flex-shrink-0">
+                                            <i class="pi pi-briefcase text-indigo-600"></i>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors truncate">
+                                                {{ caseItem.title }}
+                                            </div>
+                                            <div class="text-xs text-gray-500 mt-1 line-clamp-1">
+                                                {{ caseItem.description }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Партнер и Дедлайн -->
+                                <div class="col-span-2">
+                                    <div class="space-y-1.5">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-lg flex-shrink-0">
+                                                <i class="pi pi-building text-gray-600 text-xs"></i>
+                                            </div>
+                                            <div class="min-w-0 flex-1">
+                                                <div class="text-xs font-medium text-gray-900 truncate">{{ caseItem.partner?.company_name || caseItem.partner?.name || 'Не указан' }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-8 h-8 flex items-center justify-center bg-red-100 rounded-lg flex-shrink-0">
+                                                <i class="pi pi-calendar text-red-600 text-xs"></i>
+                                            </div>
+                                            <div class="min-w-0 flex-1">
+                                                <div class="text-xs font-medium text-gray-900 truncate">{{ formatDate(caseItem.deadline) }}</div>
+                                                <div
+                                                    :class="[
+                                                        'text-xs font-medium mt-0.5',
+                                                        isDeadlineSoon(caseItem.deadline) ? 'text-red-600' : 'text-gray-500'
+                                                    ]"
+                                                >
+                                                    {{ daysUntilDeadline(caseItem.deadline) }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Статус -->
+                                <div class="col-span-1">
+                                    <span
+                                        :class="[
+                                            'px-2.5 py-1 inline-flex text-xs font-semibold rounded-lg border whitespace-nowrap',
+                                            getStatusBadgeClass(caseItem.status)
+                                        ]"
+                                    >
+                                        {{ getStatusLabel(caseItem.status) }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Десктопная версия (xl+) - полная таблица -->
+                            <div class="hidden xl:grid xl:grid-cols-12 gap-4 px-6 py-5 items-center">
                                 <!-- Кейс -->
                                 <div class="col-span-3">
                                     <div class="flex items-start gap-3">
