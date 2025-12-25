@@ -165,6 +165,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     });
 
+    // Партнер - Cases (студенты могут просматривать кейсы партнера)
+    Route::prefix('partner')->middleware(['auth', 'role:partner|admin|teacher|student', 'verified'])->name('partner.')->group(function () {
+        Route::get('/cases', [PartnerCasesController::class, 'index'])->name('cases.index');
+    });
+
     // Партнер
     Route::prefix('partner')->middleware(['role:partner|admin|teacher', 'verified'])->name('partner.')->group(function () {
         Route::get('/', [PartnerDashboardController::class, 'redirect']);
@@ -177,9 +182,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/profile/edit', [PartnerProfileController::class, 'edit'])->name('profile.edit');
         Route::put('/profile', [PartnerProfileController::class, 'update'])->name('profile.update');
         Route::delete('/profile/avatar', [PartnerProfileController::class, 'deleteAvatar'])->name('profile.avatar.delete');
-
-        // Cases
-        Route::get('/cases', [PartnerCasesController::class, 'index'])->name('cases.index');
         Route::get('/cases/create', [PartnerCasesController::class, 'create'])->name('cases.create');
         Route::post('/cases', [PartnerCasesController::class, 'store'])->name('cases.store');
         Route::get('/cases/{case}', [PartnerCasesController::class, 'show'])->name('cases.show');

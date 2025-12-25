@@ -36,7 +36,10 @@ class CasesController extends Controller
         private ApplicationService $applicationService,
         private NotificationService $notificationService
     ) {
-        $this->middleware(['auth', 'role:partner|admin|teacher']);
+        // Для метода index разрешаем доступ студентам (read-only)
+        $this->middleware(['auth', 'role:partner|admin|teacher|student'])->only(['index']);
+        // Для остальных методов только партнеры, админы и преподаватели
+        $this->middleware(['auth', 'role:partner|admin|teacher'])->except(['index']);
     }
 
     /**
@@ -49,6 +52,7 @@ class CasesController extends Controller
 
             // Если админ или преподаватель, можно просматривать кейсы любого партнера
             // Если партнер - только свои кейсы
+            // Если студент - можно просматривать кейсы партнера по partner_id (только активные)
             $partnerId = null;
             if ($user->hasAnyRole(['admin', 'teacher'])) {
                 $partnerId = $request->input('partner_id');
@@ -64,6 +68,19 @@ class CasesController extends Controller
                 }
             } elseif ($user->hasRole('partner')) {
                 $partnerId = $user->id;
+            } elseif ($user->hasRole('student')) {
+                // Студенты могут просматривать кейсы партнера, если указан partner_id
+                $partnerId = $request->input('partner_id');
+                if (!$partnerId) {
+                    return redirect()->route('student.cases.index')
+                        ->with('error', 'Партнер не указан');
+                }
+                // Проверяем, что указанный пользователь действительно партнер
+                $partnerUser = \App\Models\User::find($partnerId);
+                if (!$partnerUser || !$partnerUser->hasRole('partner')) {
+                    return redirect()->route('student.cases.index')
+                        ->with('error', 'Партнер не найден');
+                }
             } else {
                 return Inertia::render('Client/Partner/Cases/Index', [
                     'cases' => [],
@@ -95,6 +112,11 @@ class CasesController extends Controller
                 ->where('user_id', $partnerId)
                 ->with(['skills', 'simulator']);
 
+            // Студенты могут видеть только активные кейсы
+            if ($user->hasRole('student')) {
+                $casesQuery->where('status', 'active');
+            }
+
             $pagination = $caseFilter->getPaginationParams();
 
             // Применяем фильтр, но partner_id уже установлен и не может быть перезаписан
@@ -106,12 +128,22 @@ class CasesController extends Controller
 
             // Получаем статистику для табов
             $baseQuery = CaseModel::query()->where('user_id', $partnerId);
-            $statistics = [
-                'draft_count' => (clone $baseQuery)->where('status', 'draft')->count(),
-                'active_count' => (clone $baseQuery)->where('status', 'active')->count(),
-                'completed_count' => (clone $baseQuery)->where('status', 'completed')->count(),
-                'archived_count' => (clone $baseQuery)->where('status', 'archived')->count(),
-            ];
+            // Студенты видят только статистику по активным кейсам
+            if ($user->hasRole('student')) {
+                $statistics = [
+                    'draft_count' => 0,
+                    'active_count' => (clone $baseQuery)->where('status', 'active')->count(),
+                    'completed_count' => 0,
+                    'archived_count' => 0,
+                ];
+            } else {
+                $statistics = [
+                    'draft_count' => (clone $baseQuery)->where('status', 'draft')->count(),
+                    'active_count' => (clone $baseQuery)->where('status', 'active')->count(),
+                    'completed_count' => (clone $baseQuery)->where('status', 'completed')->count(),
+                    'archived_count' => (clone $baseQuery)->where('status', 'archived')->count(),
+                ];
+            }
 
             return Inertia::render('Client/Partner/Cases/Index', [
                 'cases' => $cases,
