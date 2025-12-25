@@ -7,15 +7,8 @@
     class="mobile-menu-drawer"
   >
     <template #header>
-      <div class="flex items-center justify-between p-4 border-b border-border-light">
+      <div class="p-4 border-b border-border-light">
         <h2 class="text-lg font-bold text-primary">{{ title }}</h2>
-        <button
-          @click="close"
-          class="p-2 rounded-lg hover:bg-surface-hover transition-colors"
-          aria-label="Закрыть меню"
-        >
-          <i class="pi pi-times text-xl"></i>
-        </button>
       </div>
     </template>
     

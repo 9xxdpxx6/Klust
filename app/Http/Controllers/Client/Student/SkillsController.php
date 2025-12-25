@@ -29,11 +29,19 @@ class SkillsController extends Controller
         // Получить все навыки студента с уровнями
         $skills = $this->skillService->getStudentSkills($user);
 
+        // Вычислить средний уровень (округляем до целых)
+        $averageLevel = 0;
+        if ($skills->isNotEmpty()) {
+            $totalLevel = $skills->sum(fn($skill) => $skill['level']);
+            $averageLevel = (int) round($totalLevel / $skills->count());
+        }
+
         // Получить историю получения очков
         $history = $this->progressLogService->getSkillProgressHistory($user);
 
         return Inertia::render('Client/Student/Skills/Index', [
             'skills' => $skills,
+            'averageLevel' => $averageLevel,
             'maxLevelInSystem' => $this->skillService->getMaxLevelInSystem(),
             'progressHistory' => $history->map(function ($log) {
                 $skill = $log->loggable;
