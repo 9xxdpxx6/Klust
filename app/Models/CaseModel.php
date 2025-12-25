@@ -38,6 +38,7 @@ class CaseModel extends Model
     protected $appends = [
         'required_skills',
         'team_size',
+        'partner',
     ];
 
     /**
@@ -73,10 +74,41 @@ class CaseModel extends Model
 
     /**
      * Accessor for backward compatibility with Vue components
+     * Returns PartnerProfile if available through partnerUser relationship
      */
     public function getPartnerAttribute()
     {
-        return $this->getRelationValue('partner') ?? $this->partnerUser?->partnerProfile;
+        // Сначала проверяем, загружено ли отношение partner напрямую
+        if ($this->relationLoaded('partner')) {
+            $partner = $this->getRelationValue('partner');
+            if ($partner) {
+                return $partner;
+            }
+        }
+        
+        // Если partner не загружено, проверяем partnerUser и его partnerProfile
+        // Используем прямой доступ к relation, если он загружен
+        if ($this->relationLoaded('partnerUser')) {
+            $partnerUser = $this->getRelationValue('partnerUser');
+            if ($partnerUser && $partnerUser->relationLoaded('partnerProfile')) {
+                return $partnerUser->getRelationValue('partnerProfile');
+            }
+            // Если partnerProfile не загружен, но partnerUser есть, загружаем его
+            if ($partnerUser) {
+                return $partnerUser->partnerProfile;
+            }
+        }
+        
+        // Если relations не загружены, но есть user_id, пытаемся загрузить через отношение
+        // Это может вызвать N+1 проблему, но работает как fallback
+        if (!$this->relationLoaded('partnerUser') && $this->user_id) {
+            $partnerUser = $this->partnerUser;
+            if ($partnerUser) {
+                return $partnerUser->partnerProfile;
+            }
+        }
+        
+        return null;
     }
 
     public function simulator(): BelongsTo
