@@ -57,19 +57,20 @@ const viewTeam = (application) => {
 </script>
 
 <template>
-    <div class="space-y-6">
+    <div class="space-y-4 sm:space-y-6">
         <Head title="Мои кейсы" />
         
         <!-- Header with gradient -->
         <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-xl shadow-lg overflow-hidden">
-            <div class="px-6 py-8">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h1 class="text-3xl font-bold text-white mb-2">Мои кейсы</h1>
-                        <p class="text-indigo-100">Управление вашими заявками и активными проектами</p>
+            <div class="px-4 py-6 sm:px-6 sm:py-8">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div class="flex-1 min-w-0">
+                        <h1 class="text-2xl sm:text-3xl font-bold text-white mb-2">Мои кейсы</h1>
+                        <p class="text-sm sm:text-base text-indigo-100">Управление вашими заявками и активными проектами</p>
                     </div>
                     <Button 
                         variant="white-outline" 
+                        class="w-full sm:w-auto"
                         @click="router.visit(route('student.cases.index'))"
                     >
                         <i class="pi pi-search mr-2"></i>
@@ -81,68 +82,70 @@ const viewTeam = (application) => {
 
         <!-- Tabs -->
         <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-            <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
-                <nav class="flex space-x-1">
-                    <button
-                        v-for="tab in tabs"
-                        :key="tab.key"
-                        @click="activeTab = tab.key"
-                        :class="[
-                            'flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all',
-                            activeTab === tab.key
-                                ? tab.activeClass + ' shadow-sm'
-                                : 'text-gray-600 hover:bg-gray-200'
-                        ]"
-                    >
-                        <i :class="['pi', tab.icon]"></i>
-                        <span>{{ tab.label }}</span>
-                        <span
-                            v-if="tab.count > 0"
+            <div class="px-4 py-3 sm:px-6 sm:py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                <nav class="flex space-x-1 overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 scrollbar-hide">
+                    <div class="flex flex-nowrap space-x-1 min-w-max sm:min-w-0">
+                        <button
+                            v-for="tab in tabs"
+                            :key="tab.key"
+                            @click="activeTab = tab.key"
                             :class="[
-                                'ml-1 py-0.5 px-2 rounded-full text-xs font-semibold',
+                                'flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 rounded-lg font-medium text-xs sm:text-sm transition-all whitespace-nowrap',
                                 activeTab === tab.key
-                                    ? 'bg-white/20 text-white'
-                                    : 'bg-gray-300 text-gray-700'
+                                    ? tab.activeClass + ' shadow-sm'
+                                    : 'text-gray-600 hover:bg-gray-200'
                             ]"
                         >
-                            {{ tab.count }}
-                        </span>
-                    </button>
+                            <i :class="['pi', tab.icon, 'text-sm sm:text-base']"></i>
+                            <span>{{ tab.label }}</span>
+                            <span
+                                v-if="tab.count > 0"
+                                :class="[
+                                    'ml-1 py-0.5 px-1.5 sm:px-2 rounded-full text-xs font-semibold',
+                                    activeTab === tab.key
+                                        ? 'bg-white/20 text-white'
+                                        : 'bg-gray-300 text-gray-700'
+                                ]"
+                            >
+                                {{ tab.count }}
+                            </span>
+                        </button>
+                    </div>
                 </nav>
             </div>
 
             <!-- Current Cases -->
-            <div v-if="activeTab === 'current'" class="p-6">
-                <div v-if="!cases?.current || cases.current.length === 0" class="text-center py-12">
-                    <i class="pi pi-briefcase text-4xl text-gray-400 mb-4"></i>
-                    <p class="text-gray-500 mb-4">У вас пока нет активных кейсов</p>
+            <div v-if="activeTab === 'current'" class="p-4 sm:p-6">
+                <div v-if="!cases?.current || cases.current.length === 0" class="text-center py-8 sm:py-12">
+                    <i class="pi pi-briefcase text-3xl sm:text-4xl text-gray-400 mb-4"></i>
+                    <p class="text-sm sm:text-base text-gray-500 mb-4">У вас пока нет активных кейсов</p>
                     <Button variant="primary" @click="router.visit(route('student.cases.index'))">
                         <i class="pi pi-search mr-2"></i>
                         Найти кейс
                     </Button>
                 </div>
-                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     <div
                         v-for="application in cases.current"
                         :key="application.id"
                         class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col h-full"
                     >
-                        <div class="p-6 flex flex-col h-full">
-                            <div class="space-y-4">
+                        <div class="p-4 sm:p-6 flex flex-col h-full">
+                            <div class="space-y-3 sm:space-y-4">
                                 <div>
-                                    <h3 class="text-xl font-bold text-gray-900 mb-2 line-clamp-2">{{ application.case.title }}</h3>
-                                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                                    <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2 line-clamp-2">{{ application.case.title }}</h3>
+                                    <div class="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
                                         <i class="pi pi-building"></i>
                                         <span class="truncate">{{ application.case.partner?.company_name || application.case.partnerUser?.name || 'Не указан' }}</span>
                                     </div>
                                 </div>
 
                                 <div class="flex items-center gap-2 flex-wrap">
-                                    <span :class="[statusColors.accepted, 'border', 'inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold']">
+                                    <span :class="[statusColors.accepted, 'border', 'inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold']">
                                         <i class="pi pi-check-circle mr-1"></i>
                                         Активен
                                     </span>
-                                    <Badge variant="secondary" class="border border-gray-200">
+                                    <Badge variant="secondary" class="border border-gray-200 text-xs sm:text-sm">
                                         <i :class="[application.is_leader ? 'pi pi-star' : 'pi pi-users', 'mr-1']"></i>
                                         {{ roleText(application.is_leader) }}
                                     </Badge>
@@ -150,7 +153,7 @@ const viewTeam = (application) => {
                             </div>
 
                             <div class="mt-4 flex-grow flex flex-col justify-end">
-                                <div class="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                                <div class="flex items-center gap-2 text-xs sm:text-sm text-gray-600 mb-2">
                                     <i class="pi pi-calendar"></i>
                                     <span>Подано: {{ formatDate(application.created_at) }}</span>
                                 </div>
@@ -159,19 +162,19 @@ const viewTeam = (application) => {
                                         <Button
                                             variant="primary"
                                             size="sm"
-                                            class="flex-1"
+                                            class="flex-1 text-xs sm:text-sm"
                                             @click="viewTeam(application)"
                                         >
-                                            <i class="pi pi-users mr-2"></i>
+                                            <i class="pi pi-users mr-1 sm:mr-2"></i>
                                             Команда
                                         </Button>
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            class="flex-1"
+                                            class="flex-1 text-xs sm:text-sm"
                                             @click="viewCase(application)"
                                         >
-                                            <i class="pi pi-eye mr-2"></i>
+                                            <i class="pi pi-eye mr-1 sm:mr-2"></i>
                                             Кейс
                                         </Button>
                                     </div>
@@ -183,33 +186,33 @@ const viewTeam = (application) => {
             </div>
 
             <!-- Pending Applications -->
-            <div v-if="activeTab === 'pending'" class="p-6">
-                <div v-if="!cases?.pending || cases.pending.length === 0" class="text-center py-12">
-                    <i class="pi pi-clock text-4xl text-gray-400 mb-4"></i>
-                    <p class="text-gray-500">У вас нет ожидающих рассмотрения заявок</p>
+            <div v-if="activeTab === 'pending'" class="p-4 sm:p-6">
+                <div v-if="!cases?.pending || cases.pending.length === 0" class="text-center py-8 sm:py-12">
+                    <i class="pi pi-clock text-3xl sm:text-4xl text-gray-400 mb-4"></i>
+                    <p class="text-sm sm:text-base text-gray-500">У вас нет ожидающих рассмотрения заявок</p>
                 </div>
-                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     <div
                         v-for="application in cases.pending"
                         :key="application.id"
                         class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col h-full"
                     >
-                        <div class="p-6 flex flex-col h-full">
-                            <div class="space-y-4">
+                        <div class="p-4 sm:p-6 flex flex-col h-full">
+                            <div class="space-y-3 sm:space-y-4">
                                 <div>
-                                    <h3 class="text-xl font-bold text-gray-900 mb-2 line-clamp-2">{{ application.case.title }}</h3>
-                                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                                    <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2 line-clamp-2">{{ application.case.title }}</h3>
+                                    <div class="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
                                         <i class="pi pi-building"></i>
                                         <span class="truncate">{{ application.case.partner?.company_name || application.case.partnerUser?.name || 'Не указан' }}</span>
                                     </div>
                                 </div>
 
                                 <div class="flex items-center gap-2 flex-wrap">
-                                    <span :class="[statusColors.pending, 'border', 'inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold']">
+                                    <span :class="[statusColors.pending, 'border', 'inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold']">
                                         <i class="pi pi-clock mr-1"></i>
                                         Ожидает рассмотрения
                                     </span>
-                                    <Badge variant="secondary" class="border border-gray-200">
+                                    <Badge variant="secondary" class="border border-gray-200 text-xs sm:text-sm">
                                         <i :class="[application.is_leader ? 'pi pi-star' : 'pi pi-users', 'mr-1']"></i>
                                         {{ roleText(application.is_leader) }}
                                     </Badge>
@@ -217,7 +220,7 @@ const viewTeam = (application) => {
                             </div>
 
                             <div class="mt-4 flex-grow flex flex-col justify-end">
-                                <div class="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                                <div class="flex items-center gap-2 text-xs sm:text-sm text-gray-600 mb-2">
                                     <i class="pi pi-calendar"></i>
                                     <span>Подано: {{ formatDate(application.created_at) }}</span>
                                 </div>
@@ -225,10 +228,10 @@ const viewTeam = (application) => {
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        class="w-full"
+                                        class="w-full text-xs sm:text-sm"
                                         @click="viewCase(application)"
                                     >
-                                        <i class="pi pi-eye mr-2"></i>
+                                        <i class="pi pi-eye mr-1 sm:mr-2"></i>
                                         Просмотреть кейс
                                     </Button>
                                 </div>
@@ -239,33 +242,33 @@ const viewTeam = (application) => {
             </div>
 
             <!-- Completed Cases -->
-            <div v-if="activeTab === 'completed'" class="p-6">
-                <div v-if="!cases?.completed || cases.completed.length === 0" class="text-center py-12">
-                    <i class="pi pi-check-circle text-4xl text-gray-400 mb-4"></i>
-                    <p class="text-gray-500">У вас пока нет завершенных кейсов</p>
+            <div v-if="activeTab === 'completed'" class="p-4 sm:p-6">
+                <div v-if="!cases?.completed || cases.completed.length === 0" class="text-center py-8 sm:py-12">
+                    <i class="pi pi-check-circle text-3xl sm:text-4xl text-gray-400 mb-4"></i>
+                    <p class="text-sm sm:text-base text-gray-500">У вас пока нет завершенных кейсов</p>
                 </div>
-                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     <div
                         v-for="application in cases.completed"
                         :key="application.id"
                         class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col h-full"
                     >
-                        <div class="p-6 flex flex-col h-full">
-                            <div class="space-y-4">
+                        <div class="p-4 sm:p-6 flex flex-col h-full">
+                            <div class="space-y-3 sm:space-y-4">
                                 <div>
-                                    <h3 class="text-xl font-bold text-gray-900 mb-2 line-clamp-2">{{ application.case.title }}</h3>
-                                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                                    <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2 line-clamp-2">{{ application.case.title }}</h3>
+                                    <div class="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
                                         <i class="pi pi-building"></i>
                                         <span class="truncate">{{ application.case.partner?.company_name || application.case.partnerUser?.name || 'Не указан' }}</span>
                                     </div>
                                 </div>
 
                                 <div class="flex items-center gap-2 flex-wrap">
-                                    <span :class="[statusColors.completed, 'border', 'inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold']">
+                                    <span :class="[statusColors.completed, 'border', 'inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold']">
                                         <i class="pi pi-check-circle mr-1"></i>
                                         Завершен
                                     </span>
-                                    <Badge variant="secondary" class="border border-gray-200">
+                                    <Badge variant="secondary" class="border border-gray-200 text-xs sm:text-sm">
                                         <i :class="[application.is_leader ? 'pi pi-star' : 'pi pi-users', 'mr-1']"></i>
                                         {{ roleText(application.is_leader) }}
                                     </Badge>
@@ -273,7 +276,7 @@ const viewTeam = (application) => {
                             </div>
 
                             <div class="mt-4 flex-grow flex flex-col justify-end">
-                                <div class="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                                <div class="flex items-center gap-2 text-xs sm:text-sm text-gray-600 mb-2">
                                     <i class="pi pi-calendar"></i>
                                     <span>Завершено: {{ formatDate(application.updated_at) }}</span>
                                 </div>
@@ -281,10 +284,10 @@ const viewTeam = (application) => {
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        class="w-full"
+                                        class="w-full text-xs sm:text-sm"
                                         @click="viewCase(application)"
                                     >
-                                        <i class="pi pi-eye mr-2"></i>
+                                        <i class="pi pi-eye mr-1 sm:mr-2"></i>
                                         Просмотреть
                                     </Button>
                                 </div>
@@ -295,49 +298,49 @@ const viewTeam = (application) => {
             </div>
 
             <!-- Rejected Applications -->
-            <div v-if="activeTab === 'rejected'" class="p-6">
-                <div v-if="!cases?.rejected || cases.rejected.length === 0" class="text-center py-12">
-                    <i class="pi pi-times-circle text-4xl text-gray-400 mb-4"></i>
-                    <p class="text-gray-500">У вас нет отклоненных заявок</p>
+            <div v-if="activeTab === 'rejected'" class="p-4 sm:p-6">
+                <div v-if="!cases?.rejected || cases.rejected.length === 0" class="text-center py-8 sm:py-12">
+                    <i class="pi pi-times-circle text-3xl sm:text-4xl text-gray-400 mb-4"></i>
+                    <p class="text-sm sm:text-base text-gray-500">У вас нет отклоненных заявок</p>
                 </div>
-                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     <div
                         v-for="application in cases.rejected"
                         :key="application.id"
                         class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col h-full"
                     >
-                        <div class="p-6 flex flex-col h-full">
-                            <div class="space-y-4">
+                        <div class="p-4 sm:p-6 flex flex-col h-full">
+                            <div class="space-y-3 sm:space-y-4">
                                 <div>
-                                    <h3 class="text-xl font-bold text-gray-900 mb-2 line-clamp-2">{{ application.case.title }}</h3>
-                                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                                    <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2 line-clamp-2">{{ application.case.title }}</h3>
+                                    <div class="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
                                         <i class="pi pi-building"></i>
                                         <span class="truncate">{{ application.case.partner?.company_name || application.case.partnerUser?.name || 'Не указан' }}</span>
                                     </div>
                                 </div>
 
                                 <div class="flex items-center gap-2 flex-wrap">
-                                    <span :class="[statusColors.rejected, 'border', 'inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold']">
+                                    <span :class="[statusColors.rejected, 'border', 'inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold']">
                                         <i class="pi pi-times-circle mr-1"></i>
                                         Отклонена
                                     </span>
-                                    <Badge variant="secondary" class="border border-gray-200">
+                                    <Badge variant="secondary" class="border border-gray-200 text-xs sm:text-sm">
                                         <i :class="[application.is_leader ? 'pi pi-star' : 'pi pi-users', 'mr-1']"></i>
                                         {{ roleText(application.is_leader) }}
                                     </Badge>
                                 </div>
 
-                                <div v-if="application.rejection_reason" class="p-3 bg-red-50 border border-red-200 rounded-lg">
-                                    <p class="text-sm font-medium text-red-800 mb-1 flex items-center gap-2">
+                                <div v-if="application.rejection_reason" class="p-2 sm:p-3 bg-red-50 border border-red-200 rounded-lg">
+                                    <p class="text-xs sm:text-sm font-medium text-red-800 mb-1 flex items-center gap-2">
                                         <i class="pi pi-info-circle"></i>
                                         Причина отклонения:
                                     </p>
-                                    <p class="text-sm text-red-700">{{ application.rejection_reason }}</p>
+                                    <p class="text-xs sm:text-sm text-red-700">{{ application.rejection_reason }}</p>
                                 </div>
                             </div>
 
                             <div class="mt-4 flex-grow flex flex-col justify-end">
-                                <div class="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                                <div class="flex items-center gap-2 text-xs sm:text-sm text-gray-600 mb-2">
                                     <i class="pi pi-calendar"></i>
                                     <span>Отклонено: {{ formatDate(application.updated_at) }}</span>
                                 </div>
@@ -345,10 +348,10 @@ const viewTeam = (application) => {
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        class="w-full"
+                                        class="w-full text-xs sm:text-sm"
                                         @click="viewCase(application)"
                                     >
-                                        <i class="pi pi-eye mr-2"></i>
+                                        <i class="pi pi-eye mr-1 sm:mr-2"></i>
                                         Просмотреть кейс
                                     </Button>
                                 </div>
@@ -367,5 +370,15 @@ const viewTeam = (application) => {
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+
+/* Hide scrollbar for tabs on mobile */
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
 }
 </style>
