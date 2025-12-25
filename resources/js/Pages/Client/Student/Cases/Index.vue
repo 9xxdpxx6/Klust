@@ -1,18 +1,27 @@
 <template>
-    <div class="space-y-6">
-        <Head :title="recommended ? 'Рекомендованные кейсы' : 'Каталог кейсов'" />
+    <MobileContainer :padding="false">
+        <div :class="[
+            isMobile ? 'space-y-4' : 'space-y-6'
+        ]">
+            <Head :title="recommended ? 'Рекомендованные кейсы' : 'Каталог кейсов'" />
             <div>
-                <h1 class="text-3xl font-bold text-text-primary mb-2">
+                <h1 :class="[
+                    'font-bold text-text-primary mb-2',
+                    isMobile ? 'text-2xl' : 'text-3xl'
+                ]">
                     {{ recommended ? 'Рекомендованные кейсы' : 'Каталог кейсов' }}
                 </h1>
-                <p class="text-text-secondary">
+                <p :class="[
+                    'text-text-secondary',
+                    isMobile ? 'text-sm' : ''
+                ]">
                     {{ recommended ? 'Подборка кейсов под ваши навыки' : 'Выберите кейс для подачи заявки' }}
                 </p>
             </div>
 
             <!-- Фильтры -->
             <Card>
-                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 filter-row">
+                <ResponsiveGrid :cols="{ mobile: 1, tablet: 2, desktop: 3, large: 5 }" :class="isMobile ? 'gap-3' : 'gap-4'" class="filter-row">
                     <div class="filter-item">
                         <SearchInput
                             v-model="filters.search"
@@ -71,11 +80,12 @@
                             @update:modelValue="handleFilter"
                         />
                     </div>
-                </div>
+                </ResponsiveGrid>
             </Card>
 
             <!-- Кейсы -->
-            <div v-if="cases.data && cases.data.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div v-if="cases.data && cases.data.length > 0">
+                <ResponsiveGrid :cols="{ mobile: 1, tablet: 2, desktop: 2, large: 3 }" :class="isMobile ? 'gap-4' : 'gap-6'">
                 <StudentCaseCard
                     v-for="caseItem in cases.data"
                     :key="caseItem.id"
@@ -89,16 +99,26 @@
                     @view="() => handleViewCase(caseItem.id)"
                     @apply="() => handleApply(caseItem.id)"
                 />
+                </ResponsiveGrid>
             </div>
 
             <Card v-else>
-                <div class="text-center py-12">
-                    <p class="text-text-muted">Кейсы не найдены</p>
+                <div :class="[
+                    'text-center',
+                    isMobile ? 'py-8' : 'py-12'
+                ]">
+                    <p :class="[
+                        'text-text-muted',
+                        isMobile ? 'text-sm' : ''
+                    ]">Кейсы не найдены</p>
                 </div>
             </Card>
 
             <!-- Пагинация -->
-            <div v-if="cases.meta && cases.meta.last_page > 1" class="flex justify-center">
+            <div v-if="cases.meta && cases.meta.last_page > 1" :class="[
+                'flex justify-center',
+                isMobile ? 'overflow-x-auto' : ''
+            ]">
                 <Paginator
                     :first="(cases.meta.current_page - 1) * cases.meta.per_page"
                     :rows="cases.meta.per_page"
@@ -115,6 +135,7 @@
             @success="handleApplySuccess"
         />
         </div>
+    </MobileContainer>
 </template>
 
 <script setup>
@@ -127,6 +148,9 @@ import StudentCaseCard from '@/Components/StudentCaseCard.vue';
 import ApplyCaseModal from '@/Components/ApplyCaseModal.vue';
 import MultiSelect from 'primevue/multiselect';
 import Paginator from 'primevue/paginator';
+import MobileContainer from '@/Components/Responsive/MobileContainer.vue';
+import ResponsiveGrid from '@/Components/Responsive/ResponsiveGrid.vue';
+import { useResponsive } from '@/Composables/useResponsive';
 import { routeExists } from '@/Utils/routes';
 import { route } from 'ziggy-js';
 
@@ -183,6 +207,8 @@ const filters = ref({
 });
 
 const listRouteName = computed(() => (props.recommended ? 'student.cases.recommended' : 'student.cases.index'));
+
+const { isMobile } = useResponsive();
 
 const showApplyModal = ref(false);
 const selectedCase = ref(null);
@@ -318,5 +344,149 @@ const handleApplySuccess = () => {
 .filter-item label {
     min-height: 1.25rem;
     margin-bottom: 0.25rem;
+}
+
+/* Адаптивность для пагинации на мобильных */
+@media (max-width: 767px) {
+    :deep(.p-paginator) {
+        font-size: 0.875rem;
+    }
+    
+    :deep(.p-paginator .p-paginator-pages .p-paginator-page) {
+        min-width: 2rem;
+        height: 2rem;
+    }
+    
+    /* Ограничение ширины выпадающего списка MultiSelect на мобильных */
+    :deep(.p-multiselect-panel),
+    :deep(.p-multiselect-overlay) {
+        max-width: calc(100vw - 2rem) !important;
+        width: calc(100vw - 2rem) !important;
+        min-width: auto !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Ограничение контейнера списка */
+    :deep(.p-multiselect-list-container),
+    :deep(div.p-multiselect-list-container) {
+        max-width: 100% !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+    }
+    
+    /* Ограничение самого списка ul */
+    :deep(.p-multiselect-list),
+    :deep(ul.p-multiselect-list),
+    :deep(ul[id^="pv_id_"][id$="_list"]),
+    :deep([role="listbox"].p-multiselect-list),
+    :deep([data-pc-section="list"].p-multiselect-list) {
+        max-width: 100% !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+    }
+    
+    /* Переопределение inline стилей для списка */
+    :deep(ul.p-multiselect-list[style*="width"]),
+    :deep(ul[id^="pv_id_"][id$="_list"][style*="width"]) {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    /* Позиционирование панели на мобильных - привязка к родителю */
+    :deep(.p-multiselect) {
+        position: relative;
+    }
+    
+    /* Фиксированное позиционирование панели на мобильных - все состояния */
+    :deep(.p-multiselect-panel.p-connected-overlay),
+    :deep(.p-multiselect-panel.p-connected-overlay-enter),
+    :deep(.p-multiselect-panel.p-connected-overlay-enter-active),
+    :deep(.p-multiselect-panel.p-connected-overlay-enter-done),
+    :deep(.p-multiselect-panel[data-pc-section="root"]),
+    :deep(.p-multiselect-panel),
+    :deep(.p-multiselect-overlay.p-connected-overlay),
+    :deep(.p-multiselect-overlay.p-connected-overlay-enter),
+    :deep(.p-multiselect-overlay.p-connected-overlay-enter-active),
+    :deep(.p-multiselect-overlay.p-connected-overlay-enter-done) {
+        position: fixed !important;
+        left: 1rem !important;
+        right: 1rem !important;
+        width: calc(100vw - 2rem) !important;
+        max-width: calc(100vw - 2rem) !important;
+        min-width: auto !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Переопределение inline стилей PrimeVue для ширины */
+    :deep(.p-multiselect-panel[style*="width"]),
+    :deep(.p-multiselect-overlay[style*="width"]) {
+        width: calc(100vw - 2rem) !important;
+        max-width: calc(100vw - 2rem) !important;
+    }
+    
+    /* Дополнительная защита - ограничение через родительский контейнер */
+    .filter-item {
+        max-width: 100%;
+        overflow: visible;
+    }
+    
+    /* Перенос длинных названий в опциях MultiSelect */
+    :deep(.p-multiselect-panel .p-multiselect-item) {
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        line-height: 1.5 !important;
+        padding: 0.75rem !important;
+    }
+    
+    :deep(.p-multiselect-panel .p-multiselect-item-label) {
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        display: block !important;
+        line-height: 1.5 !important;
+    }
+    
+    /* Предотвращение горизонтальной прокрутки */
+    :deep(.p-multiselect-panel .p-multiselect-items-wrapper) {
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        max-height: 50vh !important;
+    }
+    
+    /* Ограничение ширины контейнера фильтров */
+    .filter-row {
+        overflow-x: hidden !important;
+        max-width: 100% !important;
+    }
+    
+    /* Ограничение ширины самого поля MultiSelect */
+    :deep(.p-multiselect) {
+        max-width: 100% !important;
+        width: 100% !important;
+        position: relative;
+    }
+    
+    /* Дополнительное ограничение для всех возможных селекторов панели */
+    :deep([data-pc-section="root"].p-multiselect-panel),
+    :deep(.p-component.p-multiselect-panel),
+    :deep(.p-multiselect-panel.p-component) {
+        max-width: calc(100vw - 2rem) !important;
+        width: calc(100vw - 2rem) !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Обрезка выбранных значений в поле (чтобы не растягивало) */
+    :deep(.p-multiselect-label-container),
+    :deep(.p-multiselect-token) {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
 }
 </style>

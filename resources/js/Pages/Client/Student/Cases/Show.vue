@@ -59,64 +59,64 @@ const formatDate = (dateString) => {
 
 <template>
     <Head :title="`Кейс: ${caseData.title}`" />
-    <div class="space-y-6">
-        <div class="max-w-5xl mx-auto px-4 py-8">
+    <div class="space-y-4 sm:space-y-6">
+        <div class="max-w-5xl mx-auto px-4 py-6 sm:py-8">
             <!-- Breadcrumbs -->
-            <nav class="mb-6 text-sm">
+            <nav class="mb-4 sm:mb-6 text-xs sm:text-sm">
                 <a :href="route('student.cases.index')" class="text-blue-600 hover:underline">Каталог кейсов</a>
                 <span class="mx-2">/</span>
-                <span class="text-gray-600">{{ caseData.title }}</span>
+                <span class="text-gray-600 truncate block sm:inline">{{ caseData.title }}</span>
             </nav>
 
             <!-- Заголовок с градиентом -->
-            <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-xl shadow-lg overflow-hidden mb-6">
-                <div class="px-6 py-8">
-                    <div class="flex items-start justify-between">
-                        <div class="flex-1">
-                            <h1 class="text-3xl font-bold text-white mb-4">{{ caseData.title }}</h1>
-                            <div class="flex items-center gap-4">
+            <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-xl shadow-lg overflow-hidden mb-4 sm:mb-6">
+                <div class="px-4 py-6 sm:px-6 sm:py-8">
+                    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                        <div class="flex-1 min-w-0">
+                            <h1 class="text-2xl sm:text-3xl font-bold text-white mb-4">{{ caseData.title }}</h1>
+                            <div class="flex items-center gap-3 sm:gap-4">
                                 <img
                                     v-if="caseData.partner?.logo"
                                     :src="caseData.partner.logo"
                                     :alt="caseData.partner?.company_name"
-                                    class="w-16 h-16 rounded-lg object-cover bg-white p-1"
+                                    class="w-12 h-12 sm:w-16 sm:h-16 rounded-lg object-cover bg-white p-1 flex-shrink-0"
                                 />
-                                <div class="w-16 h-16 bg-white/20 rounded-lg flex items-center justify-center" v-else>
-                                    <i class="pi pi-building text-white text-2xl"></i>
+                                <div class="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0" v-else>
+                                    <i class="pi pi-building text-white text-xl sm:text-2xl"></i>
                                 </div>
-                                <div class="min-w-0">
-                                    <p class="text-sm text-indigo-100">Партнер</p>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-xs sm:text-sm text-indigo-100">Партнер</p>
                                     <Link
                                         v-if="caseData.user_id && (caseData.partner?.company_name || caseData.partnerUser?.name) && (caseData.partner?.company_name || caseData.partnerUser?.name) !== 'Не указан'"
                                         :href="route('partners.show', caseData.user_id)"
-                                        class="text-lg font-semibold text-white truncate hover:underline block"
+                                        class="text-base sm:text-lg font-semibold text-white truncate hover:underline block"
                                     >
                                         {{ caseData.partner?.company_name || caseData.partnerUser?.name || 'Не указан' }}
                                     </Link>
-                                    <p v-else class="text-lg font-semibold text-white truncate">
+                                    <p v-else class="text-base sm:text-lg font-semibold text-white truncate">
                                         {{ caseData.partner?.company_name || caseData.partnerUser?.name || 'Не указан' }}
                                     </p>
                                 </div>
                             </div>
                         </div>
-                        <div v-if="caseData.status === 'active'" class="px-4 py-2 bg-green-500 rounded-lg">
-                            <span class="text-white font-semibold">Активен</span>
+                        <div v-if="caseData.status === 'active'" class="px-3 py-2 sm:px-4 bg-green-500 rounded-lg self-start sm:self-auto">
+                            <span class="text-white font-semibold text-sm sm:text-base">Активен</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Application Status -->
-            <div v-if="applicationStatus" class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden mb-6">
-                <div class="px-6 py-4 bg-gradient-to-r from-amber-50 to-amber-100 border-b border-amber-200">
-                    <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+            <div v-if="applicationStatus" class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden mb-4 sm:mb-6">
+                <div class="px-4 py-3 sm:px-6 sm:py-4 bg-gradient-to-r from-amber-50 to-amber-100 border-b border-amber-200">
+                    <h2 class="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
                         <i class="pi pi-info-circle text-amber-600"></i>
                         Статус заявки: {{ statusText }}
                     </h2>
                 </div>
-                <div class="p-6">
-                    <div class="flex items-start justify-between">
-                        <div class="flex-1">
+                <div class="p-4 sm:p-6">
+                    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                        <div class="flex-1 min-w-0">
                             <p v-if="applicationStatus.status?.name === 'pending'" class="text-sm text-gray-700 mb-2">
                                 Ваша заявка ожидает рассмотрения партнером
                             </p>
@@ -133,10 +133,11 @@ const formatDate = (dateString) => {
                                 <strong>Комментарий:</strong> {{ applicationStatus.partner_comment }}
                             </p>
                         </div>
-                        <div class="flex gap-2 ml-4">
+                        <div class="flex flex-col sm:flex-row gap-2 sm:ml-4 w-full sm:w-auto">
                             <Button
                                 v-if="applicationStatus.status?.name === 'accepted'"
                                 variant="primary"
+                                class="w-full sm:w-auto"
                                 @click="router.visit(route('student.team.show', applicationStatus.id))"
                             >
                                 Перейти к команде
@@ -144,6 +145,7 @@ const formatDate = (dateString) => {
                             <Button
                                 v-if="applicationStatus.status?.name === 'pending'"
                                 variant="danger"
+                                class="w-full sm:w-auto"
                                 @click="withdrawApplication"
                             >
                                 Отозвать заявку
@@ -154,51 +156,51 @@ const formatDate = (dateString) => {
             </div>
 
             <!-- Application Status History -->
-            <div v-if="applicationStatus && applicationStatus.statusHistory" class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden mb-6">
-                <div class="px-6 py-4 bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200">
-                    <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+            <div v-if="applicationStatus && applicationStatus.statusHistory" class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden mb-4 sm:mb-6">
+                <div class="px-4 py-3 sm:px-6 sm:py-4 bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200">
+                    <h2 class="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
                         <i class="pi pi-clock text-blue-600"></i>
                         История статуса заявки
                     </h2>
                 </div>
-                <div class="p-6">
+                <div class="p-4 sm:p-6">
                     <ApplicationStatusTimeline :history="applicationStatus.statusHistory" />
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                 <!-- Main Content -->
-                <div class="lg:col-span-2 space-y-6">
+                <div class="lg:col-span-2 space-y-4 sm:space-y-6">
                     <!-- Description -->
                     <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-                        <div class="px-6 py-4 bg-gradient-to-r from-indigo-50 to-indigo-100 border-b border-indigo-200">
-                            <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <div class="px-4 py-3 sm:px-6 sm:py-4 bg-gradient-to-r from-indigo-50 to-indigo-100 border-b border-indigo-200">
+                            <h2 class="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
                                 <i class="pi pi-file-edit text-indigo-600"></i>
                                 Описание кейса
                             </h2>
                         </div>
-                        <div class="p-6">
-                            <div class="prose max-w-none" v-html="caseData.description"></div>
+                        <div class="p-4 sm:p-6">
+                            <div class="prose prose-sm sm:prose max-w-none" v-html="caseData.description"></div>
                         </div>
                     </div>
 
                     <!-- Requirements -->
                     <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-                        <div class="px-6 py-4 bg-gradient-to-r from-green-50 to-green-100 border-b border-green-200">
-                            <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <div class="px-4 py-3 sm:px-6 sm:py-4 bg-gradient-to-r from-green-50 to-green-100 border-b border-green-200">
+                            <h2 class="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
                                 <i class="pi pi-list text-green-600"></i>
                                 Требования
                             </h2>
                         </div>
-                        <div class="p-6">
-                            <div class="space-y-4">
-                                <div class="p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200">
-                                    <p class="text-sm text-gray-600 mb-1">Размер команды</p>
-                                    <p class="text-lg font-semibold text-gray-900">{{ caseData.required_team_size }} человек</p>
+                        <div class="p-4 sm:p-6">
+                            <div class="space-y-3 sm:space-y-4">
+                                <div class="p-3 sm:p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200">
+                                    <p class="text-xs sm:text-sm text-gray-600 mb-1">Размер команды</p>
+                                    <p class="text-base sm:text-lg font-semibold text-gray-900">{{ caseData.required_team_size }} человек</p>
                                 </div>
-                                <div v-if="caseData.deadline" class="p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200">
-                                    <p class="text-sm text-gray-600 mb-1">Дедлайн</p>
-                                    <p class="text-lg font-semibold text-gray-900">{{ formatDate(caseData.deadline) }}</p>
+                                <div v-if="caseData.deadline" class="p-3 sm:p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200">
+                                    <p class="text-xs sm:text-sm text-gray-600 mb-1">Дедлайн</p>
+                                    <p class="text-base sm:text-lg font-semibold text-gray-900">{{ formatDate(caseData.deadline) }}</p>
                                 </div>
                             </div>
                         </div>
@@ -206,21 +208,21 @@ const formatDate = (dateString) => {
                 </div>
 
                 <!-- Sidebar -->
-                <div class="space-y-6">
+                <div class="space-y-4 sm:space-y-6">
                     <!-- Required Skills -->
                     <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-                        <div class="px-6 py-4 bg-gradient-to-r from-purple-50 to-purple-100 border-b border-purple-200">
-                            <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <div class="px-4 py-3 sm:px-6 sm:py-4 bg-gradient-to-r from-purple-50 to-purple-100 border-b border-purple-200">
+                            <h3 class="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
                                 <i class="pi pi-star text-purple-600"></i>
                                 Требуемые навыки
                             </h3>
                         </div>
-                        <div class="p-6">
+                        <div class="p-4 sm:p-6">
                             <div class="flex flex-wrap gap-2">
                                 <span
                                     v-for="skill in caseData.skills"
                                     :key="skill.id"
-                                    class="px-3 py-1 bg-purple-100 text-purple-800 text-sm font-semibold rounded-lg border border-purple-200"
+                                    class="px-2 sm:px-3 py-1 bg-purple-100 text-purple-800 text-xs sm:text-sm font-semibold rounded-lg border border-purple-200"
                                 >
                                     {{ skill.name }}
                                 </span>
@@ -230,7 +232,7 @@ const formatDate = (dateString) => {
 
                     <!-- Apply Button -->
                     <div v-if="canApply" class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-                        <div class="p-6">
+                        <div class="p-4 sm:p-6">
                             <Button
                                 variant="primary"
                                 class="w-full"

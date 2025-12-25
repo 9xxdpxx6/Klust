@@ -8,6 +8,10 @@ const props = defineProps({
         type: Array,
         required: true
     },
+    averageLevel: {
+        type: Number,
+        default: 0
+    },
     progressHistory: {
         type: Array,
         default: () => []
@@ -114,10 +118,6 @@ const formatDate = (dateString) => {
 
 const totalSkills = computed(() => props.skills.length)
 const totalPoints = computed(() => props.skills.reduce((sum, skill) => sum + skill.points, 0))
-const averageLevel = computed(() => {
-    if (props.skills.length === 0) return 0
-    return (props.skills.reduce((sum, skill) => sum + skill.level, 0) / props.skills.length).toFixed(1)
-})
 
 // Используем максимальный уровень из всей системы (приходит с бэкенда)
 const maxLevelInSystem = computed(() => {
@@ -189,134 +189,148 @@ const getLevelRanges = computed(() => {
 })
 </script>
 
+<style scoped>
+/* Hide scrollbar for sort buttons on mobile */
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+</style>
+
 <template>
     <Head title="Мои навыки" />
-    <div class="space-y-6">
+    <div class="space-y-4 sm:space-y-6">
         <!-- Заголовок с градиентом -->
         <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-xl shadow-lg overflow-hidden">
-            <div class="px-6 py-8">
-                <h1 class="text-3xl font-bold text-white mb-2">Мои навыки</h1>
-                <p class="text-indigo-100">Ваш прогресс и достижения по навыкам</p>
+            <div class="px-4 py-6 sm:px-6 sm:py-8">
+                <h1 class="text-2xl sm:text-3xl font-bold text-white mb-2">Мои навыки</h1>
+                <p class="text-sm sm:text-base text-indigo-100">Ваш прогресс и достижения по навыкам</p>
             </div>
         </div>
 
         <!-- Stats Overview -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 shadow-md border border-blue-200/50 hover:shadow-lg transition-all group">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 sm:p-6 shadow-md border border-blue-200/50 hover:shadow-lg transition-all group">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-blue-600 mb-1">Всего навыков</p>
-                        <p class="text-3xl font-bold text-blue-900">{{ totalSkills }}</p>
+                        <p class="text-xs sm:text-sm font-medium text-blue-600 mb-1">Всего навыков</p>
+                        <p class="text-2xl sm:text-3xl font-bold text-blue-900">{{ totalSkills }}</p>
                     </div>
-                    <div class="w-12 h-12 flex items-center justify-center bg-blue-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
-                        <i class="pi pi-book text-white text-xl"></i>
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-blue-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
+                        <i class="pi pi-book text-white text-lg sm:text-xl"></i>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 shadow-md border border-green-200/50 hover:shadow-lg transition-all group">
+            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 sm:p-6 shadow-md border border-green-200/50 hover:shadow-lg transition-all group">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-green-600 mb-1">Всего очков</p>
-                        <p class="text-3xl font-bold text-green-900">{{ totalPoints }}</p>
+                        <p class="text-xs sm:text-sm font-medium text-green-600 mb-1">Всего очков</p>
+                        <p class="text-2xl sm:text-3xl font-bold text-green-900">{{ totalPoints }}</p>
                     </div>
-                    <div class="w-12 h-12 flex items-center justify-center bg-green-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
-                        <i class="pi pi-star text-white text-xl"></i>
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-green-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
+                        <i class="pi pi-star text-white text-lg sm:text-xl"></i>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 shadow-md border border-purple-200/50 hover:shadow-lg transition-all group">
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 sm:p-6 shadow-md border border-purple-200/50 hover:shadow-lg transition-all group">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-purple-600 mb-1">Средний уровень</p>
-                        <p class="text-3xl font-bold text-purple-900">{{ averageLevel }}</p>
+                        <p class="text-xs sm:text-sm font-medium text-purple-600 mb-1">Средний уровень</p>
+                        <p class="text-2xl sm:text-3xl font-bold text-purple-900">{{ averageLevel }}</p>
                     </div>
-                    <div class="w-12 h-12 flex items-center justify-center bg-purple-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
-                        <i class="pi pi-chart-line text-white text-xl"></i>
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-purple-500 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
+                        <i class="pi pi-chart-line text-white text-lg sm:text-xl"></i>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             <!-- Skills List -->
             <div class="lg:col-span-2">
                 <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
                     <!-- Header with Sort Controls -->
-                    <div class="px-6 py-4 bg-gradient-to-r from-amber-50 to-amber-100 border-b border-amber-200">
-                        <div class="flex items-center justify-between flex-wrap gap-4">
-                            <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <div class="px-4 py-3 sm:px-6 sm:py-4 bg-gradient-to-r from-amber-50 to-amber-100 border-b border-amber-200">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                            <h2 class="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
                                 <i class="pi pi-list text-amber-600"></i>
                                 Список навыков
                             </h2>
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-2 overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 scrollbar-hide">
+                                <div class="flex flex-nowrap gap-2 min-w-max sm:min-w-0">
                                 <span class="text-sm font-medium text-gray-700">Сортировать:</span>
-                                <button
-                                    @click="toggleSort('level')"
-                                    :class="[
-                                        'px-3 py-1.5 rounded-lg text-sm font-medium transition-all',
-                                        sortBy === 'level'
-                                            ? 'bg-amber-500 text-white shadow-md'
-                                            : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
-                                    ]"
-                                >
-                                    <i class="pi pi-sort-amount-down mr-1"></i>
-                                    Уровень {{ sortBy === 'level' ? (sortOrder === 'desc' ? '↓' : '↑') : '' }}
-                                </button>
-                                <button
-                                    @click="toggleSort('points')"
-                                    :class="[
-                                        'px-3 py-1.5 rounded-lg text-sm font-medium transition-all',
-                                        sortBy === 'points'
-                                            ? 'bg-amber-500 text-white shadow-md'
-                                            : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
-                                    ]"
-                                >
-                                    <i class="pi pi-star mr-1"></i>
-                                    Очки {{ sortBy === 'points' ? (sortOrder === 'desc' ? '↓' : '↑') : '' }}
-                                </button>
-                                <button
-                                    @click="toggleSort('name')"
-                                    :class="[
-                                        'px-3 py-1.5 rounded-lg text-sm font-medium transition-all',
-                                        sortBy === 'name'
-                                            ? 'bg-amber-500 text-white shadow-md'
-                                            : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
-                                    ]"
-                                >
-                                    <i class="pi pi-sort-alpha-down mr-1"></i>
-                                    Название {{ sortBy === 'name' ? (sortOrder === 'desc' ? '↓' : '↑') : '' }}
-                                </button>
+                                    <button
+                                        @click="toggleSort('level')"
+                                        :class="[
+                                            'px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap',
+                                            sortBy === 'level'
+                                                ? 'bg-amber-500 text-white shadow-md'
+                                                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                                        ]"
+                                    >
+                                        <i class="pi pi-sort-amount-down mr-1"></i>
+                                        Уровень {{ sortBy === 'level' ? (sortOrder === 'desc' ? '↓' : '↑') : '' }}
+                                    </button>
+                                    <button
+                                        @click="toggleSort('points')"
+                                        :class="[
+                                            'px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap',
+                                            sortBy === 'points'
+                                                ? 'bg-amber-500 text-white shadow-md'
+                                                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                                        ]"
+                                    >
+                                        <i class="pi pi-star mr-1"></i>
+                                        Очки {{ sortBy === 'points' ? (sortOrder === 'desc' ? '↓' : '↑') : '' }}
+                                    </button>
+                                    <button
+                                        @click="toggleSort('name')"
+                                        :class="[
+                                            'px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap',
+                                            sortBy === 'name'
+                                                ? 'bg-amber-500 text-white shadow-md'
+                                                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                                        ]"
+                                    >
+                                        <i class="pi pi-sort-alpha-down mr-1"></i>
+                                        Название {{ sortBy === 'name' ? (sortOrder === 'desc' ? '↓' : '↑') : '' }}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Skills Content -->
-                    <div class="p-6">
-                        <div v-if="sortedSkills.length === 0" class="text-center py-12">
-                            <i class="pi pi-book text-4xl text-gray-300 mb-4"></i>
-                            <p class="text-gray-500 font-medium">У вас пока нет навыков</p>
-                            <p class="text-sm text-gray-400 mt-2">
+                    <div class="p-4 sm:p-6">
+                        <div v-if="sortedSkills.length === 0" class="text-center py-8 sm:py-12">
+                            <i class="pi pi-book text-3xl sm:text-4xl text-gray-300 mb-4"></i>
+                            <p class="text-sm sm:text-base text-gray-500 font-medium">У вас пока нет навыков</p>
+                            <p class="text-xs sm:text-sm text-gray-400 mt-2">
                                 Начните проходить симуляторы и работать над кейсами, чтобы получить навыки!
                             </p>
                         </div>
-                        <div v-else class="space-y-4">
+                        <div v-else class="space-y-3 sm:space-y-4">
                             <div
                                 v-for="skill in sortedSkills"
                                 :key="skill.id"
-                                class="p-5 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-lg hover:shadow-lg transition-all hover:border-amber-200"
+                                class="p-4 sm:p-5 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-lg hover:shadow-lg transition-all hover:border-amber-200"
                             >
-                                <div class="flex items-start justify-between mb-4">
-                                    <div class="flex-1">
-                                        <h3 class="text-lg font-bold text-gray-900 mb-1">{{ skill.name }}</h3>
-                                        <p v-if="skill.description" class="text-sm text-gray-600">
+                                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="text-base sm:text-lg font-bold text-gray-900 mb-1">{{ skill.name }}</h3>
+                                        <p v-if="skill.description" class="text-xs sm:text-sm text-gray-600">
                                             {{ skill.description }}
                                         </p>
                                     </div>
                                     <span
                                         :class="[
-                                            'px-4 py-1.5 rounded-lg text-sm font-semibold border',
+                                            'px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold border whitespace-nowrap',
                                             getLevelBadgeClass(skill.level, skill.max_level)
                                         ]"
                                     >
@@ -324,13 +338,13 @@ const getLevelRanges = computed(() => {
                                     </span>
                                 </div>
 
-                                <div class="space-y-3">
-                                    <div class="flex justify-between items-center text-sm">
+                                <div class="space-y-2 sm:space-y-3">
+                                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 text-xs sm:text-sm">
                                         <div class="flex items-center gap-2 text-gray-600">
                                             <i class="pi pi-star text-amber-500"></i>
                                             <span class="font-medium">{{ skill.points }} очков</span>
                                         </div>
-                                        <div>
+                                        <div class="text-left sm:text-right">
                                             <span v-if="skill.progress_to_next_level.next_level" class="text-gray-600">
                                                 До уровня {{ skill.progress_to_next_level.next_level }}:
                                                 <span class="font-semibold text-gray-900">{{ skill.progress_to_next_level.points_needed }}</span> очков
@@ -355,26 +369,26 @@ const getLevelRanges = computed(() => {
             <!-- Progress History -->
             <div>
                 <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-                    <div class="px-6 py-4 bg-gradient-to-r from-indigo-50 to-indigo-100 border-b border-indigo-200">
-                        <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <div class="px-4 py-3 sm:px-6 sm:py-4 bg-gradient-to-r from-indigo-50 to-indigo-100 border-b border-indigo-200">
+                        <h2 class="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
                             <i class="pi pi-history text-indigo-600"></i>
                             История прогресса
                         </h2>
                     </div>
-                    <div class="p-6">
-                        <div v-if="progressHistory.length === 0" class="text-center py-8 text-gray-400">
-                            <i class="pi pi-history text-4xl mb-2"></i>
-                            <p class="text-sm">Пока нет истории</p>
+                    <div class="p-4 sm:p-6">
+                        <div v-if="progressHistory.length === 0" class="text-center py-6 sm:py-8 text-gray-400">
+                            <i class="pi pi-history text-3xl sm:text-4xl mb-2"></i>
+                            <p class="text-xs sm:text-sm">Пока нет истории</p>
                         </div>
-                        <div v-else class="space-y-3 max-h-[600px] overflow-y-auto">
+                        <div v-else class="space-y-2 sm:space-y-3 max-h-[400px] sm:max-h-[600px] overflow-y-auto">
                             <div
                                 v-for="log in progressHistory"
                                 :key="log.id"
-                                class="p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200 hover:shadow-md transition-all"
+                                class="p-3 sm:p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200 hover:shadow-md transition-all"
                             >
-                                <div class="flex items-start justify-between mb-2">
-                                    <p class="text-sm font-semibold text-gray-900">{{ log.skill?.name || 'Неизвестный навык' }}</p>
-                                    <span class="px-2.5 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-lg border border-green-200">
+                                <div class="flex items-start justify-between mb-2 gap-2">
+                                    <p class="text-xs sm:text-sm font-semibold text-gray-900 flex-1 min-w-0">{{ log.skill?.name || 'Неизвестный навык' }}</p>
+                                    <span class="px-2 sm:px-2.5 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-lg border border-green-200 whitespace-nowrap flex-shrink-0">
                                         +{{ log.points_earned }}
                                     </span>
                                 </div>
@@ -392,30 +406,30 @@ const getLevelRanges = computed(() => {
 
         <!-- Level Guide -->
         <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-            <div class="px-6 py-4 bg-gradient-to-r from-purple-50 to-purple-100 border-b border-purple-200">
-                <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+            <div class="px-4 py-3 sm:px-6 sm:py-4 bg-gradient-to-r from-purple-50 to-purple-100 border-b border-purple-200">
+                <h3 class="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
                     <i class="pi pi-info-circle text-purple-600"></i>
                     Уровни навыков
                 </h3>
             </div>
-            <div class="p-6">
-                <div class="mb-4 text-sm text-gray-600">
+            <div class="p-4 sm:p-6">
+                <div class="mb-3 sm:mb-4 text-xs sm:text-sm text-gray-600">
                     <p>Максимальный уровень в системе: <span class="font-semibold text-gray-900">{{ maxLevelInSystem }}</span></p>
                     <p class="text-xs text-gray-500 mt-1">Категории рассчитываются относительно максимального уровня навыка</p>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                     <div 
                         v-for="(range, key) in getLevelRanges" 
                         :key="key"
                         :class="[
-                            'text-center p-4 rounded-lg border',
+                            'text-center p-3 sm:p-4 rounded-lg border',
                             `bg-gradient-to-br ${range.bgGradient}`,
                             range.borderColor
                         ]"
                     >
                         <span 
                             :class="[
-                                'inline-block px-4 py-2 rounded-lg border mb-3 text-base font-semibold',
+                                'inline-block px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg border mb-2 sm:mb-3 text-sm sm:text-base font-semibold',
                                 range.badgeBg,
                                 range.badgeText,
                                 range.badgeBorder
@@ -423,7 +437,7 @@ const getLevelRanges = computed(() => {
                         >
                             {{ range.min }}{{ range.min !== range.max ? `-${range.max}` : '' }}
                         </span>
-                        <p class="text-sm font-semibold text-gray-900 mb-1">{{ range.label }}</p>
+                        <p class="text-xs sm:text-sm font-semibold text-gray-900 mb-1">{{ range.label }}</p>
                         <p class="text-xs text-gray-500">
                             {{ range.percentageRange }} от максимума
                         </p>
