@@ -37,12 +37,12 @@
             <template v-for="(link, index) in visibleMobilePages" :key="`mobile-page-${index}-${link.label}`">
                 <div
                     v-if="link.url === null"
-                    class="px-3 py-2 text-sm font-medium text-gray-400 border border-gray-300 rounded-lg cursor-not-allowed flex-shrink-0"
+                    class="mobile-pagination-page px-3 py-2 text-sm font-medium text-gray-400 border border-gray-300 rounded-lg cursor-not-allowed flex-shrink-0"
                     v-html="link.label"
                 />
                 <Link
                     v-else
-                    class="px-3 py-2 text-sm font-medium border border-gray-300 rounded-lg transition-colors min-w-[40px] text-center flex-shrink-0"
+                    class="mobile-pagination-page px-3 py-2 text-sm font-medium border border-gray-300 rounded-lg transition-colors min-w-[40px] text-center flex-shrink-0"
                     :class="{
                         'bg-primary text-white border-primary hover:bg-primary-dark': link.active,
                         'bg-white text-gray-700 hover:bg-gray-50': !link.active
@@ -195,8 +195,8 @@ const visibleMobilePages = computed(() => {
     // На средних экранах (640-768px): по 3 страницы с каждой стороны (всего 7)
     // Используем CSS классы для адаптивности, но в JS вычисляем максимум
     
-    // По умолчанию показываем по 3 страницы с каждой стороны (всего 7)
-    // На маленьких экранах CSS скроет лишние через медиа-запросы
+    // Показываем по 3 страницы с каждой стороны (всего до 7 страниц)
+    // Если экран позволяет, все поместится, иначе будет горизонтальный скролл
     const pagesOnSide = 3
     const start = Math.max(0, currentPageIndex - pagesOnSide)
     const end = Math.min(pageLinks.length, currentPageIndex + pagesOnSide + 1)
@@ -218,3 +218,4 @@ const isLastPageVisible = computed(() => {
     return lastPageLink.value.label === lastVisible.label
 })
 </script>
+
