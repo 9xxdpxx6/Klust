@@ -33,26 +33,41 @@
         <section class="py-16 bg-kubgtu-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="text-center">
-                        <div class="text-5xl font-bold text-primary mb-2">
-                            {{ statistics.total_cases }}
-                        </div>
+                    <div class="text-center border-2 border-blue-500 rounded-lg p-6">
+                        <Link
+                            :href="route('guest.cases')"
+                            class="block hover:opacity-80 transition-opacity"
+                        >
+                            <div class="text-5xl font-bold text-primary mb-2 cursor-pointer hover:text-primary-dark transition-colors">
+                                {{ statistics.total_cases }}
+                            </div>
+                        </Link>
                         <div class="text-lg text-text-secondary">
                             Активных кейсов
                         </div>
                     </div>
-                    <div class="text-center">
-                        <div class="text-5xl font-bold text-primary mb-2">
-                            {{ statistics.total_students }}
-                        </div>
+                    <div class="text-center border-2 border-blue-500 rounded-lg p-6">
+                        <Link
+                            :href="route('guest.students.how-it-works')"
+                            class="block hover:opacity-80 transition-opacity"
+                        >
+                            <div class="text-5xl font-bold text-primary mb-2 cursor-pointer hover:text-primary-dark transition-colors">
+                                {{ statistics.total_students }}
+                            </div>
+                        </Link>
                         <div class="text-lg text-text-secondary">
                             Студентов на платформе
                         </div>
                     </div>
-                    <div class="text-center">
-                        <div class="text-5xl font-bold text-primary mb-2">
-                            {{ statistics.total_partners }}
-                        </div>
+                    <div class="text-center border-2 border-blue-500 rounded-lg p-6">
+                        <Link
+                            :href="route('guest.partners')"
+                            class="block hover:opacity-80 transition-opacity"
+                        >
+                            <div class="text-5xl font-bold text-primary mb-2 cursor-pointer hover:text-primary-dark transition-colors">
+                                {{ statistics.total_partners }}
+                            </div>
+                        </Link>
                         <div class="text-lg text-text-secondary">
                             Партнеров-компаний
                         </div>
