@@ -146,4 +146,20 @@ class GuestController extends Controller
             'exampleCases' => $exampleCases,
         ]);
     }
+
+    /**
+     * Страница о командной работе
+     */
+    public function teamWork(): Response
+    {
+        return Inertia::render('Guest/TeamWork');
+    }
+
+    /**
+     * Страница о достижениях и навыках
+     */
+    public function achievements(): Response
+    {
+        return Inertia::render('Guest/Achievements');
+    }
 }

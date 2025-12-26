@@ -54,6 +54,8 @@ Route::get('/cases/{case}', [GuestController::class, 'show'])->name('guest.cases
 Route::get('/partners', [GuestController::class, 'partners'])->name('guest.partners');
 Route::get('/partners/{partner}', [StudentPartnersController::class, 'show'])->name('partners.show');
 Route::get('/students/how-it-works', [GuestController::class, 'howItWorks'])->name('guest.students.how-it-works');
+Route::get('/team-work', [GuestController::class, 'teamWork'])->name('guest.team-work');
+Route::get('/achievements', [GuestController::class, 'achievements'])->name('guest.achievements');
 
 // Гость (аутентификация)
 Route::middleware('guest')->group(function () {
