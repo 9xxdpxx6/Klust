@@ -60,6 +60,17 @@
                         >
                             Кейсы
                         </Link>
+                        <Link
+                            :href="route('guest.partners')"
+                            :class="[
+                                'text-sm font-medium transition-colors',
+                                isCurrentRoute('guest.partners')
+                                    ? 'text-primary'
+                                    : 'text-text-primary hover:text-primary'
+                            ]"
+                        >
+                            Партнеры
+                        </Link>
                     </nav>
 
                     <!-- Auth Links -->
@@ -142,6 +153,18 @@
                         >
                             Кейсы
                         </Link>
+                        <Link
+                            :href="route('guest.partners')"
+                            :class="[
+                                'text-sm font-medium transition-colors',
+                                isCurrentRoute('guest.partners')
+                                    ? 'text-primary'
+                                    : 'text-text-primary hover:text-primary'
+                            ]"
+                            @click="mobileMenuOpen = false"
+                        >
+                            Партнеры
+                        </Link>
 
                         <!-- Auth Links Mobile -->
                         <div class="pt-4 border-t border-border-light">
@@ -213,6 +236,11 @@
                             <li>
                                 <Link :href="route('guest.cases')" class="text-sm text-text-secondary hover:text-primary transition-colors">
                                     Кейсы
+                                </Link>
+                            </li>
+                            <li>
+                                <Link :href="route('guest.partners')" class="text-sm text-text-secondary hover:text-primary transition-colors">
+                                    Партнеры
                                 </Link>
                             </li>
                         </ul>
