@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\CaseModel;
+use App\Models\User;
 use App\Services\ApplicationService;
 use App\Services\CaseService;
 use Inertia\Inertia;
@@ -104,5 +105,61 @@ class GuestController extends Controller
             'caseData' => $case,
             'applicationStatus' => $applicationStatus,
         ]);
+    }
+
+    /**
+     * Публичный каталог партнеров для гостей
+     */
+    public function partners(): Response
+    {
+        $partners = User::role('partner')
+            ->with(['partnerProfile'])
+            ->whereHas('partnerProfile', function ($query) {
+                $query->where('is_active', true);
+            })
+            ->orderBy('name')
+            ->paginate(12);
+
+        return Inertia::render('Guest/Partners/Index', [
+            'partners' => $partners,
+        ]);
+    }
+
+    /**
+     * Страница "Как это работает" для студентов
+     */
+    public function howItWorks(): Response
+    {
+        // Получить несколько примеров успешных (завершенных) кейсов
+        $exampleCases = CaseModel::with([
+            'partner' => function ($query) {
+                $query->with(['user.partnerProfile']);
+            },
+            'skills'
+        ])
+            ->where('status', 'completed')
+            ->orderBy('updated_at', 'desc')
+            ->limit(3)
+            ->get();
+
+        return Inertia::render('Guest/Students/HowItWorks', [
+            'exampleCases' => $exampleCases,
+        ]);
+    }
+
+    /**
+     * Страница о командной работе
+     */
+    public function teamWork(): Response
+    {
+        return Inertia::render('Guest/TeamWork');
+    }
+
+    /**
+     * Страница о достижениях и навыках
+     */
+    public function achievements(): Response
+    {
+        return Inertia::render('Guest/Achievements');
     }
 }

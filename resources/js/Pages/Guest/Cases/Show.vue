@@ -81,10 +81,18 @@ const formatDate = (dateString) => {
         <Head :title="`Кейс: ${caseData.title}`" />
         <!-- Hero Section -->
         <section :class="[
-            'bg-gradient-to-br from-primary to-primary-dark text-white',
+            'bg-gradient-to-br from-primary to-primary-dark text-white relative overflow-hidden',
             isMobile ? 'py-8' : 'py-16'
         ]">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Watermark Logo - Left -->
+            <div class="absolute left-0 inset-y-0 opacity-10 pointer-events-none flex items-center">
+                <img 
+                    src="/images/assets/letter-p-white.png" 
+                    alt="KubSTU Logo" 
+                    class="h-full w-auto"
+                />
+            </div>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <!-- Breadcrumbs -->
                 <nav :class="[
                     'text-sm mb-4',

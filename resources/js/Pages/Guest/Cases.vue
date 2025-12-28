@@ -2,8 +2,16 @@
     <PublicLayout>
         <Head title="Каталог кейсов" />
         <!-- Hero Section -->
-        <section class="bg-gradient-to-br from-primary to-primary-dark text-white py-16">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section class="bg-gradient-to-br from-primary to-primary-dark text-white py-16 relative overflow-hidden">
+            <!-- Watermark Logo - Left -->
+            <div class="absolute left-0 inset-y-0 opacity-10 pointer-events-none flex items-center">
+                <img 
+                    src="/images/assets/letter-p-white.png" 
+                    alt="KubSTU Logo" 
+                    class="h-full w-auto"
+                />
+            </div>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <h1 class="text-4xl md:text-5xl font-extrabold mb-4">
                     Каталог кейсов
                 </h1>
@@ -69,30 +77,8 @@
                     </div>
 
                     <!-- Pagination -->
-                    <div v-if="cases.last_page > 1" class="flex items-center justify-center gap-2">
-                        <template v-for="page in paginationLinks" :key="page.label">
-                            <Link
-                                v-if="page.url"
-                                :href="page.url"
-                                :class="[
-                                    'px-4 py-2 rounded-lg font-medium transition-colors',
-                                    page.active
-                                        ? 'bg-primary text-white'
-                                        : 'bg-kubgtu-white text-text-primary border border-border-light hover:bg-surface'
-                                ]"
-                            >
-                                <span v-html="page.label"></span>
-                            </Link>
-                            <span
-                                v-else
-                                :class="[
-                                    'px-4 py-2 rounded-lg font-medium transition-colors',
-                                    'bg-gray-100 text-text-tertiary cursor-not-allowed'
-                                ]"
-                            >
-                                <span v-html="page.label"></span>
-                            </span>
-                        </template>
+                    <div v-if="cases.last_page > 1" class="mt-8">
+                        <Pagination :links="paginationLinks" />
                     </div>
                 </div>
             </div>
@@ -124,6 +110,7 @@ import { Head, Link, usePage } from '@inertiajs/vue3'
 import { route } from 'ziggy-js'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 import GuestCaseCard from '@/Components/GuestCaseCard.vue'
+import Pagination from '@/Components/Pagination.vue'
 
 const page = usePage()
 
