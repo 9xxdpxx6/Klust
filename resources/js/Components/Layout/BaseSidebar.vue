@@ -11,13 +11,13 @@
     <div class="base-sidebar__header">
       <slot name="header">
         <div class="flex items-center justify-between">
-          <h2 v-if="!isCollapsed || isMobile" class="text-lg font-bold text-primary">
+          <h2 v-if="!isCollapsed || isMobile" class="text-lg font-bold text-white">
             {{ title }}
           </h2>
           <button
             v-if="showToggle"
             @click="toggleCollapse"
-            class="p-1 rounded hover:bg-surface-hover transition-colors"
+            class="p-1 rounded hover:bg-white/10 transition-colors text-white"
             aria-label="Свернуть/развернуть меню"
           >
             <i :class="isCollapsed ? 'pi pi-angle-right' : 'pi pi-angle-left'"></i>
@@ -69,7 +69,15 @@
     </nav>
     
     <div class="base-sidebar__footer">
-      <slot name="footer" />
+      <slot name="footer">
+        <div v-if="!isCollapsed || isMobile" class="flex justify-center items-center">
+          <img 
+            src="/images/assets/kubgtu-square-logo-white.png" 
+            alt="КубГТУ" 
+            class="base-sidebar__logo"
+          />
+        </div>
+      </slot>
     </div>
   </aside>
 </template>
@@ -144,12 +152,14 @@ const toggleCollapse = () => {
 
 .base-sidebar__item--group {
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--color-kubgtu-white);
   cursor: default;
+  opacity: 0.9;
 }
 
 .base-sidebar__item--group:hover {
   background: transparent;
+  opacity: 1;
 }
 
 .base-sidebar__subitems {
@@ -167,9 +177,20 @@ const toggleCollapse = () => {
 }
 
 .base-sidebar__footer {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid var(--color-border-light);
+  padding: .5rem .5rem;
   margin-top: auto;
+  flex-shrink: 0;
+}
+
+.base-sidebar__logo {
+  max-width: 100%;
+  height: auto;
+  opacity: 10.3;
+  transition: opacity 0.2s;
+}
+
+.base-sidebar__logo:hover {
+  opacity: 1;
 }
 </style>
 
