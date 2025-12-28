@@ -2,8 +2,16 @@
     <PublicLayout>
         <Head title="Главная" />
         <!-- Hero Section -->
-        <section class="bg-gradient-to-br from-primary to-primary-dark text-white">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
+        <section class="bg-gradient-to-br from-primary to-primary-dark text-white relative overflow-hidden">
+            <!-- Watermark Logo - Left -->
+            <div class="absolute left-0 inset-y-0 opacity-10 pointer-events-none flex items-center">
+                <img 
+                    src="/images/assets/letter-p-white.png" 
+                    alt="KubSTU Logo" 
+                    class="h-full w-auto"
+                />
+            </div>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 relative z-10">
                 <div class="text-center">
                     <h1 class="text-4xl md:text-6xl font-extrabold mb-6">
                         Платформа для case-based обучения
@@ -242,8 +250,16 @@
         </section>
 
         <!-- CTA Section -->
-        <section class="py-20 bg-gradient-to-br from-primary to-primary-dark text-white">
-            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <section class="py-20 bg-gradient-to-br from-primary to-primary-dark text-white relative overflow-hidden">
+            <!-- Watermark Logo - Left -->
+            <div class="absolute left-0 inset-y-0 opacity-10 pointer-events-none flex items-center">
+                <img 
+                    src="/images/assets/letter-p-white.png" 
+                    alt="KubSTU Logo" 
+                    class="h-full w-auto"
+                />
+            </div>
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
                 <h2 class="text-3xl md:text-4xl font-bold mb-4">
                     Готовы начать?
                 </h2>

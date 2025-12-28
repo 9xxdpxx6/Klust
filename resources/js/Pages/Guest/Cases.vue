@@ -2,8 +2,16 @@
     <PublicLayout>
         <Head title="Каталог кейсов" />
         <!-- Hero Section -->
-        <section class="bg-gradient-to-br from-primary to-primary-dark text-white py-16">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section class="bg-gradient-to-br from-primary to-primary-dark text-white py-16 relative overflow-hidden">
+            <!-- Watermark Logo - Left -->
+            <div class="absolute left-0 inset-y-0 opacity-10 pointer-events-none flex items-center">
+                <img 
+                    src="/images/assets/letter-p-white.png" 
+                    alt="KubSTU Logo" 
+                    class="h-full w-auto"
+                />
+            </div>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <h1 class="text-4xl md:text-5xl font-extrabold mb-4">
                     Каталог кейсов
                 </h1>

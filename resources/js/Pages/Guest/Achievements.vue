@@ -2,8 +2,16 @@
     <PublicLayout>
         <Head title="Достижения и навыки" />
         <!-- Hero Section -->
-        <section class="bg-gradient-to-br from-primary to-primary-dark text-white py-16">
-            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <section class="bg-gradient-to-br from-primary to-primary-dark text-white py-16 relative overflow-hidden">
+            <!-- Watermark Logo - Left -->
+            <div class="absolute left-0 inset-y-0 opacity-10 pointer-events-none flex items-center">
+                <img 
+                    src="/images/assets/letter-p-white.png" 
+                    alt="KubSTU Logo" 
+                    class="h-full w-auto"
+                />
+            </div>
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
                 <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
                     <svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
@@ -139,8 +147,16 @@
         </section>
 
         <!-- CTA Section -->
-        <section class="py-16 bg-gradient-to-br from-primary to-primary-dark text-white">
-            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <section class="py-16 bg-gradient-to-br from-primary to-primary-dark text-white relative overflow-hidden">
+            <!-- Watermark Logo - Left -->
+            <div class="absolute left-0 inset-y-0 opacity-10 pointer-events-none flex items-center">
+                <img 
+                    src="/images/assets/letter-p-white.png" 
+                    alt="KubSTU Logo" 
+                    class="h-full w-auto"
+                />
+            </div>
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
                 <h2 class="text-3xl md:text-4xl font-bold mb-4">
                     Начните развивать навыки уже сегодня
                 </h2>
