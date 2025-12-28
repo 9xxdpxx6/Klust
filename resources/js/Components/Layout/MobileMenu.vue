@@ -7,8 +7,8 @@
     class="mobile-menu-drawer"
   >
     <template #header>
-      <div class="p-4 border-b border-border-light">
-        <h2 class="text-lg font-bold text-primary">{{ title }}</h2>
+      <div class="p-4 border-b border-white/10 bg-primary">
+        <h2 class="text-lg font-bold text-white">{{ title }}</h2>
       </div>
     </template>
     
@@ -98,10 +98,12 @@ const { isActive } = useNavigation();
 
 :deep(.p-drawer-content) {
   padding: 0;
+  background: var(--color-primary);
 }
 
 .mobile-menu-nav {
   padding: 1rem 0;
+  background: var(--color-primary);
 }
 
 .mobile-menu-item {
@@ -113,22 +115,25 @@ const { isActive } = useNavigation();
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1.5rem;
-  color: var(--color-text-secondary);
+  color: var(--color-kubgtu-white);
   text-decoration: none;
   transition: all 0.2s;
   border-left: 3px solid transparent;
+  opacity: 0.9;
 }
 
 .mobile-menu-link:hover {
-  background: var(--color-surface);
-  color: var(--color-primary);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-kubgtu-white);
+  opacity: 1;
 }
 
 .mobile-menu-link.active {
-  background: var(--color-surface-hover);
-  color: var(--color-primary);
-  border-left-color: var(--color-primary);
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--color-kubgtu-white);
+  border-left-color: var(--color-kubgtu-white);
   font-weight: 600;
+  opacity: 1;
 }
 
 .mobile-menu-icon {
@@ -153,8 +158,9 @@ const { isActive } = useNavigation();
   gap: 0.75rem;
   padding: 0.75rem 1.5rem;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--color-kubgtu-white);
   cursor: default;
+  opacity: 0.9;
 }
 
 .mobile-menu-subitems {
