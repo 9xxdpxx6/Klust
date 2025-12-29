@@ -15,7 +15,7 @@ return new class extends Migration
             $table->text('description');
             $table->foreignId('simulator_id')->nullable()->constrained();
             $table->date('deadline');
-            $table->text('reward');
+            $table->foreignId('difficulty_id')->constrained();
             $table->integer('required_team_size')->default(1);
             $table->enum('status', ['draft', 'active', 'completed', 'archived'])->default('draft');
             $table->timestamps();
