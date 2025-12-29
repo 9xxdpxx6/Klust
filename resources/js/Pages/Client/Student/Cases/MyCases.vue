@@ -1,31 +1,71 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { Head, router } from '@inertiajs/vue3'
+import { Head, router, usePage } from '@inertiajs/vue3'
 import { route } from 'ziggy-js'
 import Card from '@/Components/UI/Card.vue'
 import Badge from '@/Components/UI/Badge.vue'
 import Button from '@/Components/UI/Button.vue'
+import Pagination from '@/Components/Pagination.vue'
 
 const props = defineProps({
     cases: {
         type: Object,
         default: () => ({
-            current: [],
-            pending: [],
-            completed: [],
-            rejected: []
+            current: { data: [], links: [], meta: {} },
+            pending: { data: [], links: [], meta: {} },
+            completed: { data: [], links: [], meta: {} },
+            rejected: { data: [], links: [], meta: {} }
         })
+    },
+    perPage: {
+        type: Number,
+        default: 12
     }
 })
 
+const page = usePage()
 const activeTab = ref('current')
 
+// Получаем текущую вкладку из URL параметра, если есть
+const urlTab = new URLSearchParams(window.location.search).get('tab')
+if (urlTab && ['current', 'pending', 'completed', 'rejected'].includes(urlTab)) {
+    activeTab.value = urlTab
+}
+
 const tabs = computed(() => [
-    { key: 'current', label: 'Текущие', count: props.cases?.current?.length || 0, icon: 'pi-briefcase', activeClass: 'bg-indigo-500 text-white' },
-    { key: 'pending', label: 'Заявки', count: props.cases?.pending?.length || 0, icon: 'pi-clock', activeClass: 'bg-amber-500 text-white' },
-    { key: 'completed', label: 'Завершенные', count: props.cases?.completed?.length || 0, icon: 'pi-check-circle', activeClass: 'bg-green-500 text-white' },
-    { key: 'rejected', label: 'Отклоненные', count: props.cases?.rejected?.length || 0, icon: 'pi-times-circle', activeClass: 'bg-red-500 text-white' }
+    { key: 'current', label: 'Текущие', count: props.cases?.current?.total || 0, icon: 'pi-briefcase', activeClass: 'bg-indigo-500 text-white' },
+    { key: 'pending', label: 'Заявки', count: props.cases?.pending?.total || 0, icon: 'pi-clock', activeClass: 'bg-amber-500 text-white' },
+    { key: 'completed', label: 'Завершенные', count: props.cases?.completed?.total || 0, icon: 'pi-check-circle', activeClass: 'bg-green-500 text-white' },
+    { key: 'rejected', label: 'Отклоненные', count: props.cases?.rejected?.total || 0, icon: 'pi-times-circle', activeClass: 'bg-red-500 text-white' }
 ])
+
+// Получаем данные для текущей вкладки
+const currentTabData = computed(() => {
+    const tab = props.cases?.[activeTab.value]
+    return tab?.data || []
+})
+
+// Получаем ссылки пагинации для текущей вкладки
+const currentTabLinks = computed(() => {
+    const tab = props.cases?.[activeTab.value]
+    return tab?.links || []
+})
+
+// Функция для обработки переключения вкладки
+const switchTab = (tabKey) => {
+    activeTab.value = tabKey
+    // Обновляем URL с параметром вкладки, сохраняя параметры пагинации
+    const params = new URLSearchParams(window.location.search)
+    params.set('tab', tabKey)
+    // Удаляем параметр страницы текущей вкладки, чтобы начать с первой страницы
+    params.delete(`page_${tabKey}`)
+    // Сохраняем параметры пагинации для других вкладок
+    router.visit(route('student.cases.my') + (params.toString() ? '?' + params.toString() : ''), {
+        preserveState: true,
+        preserveScroll: false,
+        only: ['cases', 'perPage']
+    })
+}
 
 const statusColors = {
     pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
@@ -88,7 +128,7 @@ const viewTeam = (application) => {
                         <button
                             v-for="tab in tabs"
                             :key="tab.key"
-                            @click="activeTab = tab.key"
+                            @click="switchTab(tab.key)"
                             :class="[
                                 'flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 rounded-lg font-medium text-xs sm:text-sm transition-all whitespace-nowrap',
                                 activeTab === tab.key
@@ -116,7 +156,7 @@ const viewTeam = (application) => {
 
             <!-- Current Cases -->
             <div v-if="activeTab === 'current'" class="p-4 sm:p-6">
-                <div v-if="!cases?.current || cases.current.length === 0" class="text-center py-8 sm:py-12">
+                <div v-if="!currentTabData || currentTabData.length === 0" class="text-center py-8 sm:py-12">
                     <i class="pi pi-briefcase text-3xl sm:text-4xl text-gray-400 mb-4"></i>
                     <p class="text-sm sm:text-base text-gray-500 mb-4">У вас пока нет активных кейсов</p>
                     <Button variant="primary" @click="router.visit(route('student.cases.index'))">
@@ -124,12 +164,13 @@ const viewTeam = (application) => {
                         Найти кейс
                     </Button>
                 </div>
-                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                    <div
-                        v-for="application in cases.current"
-                        :key="application.id"
-                        class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col h-full"
-                    >
+                <div v-else>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
+                        <div
+                            v-for="application in currentTabData"
+                            :key="application.id"
+                            class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col h-full"
+                        >
                         <div class="p-4 sm:p-6 flex flex-col h-full">
                             <div class="space-y-3 sm:space-y-4">
                                 <div>
@@ -181,22 +222,28 @@ const viewTeam = (application) => {
                                 </div>
                             </div>
                         </div>
+                        </div>
+                    </div>
+                    <!-- Pagination -->
+                    <div v-if="currentTabLinks && currentTabLinks.length > 3" class="mt-6">
+                        <Pagination :links="currentTabLinks" />
                     </div>
                 </div>
             </div>
 
             <!-- Pending Applications -->
             <div v-if="activeTab === 'pending'" class="p-4 sm:p-6">
-                <div v-if="!cases?.pending || cases.pending.length === 0" class="text-center py-8 sm:py-12">
+                <div v-if="!currentTabData || currentTabData.length === 0" class="text-center py-8 sm:py-12">
                     <i class="pi pi-clock text-3xl sm:text-4xl text-gray-400 mb-4"></i>
                     <p class="text-sm sm:text-base text-gray-500">У вас нет ожидающих рассмотрения заявок</p>
                 </div>
-                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                    <div
-                        v-for="application in cases.pending"
-                        :key="application.id"
-                        class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col h-full"
-                    >
+                <div v-else>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
+                        <div
+                            v-for="application in currentTabData"
+                            :key="application.id"
+                            class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col h-full"
+                        >
                         <div class="p-4 sm:p-6 flex flex-col h-full">
                             <div class="space-y-3 sm:space-y-4">
                                 <div>
@@ -237,22 +284,28 @@ const viewTeam = (application) => {
                                 </div>
                             </div>
                         </div>
+                        </div>
+                    </div>
+                    <!-- Pagination -->
+                    <div v-if="currentTabLinks && currentTabLinks.length > 3" class="mt-6">
+                        <Pagination :links="currentTabLinks" />
                     </div>
                 </div>
             </div>
 
             <!-- Completed Cases -->
             <div v-if="activeTab === 'completed'" class="p-4 sm:p-6">
-                <div v-if="!cases?.completed || cases.completed.length === 0" class="text-center py-8 sm:py-12">
+                <div v-if="!currentTabData || currentTabData.length === 0" class="text-center py-8 sm:py-12">
                     <i class="pi pi-check-circle text-3xl sm:text-4xl text-gray-400 mb-4"></i>
                     <p class="text-sm sm:text-base text-gray-500">У вас пока нет завершенных кейсов</p>
                 </div>
-                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                    <div
-                        v-for="application in cases.completed"
-                        :key="application.id"
-                        class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col h-full"
-                    >
+                <div v-else>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
+                        <div
+                            v-for="application in currentTabData"
+                            :key="application.id"
+                            class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col h-full"
+                        >
                         <div class="p-4 sm:p-6 flex flex-col h-full">
                             <div class="space-y-3 sm:space-y-4">
                                 <div>
@@ -293,22 +346,28 @@ const viewTeam = (application) => {
                                 </div>
                             </div>
                         </div>
+                        </div>
+                    </div>
+                    <!-- Pagination -->
+                    <div v-if="currentTabLinks && currentTabLinks.length > 3" class="mt-6">
+                        <Pagination :links="currentTabLinks" />
                     </div>
                 </div>
             </div>
 
             <!-- Rejected Applications -->
             <div v-if="activeTab === 'rejected'" class="p-4 sm:p-6">
-                <div v-if="!cases?.rejected || cases.rejected.length === 0" class="text-center py-8 sm:py-12">
+                <div v-if="!currentTabData || currentTabData.length === 0" class="text-center py-8 sm:py-12">
                     <i class="pi pi-times-circle text-3xl sm:text-4xl text-gray-400 mb-4"></i>
                     <p class="text-sm sm:text-base text-gray-500">У вас нет отклоненных заявок</p>
                 </div>
-                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                    <div
-                        v-for="application in cases.rejected"
-                        :key="application.id"
-                        class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col h-full"
-                    >
+                <div v-else>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
+                        <div
+                            v-for="application in currentTabData"
+                            :key="application.id"
+                            class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col h-full"
+                        >
                         <div class="p-4 sm:p-6 flex flex-col h-full">
                             <div class="space-y-3 sm:space-y-4">
                                 <div>
@@ -357,6 +416,11 @@ const viewTeam = (application) => {
                                 </div>
                             </div>
                         </div>
+                        </div>
+                    </div>
+                    <!-- Pagination -->
+                    <div v-if="currentTabLinks && currentTabLinks.length > 3" class="mt-6">
+                        <Pagination :links="currentTabLinks" />
                     </div>
                 </div>
             </div>
@@ -368,6 +432,7 @@ const viewTeam = (application) => {
 .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
