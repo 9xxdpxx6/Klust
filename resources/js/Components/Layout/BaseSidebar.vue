@@ -11,9 +11,16 @@
     <div class="base-sidebar__header">
       <slot name="header">
         <div class="flex items-center justify-between">
-          <h2 v-if="!isCollapsed || isMobile" class="text-lg font-bold text-white">
-            {{ title }}
-          </h2>
+          <div v-if="!isCollapsed || isMobile" class="flex items-center gap-3">
+            <img 
+              src="/images/assets/kubstu-icon-white.png" 
+              alt="КубГТУ" 
+              class="base-sidebar__header-icon"
+            />
+            <h2 class="text-lg font-bold text-white">
+              {{ title }}
+            </h2>
+          </div>
           <button
             v-if="showToggle"
             @click="toggleCollapse"
@@ -185,12 +192,18 @@ const toggleCollapse = () => {
 .base-sidebar__logo {
   max-width: 100%;
   height: auto;
-  opacity: 10.3;
+  opacity: 0.3;
   transition: opacity 0.2s;
 }
 
 .base-sidebar__logo:hover {
   opacity: 1;
+}
+
+.base-sidebar__header-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
 }
 </style>
 
