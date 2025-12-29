@@ -319,12 +319,12 @@ class CasesController extends Controller
     /**
      * Мои кейсы
      */
-    public function myCases(): Response
+    public function myCases(Request $request): Response
     {
         $user = auth()->user();
 
-        // Получить кейсы по категориям
-        $groupedCases = $this->applicationService->getStudentCasesGrouped($user);
+        // Получить кейсы по категориям с пагинацией
+        $groupedCases = $this->applicationService->getStudentCasesGrouped($user, $request);
 
         return Inertia::render('Client/Student/Cases/MyCases', [
             'cases' => $groupedCases,

@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Filters\CaseApplicationFilter;
 use App\Models\ApplicationStatus;
 use App\Models\CaseApplication;
 use App\Models\CaseApplicationStatusHistory;
 use App\Models\CaseModel;
 use App\Models\CaseTeamMember;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -279,42 +281,98 @@ class ApplicationService
     }
 
     /**
-     * Get student's cases grouped by status
+     * Get student's cases grouped by status with pagination
      */
-    public function getStudentCasesGrouped(User $user): array
+    public function getStudentCasesGrouped(User $user, Request $request): array
     {
         $acceptedStatusId = ApplicationStatus::getIdByName('accepted');
         $pendingStatusId = ApplicationStatus::getIdByName('pending');
         $rejectedStatusId = ApplicationStatus::getIdByName('rejected');
 
-        // Get applications where user is leader
-        $leaderApplications = $user->caseApplications()
-            ->with(['case.partner', 'case.partnerUser.partnerProfile', 'teamMembers.user', 'status'])
-            ->whereHas('case') // Filter out applications with deleted cases
-            ->get();
+        // Base query: applications where user is leader OR team member
+        $baseQuery = function () use ($user) {
+            return CaseApplication::query()
+                ->where(function ($query) use ($user) {
+                    // User is leader
+                    $query->where('leader_id', $user->id)
+                        // OR user is team member
+                        ->orWhereHas('teamMembers', function ($q) use ($user) {
+                            $q->where('user_id', $user->id);
+                        });
+                })
+                ->whereHas('case') // Filter out applications with deleted cases
+                ->with([
+                    'case.partner',
+                    'case.partnerUser.partnerProfile',
+                    'teamMembers.user',
+                    'status',
+                    'leader'
+                ]);
+        };
 
-        // Get applications where user is team member
-        $teamMemberApplicationIds = CaseTeamMember::where('user_id', $user->id)
-            ->pluck('application_id');
+        // Helper to get paginated applications for a status
+        $getPaginatedApplications = function (int $statusId, string $tabKey) use ($baseQuery, $request) {
+            $query = $baseQuery();
+            $query->where('status_id', $statusId);
 
-        $teamMemberApplications = CaseApplication::whereIn('id', $teamMemberApplicationIds)
-            ->with(['case.partner', 'case.partnerUser.partnerProfile', 'leader', 'teamMembers.user', 'status'])
-            ->whereHas('case') // Filter out applications with deleted cases
-            ->get();
+            // Get pagination parameters for this tab
+            $pageKey = "page_{$tabKey}";
+            $perPageKey = "per_page_{$tabKey}";
+            
+            $filters = [
+                'page' => $request->query($pageKey, 1),
+                'per_page' => $request->query($perPageKey, 12),
+                'search' => $request->query('search'),
+                'sort_by' => $request->query('sort_by', 'created_at'),
+                'sort_order' => $request->query('sort_order', 'desc'),
+            ];
 
-        // Merge and group, filter out applications where case is null
-        $allApplications = $leaderApplications->merge($teamMemberApplications)
-            ->unique('id')
-            ->filter(function ($application) {
-                return $application->case !== null;
-            });
+            $filter = new CaseApplicationFilter($filters);
+            $query = $filter->apply($query);
+            
+            $pagination = $filter->getPaginationParams();
+            
+            // Build query string for pagination links
+            $queryParams = $request->query();
+            $queryParams[$pageKey] = null; // Will be set by paginator
+            
+            return $query
+                ->paginate($pagination['per_page'], ['*'], $pageKey)
+                ->appends($queryParams);
+        };
 
         return [
-            'current' => $allApplications->where('status_id', $acceptedStatusId)->values(),
-            'pending' => $allApplications->where('status_id', $pendingStatusId)->values(),
-            'completed' => collect(), // No completed status yet
-            'rejected' => $allApplications->where('status_id', $rejectedStatusId)->values(),
+            'current' => $getPaginatedApplications($acceptedStatusId, 'current'),
+            'pending' => $getPaginatedApplications($pendingStatusId, 'pending'),
+            'completed' => $this->getEmptyPaginator($request, 'completed'),
+            'rejected' => $getPaginatedApplications($rejectedStatusId, 'rejected'),
         ];
+    }
+
+    /**
+     * Get empty paginator for completed status (not implemented yet)
+     */
+    private function getEmptyPaginator(Request $request, string $tabKey): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        $pageKey = "page_{$tabKey}";
+        $perPageKey = "per_page_{$tabKey}";
+        
+        $page = (int) $request->query($pageKey, 1);
+        $perPage = (int) $request->query($perPageKey, 12);
+        
+        // Create empty collection paginator
+        $items = collect();
+        
+        return new \Illuminate\Pagination\LengthAwarePaginator(
+            $items,
+            0,
+            $perPage,
+            $page,
+            [
+                'path' => $request->url(),
+                'pageName' => $pageKey,
+            ]
+        );
     }
 
     /**
