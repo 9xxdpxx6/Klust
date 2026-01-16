@@ -12,7 +12,7 @@ return new class extends Migration {
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('case_id')->constrained()->cascadeOnDelete();
             $table->foreignId('skill_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('difficulty_id')->constrained()->restrictOnDelete();
+            $table->foreignId('difficulty_id')->nullable()->constrained()->nullOnDelete();
             $table->integer('points_awarded');
             $table->timestamps();
 
