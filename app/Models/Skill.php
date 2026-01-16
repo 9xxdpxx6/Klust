@@ -28,4 +28,14 @@ class Skill extends Model
     {
         return $this->belongsToMany(CaseModel::class, 'case_skills', 'skill_id', 'case_id')->withTimestamps();
     }
+
+    public function rewardRules()
+    {
+        return $this->hasMany(SkillRewardRule::class);
+    }
+
+    public function rewardEvents()
+    {
+        return $this->hasMany(SkillRewardEvent::class);
+    }
 }

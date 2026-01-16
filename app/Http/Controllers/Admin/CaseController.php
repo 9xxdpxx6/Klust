@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Case\StoreRequest;
 use App\Http\Requests\Admin\Case\UpdateRequest;
 use App\Models\CaseModel;
+use App\Models\Difficulty;
 use App\Models\Simulator;
 use App\Models\Skill;
 use App\Models\User;
@@ -97,6 +98,7 @@ class CaseController extends Controller
             'partnerUser.partnerProfile',
             'simulator',
             'skills',
+            'difficulty',
             'applications.leader.studentProfile.faculty',
             'applications.status',
             'applications.teamMembers.user.studentProfile.faculty',
@@ -162,6 +164,13 @@ class CaseController extends Controller
             ];
         });
 
+        $difficulties = Difficulty::query()->orderBy('id')->get()->map(function ($difficulty) {
+            return [
+                'id' => $difficulty->id,
+                'name' => $difficulty->name,
+            ];
+        });
+
         $statusOptions = [
             ['label' => 'Черновик', 'value' => 'draft'],
             ['label' => 'Активный', 'value' => 'active'],
@@ -172,6 +181,7 @@ class CaseController extends Controller
         return Inertia::render('Admin/Cases/Create', [
             'partners' => $partners,
             'skills' => $skills,
+            'difficulties' => $difficulties,
             'simulators' => Simulator::all(),
             'statusOptions' => $statusOptions,
         ]);
@@ -201,8 +211,8 @@ class CaseController extends Controller
     {
         $this->authorize('update', $case);
 
-        // Загрузить кейс со связанными навыками
-        $case->load('skills');
+        // Загрузить кейс со связанными навыками и сложностью
+        $case->load(['skills', 'difficulty']);
 
         // Получить список партнеров и симуляторов
         $partners = User::role('partner')->with('partnerProfile')->get()->map(function ($partnerUser) {
@@ -221,6 +231,13 @@ class CaseController extends Controller
             ];
         });
 
+        $difficulties = Difficulty::query()->orderBy('id')->get()->map(function ($difficulty) {
+            return [
+                'id' => $difficulty->id,
+                'name' => $difficulty->name,
+            ];
+        });
+
         $statusOptions = [
             ['label' => 'Черновик', 'value' => 'draft'],
             ['label' => 'Активный', 'value' => 'active'],
@@ -236,6 +253,7 @@ class CaseController extends Controller
             'case' => $caseData,
             'partners' => $partners,
             'skills' => $skills,
+            'difficulties' => $difficulties,
             'simulators' => Simulator::all(),
             'statusOptions' => $statusOptions,
         ]);

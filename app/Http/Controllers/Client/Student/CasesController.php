@@ -68,7 +68,7 @@ class CasesController extends Controller
                 $query->whereNull('deadline')
                     ->orWhere('deadline', '>=', now());
             })
-            ->with(['partner', 'skills']);
+            ->with(['partner', 'skills', 'difficulty']);
 
         // Если статус не указан в фильтрах, показываем только активные кейсы
         if (!isset($filters['status']) || $filters['status'] === '') {
@@ -181,7 +181,7 @@ class CasesController extends Controller
                 $query->whereNull('deadline')
                     ->orWhere('deadline', '>=', now());
             })
-            ->with(['partner', 'skills']);
+            ->with(['partner', 'skills', 'difficulty']);
 
         if (!empty($studentSkillIds)) {
             $casesQuery
@@ -289,7 +289,8 @@ class CasesController extends Controller
             'partner' => function ($query) {
                 $query->with(['user.partnerProfile']);
             },
-            'skills'
+            'skills',
+            'difficulty'
         ]);
 
         // Загрузить историю статусов, если заявка существует
@@ -470,6 +471,7 @@ class CasesController extends Controller
             'case.skills',
             'case.partner',
             'case.partnerUser.partnerProfile',
+            'case.difficulty',
             'leader',
             'teamMembers.user',
         ]);

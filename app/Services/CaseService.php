@@ -57,7 +57,7 @@ class CaseService
                 'simulator_id' => $data['simulator_id'] ?? null,
                 'title' => $data['title'],
                 'description' => $data['description'],
-                'reward' => $data['reward'] ?? '',
+                'difficulty_id' => $data['difficulty_id'],
                 'required_team_size' => $data['required_team_size'] ?? 1,
                 'deadline' => $data['deadline'] ?? null,
                 'status' => $data['status'] ?? 'draft',
@@ -71,7 +71,7 @@ class CaseService
             // Schedule job to update status by deadline if case is active
             $this->scheduleStatusUpdateJob($case);
 
-            return $case->fresh('skills', 'partnerUser.partnerProfile');
+            return $case->fresh('skills', 'partnerUser.partnerProfile', 'difficulty');
         });
     }
 
@@ -96,7 +96,7 @@ class CaseService
             $case->update([
                 'title' => $data['title'] ?? $case->title,
                 'description' => $data['description'] ?? $case->description,
-                'reward' => $data['reward'] ?? $case->reward,
+                'difficulty_id' => $data['difficulty_id'] ?? $case->difficulty_id,
                 'required_team_size' => $data['required_team_size'] ?? $case->required_team_size,
                 'deadline' => $data['deadline'] ?? $case->deadline,
                 'status' => $data['status'] ?? $case->status,
@@ -120,7 +120,7 @@ class CaseService
                 $this->scheduleStatusUpdateJob($case);
             }
 
-            return $case->fresh('skills', 'partnerUser.partnerProfile');
+            return $case->fresh('skills', 'partnerUser.partnerProfile', 'difficulty');
         });
     }
 
@@ -175,7 +175,7 @@ class CaseService
         $caseFilter = new CaseFilter($filters);
 
         $query = CaseModel::query()
-            ->with(['partnerUser.partnerProfile', 'skills']);
+            ->with(['partnerUser.partnerProfile', 'skills', 'difficulty']);
 
         $query = $caseFilter->apply($query);
 
@@ -225,7 +225,7 @@ class CaseService
         }
 
         // Eager load relationships
-        $query->with(['partnerUser.partnerProfile', 'skills']);
+        $query->with(['partnerUser.partnerProfile', 'skills', 'difficulty']);
 
         // Get pagination parameters
         $pagination = FilterHelper::getPaginationParams($filters, 12);
@@ -257,7 +257,7 @@ class CaseService
         }
 
         // Eager load relationships
-        $query->with(['skills', 'simulator']);
+        $query->with(['skills', 'simulator', 'difficulty']);
 
         // Get pagination parameters
         $pagination = FilterHelper::getPaginationParams($filters, 15);
@@ -276,7 +276,7 @@ class CaseService
 
         return CaseModel::where('user_id', $user->id)
             ->where('status', 'active')
-            ->with(['skills', 'partnerUser.partnerProfile'])
+            ->with(['skills', 'partnerUser.partnerProfile', 'difficulty'])
             ->latest()
             ->get();
     }
@@ -308,7 +308,7 @@ class CaseService
 
         return CaseModel::whereIn('id', $caseIds)
             ->where('status', 'active')
-            ->with(['partnerUser.partnerProfile', 'skills'])
+            ->with(['partnerUser.partnerProfile', 'skills', 'difficulty'])
             ->latest()
             ->limit($limit)
             ->get();
@@ -330,7 +330,7 @@ class CaseService
                     $q->whereNull('deadline')
                         ->orWhere('deadline', '>=', now());
                 })
-                ->with(['partnerUser.partnerProfile', 'skills'])
+                ->with(['partnerUser.partnerProfile', 'skills', 'difficulty'])
                 ->inRandomOrder()
                 ->limit($limit)
                 ->get();
@@ -346,7 +346,7 @@ class CaseService
             ->whereHas('skills', function ($q) use ($studentSkillIds) {
                 $q->whereIn('skills.id', $studentSkillIds);
             })
-            ->with(['partnerUser.partnerProfile', 'skills'])
+            ->with(['partnerUser.partnerProfile', 'skills', 'difficulty'])
             ->withCount([
                 'skills as matching_skills_count' => function ($q) use ($studentSkillIds) {
                     $q->whereIn('skills.id', $studentSkillIds);

@@ -15,6 +15,7 @@ use App\Http\Requests\Partner\Case\StoreRequest;
 use App\Http\Requests\Partner\Case\UpdateRequest;
 use App\Models\CaseApplication;
 use App\Models\CaseModel;
+use App\Models\Difficulty;
 use App\Models\Skill;
 use App\Services\ApplicationService;
 use App\Services\CaseService;
@@ -110,7 +111,7 @@ class CasesController extends Controller
             // Создаем запрос с жестким условием по user_id (partner_id)
             $casesQuery = CaseModel::query()
                 ->where('user_id', $partnerId)
-                ->with(['skills', 'simulator']);
+                ->with(['skills', 'simulator', 'difficulty']);
 
             // Студенты могут видеть только активные кейсы
             if ($user->hasRole('student')) {
@@ -185,11 +186,13 @@ class CasesController extends Controller
 
             return Inertia::render('Client/Partner/Cases/Create', [
                 'skills' => $skills,
+                'difficulties' => Difficulty::query()->orderBy('id')->get(),
                 'simulators' => $simulators,
             ]);
         } catch (\Exception $e) {
             return Inertia::render('Client/Partner/Cases/Create', [
                 'skills' => [],
+                'difficulties' => collect(),
                 'simulators' => collect(),
                 'error' => 'Ошибка при загрузке формы: '.$e->getMessage(),
             ]);
@@ -248,7 +251,7 @@ class CasesController extends Controller
             $this->authorize('view', $case);
 
             // Загрузить основные связи
-            $case->load(['skills']);
+            $case->load(['skills', 'difficulty']);
 
             // Получить статистику
             $statistics = $this->caseService->getCaseStatistics($case);
@@ -435,11 +438,13 @@ class CasesController extends Controller
             return Inertia::render('Client/Partner/Cases/Edit', [
                 'caseData' => $case,
                 'skills' => $skills,
+                'difficulties' => Difficulty::query()->orderBy('id')->get(),
             ]);
         } catch (\Exception $e) {
             return Inertia::render('Client/Partner/Cases/Edit', [
                 'caseData' => $case,
                 'skills' => [],
+                'difficulties' => collect(),
                 'error' => 'Ошибка при загрузке формы: '.$e->getMessage(),
             ]);
         }

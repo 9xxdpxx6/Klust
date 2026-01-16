@@ -55,7 +55,7 @@ class UpdateRequest extends FormRequest
             'simulator_id' => ['nullable', 'exists:simulators,id'],
             // Партнер может изменить дедлайн на любую дату
             'deadline' => ['required', 'date'],
-            'reward' => ['required', 'string', 'max:1000'],
+            'difficulty_id' => ['required', 'integer', 'exists:difficulties,id'],
             'required_team_size' => ['required', 'integer', 'min:1', 'max:10'],
             // Партнер не может установить 'completed' или 'archived'
             'status' => ['nullable', 'string', 'in:draft,active'],
@@ -81,8 +81,8 @@ class UpdateRequest extends FormRequest
             'description.max' => 'Описание кейса не должно превышать 10000 символов.',
             'simulator_id.exists' => 'Выбранный симулятор не существует.',
             'deadline.required' => 'Дедлайн обязателен для заполнения.',
-            'reward.required' => 'Описание награды обязательно для заполнения.',
-            'reward.max' => 'Описание награды не должно превышать 1000 символов.',
+            'difficulty_id.required' => 'Необходимо выбрать сложность.',
+            'difficulty_id.exists' => 'Выбранная сложность не существует.',
             'required_team_size.required' => 'Размер команды обязателен для заполнения.',
             'required_team_size.min' => 'Размер команды должен быть не менее 1 человека.',
             'required_team_size.max' => 'Размер команды должен быть не более 10 человек.',

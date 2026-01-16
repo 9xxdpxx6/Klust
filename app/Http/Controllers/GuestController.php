@@ -31,7 +31,7 @@ class GuestController extends Controller
         ];
 
         // Получить несколько активных кейсов для примера
-        $featuredCases = CaseModel::with(['partner.user', 'skills'])
+        $featuredCases = CaseModel::with(['partner.user', 'skills', 'difficulty'])
             ->where('status', 'active')
             ->orderBy('created_at', 'desc')
             ->limit(3)
@@ -56,7 +56,7 @@ class GuestController extends Controller
      */
     public function cases(): Response
     {
-        $cases = CaseModel::with(['partner.user', 'skills'])
+        $cases = CaseModel::with(['partner.user', 'skills', 'difficulty'])
             ->where('status', 'active')
             ->orderBy('created_at', 'desc')
             ->paginate(12);
@@ -81,7 +81,8 @@ class GuestController extends Controller
             'partner' => function ($query) {
                 $query->with(['user.partnerProfile']);
             },
-            'skills'
+            'skills',
+            'difficulty'
         ]);
 
         // Получить статус заявки, если пользователь авторизован и является студентом

@@ -44,23 +44,26 @@
                         <div v-if="errors.description" class="mt-1 text-sm text-red-600">{{ errors.description }}</div>
                     </div>
 
-                    <!-- Награда -->
+                    <!-- Сложность -->
                     <div>
-                        <label for="reward" class="block text-sm font-medium text-gray-700 mb-1">
-                            Награда *
+                        <label for="difficulty_id" class="block text-sm font-medium text-gray-700 mb-1">
+                            Сложность *
                         </label>
-                        <input
-                            type="text"
-                            id="reward"
-                            v-model="form.reward"
+                        <select
+                            id="difficulty_id"
+                            v-model="form.difficulty_id"
                             :disabled="processing"
                             :class="[
                                 'block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 sm:text-sm disabled:opacity-50',
-                                { 'border-red-300 focus:border-red-500': errors.reward }
+                                { 'border-red-300 focus:border-red-500': errors.difficulty_id }
                             ]"
-                            placeholder="Например: сертификат, призы, деньги"
-                        />
-                        <div v-if="errors.reward" class="mt-1 text-sm text-red-600">{{ errors.reward }}</div>
+                        >
+                            <option value="" disabled>Выберите сложность</option>
+                            <option v-for="difficulty in difficulties" :key="difficulty.id" :value="difficulty.id">
+                                {{ difficulty.name }}
+                            </option>
+                        </select>
+                        <div v-if="errors.difficulty_id" class="mt-1 text-sm text-red-600">{{ errors.difficulty_id }}</div>
                     </div>
 
                     <!-- Требуемый размер команды -->
@@ -197,6 +200,10 @@ const props = defineProps({
     skills: {
         type: Array,
         required: true
+    },
+    difficulties: {
+        type: Array,
+        required: true
     }
 });
 
@@ -204,7 +211,7 @@ const props = defineProps({
 const form = reactive({
     title: '',
     description: '',
-    reward: '',
+    difficulty_id: props.difficulties?.[0]?.id ?? '',
     team_size: 1,
     required_skills: [],
     deadline: '',
