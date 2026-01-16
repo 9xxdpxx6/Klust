@@ -76,22 +76,17 @@
                             :required="true"
                         />
 
-                        <!-- Награда -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Награда *
-                            </label>
-                            <input
-                                v-model="form.reward"
-                                type="text"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
-                                :class="{ 'border-red-300 focus:border-red-500': form.errors.reward }"
-                                placeholder="Например: сертификат, призы, деньги"
-                            />
-                            <div v-if="form.errors.reward" class="text-red-500 text-sm mt-1">
-                                {{ form.errors.reward }}
-                            </div>
-                        </div>
+                        <!-- Сложность -->
+                        <Select
+                            v-model="form.difficulty_id"
+                            label="Сложность *"
+                            :options="difficultyOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Выберите сложность"
+                            :error="form.errors.difficulty_id"
+                            :required="true"
+                        />
 
                     </div>
 
@@ -189,6 +184,7 @@ const props = defineProps({
     skills: Array,
     simulators: Array,
     statusOptions: Array,
+    difficulties: Array,
 })
 
 const processing = ref(false)
@@ -200,7 +196,7 @@ const form = useForm({
     deadline: '',
     required_team_size: '',
     status: 'draft',
-    reward: '',
+    difficulty_id: props.difficulties?.[0]?.id ?? null,
     simulator_id: null,
     required_skills: [],
 })
@@ -238,11 +234,20 @@ const simulatorOptions = computed(() => [
     }))
 ])
 
+const difficultyOptions = computed(() => [
+    { label: 'Выберите сложность', value: '' },
+    ...props.difficulties.map(difficulty => ({
+        label: difficulty.name,
+        value: difficulty.id
+    }))
+])
+
 const submitForm = () => {
     processing.value = true
     form.transform((data) => ({
         ...data,
         deadline: data.deadline ? formatDateForServer(data.deadline) : null,
+        difficulty_id: data.difficulty_id ? parseInt(data.difficulty_id) : null,
     })).post(route('admin.cases.store'), {
         preserveScroll: true,
         onSuccess: () => {

@@ -76,21 +76,18 @@
                             :required="true"
                         />
 
-                        <!-- Награда -->
+                        <!-- Сложность -->
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Награда *
-                            </label>
-                            <input
-                                v-model="form.reward"
-                                type="text"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
-                                :class="{ 'border-red-300 focus:border-red-500': form.errors.reward }"
-                                placeholder="Опишите награду за выполнение кейса"
+                            <Select
+                                v-model="form.difficulty_id"
+                                label="Сложность *"
+                                :options="difficultyOptions"
+                                optionLabel="label"
+                                optionValue="value"
+                                placeholder="Выберите сложность"
+                                :error="form.errors.difficulty_id"
+                                :required="true"
                             />
-                            <div v-if="form.errors.reward" class="text-red-500 text-sm mt-1">
-                                {{ form.errors.reward }}
-                            </div>
                         </div>
                     </div>
 
@@ -192,6 +189,7 @@ const props = defineProps({
     skills: Array,
     simulators: Array,
     statusOptions: Array,
+    difficulties: Array,
 })
 
 // Используем встроенную обработку формы Inertia
@@ -202,7 +200,7 @@ const form = useForm({
     deadline: parseLocalDate(props.case?.deadline),
     required_team_size: props.case?.required_team_size || '',
     status: props.case?.status || '',
-    reward: props.case?.reward || '',
+    difficulty_id: props.case?.difficulty_id ?? props.difficulties?.[0]?.id ?? null,
     simulator_id: props.case?.simulator_id || null,
     required_skills: props.case?.required_skills || [],
 })
@@ -240,6 +238,14 @@ const simulatorOptions = computed(() => [
     }))
 ])
 
+const difficultyOptions = computed(() => [
+    { label: 'Выберите сложность', value: '' },
+    ...props.difficulties.map(difficulty => ({
+        label: difficulty.name,
+        value: difficulty.id
+    }))
+])
+
 const submitForm = () => {
     // Используем transform для преобразования данных если нужно
     form.transform((data) => ({
@@ -247,6 +253,7 @@ const submitForm = () => {
         deadline: data.deadline ? formatDateForServer(data.deadline) : null,
         required_team_size: parseInt(data.required_team_size),
         required_skills: data.required_skills.map(id => parseInt(id)),
+        difficulty_id: data.difficulty_id ? parseInt(data.difficulty_id) : null,
     })).put(route('admin.cases.update', props.case.id), {
         preserveScroll: true,
         onSuccess: () => {

@@ -311,6 +311,19 @@
                             </div>
                         </div>
 
+                        <!-- Сложность -->
+                        <div class="pb-5 border-b border-gray-100">
+                            <div class="flex items-start gap-3">
+                                <div class="p-2 bg-amber-100 rounded-lg">
+                                    <i class="pi pi-signal text-amber-600"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Сложность</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ caseData.difficulty?.name || 'Не указана' }}</p>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Дата создания -->
                         <div>
                             <div class="flex items-start gap-3">
