@@ -57,7 +57,7 @@ class StoreRequest extends FormRequest
             // Партнер может выбрать любой симулятор, проверяем только на существование
             'simulator_id' => ['nullable', 'exists:simulators,id'],
             'deadline' => ['required', 'date', 'after:today'], // Дедлайн должен быть в будущем
-            'reward' => ['required', 'string', 'max:1000'],
+            'difficulty_id' => ['required', 'integer', 'exists:difficulties,id'],
             'required_team_size' => ['required', 'integer', 'min:1', 'max:10'],
             // Партнер может установить только 'draft' или 'active'
             'status' => ['nullable', 'string', 'in:draft,active'],
@@ -84,8 +84,8 @@ class StoreRequest extends FormRequest
             'simulator_id.exists' => 'Выбранный симулятор не существует.',
             'deadline.required' => 'Дедлайн обязателен для заполнения.',
             'deadline.after' => 'Дедлайн должен быть в будущем.',
-            'reward.required' => 'Описание награды обязательно для заполнения.',
-            'reward.max' => 'Описание награды не должно превышать 1000 символов.',
+            'difficulty_id.required' => 'Необходимо выбрать сложность.',
+            'difficulty_id.exists' => 'Выбранная сложность не существует.',
             'required_team_size.required' => 'Размер команды обязателен для заполнения.',
             'required_team_size.min' => 'Размер команды должен быть не менее 1 человека.',
             'required_team_size.max' => 'Размер команды должен быть не более 10 человек.',

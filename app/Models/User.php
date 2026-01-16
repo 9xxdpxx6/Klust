@@ -81,6 +81,24 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
+    public function certificates()
+    {
+        return $this->belongsToMany(Certificate::class, 'user_certificates')
+            ->using(UserCertificate::class)
+            ->withPivot('case_id')
+            ->withTimestamps();
+    }
+
+    public function skillRewardEvents()
+    {
+        return $this->hasMany(SkillRewardEvent::class);
+    }
+
+    public function badgeEvents()
+    {
+        return $this->hasMany(UserBadgeEvent::class);
+    }
+
     // Simulator Sessions
     public function simulatorSessions()
     {

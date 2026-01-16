@@ -26,7 +26,7 @@ class CaseModel extends Model
         'description',
         'simulator_id',
         'deadline',
-        'reward',
+        'difficulty_id',
         'required_team_size',
         'status',
     ];
@@ -116,9 +116,26 @@ class CaseModel extends Model
         return $this->belongsTo(Simulator::class);
     }
 
+    public function difficulty(): BelongsTo
+    {
+        return $this->belongsTo(Difficulty::class);
+    }
+
     public function applications(): HasMany
     {
         return $this->hasMany(CaseApplication::class, 'case_id');
+    }
+
+    public function certificates(): BelongsToMany
+    {
+        return $this->belongsToMany(Certificate::class, 'case_certificates')
+            ->using(CaseCertificate::class)
+            ->withTimestamps();
+    }
+
+    public function skillRewardEvents(): HasMany
+    {
+        return $this->hasMany(SkillRewardEvent::class, 'case_id');
     }
 
     public function skills(): BelongsToMany

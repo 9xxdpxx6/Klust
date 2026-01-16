@@ -62,6 +62,11 @@ class Badge extends Model
             ->withTimestamps();
     }
 
+    public function events()
+    {
+        return $this->hasMany(UserBadgeEvent::class);
+    }
+
     /**
      * Calculate required points for a specific level
      * Formula: required_points + (level - 1) * points_increment

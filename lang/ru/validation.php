@@ -193,7 +193,7 @@ return [
         'title' => 'Название',
         'description' => 'Описание',
         'deadline' => 'Дедлайн',
-        'reward' => 'Награда',
+        'difficulty_id' => 'Сложность',
         'required_team_size' => 'Размер команды',
         'status' => 'Статус',
         'course' => 'Курс',
