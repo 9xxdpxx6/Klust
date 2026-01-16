@@ -20,6 +20,8 @@ class DatabaseSeeder extends Seeder
             ProfileSeeder::class,        // 5. Профили (student, partner, teacher)
             SkillSeeder::class,          // 6. Навыки (10)
             BadgeSeeder::class,          // 7. Достижения (15)
+            DifficultySeeder::class,     // 7.1 Сложности
+            CertificateSeeder::class,    // 7.2 Сертификаты
             PartnerSeeder::class,        // 8. Партнёры (15)
             SimulatorSeeder::class,      // 9. Симуляторы (5, 1 активный)
             SimulatorSessionSeeder::class, // 10. Сессии симуляторов (200)
