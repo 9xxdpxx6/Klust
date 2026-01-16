@@ -5,24 +5,29 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-16">
                     <div class="flex items-center gap-3">
-                        <!-- Иконка логотипа -->
-                        <img 
-                            v-if="logoIcon"
-                            :src="logoIcon" 
-                            alt="Кластер" 
-                            class="h-10 w-10 object-contain"
-                            @error="$event.target.style.display = 'none'"
-                        />
-                        <!-- Длинное лого -->
-                        <img 
-                            v-else-if="logoImage"
-                            :src="logoImage" 
-                            alt="Кластер" 
-                            class="h-10 object-contain"
-                            @error="$event.target.style.display = 'none'"
-                        />
-                        <!-- Текстовое лого по умолчанию -->
-                        <h1 v-else class="text-2xl font-bold text-primary">Кластер</h1>
+                        <Link 
+                            :href="homeRoute"
+                            class="flex items-center gap-3"
+                        >
+                            <!-- Длинное лого (приоритет) -->
+                            <img 
+                                v-if="logoImage && !logoError"
+                                :src="logoImage" 
+                                alt="Кластер" 
+                                class="h-10 object-contain"
+                                @error="handleLogoError"
+                            />
+                            <!-- Иконка логотипа (fallback) -->
+                            <img 
+                                v-else-if="logoIcon && !logoError"
+                                :src="logoIcon" 
+                                alt="Кластер" 
+                                class="h-10 w-10 object-contain"
+                                @error="handleLogoError"
+                            />
+                            <!-- Текстовое лого по умолчанию -->
+                            <h1 v-else class="text-2xl font-bold text-primary">Кластер</h1>
+                        </Link>
                     </div>
                     <div class="flex items-center gap-4">
                         <Link
@@ -54,13 +59,15 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import { Link } from '@inertiajs/vue3';
+import { route } from 'ziggy-js';
 import { routeExists } from '@/Utils/routes';
 
-defineProps({
+const props = defineProps({
     logoIcon: {
         type: String,
-        default: '/images/logo/icon.png',
+        default: null,
     },
     logoImage: {
         type: String,
@@ -68,15 +75,23 @@ defineProps({
     },
 });
 
+const logoError = ref(false);
+
+const handleLogoError = () => {
+    logoError.value = true;
+};
+
 const safeRoute = (routeName) => {
     if (routeExists(routeName)) {
         try {
             return route(routeName);
         } catch (e) {
-            return '#';
+            return '/';
         }
     }
-    return '#';
+    return '/';
 };
+
+const homeRoute = safeRoute('guest.home');
 </script>
 

@@ -181,7 +181,7 @@
                         <p :class="[
                             'font-bold text-purple-900',
                             isMobile ? 'text-xl' : 'text-3xl'
-                        ]">{{ teams.length || 0 }}</p>
+                        ]">{{ statistics.total_teams || 0 }}</p>
                     </div>
                     <div :class="[
                         'flex items-center justify-center bg-purple-500 rounded-xl',
@@ -613,7 +613,7 @@
             </div>
 
             <!-- Команды -->
-            <div v-if="teams.length > 0" class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+            <div v-if="teams.data && teams.data.length > 0" class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
                 <div :class="[
                     'px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200',
                     isMobile ? 'px-4' : ''
@@ -623,7 +623,7 @@
                         isMobile ? 'text-base' : 'text-xl'
                     ]">
                         <i class="pi pi-users text-indigo-600"></i>
-                        Одобренные команды ({{ teams.length }})
+                        Одобренные команды ({{ teams.total || teams.data.length }})
                     </h2>
                 </div>
                 <div :class="[
@@ -632,7 +632,7 @@
                 ]">
                     <ResponsiveGrid :cols="{ mobile: 1, tablet: 2, desktop: 3 }">
                     <div
-                        v-for="team in teams"
+                        v-for="team in teams.data"
                         :key="team.id"
                         class="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors flex flex-col"
                     >
@@ -672,6 +672,9 @@
                         </div>
                     </div>
                     </ResponsiveGrid>
+                    
+                    <!-- Pagination для команд -->
+                    <Pagination v-if="teams.links && teams.links.length > 2" :links="teams.links" :class="['mt-6', isMobile ? '' : '']" />
                 </div>
             </div>
 
@@ -822,8 +825,12 @@ const props = defineProps({
         required: true
     },
     teams: {
-        type: Array,
-        default: () => []
+        type: Object,
+        default: () => ({
+            data: [],
+            links: [],
+            meta: {}
+        })
     },
     statistics: {
         type: Object,

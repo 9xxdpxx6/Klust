@@ -26,11 +26,11 @@ class LoginController extends Controller
      */
     public function login(LoginRequest $request): RedirectResponse
     {
+
         $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
-
             $user = Auth::user();
 
             // Проверить верификацию email

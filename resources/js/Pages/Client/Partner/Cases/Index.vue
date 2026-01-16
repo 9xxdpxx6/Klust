@@ -19,10 +19,11 @@
                                 isMobile ? 'text-2xl' : 'text-3xl'
                             ]">Кейсы</h1>
                             <p class="text-indigo-100" :class="isMobile ? 'text-sm' : ''">
-                                Управление вашими кейсами
+                                {{ isStudent ? 'Кейсы партнера' : 'Управление вашими кейсами' }}
                             </p>
                         </div>
                         <Link
+                            v-if="!isStudent"
                             :href="route('partner.cases.create')"
                             :class="[
                                 'inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white rounded-lg hover:bg-white/20 focus:outline-none transition-all shadow-lg border border-white/20 font-medium',
@@ -527,6 +528,10 @@ const props = defineProps({
     statistics: {
         type: Object,
         default: () => ({})
+    },
+    isStudent: {
+        type: Boolean,
+        default: false
     }
 });
 

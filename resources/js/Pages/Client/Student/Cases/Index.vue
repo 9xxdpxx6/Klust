@@ -115,16 +115,8 @@
             </Card>
 
             <!-- Пагинация -->
-            <div v-if="cases.meta && cases.meta.last_page > 1" :class="[
-                'flex justify-center',
-                isMobile ? 'overflow-x-auto' : ''
-            ]">
-                <Paginator
-                    :first="(cases.meta.current_page - 1) * cases.meta.per_page"
-                    :rows="cases.meta.per_page"
-                    :totalRecords="cases.meta.total"
-                    @page="handlePage"
-                />
+            <div v-if="cases.links && cases.links.length > 3" class="mt-6">
+                <Pagination :links="cases.links" />
             </div>
 
         <!-- Apply Modal -->
@@ -147,7 +139,7 @@ import Select from '@/Components/UI/Select.vue';
 import StudentCaseCard from '@/Components/StudentCaseCard.vue';
 import ApplyCaseModal from '@/Components/ApplyCaseModal.vue';
 import MultiSelect from 'primevue/multiselect';
-import Paginator from 'primevue/paginator';
+import Pagination from '@/Components/Pagination.vue';
 import MobileContainer from '@/Components/Responsive/MobileContainer.vue';
 import ResponsiveGrid from '@/Components/Responsive/ResponsiveGrid.vue';
 import { useResponsive } from '@/Composables/useResponsive';
@@ -284,17 +276,6 @@ const handleFilter = () => {
     }
 };
 
-const handlePage = (event) => {
-    if (routeExists(listRouteName.value)) {
-        router.get(route(listRouteName.value), {
-            ...filters.value,
-            page: Math.floor(event.first / event.rows) + 1,
-        }, {
-            preserveState: true,
-            preserveScroll: true,
-        });
-    }
-};
 
 const handleViewCase = (caseId) => {
     try {

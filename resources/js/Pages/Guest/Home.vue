@@ -2,8 +2,16 @@
     <PublicLayout>
         <Head title="Главная" />
         <!-- Hero Section -->
-        <section class="bg-gradient-to-br from-primary to-primary-dark text-white">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
+        <section class="bg-gradient-to-br from-primary to-primary-dark text-white relative overflow-hidden">
+            <!-- Watermark Logo - Left -->
+            <div class="absolute left-0 inset-y-0 opacity-10 pointer-events-none flex items-center">
+                <img 
+                    src="/images/assets/letter-p-white.png" 
+                    alt="KubSTU Logo" 
+                    class="h-full w-auto"
+                />
+            </div>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 relative z-10">
                 <div class="text-center">
                     <h1 class="text-4xl md:text-6xl font-extrabold mb-6">
                         Платформа для case-based обучения
@@ -33,26 +41,41 @@
         <section class="py-16 bg-kubgtu-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="text-center">
-                        <div class="text-5xl font-bold text-primary mb-2">
-                            {{ statistics.total_cases }}
-                        </div>
+                    <div class="text-center border-2 border-blue-500 rounded-lg p-6">
+                        <Link
+                            :href="route('guest.cases')"
+                            class="block hover:opacity-80 transition-opacity"
+                        >
+                            <div class="text-5xl font-bold text-primary mb-2 cursor-pointer hover:text-primary-dark transition-colors">
+                                {{ statistics.total_cases }}
+                            </div>
+                        </Link>
                         <div class="text-lg text-text-secondary">
                             Активных кейсов
                         </div>
                     </div>
-                    <div class="text-center">
-                        <div class="text-5xl font-bold text-primary mb-2">
-                            {{ statistics.total_students }}
-                        </div>
+                    <div class="text-center border-2 border-blue-500 rounded-lg p-6">
+                        <Link
+                            :href="route('guest.students.how-it-works')"
+                            class="block hover:opacity-80 transition-opacity"
+                        >
+                            <div class="text-5xl font-bold text-primary mb-2 cursor-pointer hover:text-primary-dark transition-colors">
+                                {{ statistics.total_students }}
+                            </div>
+                        </Link>
                         <div class="text-lg text-text-secondary">
                             Студентов на платформе
                         </div>
                     </div>
-                    <div class="text-center">
-                        <div class="text-5xl font-bold text-primary mb-2">
-                            {{ statistics.total_partners }}
-                        </div>
+                    <div class="text-center border-2 border-blue-500 rounded-lg p-6">
+                        <Link
+                            :href="route('guest.partners')"
+                            class="block hover:opacity-80 transition-opacity"
+                        >
+                            <div class="text-5xl font-bold text-primary mb-2 cursor-pointer hover:text-primary-dark transition-colors">
+                                {{ statistics.total_partners }}
+                            </div>
+                        </Link>
                         <div class="text-lg text-text-secondary">
                             Партнеров-компаний
                         </div>
@@ -75,49 +98,58 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <!-- Feature 1 -->
-                    <div class="bg-kubgtu-white p-8 rounded-xl shadow-sm border border-border-light">
-                        <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                    <Link
+                        :href="route('guest.cases')"
+                        class="bg-kubgtu-white p-8 rounded-xl shadow-sm border border-border-light hover:shadow-lg hover:border-primary/30 transition-all duration-200 cursor-pointer group"
+                    >
+                        <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                             <svg class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                             </svg>
                         </div>
-                        <h3 class="text-xl font-semibold text-text-primary mb-2">
+                        <h3 class="text-xl font-semibold text-text-primary mb-2 group-hover:text-primary transition-colors">
                             Реальные проекты
                         </h3>
                         <p class="text-text-secondary">
                             Работайте над задачами от реальных компаний и получайте практический опыт
                         </p>
-                    </div>
+                    </Link>
 
                     <!-- Feature 2 -->
-                    <div class="bg-kubgtu-white p-8 rounded-xl shadow-sm border border-border-light">
-                        <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                    <Link
+                        :href="route('guest.team-work')"
+                        class="bg-kubgtu-white p-8 rounded-xl shadow-sm border border-border-light hover:shadow-lg hover:border-primary/30 transition-all duration-200 cursor-pointer group"
+                    >
+                        <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                             <svg class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                             </svg>
                         </div>
-                        <h3 class="text-xl font-semibold text-text-primary mb-2">
+                        <h3 class="text-xl font-semibold text-text-primary mb-2 group-hover:text-primary transition-colors">
                             Командная работа
                         </h3>
                         <p class="text-text-secondary">
                             Формируйте команды и развивайте навыки совместной работы над проектами
                         </p>
-                    </div>
+                    </Link>
 
                     <!-- Feature 3 -->
-                    <div class="bg-kubgtu-white p-8 rounded-xl shadow-sm border border-border-light">
-                        <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                    <Link
+                        :href="route('guest.achievements')"
+                        class="bg-kubgtu-white p-8 rounded-xl shadow-sm border border-border-light hover:shadow-lg hover:border-primary/30 transition-all duration-200 cursor-pointer group"
+                    >
+                        <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                             <svg class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                             </svg>
                         </div>
-                        <h3 class="text-xl font-semibold text-text-primary mb-2">
+                        <h3 class="text-xl font-semibold text-text-primary mb-2 group-hover:text-primary transition-colors">
                             Достижения и навыки
                         </h3>
                         <p class="text-text-secondary">
                             Получайте достижения и развивайте профессиональные навыки
                         </p>
-                    </div>
+                    </Link>
                 </div>
             </div>
         </section>
@@ -218,8 +250,16 @@
         </section>
 
         <!-- CTA Section -->
-        <section class="py-20 bg-gradient-to-br from-primary to-primary-dark text-white">
-            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <section class="py-20 bg-gradient-to-br from-primary to-primary-dark text-white relative overflow-hidden">
+            <!-- Watermark Logo - Left -->
+            <div class="absolute left-0 inset-y-0 opacity-10 pointer-events-none flex items-center">
+                <img 
+                    src="/images/assets/letter-p-white.png" 
+                    alt="KubSTU Logo" 
+                    class="h-full w-auto"
+                />
+            </div>
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
                 <h2 class="text-3xl md:text-4xl font-bold mb-4">
                     Готовы начать?
                 </h2>
@@ -239,6 +279,7 @@
 
 <script setup>
 import { Head, Link } from '@inertiajs/vue3'
+import { route } from 'ziggy-js'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 
 defineProps({
