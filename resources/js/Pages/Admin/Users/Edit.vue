@@ -61,7 +61,7 @@
 
                             <!-- Имя -->
                             <div>
-                                <label for="name" class="block text-sm font-medium text-gray-700">Имя *</label>
+                                <label for="name" class="block text-sm font-medium text-gray-700">Имя</label>
                                 <input
                                     type="text"
                                     id="name"
@@ -74,7 +74,7 @@
 
                             <!-- Email -->
                             <div>
-                                <label for="email" class="block text-sm font-medium text-gray-700">Email *</label>
+                                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
                                 <input
                                     type="text"
                                     id="email"

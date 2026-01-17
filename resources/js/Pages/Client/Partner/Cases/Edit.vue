@@ -9,7 +9,7 @@
                     <!-- Название -->
                     <div>
                         <label for="title" class="block text-sm font-medium text-gray-700 mb-1">
-                            Название кейса *
+                            Название кейса
                         </label>
                         <input
                             type="text"
@@ -28,7 +28,7 @@
                     <!-- Описание -->
                     <div>
                         <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
-                            Описание *
+                            Описание
                         </label>
                         <textarea
                             id="description"
@@ -45,31 +45,21 @@
                     </div>
 
                     <!-- Сложность -->
-                    <div>
-                        <label for="difficulty_id" class="block text-sm font-medium text-gray-700 mb-1">
-                            Сложность *
-                        </label>
-                        <select
-                            id="difficulty_id"
-                            v-model="form.difficulty_id"
-                            :disabled="processing"
-                            :class="[
-                                'block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 sm:text-sm disabled:opacity-50',
-                                { 'border-red-300 focus:border-red-500': errors.difficulty_id }
-                            ]"
-                        >
-                            <option value="" disabled>Выберите сложность</option>
-                            <option v-for="difficulty in difficulties" :key="difficulty.id" :value="difficulty.id">
-                                {{ difficulty.name }}
-                            </option>
-                        </select>
-                        <div v-if="errors.difficulty_id" class="mt-1 text-sm text-red-600">{{ errors.difficulty_id }}</div>
-                    </div>
+                    <Select
+                        v-model="form.difficulty_id"
+                        label="Сложность"
+                        :options="difficultyOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Выберите сложность"
+                        :error="errors.difficulty_id"
+                        :disabled="processing"
+                    />
 
                     <!-- Требуемый размер команды -->
                     <div>
                         <label for="team_size" class="block text-sm font-medium text-gray-700 mb-1">
-                            Требуемый размер команды *
+                            Требуемый размер команды
                         </label>
                         <input
                             type="text"
@@ -118,10 +108,9 @@
                     <!-- Дедлайн -->
                     <DatePicker
                         v-model="form.deadline"
-                        label="Дедлайн *"
+                        label="Дедлайн"
                         :disabled="processing"
                         :error="errors.deadline"
-                        :required="true"
                     />
 
                     <!-- Статус -->
@@ -200,9 +189,10 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import DatePicker from '@/Components/UI/DatePicker.vue';
+import Select from '@/Components/UI/Select.vue';
 import { parseLocalDate, formatDateForServer } from '@/Composables/useDateHelper';
 
 const props = defineProps({
@@ -224,12 +214,20 @@ const props = defineProps({
 const form = reactive({
     title: props.caseData.title,
     description: props.caseData.description,
-    difficulty_id: props.caseData.difficulty_id ?? props.difficulties?.[0]?.id ?? '',
+    difficulty_id: props.caseData.difficulty_id ?? props.difficulties?.[0]?.id ?? null,
     team_size: props.caseData.required_team_size || props.caseData.team_size || 1,
     required_skills: props.caseData.required_skills.map(skill => skill.id),
     deadline: parseLocalDate(props.caseData.deadline),
     status: props.caseData.status
 });
+
+const difficultyOptions = computed(() => [
+    { label: 'Выберите сложность', value: null },
+    ...props.difficulties.map(difficulty => ({
+        label: difficulty.name,
+        value: difficulty.id
+    }))
+]);
 
 // For handling form errors and processing state
 const processing = ref(false);

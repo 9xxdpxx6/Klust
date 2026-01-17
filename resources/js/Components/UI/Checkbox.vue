@@ -15,7 +15,6 @@
         :class="['ml-2 text-sm', { 'text-red-600': error, 'cursor-not-allowed opacity-60': disabled }]"
       >
         {{ label }}
-        <span v-if="required" class="text-red-500">*</span>
       </label>
     </div>
     <p v-if="error" class="mt-1 text-sm text-red-600">

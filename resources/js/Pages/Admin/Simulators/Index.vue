@@ -474,7 +474,6 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">
                             Описание
-                            <span class="text-red-500">*</span>
                         </label>
                         <textarea
                             v-model="form.description"

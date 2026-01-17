@@ -37,7 +37,7 @@
 
                             <!-- Имя -->
                             <div>
-                                <label for="name" class="block text-sm font-medium text-gray-700">Имя *</label>
+                                <label for="name" class="block text-sm font-medium text-gray-700">Имя</label>
                                 <input
                                     type="text"
                                     id="name"
@@ -50,7 +50,7 @@
 
                             <!-- Email -->
                             <div>
-                                <label for="email" class="block text-sm font-medium text-gray-700">Email *</label>
+                                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
                                 <input
                                     type="text"
                                     id="email"
@@ -75,7 +75,7 @@
 
                             <!-- Пароль -->
                             <div>
-                                <label for="password" class="block text-sm font-medium text-gray-700">Пароль *</label>
+                                <label for="password" class="block text-sm font-medium text-gray-700">Пароль</label>
                                 <input
                                     type="password"
                                     id="password"
@@ -88,7 +88,7 @@
 
                             <!-- Подтверждение пароля -->
                             <div>
-                                <label for="password_confirmation" class="block text-sm font-medium text-gray-700">Подтверждение пароля *</label>
+                                <label for="password_confirmation" class="block text-sm font-medium text-gray-700">Подтверждение пароля</label>
                                 <input
                                     type="password"
                                     id="password_confirmation"

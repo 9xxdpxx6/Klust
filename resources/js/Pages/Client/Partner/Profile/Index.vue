@@ -55,7 +55,7 @@
 
                             <div>
                                 <label for="company_name" class="block text-sm font-medium text-gray-700 mb-1">
-                                    Название компании *
+                                    Название компании
                                 </label>
                                 <input
                                     type="text"
@@ -189,7 +189,7 @@
                         <div class="md:col-span-2 space-y-4">
                             <div>
                                 <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
-                                    ФИО *
+                                    ФИО
                                 </label>
                                 <input
                                     type="text"
@@ -205,7 +205,7 @@
 
                             <div>
                                 <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
-                                    Email *
+                                    Email
                                 </label>
                                 <input
                                     type="email"
