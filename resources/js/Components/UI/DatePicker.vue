@@ -6,7 +6,6 @@
       :class="['block text-sm font-medium mb-1', { 'text-red-600': error }]"
     >
       {{ label }}
-      <span v-if="required" class="text-red-500">*</span>
     </label>
     
     <DatePicker

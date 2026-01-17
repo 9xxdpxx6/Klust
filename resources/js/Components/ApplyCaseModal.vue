@@ -133,7 +133,7 @@ const closeModal = () => {
             <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium mb-2">
-                        Мотивационное письмо <span class="text-red-500">*</span>
+                        Мотивационное письмо
                     </label>
                     <Textarea
                         v-model="applyForm.motivation"

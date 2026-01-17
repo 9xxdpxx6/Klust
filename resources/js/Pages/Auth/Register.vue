@@ -52,7 +52,7 @@
                 <!-- ФИО -->
                 <div>
                     <label for="name" class="block text-sm font-medium text-gray-700">
-                        ФИО *
+                        ФИО
                     </label>
                     <div class="mt-1">
                         <input
@@ -72,7 +72,7 @@
                 <!-- Email -->
                 <div>
                     <label for="student_email" class="block text-sm font-medium text-gray-700">
-                        Email *
+                        Email
                     </label>
                     <div class="mt-1">
                         <input
@@ -104,7 +104,7 @@
                 <!-- Пароль -->
                 <div>
                     <label for="student_password" class="block text-sm font-medium text-gray-700">
-                        Пароль *
+                        Пароль
                     </label>
                     <div class="mt-1">
                         <input
@@ -124,7 +124,7 @@
                 <!-- Подтверждение пароля -->
                 <div>
                     <label for="password_confirmation_student" class="block text-sm font-medium text-gray-700">
-                        Подтверждение пароля *
+                        Подтверждение пароля
                     </label>
                     <div class="mt-1">
                         <input
@@ -151,7 +151,7 @@
                 <!-- Название компании -->
                 <div>
                     <label for="company_name" class="block text-sm font-medium text-gray-700">
-                        Название компании *
+                        Название компании
                     </label>
                     <div class="mt-1">
                         <input
@@ -171,7 +171,7 @@
                 <!-- Контактное лицо -->
                 <div>
                     <label for="contact_person" class="block text-sm font-medium text-gray-700">
-                        Контактное лицо (ФИО) *
+                        Контактное лицо (ФИО)
                     </label>
                     <div class="mt-1">
                         <input
@@ -191,7 +191,7 @@
                 <!-- Email -->
                 <div>
                     <label for="partner_email" class="block text-sm font-medium text-gray-700">
-                        Email *
+                        Email
                     </label>
                     <div class="mt-1">
                         <input
@@ -211,7 +211,7 @@
                 <!-- Телефон -->
                 <div>
                     <label for="contact_phone" class="block text-sm font-medium text-gray-700">
-                        Телефон *
+                        Телефон
                     </label>
                     <div class="mt-1">
                         <input
@@ -251,7 +251,7 @@
                 <!-- Пароль -->
                 <div>
                     <label for="partner_password" class="block text-sm font-medium text-gray-700">
-                        Пароль *
+                        Пароль
                     </label>
                     <div class="mt-1">
                         <input
@@ -271,7 +271,7 @@
                 <!-- Подтверждение пароля -->
                 <div>
                     <label for="password_confirmation_partner" class="block text-sm font-medium text-gray-700">
-                        Подтверждение пароля *
+                        Подтверждение пароля
                     </label>
                     <div class="mt-1">
                         <input

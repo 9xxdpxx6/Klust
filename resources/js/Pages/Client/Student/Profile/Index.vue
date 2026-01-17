@@ -55,7 +55,7 @@
 
                             <div>
                                 <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
-                                    ФИО *
+                                    ФИО
                                 </label>
                                 <input
                                     type="text"
@@ -71,7 +71,7 @@
 
                             <div>
                                 <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
-                                    Email *
+                                    Email
                                 </label>
                                 <input
                                     type="email"

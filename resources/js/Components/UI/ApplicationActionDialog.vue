@@ -25,7 +25,7 @@
                 <!-- Поле для причины отказа (только для типа reject) -->
                 <div v-if="type === 'reject'" class="mb-4">
                     <label for="rejection-reason" class="block text-sm font-medium text-gray-700 mb-2">
-                        Причина отклонения <span class="text-red-500">*</span>
+                        Причина отклонения
                     </label>
                     <Textarea
                         id="rejection-reason"

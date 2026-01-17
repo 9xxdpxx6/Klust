@@ -17,7 +17,7 @@
                         <!-- Название -->
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Название кейса *
+                                Название кейса
                             </label>
                             <input
                                 v-model="form.title"
@@ -34,58 +34,53 @@
                         <!-- Партнер -->
                         <Select
                             v-model="form.user_id"
-                            label="Партнер *"
+                            label="Партнер"
                             :options="partnerOptions"
                             optionLabel="label"
                             optionValue="value"
                             placeholder="Выберите партнера"
                             :error="form.errors.user_id"
-                            :required="true"
                         />
 
                         <!-- Размер команды -->
                         <Select
                             v-model="form.required_team_size"
-                            label="Размер команды *"
+                            label="Размер команды"
                             :options="teamSizeOptions"
                             optionLabel="label"
                             optionValue="value"
                             placeholder="Выберите размер"
                             :error="form.errors.required_team_size"
-                            :required="true"
                         />
 
                         <!-- Дедлайн -->
                         <DatePicker
                             v-model="form.deadline"
-                            label="Дедлайн *"
+                            label="Дедлайн"
                             :minDate="minDate"
                             :error="form.errors.deadline"
-                            :required="true"
                         />
 
                         <!-- Статус -->
                         <Select
                             v-model="form.status"
-                            label="Статус *"
+                            label="Статус"
                             :options="statusOptions"
                             optionLabel="label"
                             optionValue="value"
                             placeholder="Выберите статус"
                             :error="form.errors.status"
-                            :required="true"
                         />
 
                         <!-- Сложность -->
                         <Select
                             v-model="form.difficulty_id"
-                            label="Сложность *"
+                            label="Сложность"
                             :options="difficultyOptions"
                             optionLabel="label"
                             optionValue="value"
                             placeholder="Выберите сложность"
                             :error="form.errors.difficulty_id"
-                            :required="true"
                         />
 
                     </div>
@@ -93,7 +88,7 @@
                     <!-- Описание -->
                     <div class="mb-6">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Описание кейса *
+                            Описание кейса
                         </label>
                         <textarea
                             v-model="form.description"
