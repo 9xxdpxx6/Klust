@@ -10,6 +10,7 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from 'ziggy-js';
 import { setupPrimeVue } from '@/plugins/primevue';
+import { setupTresJS } from '@/plugins/tresjs';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import StudentLayout from '@/Layouts/StudentLayout.vue';
 import PartnerLayout from '@/Layouts/PartnerLayout.vue';
@@ -81,6 +82,7 @@ createInertiaApp({
         app.use(createPinia());
         app.use(ZiggyVue);
         setupPrimeVue(app);
+        setupTresJS(app);
         
         return app.mount(el);
     },

@@ -88,6 +88,15 @@ class SimulatorsController extends Controller
         // Загрузить симулятор и данные сессии
         $session->load(['simulator']);
 
+        // Для банковского симулятора используем специальную страницу
+        $simulator = $session->simulator;
+        if ($simulator && $simulator->slug === 'bank-simulator') {
+            return Inertia::render('Client/Student/Simulators/BankSimulatorSession', [
+                'session' => $session,
+                'simulator' => $simulator,
+            ]);
+        }
+
         return Inertia::render('Client/Student/Simulators/Session', [
             'session' => $session,
         ]);
