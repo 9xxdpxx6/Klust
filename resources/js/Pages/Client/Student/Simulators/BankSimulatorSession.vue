@@ -17,7 +17,7 @@
 <script setup>
 import { computed } from 'vue';
 import { Head } from '@inertiajs/vue3';
-import OfficeScene from '@/Components/BankSimulator/OfficeScene.vue';
+import OfficeScene from '@/Components/Simulators/BankSimulator/OfficeScene.vue';
 
 const props = defineProps({
   session: Object,
