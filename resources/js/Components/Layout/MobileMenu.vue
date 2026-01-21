@@ -16,7 +16,7 @@
         <div class="flex items-center justify-between w-full">
           <div class="flex items-center gap-3">
             <img 
-              src="/images/assets/kubstu-icon-white.png" 
+              :src="kubstuIconWhite" 
               alt="КубГТУ" 
               class="mobile-menu-header-icon"
             />
@@ -76,7 +76,7 @@
       <div class="mobile-menu-footer">
         <div class="flex justify-center items-center">
           <img 
-            src="/images/assets/kubgtu-square-logo-white.png" 
+            :src="kubgtuSquareLogoWhite" 
             alt="КубГТУ" 
             class="mobile-menu-footer-logo"
           />
@@ -92,6 +92,10 @@ import { Link } from '@inertiajs/vue3';
 import Drawer from 'primevue/drawer';
 import { useNavigation } from '@/Composables/useNavigation';
 import { routeExists, getRouteUrl } from '@/Utils/routes';
+
+// Статические файлы из public/ доступны напрямую через абсолютные пути
+const kubstuIconWhite = '/images/assets/kubstu-icon-white.png';
+const kubgtuSquareLogoWhite = '/images/assets/kubgtu-square-logo-white.png';
 
 const props = defineProps({
   items: {

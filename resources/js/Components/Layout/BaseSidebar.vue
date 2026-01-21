@@ -13,7 +13,7 @@
         <div class="flex items-center justify-between">
           <div v-if="!isCollapsed || isMobile" class="flex items-center gap-3">
             <img 
-              src="/images/assets/kubstu-icon-white.png" 
+              :src="kubstuIconWhite" 
               alt="КубГТУ" 
               class="base-sidebar__header-icon"
             />
@@ -79,7 +79,7 @@
       <slot name="footer">
         <div v-if="!isCollapsed || isMobile" class="flex justify-center items-center">
           <img 
-            src="/images/assets/kubgtu-square-logo-white.png" 
+            :src="kubgtuSquareLogoWhite" 
             alt="КубГТУ" 
             class="base-sidebar__logo"
           />
@@ -95,6 +95,10 @@ import { Link } from '@inertiajs/vue3';
 import { useNavigation } from '@/Composables/useNavigation';
 import { useSidebar } from '@/Composables/useSidebar';
 import { routeExists, getRouteUrl } from '@/Utils/routes';
+
+// Статические файлы из public/ доступны напрямую через абсолютные пути
+const kubstuIconWhite = '/images/assets/kubstu-icon-white.png';
+const kubgtuSquareLogoWhite = '/images/assets/kubgtu-square-logo-white.png';
 
 const props = defineProps({
   items: {
