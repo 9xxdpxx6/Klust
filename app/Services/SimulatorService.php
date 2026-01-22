@@ -173,15 +173,27 @@ class SimulatorService
     }
 
     /**
-     * Get student sessions
+     * Get student sessions (active and completed separately)
      */
-    public function getStudentSessions(User $user): \Illuminate\Database\Eloquent\Collection
+    public function getStudentSessions(User $user): array
     {
-        return SimulatorSession::with('simulator')
+        $activeSessions = SimulatorSession::with('simulator')
             ->where('user_id', $user->id)
+            ->whereNull('completed_at')
             ->orderBy('created_at', 'desc')
+            ->get();
+
+        $completedSessions = SimulatorSession::with('simulator')
+            ->where('user_id', $user->id)
+            ->whereNotNull('completed_at')
+            ->orderBy('completed_at', 'desc')
             ->limit(10)
             ->get();
+
+        return [
+            'active' => $activeSessions,
+            'completed' => $completedSessions,
+        ];
     }
 
     /**

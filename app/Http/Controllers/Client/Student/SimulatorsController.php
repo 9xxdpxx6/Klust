@@ -33,12 +33,13 @@ class SimulatorsController extends Controller
         // Получить доступные симуляторы (is_active = true)
         $simulators = $this->simulatorService->getAvailableSimulators();
 
-        // Получить историю сессий студента
+        // Получить историю сессий студента (активные и завершенные)
         $sessions = $this->simulatorService->getStudentSessions($user);
 
         return Inertia::render('Client/Student/Simulators/Index', [
             'simulators' => $simulators,
-            'sessions' => $sessions,
+            'activeSessions' => $sessions['active'],
+            'completedSessions' => $sessions['completed'],
         ]);
     }
 
