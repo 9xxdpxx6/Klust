@@ -56,6 +56,10 @@ class UpdateStateRequest extends FormRequest
             'state.calculations.monthly_payment' => ['nullable', 'numeric', 'min:0'],
             'state.calculations.deposit_result' => ['nullable', 'numeric', 'min:0'],
 
+            // UI состояние
+            'state.ui' => ['nullable', 'array'],
+            'state.ui.activeDialog' => ['nullable', 'string', 'in:phone,calculator,documents'],
+            
             // Действия
             'state.actions' => ['nullable', 'array'],
             'state.actions.*.type' => ['required_with:state.actions', 'string'],
