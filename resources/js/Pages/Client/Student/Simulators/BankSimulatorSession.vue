@@ -4,7 +4,13 @@
     
     <div class="simulator-container" ref="sceneContainerRef">
       <!-- 3D сцена -->
-      <OfficeScene :session-state="sessionState" />
+      <OfficeScene 
+        :session-state="sessionState"
+        :session-id="session.id"
+        @phone-click="onPhoneClick"
+        @calculator-click="onCalculatorClick"
+        @documents-click="onDocumentsClick"
+      />
       
       <!-- UI панели -->
       <div class="ui-overlay">
@@ -38,6 +44,19 @@ const sessionState = computed(() => props.session.state || {});
 const isFullscreen = ref(false);
 const containerRef = ref(null);
 const sceneContainerRef = ref(null);
+
+// Обработчики событий (диалоги теперь внутри OfficeScene)
+const onPhoneClick = () => {
+  // Событие обрабатывается в OfficeScene
+};
+
+const onCalculatorClick = () => {
+  // Событие обрабатывается в OfficeScene
+};
+
+const onDocumentsClick = () => {
+  // Событие обрабатывается в OfficeScene
+};
 
 const handleFullscreenChange = () => {
   isFullscreen.value = !!(
