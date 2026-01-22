@@ -10,11 +10,19 @@ const props = defineProps({
         type: Array,
         required: true
     },
-    recentSessions: {
+    activeSessions: {
+        type: Array,
+        default: () => []
+    },
+    completedSessions: {
         type: Array,
         default: () => []
     }
 })
+
+const continueSession = (session) => {
+    router.visit(route('student.simulators.session', session.id))
+}
 
 const startSimulator = (simulator) => {
     router.post(route('student.simulators.start', simulator.id))
@@ -101,10 +109,39 @@ const sessionColumns = [
                 </div>
             </Card>
 
-            <!-- Recent Sessions -->
+            <!-- Active Sessions -->
+            <Card v-if="activeSessions.length > 0" class="mb-4 sm:mb-8">
+                <h2 class="text-lg sm:text-xl font-bold mb-4 sm:mb-6">Активные сессии</h2>
+                <div class="space-y-3">
+                    <div
+                        v-for="session in activeSessions"
+                        :key="session.id"
+                        class="flex items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                    >
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-sm sm:text-base text-gray-900 mb-1">
+                                {{ session.simulator.title }}
+                            </h3>
+                            <p class="text-xs sm:text-sm text-gray-600">
+                                Начато: {{ formatDate(session.started_at || session.created_at) }}
+                            </p>
+                        </div>
+                        <Button
+                            variant="primary"
+                            size="sm"
+                            @click="continueSession(session)"
+                            class="ml-4"
+                        >
+                            Продолжить
+                        </Button>
+                    </div>
+                </div>
+            </Card>
+
+            <!-- Completed Sessions -->
             <Card>
                 <h2 class="text-lg sm:text-xl font-bold mb-4 sm:mb-6">История прохождений</h2>
-                <div v-if="recentSessions.length === 0" class="text-center py-8 sm:py-12">
+                <div v-if="completedSessions.length === 0" class="text-center py-8 sm:py-12">
                     <p class="text-sm sm:text-base text-gray-500">У вас пока нет завершенных сессий</p>
                     <p class="text-xs sm:text-sm text-gray-400 mt-2">
                         Начните проходить симуляторы, чтобы увидеть результаты здесь
@@ -126,7 +163,7 @@ const sessionColumns = [
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 <tr
-                                    v-for="session in recentSessions"
+                                    v-for="session in completedSessions"
                                     :key="session.id"
                                     class="hover:bg-gray-50"
                                 >
@@ -155,7 +192,7 @@ const sessionColumns = [
                                     </td>
                                     <td class="px-3 sm:px-6 py-3 sm:py-4">
                                         <Badge variant="success" class="text-xs">
-                                            +{{ session.points_earned }}
+                                            +{{ session.points_earned || 0 }}
                                         </Badge>
                                     </td>
                                 </tr>
