@@ -3,6 +3,12 @@
     class="office-scene"
     :shadows="true"
     :clear-color="'#E0F6FF'"
+    :dpr="[1, 2]"
+    :output-color-space="outputColorSpace"
+    :tone-mapping="toneMapping"
+    :tone-mapping-exposure="toneMappingExposure"
+    :use-legacy-lights="false"
+    :shadow-map-type="shadowMapType"
   >
     <!-- Камера (first-person view из офисного кресла) -->
     <TresPerspectiveCamera 
@@ -16,10 +22,16 @@
     <OrbitControlsDev />
     
     <!-- Освещение -->
-    <TresAmbientLight :intensity="0.6" />
+    <TresAmbientLight :intensity="0.3" />
+    <TresHemisphereLight 
+      :color="'#ffffff'"
+      :ground-color="'#bfc8d3'"
+      :intensity="0.25"
+    />
     <TresDirectionalLight 
+      ref="directionalLightRef"
       :position="[5, 10, 5]" 
-      :intensity="0.8"
+      :intensity="2.5"
       :cast-shadow="true"
     />
     
@@ -30,7 +42,11 @@
     </TresMesh>
     
     <!-- Стол -->
-    <Desk />
+    <Desk 
+      :position="[0, 0.0, -0.4]"
+      :rotation="[0, Math.PI, 0]"
+      :scale="[1, 1, 1]"
+    />
     
     <!-- Монитор на столе -->
     <Monitor 
@@ -56,6 +72,12 @@
     <Calculator 
       :position="[0.8, 0.9, -0.5]"
       @click="onCalculatorClick"
+    />
+    
+    <!-- Клиент напротив -->
+    <ClientCharacter 
+      :position="[0, 0, -2]"
+      :is-speaking="isClientSpeaking"
     />
     
     <!-- CSS3DRenderer для 3D диалогов -->
@@ -99,9 +121,9 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, onMounted } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { computed, ref, watch, onMounted, shallowRef, watchEffect } from 'vue'
 import { TresCanvas } from '@tresjs/core'
+import { LinearToneMapping, PCFSoftShadowMap, SRGBColorSpace } from 'three'
 import Desk from './Desk.vue'
 import Monitor from './Monitor.vue'
 import Phone from './Phone.vue'
@@ -109,6 +131,7 @@ import Documents from './Documents.vue'
 import Calculator from './Calculator.vue'
 import Dialog3D from './Dialog3D.vue'
 import CSS3DRendererPlugin from './CSS3DRendererPlugin.vue'
+import ClientCharacter from './ClientCharacter.vue'
 // TODO: DEV ONLY - Временное решение для разработки, убрать в продакшене
 import OrbitControlsDev from './OrbitControlsDev.vue'
 
@@ -124,6 +147,37 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['phoneClick', 'documentsClick', 'calculatorClick'])
+
+const outputColorSpace = SRGBColorSpace
+const toneMapping = LinearToneMapping
+const toneMappingExposure = 1.0
+const shadowMapType = PCFSoftShadowMap
+const directionalLightRef = shallowRef(null)
+const shadowConfigured = ref(false)
+
+watchEffect(() => {
+  const light = directionalLightRef.value
+  const shadow = light?.shadow
+  if (!shadow || shadowConfigured.value) return
+
+  shadow.mapSize?.set(4096, 4096)
+  shadow.radius = 6
+  shadow.bias = -0.0005
+  shadow.normalBias = 0.03
+
+  if (shadow.camera) {
+    shadow.camera.near = 0.1
+    shadow.camera.far = 15
+    shadow.camera.left = -3
+    shadow.camera.right = 3
+    shadow.camera.top = 3
+    shadow.camera.bottom = -3
+    shadow.camera.updateProjectionMatrix()
+  }
+
+  shadow.needsUpdate = true
+  shadowConfigured.value = true
+})
 
 // Состояния диалогов
 const showPhoneDialog = ref(false)
@@ -214,6 +268,28 @@ const monitorColor = computed(() => {
 
 const isPhoneRinging = computed(() => {
   return props.sessionState?.phone?.isRinging === true
+})
+
+// Определяем, говорит ли клиент в данный момент
+const isClientSpeaking = computed(() => {
+  const dialogue = props.sessionState?.dialogue
+  if (!dialogue) return false
+  
+  // Проверяем, если current_step указывает на то, что клиент говорит
+  if (dialogue.current_step === 'client_speaking') {
+    return true
+  }
+  
+  // Проверяем последнее сообщение в диалоге
+  const messages = dialogue.messages
+  if (messages && messages.length > 0) {
+    const lastMessage = messages[messages.length - 1]
+    // Если последнее сообщение от клиента, считаем что он говорит
+    // (в реальной системе можно добавить таймаут для определения "активного" состояния)
+    return lastMessage.role === 'client'
+  }
+  
+  return false
 })
 
 const onPhoneClick = () => {
