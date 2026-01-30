@@ -1,82 +1,38 @@
 <template>
-  <TresGroup
-    v-if="isModelLoaded"
-    :position="position"
-    :scale="scale"
-    @click="onClick"
-    @pointer-enter="onHoverEnter"
-    @pointer-leave="onHoverLeave"
-  >
-    <primitive
-      v-for="(instance, index) in documentInstances"
-      :key="index"
-      :object="instance"
-      :position="[0, index * 0.02, 0]"
-    />
+  <TresGroup v-if="isModelLoaded" :position="position" :rotation="rotation" :scale="scale">
+    <primitive :object="gltfScene" />
   </TresGroup>
-  <TresGroup v-else :position="position" :scale="scale">
-    <!-- Стек документов (несколько кубов) -->
-    <TresMesh
-      v-for="(doc, index) in documentStack"
-      :key="index"
-      :position="[0, index * 0.02, 0]"
-      @click="onClick"
-      @pointer-enter="onHoverEnter"
-      @pointer-leave="onHoverLeave"
-    >
-      <TresBoxGeometry :args="[0.2, 0.02, 0.15]" />
-      <TresMeshStandardMaterial :color="doc.color" />
-    </TresMesh>
-  </TresGroup>
+  <TresMesh v-else :position="position" :rotation="rotation" :scale="scale">
+    <TresBoxGeometry :args="[0.7, 0.9, 0.7]" />
+    <TresMeshStandardMaterial color="#6b7280" />
+  </TresMesh>
 </template>
 
 <script setup>
-import { ref, computed, shallowRef, watchEffect } from 'vue'
+import { ref, shallowRef, watchEffect } from 'vue'
 import { useTres } from '@tresjs/core'
 import { useGLTF } from '@tresjs/cientos'
 import { LinearFilter, LinearMipMapLinearFilter, SRGBColorSpace } from 'three'
 
-const props = defineProps({
+defineProps({
   position: {
     type: Array,
-    default: () => [0.5, 0.9, -0.5]
+    default: () => [0, 0, 0]
   },
-  count: {
-    type: Number,
-    default: 3
+  rotation: {
+    type: Array,
+    default: () => [0, 0, 0]
+  },
+  scale: {
+    type: Array,
+    default: () => [1, 1, 1]
   }
 })
 
-const emit = defineEmits(['click'])
-
-const scale = ref(1)
-const isHovered = ref(false)
 const isModelLoaded = ref(false)
 const gltfScene = shallowRef(null)
 const gltfResult = shallowRef(null)
-const documentInstances = shallowRef([])
 const { renderer } = useTres()
-
-const documentStack = computed(() => {
-  const colors = ['#ffffff', '#f5f5f5', '#e5e5e5']
-  return Array.from({ length: props.count }, (_, i) => ({
-    color: colors[i % colors.length]
-  }))
-})
-
-const onHoverEnter = () => {
-  scale.value = 1.1
-  isHovered.value = true
-}
-
-const onHoverLeave = () => {
-  scale.value = 1
-  isHovered.value = false
-}
-
-const onClick = () => {
-  emit('click')
-}
 
 const configureScene = (scene) => {
   scene.traverse((object) => {
@@ -101,14 +57,8 @@ const configureScene = (scene) => {
   })
 }
 
-const cloneScene = (scene) => {
-  const clone = scene.clone(true)
-  configureScene(clone)
-  return clone
-}
-
 try {
-  const gltfPromise = useGLTF('/models/document.glb')
+  const gltfPromise = useGLTF('/models/armchair.glb')
   if (gltfPromise && typeof gltfPromise.then === 'function') {
     gltfPromise
       .then((result) => {
@@ -127,14 +77,12 @@ watchEffect(() => {
   const hasError = gltfResult.value?.error?.value ?? gltfResult.value?.error ?? null
   if (hasError || !loadedScene) {
     isModelLoaded.value = false
-    documentInstances.value = []
     return
   }
   if (gltfScene.value !== loadedScene) {
     configureScene(loadedScene)
     gltfScene.value = loadedScene
   }
-  documentInstances.value = Array.from({ length: props.count }, () => cloneScene(gltfScene.value))
   isModelLoaded.value = true
 })
 </script>
