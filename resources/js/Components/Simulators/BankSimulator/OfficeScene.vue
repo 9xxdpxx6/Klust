@@ -30,33 +30,43 @@
     />
     <TresDirectionalLight 
       ref="directionalLightRef"
-      :position="[5, 10, 5]" 
+      :position="[-5, 15, -3]" 
       :intensity="2.5"
       :cast-shadow="true"
     />
     
-    <!-- Пол -->
-    <TresMesh :position="[0, 0, -5]" :rotation-x="-Math.PI / 2" :receive-shadow="true">
-      <TresPlaneGeometry :args="[20, 20]" />
-      <TresMeshStandardMaterial color="#cccccc" />
-    </TresMesh>
+    <!-- Кабинет (сборка из GLB) -->
+    <OfficeInterior 
+      :position="[0, 0, 0]" 
+      :rotation="[0, -Math.PI / 2, 0]" 
+      :scale="[1, 1, 1]"
+      :window-position="[3.2, 0, 0]"
+      :door-position="[0, 0, -4.2]"
+      :palm-left-position="[2.6, 0, 2.1]"
+      :palm-right-position="[2.6, 0, -2.1]"
+      :plant-position="[-1.2, 0, -3.6]"
+      :sofa-position="[0, 0, 0]"
+    />
     
     <!-- Стол -->
     <Desk 
-      :position="[0, 0.0, -0.4]"
+      :position="[-0.9, 0, -0.4]"
       :rotation="[0, Math.PI, 0]"
       :scale="[1, 1, 1]"
     />
     
-    <!-- Монитор на столе -->
-    <Monitor 
-      :position="[0, 1.2, -0.8]"
-      :color="monitorColor"
+    <!-- Ноутбук на столе -->
+    <Laptop 
+      :position="[-1.005, 0.7974, -0.45]"
+      :rotation="[0, Math.PI, 0]"
+      :color="laptopColor"
     />
     
     <!-- Телефон -->
     <Phone 
-      :position="[-0.5, 0.9, -0.5]"
+      :position="[-1.3, 0.7955, -0.5]"
+      :base-scale="[0.001, 0.001, 0.001]"
+      :base-rotation="[Math.PI / 2, 0, 0.5]"
       :is-ringing="isPhoneRinging"
       @click="onPhoneClick"
     />
@@ -64,19 +74,39 @@
     <!-- Документы -->
     <Documents 
       :position="[0.5, 0.9, -0.5]"
+      :rotation="[0, Math.PI, 0]"
       :count="3"
       @click="onDocumentsClick"
     />
     
-    <!-- Калькулятор -->
+    <!-- Кактус (опционально) -->
     <Calculator 
-      :position="[0.8, 0.9, -0.5]"
+      :position="[0.7, 0.9, -0.55]"
       @click="onCalculatorClick"
+    />
+
+    <!-- Кресло работника -->
+    <Armchair 
+      :position="[0, 0, -2.6]"
+      :rotation="[0, 0, 0]"
+      :scale="[1, 1, 1]"
+    />
+
+    <!-- Кресла клиентов (2 шт) -->
+    <Chair 
+      :position="[-0.4, 0, 2.2]"
+      :rotation="[0, 2.7, 0]"
+      :scale="[1, 1, 1]"
+    />
+    <Chair 
+      :position="[0.4, 0, 2.2]"
+      :rotation="[0, -2.65, 0]"
+      :scale="[1, 1, 1]"
     />
     
     <!-- Клиент напротив -->
     <ClientCharacter 
-      :position="[0, 0, -2]"
+      :position="[0, 0, 2]"
       :is-speaking="isClientSpeaking"
     />
     
@@ -124,8 +154,11 @@
 import { computed, ref, watch, onMounted, shallowRef, watchEffect } from 'vue'
 import { TresCanvas } from '@tresjs/core'
 import { LinearToneMapping, PCFSoftShadowMap, SRGBColorSpace } from 'three'
+import Armchair from './Armchair.vue'
+import Chair from './Chair.vue'
 import Desk from './Desk.vue'
-import Monitor from './Monitor.vue'
+import Laptop from './Laptop.vue'
+import OfficeInterior from './OfficeInterior.vue'
 import Phone from './Phone.vue'
 import Documents from './Documents.vue'
 import Calculator from './Calculator.vue'
@@ -167,11 +200,11 @@ watchEffect(() => {
 
   if (shadow.camera) {
     shadow.camera.near = 0.1
-    shadow.camera.far = 15
-    shadow.camera.left = -3
-    shadow.camera.right = 3
-    shadow.camera.top = 3
-    shadow.camera.bottom = -3
+    shadow.camera.far = 25
+    shadow.camera.left = -6
+    shadow.camera.right = 6
+    shadow.camera.top = 6
+    shadow.camera.bottom = -6
     shadow.camera.updateProjectionMatrix()
   }
 
@@ -258,7 +291,7 @@ const closeOtherDialogsWithWarning = (newDialogName) => {
   return true
 }
 
-const monitorColor = computed(() => {
+const laptopColor = computed(() => {
   const score = props.sessionState?.calculations?.credit_score
   if (score >= 0.8) return '#4ade80'
   if (score >= 0.5) return '#fbbf24'

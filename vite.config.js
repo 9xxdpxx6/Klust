@@ -26,11 +26,11 @@ export default defineConfig({
         },
     },
     server: {
-        host: 'localhost',
+        host: '127.0.0.1',
         port: 5177,
         strictPort: true,
         hmr: {
-            host: 'localhost',
+            host: '127.0.0.1',
         },
     },
 });
