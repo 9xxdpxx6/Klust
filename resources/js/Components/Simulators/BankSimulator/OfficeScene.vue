@@ -115,13 +115,13 @@
     <!-- CSS3DRenderer для 3D диалогов -->
     <CSS3DRendererPlugin />
     
-    <!-- 3D диалоги (рядом с монитором, в одной плоскости, чуть больше экрана) -->
-    <!-- Все диалоги в одной плоскости Z=-0.6, но с небольшим смещением по Z для предотвращения перекрытия -->
+    <!-- 3D диалоги (перед работником, перед столом, видны с черного кресла) -->
+    <!-- Позиция: перед работником [-1.0, 1.2, -0.3], перед столом [-0.9, 0, -0.4] и креслом [-1.05, 0, -0.75] -->
     <Dialog3D
       v-if="showPhoneDialog"
       :visible="showPhoneDialog"
       header="Телефон"
-      :position="[0, 1.2, -0.6]"
+      :position="[-1.0, 1.2, -0.3]"
       :width="500"
       :height="350"
       @update:visible="showPhoneDialog = $event"
@@ -132,7 +132,7 @@
       v-if="showCalculatorDialog"
       :visible="showCalculatorDialog"
       header="Калькулятор"
-      :position="[0, 1.2, -0.6]"
+      :position="[-1.0, 1.2, -0.3]"
       :width="500"
       :height="350"
       @update:visible="showCalculatorDialog = $event"
@@ -143,7 +143,7 @@
       v-if="showDocumentsDialog"
       :visible="showDocumentsDialog"
       header="Документы"
-      :position="[0, 1.2, -0.6]"
+      :position="[-1.0, 1.2, -0.3]"
       :width="500"
       :height="350"
       @update:visible="showDocumentsDialog = $event"
