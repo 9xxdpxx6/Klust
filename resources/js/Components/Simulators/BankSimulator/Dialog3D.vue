@@ -111,6 +111,8 @@ onMounted(() => {
     // Используем lookAt один раз для установки направления
     const workerPosition = new Vector3(0, 1.6, 0)
     object.lookAt(workerPosition)
+    // Разворачиваем на 180 градусов
+    object.rotateY(Math.PI)
     
     css3dObject.value = object
     

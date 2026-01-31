@@ -73,33 +73,35 @@
     
     <!-- Документы -->
     <Documents 
-      :position="[0.5, 0.9, -0.5]"
-      :rotation="[0, Math.PI, 0]"
-      :count="3"
+      :position="[-0.6, 0.79, -0.37]"
+      :rotation="[0, 3.3, 0]"
+      :count="1"
+      :scale="[0.5, 0.5, 0.5]"
       @click="onDocumentsClick"
     />
     
-    <!-- Кактус (опционально) -->
-    <Calculator 
-      :position="[0.7, 0.9, -0.55]"
-      @click="onCalculatorClick"
+    <!-- Кактус -->
+    <Cactus 
+      :position="[1.3, 0.0, -1.55]"
+      :rotation="[0, 0, 0]"
+      :scale="[0.7, 0.7, 0.7]"
     />
 
     <!-- Кресло работника -->
     <Armchair 
-      :position="[0, 0, -2.6]"
+      :position="[-1.05, 0, -0.75]"
       :rotation="[0, 0, 0]"
       :scale="[1, 1, 1]"
     />
 
     <!-- Кресла клиентов (2 шт) -->
     <Chair 
-      :position="[-0.4, 0, 2.2]"
+      :position="[-1.3, 0, 0.4]"
       :rotation="[0, 2.7, 0]"
       :scale="[1, 1, 1]"
     />
     <Chair 
-      :position="[0.4, 0, 2.2]"
+      :position="[-0.3, 0, 0.4]"
       :rotation="[0, -2.65, 0]"
       :scale="[1, 1, 1]"
     />
@@ -161,7 +163,7 @@ import Laptop from './Laptop.vue'
 import OfficeInterior from './OfficeInterior.vue'
 import Phone from './Phone.vue'
 import Documents from './Documents.vue'
-import Calculator from './Calculator.vue'
+import Cactus from './Cactus.vue'
 import Dialog3D from './Dialog3D.vue'
 import CSS3DRendererPlugin from './CSS3DRendererPlugin.vue'
 import ClientCharacter from './ClientCharacter.vue'
