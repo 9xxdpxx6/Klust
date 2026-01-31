@@ -73,33 +73,35 @@
     
     <!-- Документы -->
     <Documents 
-      :position="[0.5, 0.9, -0.5]"
-      :rotation="[0, Math.PI, 0]"
-      :count="3"
+      :position="[-0.6, 0.79, -0.37]"
+      :rotation="[0, 3.3, 0]"
+      :count="1"
+      :scale="[0.5, 0.5, 0.5]"
       @click="onDocumentsClick"
     />
     
-    <!-- Кактус (опционально) -->
-    <Calculator 
-      :position="[0.7, 0.9, -0.55]"
-      @click="onCalculatorClick"
+    <!-- Кактус -->
+    <Cactus 
+      :position="[1.3, 0.0, -1.55]"
+      :rotation="[0, 0, 0]"
+      :scale="[0.7, 0.7, 0.7]"
     />
 
     <!-- Кресло работника -->
     <Armchair 
-      :position="[0, 0, -2.6]"
+      :position="[-1.05, 0, -0.75]"
       :rotation="[0, 0, 0]"
       :scale="[1, 1, 1]"
     />
 
     <!-- Кресла клиентов (2 шт) -->
     <Chair 
-      :position="[-0.4, 0, 2.2]"
+      :position="[-1.3, 0, 0.4]"
       :rotation="[0, 2.7, 0]"
       :scale="[1, 1, 1]"
     />
     <Chair 
-      :position="[0.4, 0, 2.2]"
+      :position="[-0.3, 0, 0.4]"
       :rotation="[0, -2.65, 0]"
       :scale="[1, 1, 1]"
     />
@@ -113,13 +115,13 @@
     <!-- CSS3DRenderer для 3D диалогов -->
     <CSS3DRendererPlugin />
     
-    <!-- 3D диалоги (рядом с монитором, в одной плоскости, чуть больше экрана) -->
-    <!-- Все диалоги в одной плоскости Z=-0.6, но с небольшим смещением по Z для предотвращения перекрытия -->
+    <!-- 3D диалоги (перед работником, перед столом, видны с черного кресла) -->
+    <!-- Позиция: перед работником [-1.0, 1.2, -0.3], перед столом [-0.9, 0, -0.4] и креслом [-1.05, 0, -0.75] -->
     <Dialog3D
       v-if="showPhoneDialog"
       :visible="showPhoneDialog"
       header="Телефон"
-      :position="[0, 1.2, -0.6]"
+      :position="[-1.0, 1.2, -0.3]"
       :width="500"
       :height="350"
       @update:visible="showPhoneDialog = $event"
@@ -130,7 +132,7 @@
       v-if="showCalculatorDialog"
       :visible="showCalculatorDialog"
       header="Калькулятор"
-      :position="[0, 1.2, -0.6]"
+      :position="[-1.0, 1.2, -0.3]"
       :width="500"
       :height="350"
       @update:visible="showCalculatorDialog = $event"
@@ -141,7 +143,7 @@
       v-if="showDocumentsDialog"
       :visible="showDocumentsDialog"
       header="Документы"
-      :position="[0, 1.2, -0.6]"
+      :position="[-1.0, 1.2, -0.3]"
       :width="500"
       :height="350"
       @update:visible="showDocumentsDialog = $event"
@@ -161,7 +163,7 @@ import Laptop from './Laptop.vue'
 import OfficeInterior from './OfficeInterior.vue'
 import Phone from './Phone.vue'
 import Documents from './Documents.vue'
-import Calculator from './Calculator.vue'
+import Cactus from './Cactus.vue'
 import Dialog3D from './Dialog3D.vue'
 import CSS3DRendererPlugin from './CSS3DRendererPlugin.vue'
 import ClientCharacter from './ClientCharacter.vue'

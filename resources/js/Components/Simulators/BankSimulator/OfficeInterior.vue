@@ -18,7 +18,7 @@
     />
     <primitive v-if="sofaScene" 
         :object="sofaScene" 
-        :position="[0.6, 0, -1]" 
+        :position="[1.3, 0, -1]" 
         :rotation="[0, 0, 0]" 
     />
     <primitive v-if="palmLeftScene" 
@@ -34,7 +34,7 @@
     />
     <primitive v-if="plantScene" 
         :object="plantScene" 
-        :position="[-1.6, 0, -3.5]" 
+        :position="[3.35, 0, -1.5]" 
         :rotation="[0, Math.PI, 0]" 
     />
   </TresGroup>

@@ -107,10 +107,11 @@ onMounted(() => {
     object.position.set(...props.position)
     object.scale.set(scale, scale, scale)
     
-    // Фиксированный поворот к работнику банка (камера находится в [0, 1.6, 0])
-    // Используем lookAt один раз для установки направления
-    const workerPosition = new Vector3(0, 1.6, 0)
-    object.lookAt(workerPosition)
+    // Ориентация диалога к работнику банка (черное кресло находится в [-1.05, 0, -0.75])
+    // Позиция глаз работника: [-1.05, 1.6, -0.75]
+    // Диалог должен быть виден с черного кресла работника
+    const workerEyePosition = new Vector3(-0.97, 1.2, -0.75)
+    object.lookAt(workerEyePosition)
     
     css3dObject.value = object
     
