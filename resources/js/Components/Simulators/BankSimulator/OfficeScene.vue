@@ -41,11 +41,12 @@
       :rotation="[0, -Math.PI / 2, 0]" 
       :scale="[1, 1, 1]"
       :window-position="[3.2, 0, 0]"
-      :door-position="[0, 0, -4.2]"
+      :door-position="[3.95, 0, 0.5]"
       :palm-left-position="[2.6, 0, 2.1]"
       :palm-right-position="[2.6, 0, -2.1]"
       :plant-position="[-1.2, 0, -3.6]"
       :sofa-position="[0, 0, 0]"
+      @door-click="onDoorClick"
     />
     
     <!-- Стол -->
@@ -108,8 +109,12 @@
     
     <!-- Клиент напротив -->
     <ClientCharacter 
-      :position="[0, 0, 2]"
+      v-if="isClientVisible"
+      :position="clientPositionArray"
+      :rotation="clientRotation"
+      :animation="clientAnimation"
       :is-speaking="isClientSpeaking"
+      @animation-finished="onClientAnimationFinished"
     />
     
     <!-- CSS3DRenderer для 3D диалогов -->
@@ -153,7 +158,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, onMounted, shallowRef, watchEffect } from 'vue'
+import { computed, ref, watch, onMounted, onBeforeUnmount, shallowRef, watchEffect } from 'vue'
 import { TresCanvas } from '@tresjs/core'
 import { LinearToneMapping, PCFSoftShadowMap, SRGBColorSpace } from 'three'
 import Armchair from './Armchair.vue'
@@ -325,6 +330,118 @@ const isClientSpeaking = computed(() => {
   }
   
   return false
+})
+
+const chairTarget = { x: -1.3, y: 0, z: 0.4 }
+const chairSeatOffset = { x: 0.0, y: -0.45, z: -0.05 }
+const chairRotationY = 2.7
+const spawnOffset = { x: 0, y: 0, z: 0.8 }
+const walkSpeed = 1.8
+const seatThreshold = 0.2
+const modelRotationOffset = 0
+
+const isClientVisible = ref(false)
+const clientState = ref('idle')
+const clientAnimation = ref('idle')
+const clientPosition = ref({ x: 0, y: 0, z: 0 })
+const clientRotation = ref([0, 0, 0])
+
+const clientPositionArray = computed(() => {
+  return [clientPosition.value.x, clientPosition.value.y, clientPosition.value.z]
+})
+
+const setClientRotationTowards = (target) => {
+  const dx = target.x - clientPosition.value.x
+  const dz = target.z - clientPosition.value.z
+  const yaw = Math.atan2(dx, dz)
+  clientRotation.value = [0, yaw + modelRotationOffset, 0]
+}
+
+const setClientRotationSeated = () => {
+  clientRotation.value = [0, chairRotationY + modelRotationOffset, 0]
+}
+
+const spawnClient = (doorWorldPosition) => {
+  if (isClientVisible.value && clientState.value !== 'idle') return
+
+  clientPosition.value = {
+    x: doorWorldPosition.x + spawnOffset.x,
+    y: doorWorldPosition.y + spawnOffset.y,
+    z: doorWorldPosition.z + spawnOffset.z
+  }
+  isClientVisible.value = true
+  clientState.value = 'walking'
+  clientAnimation.value = 'walk'
+  setClientRotationTowards(chairTarget)
+}
+
+const onDoorClick = (payload) => {
+  if (!payload?.position) return
+  const [x, y, z] = payload.position
+  spawnClient({ x, y, z })
+}
+
+let rafId = null
+let lastTimestamp = null
+
+const updateClientMovement = (deltaSeconds) => {
+  if (!isClientVisible.value) return
+  if (clientState.value !== 'walking') return
+
+  const dx = chairTarget.x - clientPosition.value.x
+  const dz = chairTarget.z - clientPosition.value.z
+  const distance = Math.hypot(dx, dz)
+
+  if (distance <= seatThreshold) {
+    clientPosition.value = {
+      x: chairTarget.x + chairSeatOffset.x,
+      y: chairTarget.y + chairSeatOffset.y,
+      z: chairTarget.z + chairSeatOffset.z
+    }
+    clientState.value = 'sitting_down'
+    clientAnimation.value = 'sit_down'
+    setClientRotationSeated()
+    return
+  }
+
+  const step = Math.min(distance, walkSpeed * deltaSeconds)
+  const nx = dx / distance
+  const nz = dz / distance
+  clientPosition.value = {
+    x: clientPosition.value.x + nx * step,
+    y: clientPosition.value.y,
+    z: clientPosition.value.z + nz * step
+  }
+  setClientRotationTowards(chairTarget)
+}
+
+const onClientAnimationFinished = (animationName) => {
+  if (animationName === 'sit_down' && clientState.value === 'sitting_down') {
+    clientState.value = 'seated'
+    clientAnimation.value = 'sit'
+  }
+}
+
+const onFrame = (timestamp) => {
+  if (lastTimestamp === null) {
+    lastTimestamp = timestamp
+  }
+  const deltaSeconds = (timestamp - lastTimestamp) / 1000
+  lastTimestamp = timestamp
+  updateClientMovement(deltaSeconds)
+  rafId = window.requestAnimationFrame(onFrame)
+}
+
+onMounted(() => {
+  rafId = window.requestAnimationFrame(onFrame)
+})
+
+onBeforeUnmount(() => {
+  if (rafId) {
+    window.cancelAnimationFrame(rafId)
+  }
+  rafId = null
+  lastTimestamp = null
 })
 
 const onPhoneClick = () => {
