@@ -11,11 +11,15 @@
         :position="[2.675, 0.15, 2.72]" 
         :rotation="[0, Math.PI, 0]" 
     />
-    <primitive v-if="doorScene" 
-        :object="doorScene" 
-        :position="[3.95, 0, 0.5]" 
-        :rotation="[0, Math.PI, 0]" 
-    />
+    <TresGroup
+      v-if="doorScene"
+      ref="doorGroupRef"
+      :position="doorPosition"
+      :rotation="[0, Math.PI, 0]"
+      @click="onDoorClick"
+    >
+      <primitive :object="doorScene" />
+    </TresGroup>
     <primitive v-if="sofaScene" 
         :object="sofaScene" 
         :position="[1.3, 0, -1]" 
@@ -44,7 +48,7 @@
 import { shallowRef } from 'vue'
 import { useTres } from '@tresjs/core'
 import { useGLTF } from '@tresjs/cientos'
-import { LinearFilter, LinearMipMapLinearFilter, SRGBColorSpace } from 'three'
+import { LinearFilter, LinearMipMapLinearFilter, SRGBColorSpace, Vector3 } from 'three'
 
 const props = defineProps({
   position: {
@@ -85,12 +89,15 @@ const props = defineProps({
   }
 })
 
+const emit = defineEmits(['doorClick'])
+
 const { renderer } = useTres()
 
 const roomScene = shallowRef(null)
 const ceilingScene = shallowRef(null)
 const windowScene = shallowRef(null)
 const doorScene = shallowRef(null)
+const doorGroupRef = shallowRef(null)
 const sofaScene = shallowRef(null)
 const palmLeftScene = shallowRef(null)
 const palmRightScene = shallowRef(null)
@@ -154,4 +161,14 @@ const sofaPosition = props.sofaPosition
 const palmLeftPosition = props.palmLeftPosition
 const palmRightPosition = props.palmRightPosition
 const plantPosition = props.plantPosition
+
+const onDoorClick = () => {
+  const doorGroup = doorGroupRef.value
+  if (!doorGroup) return
+  const worldPosition = new Vector3()
+  doorGroup.getWorldPosition(worldPosition)
+  emit('doorClick', {
+    position: [worldPosition.x, worldPosition.y, worldPosition.z]
+  })
+}
 </script>
