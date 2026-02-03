@@ -10,16 +10,28 @@
     :use-legacy-lights="false"
     :shadow-map-type="shadowMapType"
   >
-    <!-- Камера (first-person view из офисного кресла) -->
+    <!-- Камера -->
     <TresPerspectiveCamera 
-      :position="[0, 1.6, 0]" 
-      :fov="75"
+      :position="devMode ? [0, 1.6, 0] : [-1.1, 1.07, -0.75]" 
+      :fov="devMode ? 75 : 70"
       :near="0.1"
       :far="1000"
     />
     
-    <!-- TODO: DEV ONLY - OrbitControls для 360 просмотра (временно для разработки, убрать в продакшене) -->
-    <OrbitControlsDev />
+    <!-- DEV: OrbitControls для свободного просмотра -->
+    <OrbitControlsDev v-if="devMode" />
+    
+    <!-- PROD: Ограниченное движение камеры за курсором -->
+    <HeadrestCamera 
+      v-else
+      :position="[-1.1, 1.07, -0.75]"
+      :fov="70"
+      :max-yaw="20"
+      :max-pitch="20"
+      :speed="10"
+      :base-yaw="Math.PI - 0.3"
+      :base-pitch="0"
+    />
     
     <!-- Освещение -->
     <TresAmbientLight :intensity="0.3" />
@@ -90,8 +102,8 @@
 
     <!-- Кресло работника -->
     <Armchair 
-      :position="[-1.05, 0, -0.75]"
-      :rotation="[0, 0, 0]"
+      :position="[-0.95, 0, -0.95]"
+      :rotation="[0, -0.25, 0]"
       :scale="[1, 1, 1]"
     />
 
@@ -172,8 +184,10 @@ import Cactus from './Cactus.vue'
 import Dialog3D from './Dialog3D.vue'
 import CSS3DRendererPlugin from './CSS3DRendererPlugin.vue'
 import ClientCharacter from './ClientCharacter.vue'
-// TODO: DEV ONLY - Временное решение для разработки, убрать в продакшене
+import HeadrestCamera from './HeadrestCamera.vue'
+// DEV ONLY - Переключить на false для продакшена
 import OrbitControlsDev from './OrbitControlsDev.vue'
+const devMode = false // TODO: переключить на false для прода
 
 const props = defineProps({
   sessionState: {
