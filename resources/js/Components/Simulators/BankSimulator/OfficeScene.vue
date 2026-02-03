@@ -132,39 +132,17 @@
     <!-- CSS3DRenderer для 3D диалогов -->
     <CSS3DRendererPlugin />
     
-    <!-- 3D диалоги (перед работником, перед столом, видны с черного кресла) -->
-    <!-- Позиция: перед работником [-1.0, 1.2, -0.3], перед столом [-0.9, 0, -0.4] и креслом [-1.05, 0, -0.75] -->
+    <!-- Единый 3D диалог с динамическим контентом -->
+    <!-- Позиция: дальше от камеры [-0.95, 1.15, 0.15], уменьшенный размер -->
     <Dialog3D
-      v-if="showPhoneDialog"
-      :visible="showPhoneDialog"
-      header="Телефон"
-      :position="[-1.0, 1.2, -0.3]"
+      ref="mainDialogRef"
+      :visible="isAnyDialogOpen"
+      :header="activeDialogHeader"
+      :position="[-0.95, 1.15, 0.15]"
       :width="500"
       :height="350"
-      @update:visible="showPhoneDialog = $event"
-      @close="onPhoneDialogClose"
-    />
-    
-    <Dialog3D
-      v-if="showCalculatorDialog"
-      :visible="showCalculatorDialog"
-      header="Калькулятор"
-      :position="[-1.0, 1.2, -0.3]"
-      :width="500"
-      :height="350"
-      @update:visible="showCalculatorDialog = $event"
-      @close="onCalculatorDialogClose"
-    />
-    
-    <Dialog3D
-      v-if="showDocumentsDialog"
-      :visible="showDocumentsDialog"
-      header="Документы"
-      :position="[-1.0, 1.2, -0.3]"
-      :width="500"
-      :height="350"
-      @update:visible="showDocumentsDialog = $event"
-      @close="onDocumentsDialogClose"
+      @update:visible="onDialogVisibilityChange"
+      @close="onMainDialogClose"
     />
   </TresCanvas>
 </template>
@@ -237,6 +215,47 @@ watchEffect(() => {
 const showPhoneDialog = ref(false)
 const showCalculatorDialog = ref(false)
 const showDocumentsDialog = ref(false)
+
+// Ref для единого диалога
+const mainDialogRef = ref(null)
+
+// Активный диалог (для единого Dialog3D)
+const activeDialog = ref(null) // 'phone' | 'calculator' | 'documents' | null
+
+// Заголовки диалогов
+const dialogHeaders = {
+  phone: 'Телефон',
+  calculator: 'Калькулятор',
+  documents: 'Документы'
+}
+
+// Вычисляемые свойства для единого диалога
+const isAnyDialogOpen = computed(() => {
+  return showPhoneDialog.value || showCalculatorDialog.value || showDocumentsDialog.value
+})
+
+const activeDialogHeader = computed(() => {
+  if (showPhoneDialog.value) return dialogHeaders.phone
+  if (showCalculatorDialog.value) return dialogHeaders.calculator
+  if (showDocumentsDialog.value) return dialogHeaders.documents
+  return ''
+})
+
+// Обработчик закрытия единого диалога
+const onMainDialogClose = () => {
+  showPhoneDialog.value = false
+  showCalculatorDialog.value = false
+  showDocumentsDialog.value = false
+  activeDialog.value = null
+  saveDialogState(null)
+}
+
+// Обработчик изменения видимости диалога
+const onDialogVisibilityChange = (visible) => {
+  if (!visible) {
+    onMainDialogClose()
+  }
+}
 
 // Восстанавливаем состояние диалогов из sessionState при монтировании
 onMounted(() => {
@@ -458,27 +477,57 @@ onBeforeUnmount(() => {
   lastTimestamp = null
 })
 
+// Переключение на новый диалог с анимацией
+const switchToDialog = (dialogName, dialogRef, emitEvent) => {
+  const wasDialogOpen = isAnyDialogOpen.value
+  const previousDialog = activeDialog.value
+  
+  // Если открыт другой диалог - анимируем переключение
+  if (wasDialogOpen && previousDialog !== dialogName) {
+    // Анимируем смену заголовка, не закрывая диалог
+    if (mainDialogRef.value?.animateContentChange) {
+      mainDialogRef.value.animateContentChange(dialogHeaders[dialogName], () => {
+        // После анимации переключаем флаги диалогов
+        showPhoneDialog.value = dialogName === 'phone'
+        showCalculatorDialog.value = dialogName === 'calculator'
+        showDocumentsDialog.value = dialogName === 'documents'
+        activeDialog.value = dialogName
+        saveDialogState(dialogName)
+        emitEvent()
+      })
+    } else {
+      // Fallback без анимации
+      showPhoneDialog.value = dialogName === 'phone'
+      showCalculatorDialog.value = dialogName === 'calculator'
+      showDocumentsDialog.value = dialogName === 'documents'
+      activeDialog.value = dialogName
+      saveDialogState(dialogName)
+      emitEvent()
+    }
+  } else if (!wasDialogOpen) {
+    // Диалог не был открыт - просто открываем
+    dialogRef.value = true
+    activeDialog.value = dialogName
+    saveDialogState(dialogName)
+    emitEvent()
+  }
+}
+
 const onPhoneClick = () => {
-  if (closeOtherDialogsWithWarning('phone')) {
-    showPhoneDialog.value = true
-    saveDialogState('phone')
-    emit('phoneClick')
+  if (!showPhoneDialog.value) {
+    switchToDialog('phone', showPhoneDialog, () => emit('phoneClick'))
   }
 }
 
 const onDocumentsClick = () => {
-  if (closeOtherDialogsWithWarning('documents')) {
-    showDocumentsDialog.value = true
-    saveDialogState('documents')
-    emit('documentsClick')
+  if (!showDocumentsDialog.value) {
+    switchToDialog('documents', showDocumentsDialog, () => emit('documentsClick'))
   }
 }
 
 const onCalculatorClick = () => {
-  if (closeOtherDialogsWithWarning('calculator')) {
-    showCalculatorDialog.value = true
-    saveDialogState('calculator')
-    emit('calculatorClick')
+  if (!showCalculatorDialog.value) {
+    switchToDialog('calculator', showCalculatorDialog, () => emit('calculatorClick'))
   }
 }
 
