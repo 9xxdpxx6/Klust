@@ -70,14 +70,14 @@
     
     <!-- Ноутбук на столе -->
     <Laptop 
-      :position="[-1.005, 0.7974, -0.45]"
-      :rotation="[0, Math.PI, 0]"
+      :position="[-0.98, 0.7974, -0.4]"
+      :rotation="[0, 3.2, 0]"
       :color="laptopColor"
     />
     
     <!-- Телефон -->
     <Phone 
-      :position="[-1.3, 0.7955, -0.5]"
+      :position="[-1.4, 0.7955, -0.55]"
       :base-scale="[0.001, 0.001, 0.001]"
       :base-rotation="[Math.PI / 2, 0, 0.5]"
       :is-ringing="isPhoneRinging"
@@ -86,10 +86,10 @@
     
     <!-- Документы -->
     <Documents 
-      :position="[-0.6, 0.79, -0.37]"
-      :rotation="[0, 3.3, 0]"
+      :position="[-1.27, 0.79, -0.37]"
+      :rotation="[0, 3.25, 0]"
       :count="1"
-      :scale="[0.5, 0.5, 0.5]"
+      :scale="[0.45, 0.45, 0.45]"
       @click="onDocumentsClick"
     />
     
@@ -138,9 +138,9 @@
       ref="mainDialogRef"
       :visible="isAnyDialogOpen"
       :header="activeDialogHeader"
-      :position="[-0.95, 1.15, 0.15]"
-      :width="500"
-      :height="350"
+      :position="[-1.1, 1.15, 0.15]"
+      :width="600"
+      :height="400"
       @update:visible="onDialogVisibilityChange"
       @close="onMainDialogClose"
     />
