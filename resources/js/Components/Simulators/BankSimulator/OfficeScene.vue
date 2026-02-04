@@ -26,10 +26,12 @@
       v-else
       :position="[-1.1, 1.07, -0.75]"
       :fov="70"
-      :max-yaw="20"
-      :max-pitch="20"
-      :speed="10"
-      :base-yaw="Math.PI - 0.3"
+      :max-yaw-left="5"
+      :max-yaw-right="20"
+      :max-pitch-up="15"
+      :max-pitch-down="25"
+      :speed="4"
+      :base-yaw="Math.PI - 0.2"
       :base-pitch="0"
     />
     
