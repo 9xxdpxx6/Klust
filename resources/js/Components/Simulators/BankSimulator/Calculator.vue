@@ -28,9 +28,9 @@
 
 <script setup>
 import { ref, shallowRef, watchEffect } from 'vue'
-import { useTres } from '@tresjs/core'
+import { useLoop, useTres } from '@tresjs/core'
 import { useGLTF } from '@tresjs/cientos'
-import { LinearFilter, LinearMipMapLinearFilter, SRGBColorSpace } from 'three'
+import { LinearFilter, LinearMipMapLinearFilter, SRGBColorSpace, MathUtils } from 'three'
 
 const props = defineProps({
   position: {
@@ -42,6 +42,7 @@ const props = defineProps({
 const emit = defineEmits(['click'])
 
 const scale = ref(1)
+const targetScale = ref(1)
 const isHovered = ref(false)
 const isModelLoaded = ref(false)
 const gltfScene = shallowRef(null)
@@ -49,12 +50,12 @@ const gltfResult = shallowRef(null)
 const { renderer } = useTres()
 
 const onHoverEnter = () => {
-  scale.value = 1.1
+  targetScale.value = 1.07
   isHovered.value = true
 }
 
 const onHoverLeave = () => {
-  scale.value = 1
+  targetScale.value = 1
   isHovered.value = false
 }
 
@@ -112,5 +113,11 @@ watchEffect(() => {
     gltfScene.value = loadedScene
   }
   isModelLoaded.value = true
+})
+
+const { onBeforeRender } = useLoop()
+
+onBeforeRender(({ delta }) => {
+  scale.value = MathUtils.damp(scale.value, targetScale.value, 12, delta)
 })
 </script>
