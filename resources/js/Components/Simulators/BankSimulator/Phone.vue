@@ -32,7 +32,7 @@
 import { ref, computed, shallowRef, watchEffect } from 'vue'
 import { useLoop, useTres } from '@tresjs/core'
 import { useGLTF } from '@tresjs/cientos'
-import { LinearFilter, LinearMipMapLinearFilter, SRGBColorSpace } from 'three'
+import { LinearFilter, LinearMipMapLinearFilter, SRGBColorSpace, MathUtils } from 'three'
 
 const props = defineProps({
   position: {
@@ -56,6 +56,7 @@ const props = defineProps({
 const emit = defineEmits(['click'])
 
 const scale = ref(1)
+const targetScale = ref(1)
 const phoneRotation = ref(0)
 const isHovered = ref(false)
 const isModelLoaded = ref(false)
@@ -90,12 +91,12 @@ const computedRotation = computed(() => {
 })
 
 const onHoverEnter = () => {
-  scale.value = 1.15
+  targetScale.value = 1.1
   isHovered.value = true
 }
 
 const onHoverLeave = () => {
-  scale.value = 1
+  targetScale.value = 1
   isHovered.value = false
 }
 
@@ -158,7 +159,8 @@ watchEffect(() => {
 // Анимация вибрации если звонит
 const { onBeforeRender } = useLoop()
 
-onBeforeRender(({ elapsed }) => {
+onBeforeRender(({ elapsed, delta }) => {
+  scale.value = MathUtils.damp(scale.value, targetScale.value, 12, delta)
   if (props.isRinging) {
     phoneRotation.value = Math.sin(elapsed * 10) * 0.1
   } else {
