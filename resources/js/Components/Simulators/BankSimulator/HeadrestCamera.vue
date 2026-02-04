@@ -10,8 +10,10 @@ import { MathUtils, Vector3 } from 'three'
 const props = defineProps({
   position: { type: Array, default: () => [-1.05, 1.2, -0.75] },
   fov: { type: Number, default: 75 },
-  maxYaw: { type: Number, default: 20 },
-  maxPitch: { type: Number, default: 20 },
+  maxYawLeft: { type: Number, default: 20 },
+  maxYawRight: { type: Number, default: 20 },
+  maxPitchUp: { type: Number, default: 20 },
+  maxPitchDown: { type: Number, default: 20 },
   speed: { type: Number, default: 5 },
   baseYaw: { type: Number, default: 0 },
   basePitch: { type: Number, default: 0 }
@@ -29,8 +31,10 @@ const onMouseMove = (e) => {
   mouseY = e.clientY
 }
 
-const maxYawRad = MathUtils.degToRad(props.maxYaw)
-const maxPitchRad = MathUtils.degToRad(props.maxPitch)
+const maxYawLeftRad = MathUtils.degToRad(props.maxYawLeft)
+const maxYawRightRad = MathUtils.degToRad(props.maxYawRight)
+const maxPitchUpRad = MathUtils.degToRad(props.maxPitchUp)
+const maxPitchDownRad = MathUtils.degToRad(props.maxPitchDown)
 const lerpFactor = props.speed * 0.01
 
 let currentYaw = 0
@@ -56,8 +60,26 @@ onLoop(() => {
 
   const nx = (mouseX / winW) * 2 - 1
   const ny = (mouseY / winH) * 2 - 1
-  const targetYaw = -nx * maxYawRad
-  const targetPitch = -ny * maxPitchRad
+  
+  // Вычисляем targetYaw с отдельными ограничениями для лево/право
+  let targetYaw = 0
+  if (nx < 0) {
+    // Курсор слева - поворот влево
+    targetYaw = -nx * maxYawLeftRad
+  } else if (nx > 0) {
+    // Курсор справа - поворот вправо
+    targetYaw = -nx * maxYawRightRad
+  }
+  
+  // Вычисляем targetPitch с отдельными ограничениями для верх/низ
+  let targetPitch = 0
+  if (ny < 0) {
+    // Курсор вверху - поворот вверх
+    targetPitch = -ny * maxPitchUpRad
+  } else if (ny > 0) {
+    // Курсор внизу - поворот вниз
+    targetPitch = -ny * maxPitchDownRad
+  }
   
   currentYaw += (targetYaw - currentYaw) * lerpFactor
   currentPitch += (targetPitch - currentPitch) * lerpFactor
