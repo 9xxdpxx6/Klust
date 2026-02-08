@@ -52,7 +52,7 @@
 </template>
 
 <script setup>
-import { ref, shallowRef, watch, watchEffect, onMounted, onBeforeUnmount } from 'vue'
+import { ref, shallowRef, watch, watchEffect, onMounted, onBeforeUnmount, getCurrentInstance, nextTick } from 'vue'
 import { useGLTF } from '@tresjs/cientos'
 import {
   AnimationClip,
@@ -83,15 +83,22 @@ const props = defineProps({
   },
   modelPath: {
     type: String,
-    default: '/models/characters/male1.glb'
+    default: '/models/characters/female1.glb'
   },
   isSpeaking: {
     type: Boolean,
     default: false
+  },
+  preloadedModel: {
+    type: Object,
+    default: null
   }
 })
 
 const emit = defineEmits(['animationFinished'])
+
+const instance = getCurrentInstance()
+const isMounted = ref(false)
 
 const characterGroupRef = shallowRef(null)
 const headRef = shallowRef(null)
@@ -126,44 +133,117 @@ const configureScene = (scene) => {
   })
 }
 
-try {
-  const gltfPromise = useGLTF(props.modelPath)
-  if (gltfPromise && typeof gltfPromise.then === 'function') {
-    gltfPromise
-      .then((result) => {
-        gltfResult.value = result
-      })
-      .catch(() => {
-        // SAFE FALLBACK
-      })
-  }
-} catch (error) {
-  // SAFE FALLBACK
-}
+// Флаг чтобы useGLTF не вызывался дважды
+const isModelLoading = ref(false)
+const hasTriedLoad = ref(false)
 
-watchEffect(() => {
-  const loadedScene = gltfResult.value?.scene?.value ?? gltfResult.value?.scene ?? null
-  const hasError = gltfResult.value?.error?.value ?? gltfResult.value?.error ?? null
-  if (hasError || !loadedScene) {
-    isModelLoaded.value = false
+// Watch для предзагруженной модели
+watch(() => props.preloadedModel, (preloaded) => {
+  if (preloaded) {
+    // Используем предзагруженную модель сразу
+    if (gltfResult.value !== preloaded) {
+      gltfResult.value = preloaded
+    }
+    isModelLoading.value = false
+    hasTriedLoad.value = true
+    
+    // Сразу проверяем и устанавливаем isModelLoaded если модель готова
+    const loadedScene = preloaded?.scene?.value ?? preloaded?.scene ?? null
+    const hasError = preloaded?.error?.value ?? preloaded?.error ?? null
+    
+    if (!hasError && loadedScene) {
+      if (gltfScene.value !== loadedScene) {
+        configureScene(loadedScene)
+        gltfScene.value = loadedScene
+        
+        // Инициализируем анимации сразу если они еще не инициализированы
+        if (!animationMixer.value) {
+          const animations = preloaded?.animations?.value ?? preloaded?.animations ?? []
+          if (animations && animations.length > 0) {
+            const sanitizedAnimations = animations.map((clip) => {
+              const tracks = clip.tracks.filter((track) => !track.name.endsWith('.position'))
+              return new AnimationClip(clip.name, clip.duration, tracks)
+            })
+            const mixer = new AnimationMixer(loadedScene)
+            
+            // Listen for animation finished events
+            mixer.addEventListener('finished', (e) => {
+              const finishedClipName = e.action.getClip().name.toLowerCase()
+              emit('animationFinished', finishedClipName)
+            })
+            
+            animationMixer.value = mixer
+            const actions = {}
+            sanitizedAnimations.forEach((clip) => {
+              if (!clip?.name) return
+              const action = mixer.clipAction(clip)
+              actions[clip.name.toLowerCase()] = action
+            })
+            animationActions.value = actions
+            // Play initial animation once mixer is ready (используем nextTick чтобы убедиться что actions установлены)
+            nextTick(() => {
+              playAnimation(props.animation)
+            })
+          }
+        }
+      }
+      isModelLoaded.value = true
+    }
+  }
+}, { immediate: true })
+
+
+// Используем watch вместо watchEffect для более точного контроля
+watch(() => gltfResult.value, (result, oldResult) => {
+  // Избегаем повторных срабатываний если результат не изменился и модель уже загружена
+  if (result === oldResult && gltfScene.value && isModelLoaded.value) return
+  
+  if (!result) {
+    // Не сбрасываем isModelLoaded если модель уже была загружена
+    if (!gltfScene.value) {
+      isModelLoaded.value = false
+    }
     return
   }
+  
+  const loadedScene = result?.scene?.value ?? result?.scene ?? null
+  const hasError = result?.error?.value ?? result?.error ?? null
+  
+  if (hasError || !loadedScene) {
+    // Не сбрасываем isModelLoaded если модель уже была загружена
+    if (!gltfScene.value) {
+    isModelLoaded.value = false
+    }
+    return
+  }
+  
+  // Обновляем только если сцена изменилась
   if (gltfScene.value !== loadedScene) {
     configureScene(loadedScene)
     gltfScene.value = loadedScene
-  }
+    isModelLoaded.value = true
+  } else if (!isModelLoaded.value) {
+    // Если сцена уже установлена но isModelLoaded false, устанавливаем в true
   isModelLoaded.value = true
-})
+  }
+}, { immediate: true, deep: false })
 
-watchEffect(() => {
-  if (animationMixer.value || !gltfScene.value) return
+// Используем watch для более точного контроля инициализации анимаций
+watch(() => gltfScene.value, (scene, oldScene) => {
+  // Избегаем повторных срабатываний если сцена не изменилась
+  if (scene === oldScene && animationMixer.value) return
+  
+  // Инициализируем анимации только один раз когда сцена готова
+  if (animationMixer.value || !scene || !gltfResult.value) return
+  
   const animations = gltfResult.value?.animations?.value ?? gltfResult.value?.animations ?? []
   if (!animations || animations.length === 0) return
+  
   const sanitizedAnimations = animations.map((clip) => {
     const tracks = clip.tracks.filter((track) => !track.name.endsWith('.position'))
     return new AnimationClip(clip.name, clip.duration, tracks)
   })
-  const mixer = new AnimationMixer(gltfScene.value)
+  const mixer = new AnimationMixer(scene)
   
   // Listen for animation finished events
   mixer.addEventListener('finished', (e) => {
@@ -179,13 +259,21 @@ watchEffect(() => {
     actions[clip.name.toLowerCase()] = action
   })
   animationActions.value = actions
-  // Play initial animation once mixer is ready
+            // Play initial animation once mixer is ready (используем nextTick чтобы убедиться что actions установлены)
+            nextTick(() => {
   playAnimation(props.animation)
 })
+}, { immediate: true })
 
 const playAnimation = (name) => {
   const actions = animationActions.value
-  if (!actions) return
+  if (!actions || Object.keys(actions).length === 0) {
+    // Если actions еще не готовы, пробуем через небольшую задержку
+    setTimeout(() => {
+      playAnimation(name)
+    }, 50)
+    return
+  }
   const key = (name || '').toLowerCase()
   const nextAction = actions[key] || actions.idle
   if (!nextAction || activeAction.value === nextAction) return
@@ -248,10 +336,45 @@ const onFrame = (timestamp) => {
 }
 
 onMounted(() => {
+  isMounted.value = true
+  
+  // Загружаем модель если предзагруженная не передана (только один раз)
+  if (!props.preloadedModel && !gltfResult.value && !isModelLoading.value && !hasTriedLoad.value) {
+    isModelLoading.value = true
+    hasTriedLoad.value = true
+    try {
+      const gltfPromise = useGLTF(props.modelPath)
+      if (gltfPromise && typeof gltfPromise.then === 'function') {
+        gltfPromise
+          .then((result) => {
+            // Проверяем что компонент еще смонтирован и модель все еще не предзагружена
+            if (isMounted.value && !props.preloadedModel && gltfResult.value !== result) {
+              gltfResult.value = result
+            }
+            isModelLoading.value = false
+          })
+          .catch(() => {
+            isModelLoading.value = false
+            // SAFE FALLBACK
+          })
+      } else {
+        // Если useGLTF вернул результат синхронно (кеш)
+        if (isMounted.value && !props.preloadedModel && gltfResult.value !== gltfPromise) {
+          gltfResult.value = gltfPromise
+        }
+        isModelLoading.value = false
+      }
+    } catch (error) {
+      isModelLoading.value = false
+      // SAFE FALLBACK
+    }
+  }
+  
   rafId = window.requestAnimationFrame(onFrame)
 })
 
 onBeforeUnmount(() => {
+  isMounted.value = false
   if (rafId) {
     window.cancelAnimationFrame(rafId)
   }
