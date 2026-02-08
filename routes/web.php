@@ -164,6 +164,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/simulators/{simulator}/start', [SimulatorsController::class, 'start'])->name('simulators.start');
         Route::get('/simulators/session/{session}', [SimulatorsController::class, 'session'])->name('simulators.session');
         Route::post('/simulators/session/{session}/complete', [SimulatorsController::class, 'complete'])->name('simulators.complete');
+        
+        // Simulator API endpoints
+        Route::post('/simulators/session/{session}/generate-client', [SimulatorsController::class, 'generateClient'])->name('simulators.generate-client');
+        Route::post('/simulators/session/{session}/calculate-scoring', [SimulatorsController::class, 'calculateScoring'])->name('simulators.calculate-scoring');
+        Route::post('/simulators/session/{session}/calculate-credit', [SimulatorsController::class, 'calculateCredit'])->name('simulators.calculate-credit');
+        Route::post('/simulators/session/{session}/calculate-deposit', [SimulatorsController::class, 'calculateDeposit'])->name('simulators.calculate-deposit');
 
         // Notifications
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');

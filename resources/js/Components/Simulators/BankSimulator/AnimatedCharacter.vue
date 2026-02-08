@@ -87,14 +87,14 @@ try {
       .then((result) => {
         gltfResult.value = result
       })
-      .catch((error) => {
-        console.error('Failed to load character model:', error)
+      .catch(() => {
+        // Error handling
       })
   } else {
     gltfResult.value = gltfPromise
   }
 } catch (error) {
-  console.error('Error loading character model:', error)
+  // Error handling
 }
 
 // Обработка загруженной модели
@@ -151,10 +151,8 @@ watch(() => Object.keys(actions.value).length, (count) => {
 }, { immediate: true })
 
 // Управление анимациями в зависимости от состояния
-watch(() => controller.state.value, (newState, oldState) => {
-  console.log('Character state changed:', oldState, '->', newState)
+watch(() => controller.state.value, (newState) => {
   if (!actions.value || Object.keys(actions.value).length === 0 || !mixer.value) {
-    console.warn('Actions not ready or mixer not initialized')
     return
   }
   
@@ -184,7 +182,6 @@ watch(() => controller.state.value, (newState, oldState) => {
           action.paused = false
           // Сохраняем ссылку на action для проверки завершения
           sitDownActionRef.value = action
-          console.log('sit_down action started, loop:', action.loop, 'clampWhenFinished:', action.clampWhenFinished)
         }
       }
       break
@@ -242,7 +239,6 @@ onBeforeRender(({ elapsed, delta }) => {
       // Проверяем, что время достигло или превысило duration
       // Используем небольшую погрешность для надежности
       if (action.time >= clip.duration - 0.05) {
-        console.log('sit_down animation finished, time:', action.time, 'duration:', clip.duration)
         // Останавливаем анимацию явно
         if (action.isRunning()) {
           action.paused = true
@@ -259,7 +255,6 @@ onBeforeRender(({ elapsed, delta }) => {
     const clip = action.getClip()
     if (clip) {
       if (action.time >= clip.duration - 0.05) {
-        console.log('stand_up animation finished, time:', action.time, 'duration:', clip.duration)
         if (action.isRunning()) {
           action.paused = true
         }

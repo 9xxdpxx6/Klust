@@ -168,7 +168,6 @@ onMounted(() => {
       },
       undefined,
       (error) => {
-        console.warn('Failed to load screen texture:', error)
       }
     )
   }
