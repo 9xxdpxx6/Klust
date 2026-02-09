@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Client\Student;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Student\Simulator\CompleteRequest;
+use App\Http\Requests\Student\Simulator\UpdateStateRequest;
 use App\Models\Simulator;
 use App\Models\SimulatorSession;
 use App\Services\ProgressLogService;
@@ -256,6 +257,33 @@ class SimulatorsController extends Controller
         return response()->json([
             'final_amount' => round($finalAmount, 2),
             'income' => round($income, 2),
+        ]);
+    }
+
+    /**
+     * Обновить состояние сессии
+     */
+    public function updateState(UpdateStateRequest $request, SimulatorSession $session): JsonResponse
+    {
+        $this->authorize('update', $session);
+
+        $this->simulatorService->updateSessionState(
+            $session,
+            $request->validated()['state']
+        );
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Получить текущее состояние сессии
+     */
+    public function getState(SimulatorSession $session): JsonResponse
+    {
+        $this->authorize('view', $session);
+
+        return response()->json([
+            'state' => $session->state ?? [],
         ]);
     }
 }

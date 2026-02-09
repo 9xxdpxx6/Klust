@@ -177,15 +177,19 @@ class SimulatorService
      */
     public function getStudentSessions(User $user): array
     {
+        // Исключаем поле state из выборки для оптимизации (оно может быть очень большим)
         $activeSessions = SimulatorSession::with('simulator')
             ->where('user_id', $user->id)
             ->whereNull('completed_at')
+            ->select(['id', 'user_id', 'simulator_id', 'score', 'time_spent', 'is_completed', 'started_at', 'completed_at', 'created_at', 'updated_at'])
             ->orderBy('created_at', 'desc')
+            ->limit(50)
             ->get();
 
         $completedSessions = SimulatorSession::with('simulator')
             ->where('user_id', $user->id)
             ->whereNotNull('completed_at')
+            ->select(['id', 'user_id', 'simulator_id', 'score', 'time_spent', 'is_completed', 'started_at', 'completed_at', 'created_at', 'updated_at'])
             ->orderBy('completed_at', 'desc')
             ->limit(10)
             ->get();
@@ -219,5 +223,56 @@ class SimulatorService
 
             return $session->fresh();
         });
+    }
+
+    /**
+     * Обновить состояние сессии (merge с существующим)
+     */
+    public function updateSessionState(SimulatorSession $session, array $state): SimulatorSession
+    {
+        return DB::transaction(function () use ($session, $state) {
+            $currentState = $session->state ?? [];
+
+            // Глубокий merge состояний (правильный merge, который заменяет значения, а не создает массивы)
+            $newState = $this->deepMerge($currentState, $state);
+
+            $session->update([
+                'state' => $newState,
+            ]);
+
+            return $session->fresh();
+        });
+    }
+
+    /**
+     * Глубокий merge массивов (заменяет значения, не создает массивы для скалярных значений)
+     *
+     * @param array $array1
+     * @param array $array2
+     * @return array
+     */
+    private function deepMerge(array $array1, array $array2): array
+    {
+        $result = $array1;
+
+        foreach ($array2 as $key => $value) {
+            if (isset($result[$key]) && is_array($result[$key]) && is_array($value)) {
+                // Если оба значения - массивы, рекурсивно мерджим
+                $result[$key] = $this->deepMerge($result[$key], $value);
+            } else {
+                // Иначе заменяем значение
+                $result[$key] = $value;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Получить состояние сессии
+     */
+    public function getSessionState(SimulatorSession $session): array
+    {
+        return $session->state ?? [];
     }
 }

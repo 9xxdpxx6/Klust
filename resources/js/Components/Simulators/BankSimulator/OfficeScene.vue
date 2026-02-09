@@ -83,6 +83,8 @@
       :client="localSessionState.client"
       :calculations="localSessionState.calculations"
       :dialogue-messages="localSessionState.dialogue.messages || []"
+      :active-tab="localSessionState.ui.activeTab"
+      @update:active-tab="onBankTabChange"
       :position="[-1.35, 1.15, -0.3]"
       :rotation="[0.0, 2.8, 0]"
       :width="600"
@@ -227,6 +229,18 @@ const props = defineProps({
   sessionId: {
     type: Number,
     required: true
+  },
+  updateState: {
+    type: Function,
+    default: null
+  },
+  autoSave: {
+    type: Function,
+    default: null
+  },
+  isLoading: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -333,23 +347,17 @@ onMounted(() => {
 
 // Сохраняем состояние открытого диалога
 const saveDialogState = (dialogName) => {
-  const currentState = props.sessionState || {}
-  const newState = {
-    ...currentState,
+  if (!props.updateState) return
+  
+  const updates = {
     ui: {
-      ...currentState.ui,
       activeDialog: dialogName || null
     }
   }
   
-  // Отправляем на backend (заглушка - будет реализовано позже)
-  // router.put(route('simulators.state.update', props.sessionId), {
-  //   state: newState
-  // }, {
-  //   preserveState: true,
-  //   preserveScroll: true,
-  //   only: ['session']
-  // })
+  props.updateState(updates).catch((error) => {
+    console.error('Ошибка сохранения состояния диалога:', error)
+  })
 }
 
 // Проверка на несохраненные изменения (заглушка)
@@ -411,7 +419,8 @@ const isClientSpeaking = computed(() => {
   if (!dialogue) return false
   
   // Проверяем, если current_step указывает на то, что клиент говорит
-  if (dialogue.current_step === 'client_speaking') {
+  const currentStep = normalizeCurrentStep(dialogue.current_step)
+  if (currentStep === 'client_speaking') {
     return true
   }
   
@@ -780,26 +789,62 @@ const localSessionState = reactive({
     credit_history: 'none',
     has_deposit: false
   },
-  calculations: {}
+  calculations: {},
+  ui: {
+    activeTab: '0'
+  }
 })
+
+// Нормализация current_step (если стал массивом из-за неправильного merge)
+const normalizeCurrentStep = (step) => {
+  if (Array.isArray(step)) {
+    return step[step.length - 1] || 'greeting'
+  }
+  return step || 'greeting'
+}
 
 // Инициализация состояния из props
 watch(() => props.sessionState, (newState) => {
-  if (newState) {
+  if (newState && !props.isLoading) {
+    // Обновляем только если не идет загрузка
+    const currentStep = normalizeCurrentStep(newState.dialogue?.current_step)
+    
     Object.assign(localSessionState, {
       dialogue: {
-        messages: newState.dialogue?.messages || [],
-        current_step: newState.dialogue?.current_step || 'greeting',
-        selected_options: newState.dialogue?.selected_options || []
+        messages: Array.isArray(newState.dialogue?.messages) ? newState.dialogue.messages : [],
+        current_step: currentStep,
+        selected_options: Array.isArray(newState.dialogue?.selected_options) ? newState.dialogue.selected_options : [],
+        formData: newState.dialogue?.formData || {}
       },
       client: {
         ...localSessionState.client,
         ...(newState.client || {})
       },
-      calculations: newState.calculations || {}
+      calculations: newState.calculations || {},
+      ui: {
+        activeTab: newState.ui?.activeTab || localSessionState.ui?.activeTab || '0',
+        activeDialog: newState.ui?.activeDialog || localSessionState.ui?.activeDialog || null
+      }
     })
   }
 }, { immediate: true, deep: true })
+
+// Обработчик изменения активной вкладки банковского интерфейса
+const onBankTabChange = (tab) => {
+  if (!localSessionState.ui) {
+    localSessionState.ui = {}
+  }
+  localSessionState.ui.activeTab = tab
+  
+  // Сохраняем в состояние через автосохранение
+  if (props.autoSave && !props.isLoading) {
+    props.autoSave({
+      ui: {
+        activeTab: tab
+      }
+    })
+  }
+}
 
 // Получение конфигурации этапа (заглушка - будет заменено на API вызов)
 const getStageConfig = (stageId) => {
@@ -865,7 +910,8 @@ const getStageConfig = (stageId) => {
 
 // Текущая конфигурация этапа
 const currentStageConfig = computed(() => {
-  return getStageConfig(localSessionState.dialogue.current_step)
+  const currentStep = normalizeCurrentStep(localSessionState.dialogue.current_step)
+  return getStageConfig(currentStep)
 })
 
 // Открытие диалога
@@ -970,7 +1016,7 @@ const mountDialogueInterface = () => {
 
 // Обработка выбора опции
 const handleOptionSelect = (choiceId) => {
-  const currentStep = localSessionState.dialogue.current_step
+  const currentStep = normalizeCurrentStep(localSessionState.dialogue.current_step)
   const stageConfig = getStageConfig(currentStep)
   
   // Добавляем сообщение пользователя
@@ -985,7 +1031,10 @@ const handleOptionSelect = (choiceId) => {
     : stageConfig.next_stage
   
   if (nextStage) {
-    localSessionState.dialogue.current_step = nextStage
+    localSessionState.dialogue.current_step = normalizeCurrentStep(nextStage)
+    if (!Array.isArray(localSessionState.dialogue.selected_options)) {
+      localSessionState.dialogue.selected_options = []
+    }
     localSessionState.dialogue.selected_options.push(choiceId)
     
     // Получаем конфигурацию следующего этапа
@@ -1010,7 +1059,7 @@ const handleOptionSelect = (choiceId) => {
 
 // Обработка отправки данных
 const handleDataSubmit = (formData) => {
-  const currentStep = localSessionState.dialogue.current_step
+  const currentStep = normalizeCurrentStep(localSessionState.dialogue.current_step)
   const stageConfig = getStageConfig(currentStep)
   
   // Обновляем данные клиента
@@ -1046,7 +1095,7 @@ const handleDataSubmit = (formData) => {
   // Переходим к следующему этапу
   const nextStage = stageConfig.next_stage
   if (nextStage) {
-    localSessionState.dialogue.current_step = nextStage
+    localSessionState.dialogue.current_step = normalizeCurrentStep(nextStage)
     
     const nextStageConfig = getStageConfig(nextStage)
     
@@ -1093,19 +1142,27 @@ const addUserMessage = (text) => {
 const calculateScoring = async () => {
   const client = localSessionState.client
   
-  // Проверяем что все необходимые данные есть
-  if (!client.income || !client.expenses || !client.age || !client.credit_history) {
+  // Проверяем что все необходимые данные есть и валидны
+  if (!client.income || client.income <= 0 ||
+      !client.expenses || client.expenses < 0 ||
+      !client.age || client.age < 18 || client.age > 100 ||
+      !client.credit_history) {
+    return
+  }
+  
+  // Не вызываем во время загрузки
+  if (props.isLoading) {
     return
   }
   
   try {
     const url = route('student.simulators.calculate-scoring', { session: props.sessionId })
     const response = await axios.post(url, {
-      income: client.income,
-      expenses: client.expenses,
-      age: client.age,
-      credit_history: client.credit_history,
-      has_deposit: client.has_deposit || false
+      income: Number(client.income),
+      expenses: Number(client.expenses),
+      age: Number(client.age),
+      credit_history: String(client.credit_history),
+      has_deposit: Boolean(client.has_deposit || false)
     })
     
     const scoringData = response.data
@@ -1118,6 +1175,10 @@ const calculateScoring = async () => {
       credit_limit: scoringData.credit_limit
     })
   } catch (error) {
+    // Тихая обработка ошибок (не логируем, чтобы не засорять консоль)
+    if (error.response?.status !== 422) {
+      console.error('Ошибка расчета скоринга:', error)
+    }
   }
 }
 
@@ -1132,6 +1193,17 @@ watch(() => [
   localSessionState.client.credit_history,
   localSessionState.client.has_deposit
 ], () => {
+  // Не вызываем расчет во время загрузки
+  if (props.isLoading) {
+    return
+  }
+  
+  // Проверяем что все необходимые данные есть
+  const client = localSessionState.client
+  if (!client.income || !client.expenses || !client.age || !client.credit_history) {
+    return
+  }
+  
   // Вызываем debounced функцию расчета скоринга
   debouncedCalculateScoring()
 }, { deep: true })
@@ -1164,7 +1236,7 @@ const onDialogueDialogVisibilityChange = (visible) => {
   }
 }
 
-// Watch для автоматического сохранения состояния
+// Watch для автоматического сохранения состояния диалогов
 watch([showPhoneDialog, showCalculatorDialog, showDocumentsDialog], ([phone, calc, docs]) => {
   if (phone) {
     saveDialogState('phone')
@@ -1176,6 +1248,40 @@ watch([showPhoneDialog, showCalculatorDialog, showDocumentsDialog], ([phone, cal
     saveDialogState(null)
   }
 })
+
+// Автосохранение состояния при изменениях localSessionState
+watch(() => localSessionState, (newState) => {
+  // Не сохраняем во время загрузки или если нет функции автосохранения
+  if (props.isLoading || !props.autoSave) {
+    return
+  }
+  
+  // Проверяем, что состояние действительно изменилось (не пустое)
+  if (!newState.dialogue && !newState.client && !newState.calculations) {
+    return
+  }
+  
+  // Нормализуем current_step (на случай если стал массивом)
+  const currentStep = normalizeCurrentStep(newState.dialogue?.current_step)
+  
+  // Создаем копию состояния для автосохранения
+  const stateToSave = {
+    dialogue: {
+      messages: Array.isArray(newState.dialogue?.messages) ? newState.dialogue.messages : [],
+      current_step: currentStep,
+      selected_options: Array.isArray(newState.dialogue?.selected_options) ? newState.dialogue.selected_options : [],
+      formData: newState.dialogue?.formData || {}
+    },
+    client: newState.client || {},
+    calculations: newState.calculations || {},
+    ui: {
+      activeTab: newState.ui?.activeTab || '0',
+      activeDialog: newState.ui?.activeDialog || null
+    }
+  }
+  
+  props.autoSave(stateToSave)
+}, { deep: true })
 </script>
 
 <style scoped>

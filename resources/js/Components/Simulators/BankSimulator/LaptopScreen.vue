@@ -4,7 +4,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, watch, onMounted, onUnmounted, nextTick, provide, reactive, h } from 'vue'
 import { CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js'
 import { Vector3 } from 'three'
 import { useTres } from '@tresjs/core'
@@ -48,13 +48,33 @@ const props = defineProps({
   dialogueMessages: {
     type: Array,
     default: () => []
+  },
+  activeTab: {
+    type: String,
+    default: '0'
   }
 })
+
+const emit = defineEmits(['update:activeTab'])
 
 const { scene } = useTres()
 const css3dObject = ref(null)
 const screenElement = ref(null)
 const screenApp = ref(null)
+
+// Реактивные данные для передачи в BankInterface
+const bankInterfaceData = reactive({
+  client: { ...props.client },
+  calculations: { ...props.calculations },
+  dialogueMessages: [...(props.dialogueMessages || [])],
+  activeTab: props.activeTab || '0'
+})
+
+// Функция обработки изменения вкладки
+const handleTabChangeRef = ref((value) => {
+  bankInterfaceData.activeTab = value
+  emit('update:activeTab', value)
+})
 
 onMounted(() => {
   initScreen()
@@ -85,12 +105,21 @@ const initScreen = () => {
   
   screenElement.value = element
   
-  // Монтируем BankInterface в элемент
-  const app = createApp(BankInterface, {
-    client: props.client,
-    calculations: props.calculations,
-    dialogueMessages: props.dialogueMessages
-  })
+  // Создаем wrapper компонент с render функцией (без template для production сборки)
+  const BankInterfaceWrapper = {
+    setup() {
+      return () => h(BankInterface, {
+        client: bankInterfaceData.client,
+        calculations: bankInterfaceData.calculations,
+        dialogueMessages: bankInterfaceData.dialogueMessages,
+        activeTab: bankInterfaceData.activeTab,
+        'onUpdate:activeTab': handleTabChangeRef.value
+      })
+    }
+  }
+  
+  // Монтируем wrapper компонент
+  const app = createApp(BankInterfaceWrapper)
   
   // Устанавливаем PrimeVue плагин
   setupPrimeVue(app)
@@ -112,23 +141,22 @@ const initScreen = () => {
   }
 }
 
-// Обновляем props при изменении - пересоздаем компонент
-watch(() => [props.client, props.calculations, props.dialogueMessages], () => {
-  if (screenApp.value && screenElement.value) {
-    screenApp.value.unmount()
-    nextTick(() => {
-      const app = createApp(BankInterface, {
-        client: props.client,
-        calculations: props.calculations,
-        dialogueMessages: props.dialogueMessages
-      })
-      
-      // Устанавливаем PrimeVue плагин
-      setupPrimeVue(app)
-      
-      app.mount(screenElement.value)
-      screenApp.value = app
-    })
-  }
+// Обновляем реактивные данные при изменении props - компонент обновится автоматически
+watch(() => props.client, (newClient) => {
+  Object.assign(bankInterfaceData.client, newClient)
 }, { deep: true })
+
+watch(() => props.calculations, (newCalculations) => {
+  Object.assign(bankInterfaceData.calculations, newCalculations)
+}, { deep: true })
+
+watch(() => props.dialogueMessages, (newMessages) => {
+  bankInterfaceData.dialogueMessages = newMessages
+}, { deep: true })
+
+watch(() => props.activeTab, (newTab) => {
+  if (newTab !== bankInterfaceData.activeTab) {
+    bankInterfaceData.activeTab = newTab
+  }
+})
 </script>
