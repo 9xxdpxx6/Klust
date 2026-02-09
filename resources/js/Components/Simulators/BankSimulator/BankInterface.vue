@@ -1,6 +1,6 @@
 <template>
   <div class="bank-interface">
-    <Tabs value="0">
+    <Tabs v-model:value="activeTab" @update:value="onTabChange">
       <TabList>
         <Tab value="0">Профиль клиента</Tab>
         <Tab value="1">Скоринг</Tab>
@@ -31,6 +31,7 @@
 </template>
 
 <script setup>
+import { ref, watch } from 'vue'
 import Tabs from 'primevue/tabs'
 import TabList from 'primevue/tablist'
 import Tab from 'primevue/tab'
@@ -52,8 +53,28 @@ const props = defineProps({
   dialogueMessages: {
     type: Array,
     default: () => []
+  },
+  activeTab: {
+    type: String,
+    default: '0'
   }
 })
+
+const emit = defineEmits(['update:activeTab'])
+
+const activeTab = ref(props.activeTab)
+
+// Синхронизируем с внешним prop
+watch(() => props.activeTab, (newValue) => {
+  if (newValue !== activeTab.value) {
+    activeTab.value = newValue
+  }
+})
+
+const onTabChange = (value) => {
+  activeTab.value = value
+  emit('update:activeTab', value)
+}
 </script>
 
 <style scoped>
