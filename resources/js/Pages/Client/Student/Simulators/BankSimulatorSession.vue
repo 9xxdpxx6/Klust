@@ -5,8 +5,11 @@
     <div class="simulator-container" ref="sceneContainerRef">
       <!-- 3D сцена -->
       <OfficeScene 
-        :session-state="sessionState"
+        :session-state="state"
         :session-id="session.id"
+        :update-state="updateState"
+        :auto-save="autoSave"
+        :is-loading="isLoading"
         @phone-click="onPhoneClick"
         @calculator-click="onCalculatorClick"
         @documents-click="onDocumentsClick"
@@ -34,13 +37,19 @@
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import OfficeScene from '@/Components/Simulators/BankSimulator/OfficeScene.vue';
+import { useSimulatorState } from '@/Composables/Simulators/BankSimulator/useSimulatorState';
 
 const props = defineProps({
   session: Object,
   simulator: Object,
 });
 
-const sessionState = computed(() => props.session.state || {});
+// Инициализация композабла для работы с состоянием
+const { state, updateState, loadState, autoSave, isLoading } = useSimulatorState(
+  props.session.id,
+  props.session.state || {}
+);
+
 const isFullscreen = ref(false);
 const containerRef = ref(null);
 const sceneContainerRef = ref(null);
@@ -100,6 +109,11 @@ onMounted(() => {
   document.addEventListener('fullscreenchange', handleFullscreenChange);
   document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
   document.addEventListener('msfullscreenchange', handleFullscreenChange);
+  
+  // Загружаем состояние из backend при монтировании
+  loadState().catch((error) => {
+    console.error('Ошибка загрузки состояния:', error);
+  });
 });
 
 onUnmounted(() => {
