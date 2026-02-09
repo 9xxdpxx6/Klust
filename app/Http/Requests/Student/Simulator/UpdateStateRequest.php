@@ -26,39 +26,42 @@ class UpdateStateRequest extends FormRequest
         return [
             // Основная структура
             'state' => ['required', 'array'],
-            'state.current_stage' => ['required', 'string', 'in:greeting,collecting_data,calculating,presenting,completed'],
+            'state.current_stage' => ['nullable', 'string'],
 
-            // Данные клиента
-            'state.client' => ['required', 'array'],
+            // Данные клиента (опционально)
+            'state.client' => ['nullable', 'array'],
             'state.client.id' => ['nullable', 'string'],
             'state.client.type' => ['nullable', 'string'],
             'state.client.name' => ['nullable', 'string'],
-            'state.client.age' => ['required', 'integer', 'min:18', 'max:100'],
-            'state.client.income' => ['required', 'numeric', 'min:0'],
-            'state.client.expenses' => ['required', 'numeric', 'min:0'],
-            'state.client.credit_history' => ['required', 'string', 'in:excellent,good,fair,poor,none'],
-            'state.client.has_deposit' => ['required', 'boolean'],
+            'state.client.age' => ['nullable', 'integer', 'min:18', 'max:100'],
+            'state.client.income' => ['nullable', 'numeric', 'min:0'],
+            'state.client.expenses' => ['nullable', 'numeric', 'min:0'],
+            'state.client.credit_history' => ['nullable', 'string', 'in:excellent,good,fair,poor,none'],
+            'state.client.has_deposit' => ['nullable', 'boolean'],
+            'state.client.model_path' => ['nullable', 'string'],
 
-            // Диалог
-            'state.dialogue' => ['required', 'array'],
+            // Диалог (опционально)
+            'state.dialogue' => ['nullable', 'array'],
             'state.dialogue.messages' => ['nullable', 'array'],
             'state.dialogue.messages.*.role' => ['required_with:state.dialogue.messages', 'string', 'in:client,user'],
             'state.dialogue.messages.*.text' => ['required_with:state.dialogue.messages', 'string'],
             'state.dialogue.messages.*.timestamp' => ['required_with:state.dialogue.messages', 'string', 'date'],
             'state.dialogue.current_step' => ['nullable', 'string'],
             'state.dialogue.selected_options' => ['nullable', 'array'],
+            'state.dialogue.formData' => ['nullable', 'array'],
 
-            // Расчеты
-            'state.calculations' => ['required', 'array'],
+            // Расчеты (опционально)
+            'state.calculations' => ['nullable', 'array'],
             'state.calculations.credit_score' => ['nullable', 'numeric', 'min:0', 'max:1'],
             'state.calculations.credit_limit' => ['nullable', 'numeric', 'min:0'],
             'state.calculations.interest_rate' => ['nullable', 'numeric', 'min:0'],
             'state.calculations.monthly_payment' => ['nullable', 'numeric', 'min:0'],
             'state.calculations.deposit_result' => ['nullable', 'numeric', 'min:0'],
+            'state.calculations.decision' => ['nullable', 'string'],
 
             // UI состояние
             'state.ui' => ['nullable', 'array'],
-            'state.ui.activeDialog' => ['nullable', 'string', 'in:phone,calculator,documents'],
+            'state.ui.activeDialog' => ['nullable', 'string', 'in:phone,calculator,documents,dialogue'],
             
             // Действия
             'state.actions' => ['nullable', 'array'],
@@ -84,34 +87,26 @@ class UpdateStateRequest extends FormRequest
             // Основная структура
             'state.required' => 'Поле state обязательно для заполнения.',
             'state.array' => 'Поле state должно быть массивом.',
-            'state.current_stage.required' => 'Текущий этап обязателен для заполнения.',
             'state.current_stage.string' => 'Текущий этап должен быть строкой.',
-            'state.current_stage.in' => 'Текущий этап должен быть одним из: greeting, collecting_data, calculating, presenting, completed.',
 
             // Данные клиента
-            'state.client.required' => 'Данные клиента обязательны для заполнения.',
             'state.client.array' => 'Данные клиента должны быть массивом.',
             'state.client.id.string' => 'ID клиента должен быть строкой.',
             'state.client.type.string' => 'Тип клиента должен быть строкой.',
             'state.client.name.string' => 'Имя клиента должно быть строкой.',
-            'state.client.age.required' => 'Возраст клиента обязателен для заполнения.',
             'state.client.age.integer' => 'Возраст клиента должен быть целым числом.',
             'state.client.age.min' => 'Возраст клиента должен быть не менее 18 лет.',
             'state.client.age.max' => 'Возраст клиента должен быть не более 100 лет.',
-            'state.client.income.required' => 'Доход клиента обязателен для заполнения.',
             'state.client.income.numeric' => 'Доход клиента должен быть числом.',
             'state.client.income.min' => 'Доход клиента не может быть отрицательным.',
-            'state.client.expenses.required' => 'Расходы клиента обязательны для заполнения.',
             'state.client.expenses.numeric' => 'Расходы клиента должны быть числом.',
             'state.client.expenses.min' => 'Расходы клиента не могут быть отрицательными.',
-            'state.client.credit_history.required' => 'Кредитная история обязательна для заполнения.',
             'state.client.credit_history.string' => 'Кредитная история должна быть строкой.',
             'state.client.credit_history.in' => 'Кредитная история должна быть одним из: excellent, good, fair, poor, none.',
-            'state.client.has_deposit.required' => 'Поле наличия вклада обязательно для заполнения.',
             'state.client.has_deposit.boolean' => 'Поле наличия вклада должно быть логическим значением.',
+            'state.client.model_path.string' => 'Путь к модели должен быть строкой.',
 
             // Диалог
-            'state.dialogue.required' => 'Данные диалога обязательны для заполнения.',
             'state.dialogue.array' => 'Данные диалога должны быть массивом.',
             'state.dialogue.messages.array' => 'Сообщения должны быть массивом.',
             'state.dialogue.messages.*.role.required_with' => 'Роль отправителя обязательна для сообщения.',
@@ -124,9 +119,9 @@ class UpdateStateRequest extends FormRequest
             'state.dialogue.messages.*.timestamp.date' => 'Временная метка сообщения должна быть валидной датой.',
             'state.dialogue.current_step.string' => 'Текущий шаг должен быть строкой.',
             'state.dialogue.selected_options.array' => 'Выбранные опции должны быть массивом.',
+            'state.dialogue.formData.array' => 'Данные формы должны быть массивом.',
 
             // Расчеты
-            'state.calculations.required' => 'Данные расчетов обязательны для заполнения.',
             'state.calculations.array' => 'Данные расчетов должны быть массивом.',
             'state.calculations.credit_score.numeric' => 'Балл скоринга должен быть числом.',
             'state.calculations.credit_score.min' => 'Балл скоринга не может быть отрицательным.',
@@ -139,6 +134,12 @@ class UpdateStateRequest extends FormRequest
             'state.calculations.monthly_payment.min' => 'Ежемесячный платеж не может быть отрицательным.',
             'state.calculations.deposit_result.numeric' => 'Результат расчета вклада должен быть числом.',
             'state.calculations.deposit_result.min' => 'Результат расчета вклада не может быть отрицательным.',
+            'state.calculations.decision.string' => 'Решение должно быть строкой.',
+
+            // UI состояние
+            'state.ui.array' => 'UI состояние должно быть массивом.',
+            'state.ui.activeDialog.string' => 'Активный диалог должен быть строкой.',
+            'state.ui.activeDialog.in' => 'Активный диалог должен быть одним из: phone, calculator, documents, dialogue.',
 
             // Действия
             'state.actions.array' => 'Действия должны быть массивом.',

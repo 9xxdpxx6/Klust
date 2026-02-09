@@ -170,6 +170,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/simulators/session/{session}/calculate-scoring', [SimulatorsController::class, 'calculateScoring'])->name('simulators.calculate-scoring');
         Route::post('/simulators/session/{session}/calculate-credit', [SimulatorsController::class, 'calculateCredit'])->name('simulators.calculate-credit');
         Route::post('/simulators/session/{session}/calculate-deposit', [SimulatorsController::class, 'calculateDeposit'])->name('simulators.calculate-deposit');
+        Route::post('/simulators/session/{session}/state', [SimulatorsController::class, 'updateState'])->name('simulators.state.update');
+        Route::get('/simulators/session/{session}/state', [SimulatorsController::class, 'getState'])->name('simulators.state.get');
 
         // Notifications
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
