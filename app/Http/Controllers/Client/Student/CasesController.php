@@ -452,8 +452,21 @@ class CasesController extends Controller
         // Проверить права (только лидер заявки может отозвать)
         $this->authorize('delete', $application);
 
-        // Отозвать заявку
-        $this->applicationService->withdrawApplication($application);
+        $application->loadMissing('case');
+        if ($application->case?->deadline && $application->case->deadline->isPast()) {
+            return redirect()
+                ->back()
+                ->with('error', 'Нельзя отозвать заявку после дедлайна кейса.');
+        }
+
+        try {
+            // Отозвать заявку
+            $this->applicationService->withdrawApplication($application);
+        } catch (\Throwable $e) {
+            return redirect()
+                ->back()
+                ->with('error', $e->getMessage());
+        }
 
         return redirect()
             ->route('student.cases.my')
