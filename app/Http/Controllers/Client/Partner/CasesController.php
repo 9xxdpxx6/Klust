@@ -565,6 +565,10 @@ class CasesController extends Controller
             // Проверить права (кейс принадлежит партнеру)
             $this->authorize('approveApplication', $case);
 
+            if ($deadlineError = $this->validateCaseDeadlineForApplicationActions($case)) {
+                return $deadlineError;
+            }
+
             // Проверить, что заявка имеет статус 'pending'
             $pendingStatusId = \App\Models\ApplicationStatus::getIdByName('pending');
             if ($application->status_id !== $pendingStatusId) {
@@ -630,6 +634,10 @@ class CasesController extends Controller
         try {
             // Проверить права
             $this->authorize('rejectApplication', $case);
+
+            if ($deadlineError = $this->validateCaseDeadlineForApplicationActions($case)) {
+                return $deadlineError;
+            }
 
             // Проверить статус заявки
             $pendingStatusId = \App\Models\ApplicationStatus::getIdByName('pending');
@@ -709,6 +717,10 @@ class CasesController extends Controller
         try {
             // Проверить права (кейс принадлежит партнеру и дедлайн не прошел)
             $this->authorize('updateApplicationStatus', $case);
+
+            if ($deadlineError = $this->validateCaseDeadlineForApplicationActions($case)) {
+                return $deadlineError;
+            }
 
             $newStatus = $request->validated()['status'];
             
@@ -794,5 +806,16 @@ class CasesController extends Controller
         $filename = 'applications_case_'.$case->id.'_'.date('Y-m-d_H-i-s').'.xlsx';
 
         return Excel::download(new ApplicationsExport($filters), $filename);
+    }
+
+    private function validateCaseDeadlineForApplicationActions(CaseModel $case): ?RedirectResponse
+    {
+        if ($case->deadline && $case->deadline->isPast()) {
+            return redirect()
+                ->route('partner.cases.show', $case)
+                ->with('error', 'Нельзя изменять статус заявок после дедлайна кейса.');
+        }
+
+        return null;
     }
 }

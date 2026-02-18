@@ -49,8 +49,25 @@ const confirmWithdraw = () => {
     showWithdrawConfirm.value = false
 }
 
+const isDeadlinePassed = computed(() => {
+    if (!props.caseData.deadline) {
+        return false
+    }
+
+    const deadline = new Date(props.caseData.deadline)
+    if (Number.isNaN(deadline.getTime())) {
+        return false
+    }
+
+    return deadline.getTime() < Date.now()
+})
+
+const isPendingApplicationExpired = computed(() => {
+    return isDeadlinePassed.value && props.applicationStatus?.status?.name === 'pending'
+})
+
 const canApply = computed(() => {
-    return isStudent.value && !props.applicationStatus && props.caseData.status === 'active'
+    return isStudent.value && !props.applicationStatus && props.caseData.status === 'active' && !isDeadlinePassed.value
 })
 
 const statusColor = computed(() => {
@@ -183,7 +200,21 @@ const formatDate = (dateString) => {
                 ]">
 
                     <!-- Application Status - только для авторизованных студентов -->
-                    <div v-if="isStudent && applicationStatus" class="bg-kubgtu-white rounded-xl shadow-sm border border-border-light overflow-hidden">
+                    <div v-if="isStudent && isPendingApplicationExpired" class="bg-kubgtu-white rounded-xl shadow-sm border border-border-light overflow-hidden">
+                        <div class="px-6 py-4 border-b border-border-light bg-amber-50">
+                            <h2 class="text-lg font-semibold text-text-primary flex items-center gap-2">
+                                <svg class="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Дедлайн кейса истек
+                            </h2>
+                        </div>
+                        <div class="p-6 text-sm text-text-secondary">
+                            Для этой заявки больше недоступны действия по изменению статуса.
+                        </div>
+                    </div>
+
+                    <div v-if="isStudent && applicationStatus && !isPendingApplicationExpired" class="bg-kubgtu-white rounded-xl shadow-sm border border-border-light overflow-hidden">
                         <div class="px-6 py-4 border-b border-border-light bg-amber-50">
                             <h2 class="text-lg font-semibold text-text-primary flex items-center gap-2">
                                 <svg class="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -220,7 +251,7 @@ const formatDate = (dateString) => {
                                         Перейти к команде
                                     </Button>
                                     <Button
-                                        v-if="applicationStatus.status?.name === 'pending'"
+                                        v-if="applicationStatus.status?.name === 'pending' && !isDeadlinePassed"
                                         variant="danger"
                                         @click="withdrawApplication"
                                     >
@@ -232,7 +263,7 @@ const formatDate = (dateString) => {
                     </div>
 
                     <!-- Application Status History - только для авторизованных студентов -->
-                    <div v-if="isStudent && applicationStatus && applicationStatus.statusHistory" class="bg-kubgtu-white rounded-xl shadow-sm border border-border-light overflow-hidden">
+                    <div v-if="isStudent && applicationStatus && applicationStatus.statusHistory && !isPendingApplicationExpired" class="bg-kubgtu-white rounded-xl shadow-sm border border-border-light overflow-hidden">
                         <div class="px-6 py-4 border-b border-border-light bg-blue-50">
                             <h2 class="text-lg font-semibold text-text-primary flex items-center gap-2">
                                 <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -331,7 +362,7 @@ const formatDate = (dateString) => {
                             </div>
 
                             <!-- Призыв к регистрации для неавторизованных -->
-                            <div v-if="!isAuthenticated && caseData.status === 'active'" class="bg-blue-50 border border-blue-200 rounded-xl overflow-hidden">
+                            <div v-if="!isAuthenticated && caseData.status === 'active' && !isDeadlinePassed" class="bg-blue-50 border border-blue-200 rounded-xl overflow-hidden">
                                 <div class="p-6">
                                     <h3 class="text-lg font-semibold text-blue-900 mb-2">
                                         Хотите подать заявку?
@@ -349,7 +380,7 @@ const formatDate = (dateString) => {
                             </div>
 
                             <!-- Призыв к регистрации для авторизованных, но не студентов -->
-                            <div v-if="isAuthenticated && !isStudent && caseData.status === 'active'" class="bg-amber-50 border border-amber-200 rounded-xl overflow-hidden">
+                            <div v-if="isAuthenticated && !isStudent && caseData.status === 'active' && !isDeadlinePassed" class="bg-amber-50 border border-amber-200 rounded-xl overflow-hidden">
                                 <div class="p-6">
                                     <h3 class="text-lg font-semibold text-amber-900 mb-2">
                                         Только для студентов
@@ -388,4 +419,3 @@ const formatDate = (dateString) => {
         />
     </PublicLayout>
 </template>
-

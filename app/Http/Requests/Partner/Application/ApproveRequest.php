@@ -4,25 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Partner\Application;
 
+use App\Models\CaseModel;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ApproveRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     * Проверяем, что это аутентифицированный пользователь с ролью "партнер".
-     */
     public function authorize(): bool
     {
-        // Предполагаем, что у модели User есть метод isPartner()
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
@@ -30,15 +21,20 @@ class ApproveRequest extends FormRequest
         ];
     }
 
-    /**
-     * Get the custom error messages for the defined validation rules.
-     *
-     * @return array<string, string>
-     */
     public function messages(): array
     {
         return [
-            'comment.max' => 'Комментарий не должен превышать 1000 символов.',
+            'comment.max' => 'РљРѕРјРјРµРЅС‚Р°СЂРёР№ РЅРµ РґРѕР»Р¶РµРЅ РїСЂРµРІС‹С€Р°С‚СЊ 1000 СЃРёРјРІРѕР»РѕРІ.',
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator): void {
+            $case = $this->route('case');
+            if ($case instanceof CaseModel && $case->deadline && $case->deadline->isPast()) {
+                $validator->errors()->add('case', 'РќРµР»СЊР·СЏ РёР·РјРµРЅСЏС‚СЊ Р·Р°СЏРІРєРё РїРѕСЃР»Рµ РґРµРґР»Р°Р№РЅР° РєРµР№СЃР°.');
+            }
+        });
     }
 }

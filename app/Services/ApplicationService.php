@@ -23,6 +23,8 @@ class ApplicationService
      */
     public function createApplication(User $leader, CaseModel $case, array $data): CaseApplication
     {
+        $this->ensureCaseDeadlineNotPassed($case, 'создавать заявки');
+
         return DB::transaction(function () use ($leader, $case, $data) {
             // Create application
             $application = CaseApplication::create([
@@ -67,6 +69,9 @@ class ApplicationService
      */
     public function approveApplication(CaseApplication $application, ?string $comment = null): CaseApplication
     {
+        $application->loadMissing('case');
+        $this->ensureCaseDeadlineNotPassed($application->case, 'изменять статус заявок');
+
         $pendingStatusId = ApplicationStatus::getIdByName('pending');
         $acceptedStatusId = ApplicationStatus::getIdByName('accepted');
 
@@ -99,6 +104,9 @@ class ApplicationService
      */
     public function rejectApplication(CaseApplication $application, string $rejectionReason): CaseApplication
     {
+        $application->loadMissing('case');
+        $this->ensureCaseDeadlineNotPassed($application->case, 'изменять статус заявок');
+
         $pendingStatusId = ApplicationStatus::getIdByName('pending');
         $rejectedStatusId = ApplicationStatus::getIdByName('rejected');
 
@@ -133,6 +141,9 @@ class ApplicationService
      */
     public function updateApplicationStatus(CaseApplication $application, string $statusName, ?string $comment = null): CaseApplication
     {
+        $application->loadMissing('case');
+        $this->ensureCaseDeadlineNotPassed($application->case, 'изменять статус заявок');
+
         $newStatusId = ApplicationStatus::getIdByName($statusName);
         
         if (!$newStatusId) {
@@ -188,6 +199,9 @@ class ApplicationService
      */
     public function withdrawApplication(CaseApplication $application): bool
     {
+        $application->loadMissing('case');
+        $this->ensureCaseDeadlineNotPassed($application->case, 'изменять статус заявок');
+
         $pendingStatusId = ApplicationStatus::getIdByName('pending');
 
         if ($application->status_id !== $pendingStatusId) {
@@ -208,6 +222,9 @@ class ApplicationService
      */
     public function addTeamMember(CaseApplication $application, int $userId): CaseTeamMember
     {
+        $application->loadMissing('case');
+        $this->ensureCaseDeadlineNotPassed($application->case, 'изменять состав команды');
+
         $pendingStatusId = ApplicationStatus::getIdByName('pending');
 
         if ($application->status_id !== $pendingStatusId) {
@@ -253,6 +270,13 @@ class ApplicationService
         return CaseTeamMember::where('user_id', $user->id)
             ->whereIn('application_id', $applicationIds)
             ->exists();
+    }
+
+    private function ensureCaseDeadlineNotPassed(CaseModel $case, string $action): void
+    {
+        if ($case->deadline && $case->deadline->isPast()) {
+            throw new \Exception("Нельзя {$action} после дедлайна кейса.");
+        }
     }
 
     /**

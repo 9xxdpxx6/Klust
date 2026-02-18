@@ -123,6 +123,10 @@ class CasePolicy
      */
     public function approveApplication(User $user, CaseModel $case): bool
     {
+        if ($case->deadline && $case->deadline->isPast()) {
+            return false;
+        }
+
         // Админ и учитель могут одобрять заявки на все кейсы
         if ($user->hasAnyRole(['admin', 'teacher'])) {
             return $user->hasPermissionTo('cases.approve');

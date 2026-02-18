@@ -31,8 +31,25 @@ const confirmWithdraw = () => {
     showWithdrawConfirm.value = false
 }
 
+const isDeadlinePassed = computed(() => {
+    if (!props.caseData.deadline) {
+        return false
+    }
+
+    const deadline = new Date(props.caseData.deadline)
+    if (Number.isNaN(deadline.getTime())) {
+        return false
+    }
+
+    return deadline.getTime() < Date.now()
+})
+
+const isPendingApplicationExpired = computed(() => {
+    return isDeadlinePassed.value && props.applicationStatus?.status?.name === 'pending'
+})
+
 const canApply = computed(() => {
-    return !props.applicationStatus && props.caseData.status === 'active'
+    return !props.applicationStatus && props.caseData.status === 'active' && !isDeadlinePassed.value
 })
 
 const statusColor = computed(() => {
@@ -107,7 +124,19 @@ const formatDate = (dateString) => {
             </div>
 
             <!-- Application Status -->
-            <div v-if="applicationStatus" class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden mb-4 sm:mb-6">
+            <div v-if="isPendingApplicationExpired" class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden mb-4 sm:mb-6">
+                <div class="px-4 py-3 sm:px-6 sm:py-4 bg-gradient-to-r from-amber-50 to-amber-100 border-b border-amber-200">
+                    <h2 class="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <i class="pi pi-exclamation-triangle text-amber-600"></i>
+                        Дедлайн кейса истек
+                    </h2>
+                </div>
+                <div class="p-4 sm:p-6">
+                    <p class="text-sm text-gray-700">Для этой заявки больше недоступны действия по изменению статуса.</p>
+                </div>
+            </div>
+
+            <div v-if="applicationStatus && !isPendingApplicationExpired" class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden mb-4 sm:mb-6">
                 <div class="px-4 py-3 sm:px-6 sm:py-4 bg-gradient-to-r from-amber-50 to-amber-100 border-b border-amber-200">
                     <h2 class="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
                         <i class="pi pi-info-circle text-amber-600"></i>
@@ -143,7 +172,7 @@ const formatDate = (dateString) => {
                                 Перейти к команде
                             </Button>
                             <Button
-                                v-if="applicationStatus.status?.name === 'pending'"
+                                v-if="applicationStatus.status?.name === 'pending' && !isDeadlinePassed"
                                 variant="danger"
                                 class="w-full sm:w-auto"
                                 @click="withdrawApplication"
@@ -156,7 +185,7 @@ const formatDate = (dateString) => {
             </div>
 
             <!-- Application Status History -->
-            <div v-if="applicationStatus && applicationStatus.statusHistory" class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden mb-4 sm:mb-6">
+            <div v-if="applicationStatus && applicationStatus.statusHistory && !isPendingApplicationExpired" class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden mb-4 sm:mb-6">
                 <div class="px-4 py-3 sm:px-6 sm:py-4 bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200">
                     <h2 class="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
                         <i class="pi pi-clock text-blue-600"></i>
