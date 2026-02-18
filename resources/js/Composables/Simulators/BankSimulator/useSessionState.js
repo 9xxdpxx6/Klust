@@ -17,19 +17,22 @@ export function useSessionState({ sessionState, isLoading, autoSave }) {
     dialogue: {
       messages: [],
       current_step: 'greeting',
-      selected_options: []
+      selected_options: [],
+      formData: {}
     },
     client: {
-      age: 0,
-      income: 0,
-      expenses: 0,
-      credit_history: 'none',
+      age: null,
+      income: null,
+      expenses: null,
+      credit_history: null,
       has_deposit: false
     },
     calculations: {},
     ui: {
       activeTab: '0'
-    }
+    },
+    score: 0,
+    score_history: []
   })
 
   /**
@@ -43,25 +46,148 @@ export function useSessionState({ sessionState, isLoading, autoSave }) {
   }
 
   /**
-   * Initialize state from props
+   * Stage order for ALL stages in the dialogue config
+   * Used to determine which stage is "more advanced"
+   * For branching flows, all branches are listed after their common entry point
+   */
+  const stageOrder = [
+    'greeting',
+    'client_goal',
+    'client_skeptic',
+    'client_income',
+    'client_expenses',
+    'client_debts',
+    'client_history',
+    'auto_decline_dti',
+    'bad_history_decline',
+    'offer_stage',
+    'risk_warning',
+    'future_default_event',
+    'client_decision',
+    'completion',
+    // Legacy stages (from previous config versions)
+    'client_credit_amount',
+    'client_alternative_amount',
+    'client_age_history',
+    'client_waiting_results',
+    'client_deposit_interest',
+    'client_needs',
+  ]
+
+  /**
+   * Merge two message arrays, deduplicating by role+text
+   * Keeps all unique messages from both arrays, sorted by timestamp
+   */
+  const mergeMessages = (backendMessages, localMessages) => {
+    const messageMap = new Map()
+
+    // Add backend messages first (stable timestamps)
+    if (Array.isArray(backendMessages)) {
+      backendMessages.forEach(msg => {
+        const key = `${msg.role}::${msg.text}`
+        if (!messageMap.has(key)) {
+          messageMap.set(key, msg)
+        }
+      })
+    }
+
+    // Add local messages (may have been added after last backend save)
+    if (Array.isArray(localMessages)) {
+      localMessages.forEach(msg => {
+        const key = `${msg.role}::${msg.text}`
+        if (!messageMap.has(key)) {
+          messageMap.set(key, msg)
+        }
+      })
+    }
+
+    // Sort by timestamp
+    return Array.from(messageMap.values()).sort((a, b) => {
+      if (!a.timestamp || !b.timestamp) return 0
+      return new Date(a.timestamp) - new Date(b.timestamp)
+    })
+  }
+
+  /**
+   * Initialize state from props (watches for changes from backend)
+   * CRITICAL: MERGES messages and selected_options instead of replacing them
+   * to avoid losing locally-added messages during async operations
    */
   watch(() => sessionState?.value, (newState) => {
     if (newState && !isLoading?.value) {
-      // Update only if not loading
-      const currentStep = normalizeCurrentStep(newState.dialogue?.current_step)
-      
+      const newCurrentStep = normalizeCurrentStep(newState.dialogue?.current_step)
+      const localCurrentStep = normalizeCurrentStep(localSessionState.dialogue?.current_step)
+
+      // MERGE messages: combine local + backend, deduped by role+text
+      // This prevents losing messages that were added locally but not yet saved to backend
+      const localMessages = localSessionState.dialogue?.messages || []
+      const backendMessages = Array.isArray(newState.dialogue?.messages) ? newState.dialogue.messages : []
+      const mergedMessages = mergeMessages(backendMessages, localMessages)
+
+      // MERGE selected_options: union of local and backend
+      const localOptions = Array.isArray(localSessionState.dialogue?.selected_options)
+        ? localSessionState.dialogue.selected_options
+        : []
+      const backendOptions = Array.isArray(newState.dialogue?.selected_options)
+        ? newState.dialogue.selected_options
+        : []
+      const mergedOptions = [...new Set([...backendOptions, ...localOptions])]
+
+      // Determine which current_step to use
+      const localIndex = stageOrder.indexOf(localCurrentStep)
+      const newIndex = stageOrder.indexOf(newCurrentStep)
+
+      // Keep local current_step if:
+      // 1. Backend would downgrade us to 'greeting' but we have messages (state desync)
+      // 2. Local is at a known stage that is more advanced than backend
+      // 3. Local has more merged messages than backend had (local is ahead of backend)
+      const backendWouldDowngrade = localCurrentStep !== 'greeting' && newCurrentStep === 'greeting'
+      const localIsMoreAdvancedInOrder = localIndex >= 0 && newIndex >= 0 && localIndex > newIndex
+      const localHasMoreData = mergedMessages.length > backendMessages.length && localCurrentStep !== 'greeting'
+
+      const shouldKeepLocal = backendWouldDowngrade || localIsMoreAdvancedInOrder || localHasMoreData
+
+      const finalCurrentStep = shouldKeepLocal ? localCurrentStep : newCurrentStep
+
+      // MERGE formData: local takes precedence (user may have entered data locally)
+      const mergedFormData = {
+        ...(newState.dialogue?.formData || {}),
+        ...(localSessionState.dialogue?.formData || {})
+      }
+
+      // Merge client data: backend wins for non-null values,
+      // but local non-null values are kept if backend has null
+      // This preserves auto-extracted values (income, expenses, etc.)
+      const localClient = localSessionState.client || {}
+      const backendClient = newState.client || {}
+      const mergedClient = {}
+      const allClientKeys = new Set([...Object.keys(localClient), ...Object.keys(backendClient)])
+      allClientKeys.forEach(key => {
+        const localVal = localClient[key]
+        const backendVal = backendClient[key]
+        if (backendVal !== null && backendVal !== undefined) {
+          mergedClient[key] = backendVal
+        } else if (localVal !== null && localVal !== undefined) {
+          mergedClient[key] = localVal
+        } else {
+          mergedClient[key] = backendVal ?? null
+        }
+      })
+
       Object.assign(localSessionState, {
         dialogue: {
-          messages: Array.isArray(newState.dialogue?.messages) ? newState.dialogue.messages : [],
-          current_step: currentStep,
-          selected_options: Array.isArray(newState.dialogue?.selected_options) ? newState.dialogue.selected_options : [],
-          formData: newState.dialogue?.formData || {}
+          messages: mergedMessages,
+          current_step: finalCurrentStep,
+          selected_options: mergedOptions,
+          formData: mergedFormData
         },
-        client: {
-          ...localSessionState.client,
-          ...(newState.client || {})
-        },
-        calculations: newState.calculations || {},
+        client: mergedClient,
+        calculations: newState.calculations || localSessionState.calculations || {},
+        // Score and score_history come from backend (source of truth)
+        score: newState.score ?? localSessionState.score ?? 0,
+        score_history: Array.isArray(newState.score_history)
+          ? newState.score_history
+          : (localSessionState.score_history || []),
         ui: {
           activeTab: newState.ui?.activeTab || localSessionState.ui?.activeTab || '0',
           activeDialog: newState.ui?.activeDialog || localSessionState.ui?.activeDialog || null
@@ -78,7 +204,7 @@ export function useSessionState({ sessionState, isLoading, autoSave }) {
       localSessionState.ui = {}
     }
     localSessionState.ui.activeTab = tab
-    
+
     // Save to state via auto-save
     if (autoSave && !isLoading?.value) {
       autoSave({
@@ -90,22 +216,22 @@ export function useSessionState({ sessionState, isLoading, autoSave }) {
   }
 
   /**
-   * Auto-save state on localSessionState changes
+   * Auto-save state on localSessionState changes (debounced)
    */
   watch(() => localSessionState, (newState) => {
     // Don't save during loading or if no auto-save function
     if (isLoading?.value || !autoSave) {
       return
     }
-    
+
     // Check that state actually changed (not empty)
     if (!newState.dialogue && !newState.client && !newState.calculations) {
       return
     }
-    
+
     // Normalize current_step (in case it became an array)
     const currentStep = normalizeCurrentStep(newState.dialogue?.current_step)
-    
+
     // Create copy of state for auto-save
     const stateToSave = {
       dialogue: {
@@ -121,14 +247,14 @@ export function useSessionState({ sessionState, isLoading, autoSave }) {
         activeDialog: newState.ui?.activeDialog || null
       }
     }
-    
+
     autoSave(stateToSave)
   }, { deep: true })
 
   return {
     // State (reactive object, not computed)
     localSessionState,
-    
+
     // Methods
     normalizeCurrentStep,
     onBankTabChange
