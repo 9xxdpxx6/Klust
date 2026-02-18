@@ -76,6 +76,9 @@ class ScoringService
     /**
      * Interpret score and return decision with parameters
      *
+     * Interest rate is calculated dynamically based on the score:
+     *   score 1.0 → ~10%,  score 0.8 → ~13%,  score 0.5 → ~19%,  score 0.3 → ~22%
+     *
      * @param float $score Credit score in range [0, 1]
      * @return array<string, mixed> Decision array with: decision, interest_rate, limit_multiplier, requires_insurance
      */
@@ -92,24 +95,28 @@ class ScoringService
             'auto_reject' => 0.0,
         ]);
 
+        // Dynamic interest rate: 24% at score=0.3, 10% at score=1.0
+        // Formula: rate = 24 - 14 * score  (linear interpolation)
+        $dynamicRate = round(24.0 - 14.0 * $score, 1);
+
         return match (true) {
             $score >= $thresholds['auto_approve'] => [
                 'decision' => 'auto_approve',
-                'interest_rate' => 12.0,
-                'limit_multiplier' => 1.5,
+                'interest_rate' => $dynamicRate,
+                'limit_multiplier' => 1.2 + ($score - 0.8) * 1.5,
                 'requires_insurance' => false,
             ],
             $score >= $thresholds['approve_with_conditions'] => [
                 'decision' => 'approve_with_conditions',
-                'interest_rate' => 15.0,
-                'limit_multiplier' => 1.2,
+                'interest_rate' => $dynamicRate,
+                'limit_multiplier' => 0.8 + ($score - 0.5) * 1.33,
                 'requires_insurance' => true,
             ],
             $score >= $thresholds['manual_review'] => [
                 'decision' => 'manual_review',
-                'interest_rate' => null,
-                'limit_multiplier' => null,
-                'requires_insurance' => null,
+                'interest_rate' => $dynamicRate,
+                'limit_multiplier' => 0.5,
+                'requires_insurance' => true,
             ],
             default => [
                 'decision' => 'auto_reject',

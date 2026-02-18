@@ -21,6 +21,7 @@ export function useSessionState({ sessionState, isLoading, autoSave }) {
       formData: {}
     },
     client: {
+      name: null,
       age: null,
       income: null,
       expenses: null,
@@ -52,26 +53,23 @@ export function useSessionState({ sessionState, isLoading, autoSave }) {
    */
   const stageOrder = [
     'greeting',
-    'client_goal',
-    'client_skeptic',
+    'client_pushback',
+    'client_need',
     'client_income',
     'client_expenses',
     'client_debts',
     'client_history',
-    'auto_decline_dti',
-    'bad_history_decline',
-    'offer_stage',
-    'risk_warning',
-    'future_default_event',
-    'client_decision',
+    'bki_check',
+    'client_age',
+    'scoring_result',
+    'client_concern',
+    'client_reluctant',
+    'client_satisfied',
+    'collect_passport',
+    'collect_passport_risky',
     'completion',
-    // Legacy stages (from previous config versions)
-    'client_credit_amount',
-    'client_alternative_amount',
-    'client_age_history',
-    'client_waiting_results',
-    'client_deposit_interest',
-    'client_needs',
+    'completion_no_docs',
+    'future_default_event',
   ]
 
   /**
@@ -155,9 +153,11 @@ export function useSessionState({ sessionState, isLoading, autoSave }) {
         ...(localSessionState.dialogue?.formData || {})
       }
 
-      // Merge client data: backend wins for non-null values,
-      // but local non-null values are kept if backend has null
-      // This preserves auto-extracted values (income, expenses, etc.)
+      // Merge client data
+      // Display fields (income, expenses, age, credit_history, name) are collected
+      // progressively through dialogue — LOCAL values take priority for these.
+      // Non-display / internal fields (type, model_path, has_deposit) use backend values.
+      const displayFields = new Set(['name', 'income', 'expenses', 'age', 'credit_history'])
       const localClient = localSessionState.client || {}
       const backendClient = newState.client || {}
       const mergedClient = {}
@@ -165,7 +165,19 @@ export function useSessionState({ sessionState, isLoading, autoSave }) {
       allClientKeys.forEach(key => {
         const localVal = localClient[key]
         const backendVal = backendClient[key]
-        if (backendVal !== null && backendVal !== undefined) {
+        if (displayFields.has(key)) {
+          // For display fields: keep local value (even null) — dialogue fills these
+          // Only use backend value if local was never set AND there are no messages yet
+          const hasDialogueStarted = (localSessionState.dialogue?.messages?.length || 0) > 0
+          if (localVal !== null && localVal !== undefined) {
+            mergedClient[key] = localVal
+          } else if (!hasDialogueStarted && backendVal !== null && backendVal !== undefined) {
+            // Restore from backend only on initial load before dialogue starts
+            mergedClient[key] = backendVal
+          } else {
+            mergedClient[key] = localVal ?? null
+          }
+        } else if (backendVal !== null && backendVal !== undefined) {
           mergedClient[key] = backendVal
         } else if (localVal !== null && localVal !== undefined) {
           mergedClient[key] = localVal

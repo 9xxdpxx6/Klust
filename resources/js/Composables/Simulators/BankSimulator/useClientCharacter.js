@@ -74,7 +74,9 @@ export function useClientCharacter({
   })
 
   const hasClient = computed(() => {
-    return !!(clientState.value === 'seated' && localSessionState.client?.name && localSessionState.client?.type)
+    // Экран ноутбука появляется когда клиент сел и есть тип клиента
+    // Имя не требуется - оно раскрывается позже через диалог
+    return !!(clientState.value === 'seated' && localSessionState.client?.type)
   })
 
   /**
@@ -169,16 +171,21 @@ export function useClientCharacter({
       
       const clientData = response.data
       
-      // Save client data to state
+      // Save only non-dialogue client data to state.
+      // Financial data (income, expenses, age, credit_history) will be
+      // progressively collected through dialogue and revealed on the laptop screen.
+      // Name is revealed at the passport stage near the end of the conversation.
       Object.assign(localSessionState.client, {
         type: clientData.type,
-        name: clientData.name,
-        age: clientData.age,
-        income: clientData.income,
-        expenses: clientData.expenses,
-        credit_history: clientData.credit_history,
-        has_deposit: clientData.has_deposit,
-        model_path: clientData.model_path
+        name: null,
+        age: null,
+        income: null,
+        expenses: null,
+        credit_history: null,
+        has_deposit: clientData.has_deposit ?? false,
+        model_path: clientData.model_path,
+        // Store generated name for reveal at passport stage
+        _generated_name: clientData.name
       })
       
       // Update model path and preload

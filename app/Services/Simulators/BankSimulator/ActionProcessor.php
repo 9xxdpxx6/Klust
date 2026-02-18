@@ -57,9 +57,13 @@ class ActionProcessor
             try {
                 $actionResult = $this->processSingleAction($action, $context);
 
-                // Merge results
+                // Merge results (deep merge: scalars replace, arrays merge recursively)
                 if (isset($actionResult['updates'])) {
-                    $result['updates'] = array_merge_recursive($result['updates'], $actionResult['updates']);
+                    $result['updates'] = $this->deepMergeUpdates($result['updates'], $actionResult['updates']);
+
+                    // Feed updates back into context so subsequent actions see them
+                    // (e.g. calculate_credit needs scoring results from calculate_scoring)
+                    $context = $this->deepMergeUpdates($context, $actionResult['updates']);
                 }
                 if (isset($actionResult['effects'])) {
                     $result['effects'] = array_merge($result['effects'], $actionResult['effects']);
@@ -80,6 +84,30 @@ class ActionProcessor
         }
 
         return $result;
+    }
+
+    /**
+     * Deep merge: scalars replace (not turned into arrays),
+     * associative arrays are recursively merged.
+     *
+     * @param array<string, mixed> $base
+     * @param array<string, mixed> $override
+     * @return array<string, mixed>
+     */
+    private function deepMergeUpdates(array $base, array $override): array
+    {
+        foreach ($override as $key => $value) {
+            if (
+                is_array($value) && !array_is_list($value)
+                && isset($base[$key]) && is_array($base[$key]) && !array_is_list($base[$key])
+            ) {
+                $base[$key] = $this->deepMergeUpdates($base[$key], $value);
+            } else {
+                $base[$key] = $value;
+            }
+        }
+
+        return $base;
     }
 
     /**
@@ -314,7 +342,7 @@ class ActionProcessor
                 'updates' => [
                     'calculations' => [
                         'credit_score' => $score,
-                        'scoring_decision' => $interpretation['decision'],
+                        'decision' => $interpretation['decision'],
                         'interest_rate' => $interpretation['interest_rate'],
                         'limit_multiplier' => $interpretation['limit_multiplier'],
                         'requires_insurance' => $interpretation['requires_insurance'],
@@ -380,7 +408,6 @@ class ActionProcessor
                         'monthly_payment' => round($monthlyPayment, 2),
                         'total_payment' => round($totalPayment, 2),
                         'overpayment' => round($overpayment, 2),
-                        'interest_rate' => $interestRate,
                     ],
                 ],
             ];

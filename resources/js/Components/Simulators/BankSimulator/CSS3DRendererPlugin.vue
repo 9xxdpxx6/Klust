@@ -1,5 +1,5 @@
 <template>
-  <!-- Этот компонент настраивает CSS3DRenderer -->
+  <!-- This component configures CSS3DRenderer -->
 </template>
 
 <script setup>
@@ -8,73 +8,120 @@ import { useTres, useLoop } from '@tresjs/core'
 import { CSS3DRenderer } from 'three/addons/renderers/CSS3DRenderer.js'
 
 const { renderer, scene, camera, sizes } = useTres()
+const { onBeforeRender } = useLoop()
 
 let css3dRenderer = null
+let resizeObserver = null
+let stopSizesWatch = null
+let initTimeout = null
+let lastWidth = -1
+let lastHeight = -1
+
+const getCanvasSize = () => {
+  const webglCanvas = renderer.value?.domElement
+  const width = Math.max(1, Math.round(webglCanvas?.clientWidth || sizes.value?.width || window.innerWidth))
+  const height = Math.max(1, Math.round(webglCanvas?.clientHeight || sizes.value?.height || window.innerHeight))
+  return { width, height }
+}
+
+const updateSize = (force = false) => {
+  if (!css3dRenderer) return
+
+  const { width, height } = getCanvasSize()
+  if (!force && width === lastWidth && height === lastHeight) return
+
+  css3dRenderer.setSize(width, height)
+  css3dRenderer.domElement.style.width = `${width}px`
+  css3dRenderer.domElement.style.height = `${height}px`
+  lastWidth = width
+  lastHeight = height
+}
+
+const onWindowResize = () => updateSize(true)
+const onFullscreenChange = () => updateSize(true)
+const onVisibilityChange = () => {
+  if (document.visibilityState === 'visible') {
+    updateSize(true)
+  }
+}
 
 onMounted(() => {
-  // Ждем инициализации renderer и scene
   const initCSS3DRenderer = () => {
     if (!renderer.value || !scene.value) {
-      // Повторяем попытку через небольшую задержку
-      setTimeout(initCSS3DRenderer, 100)
+      initTimeout = setTimeout(initCSS3DRenderer, 100)
       return
     }
-    
-    // Получаем размеры из canvas или sizes
+
     const webglCanvas = renderer.value.domElement
-    const width = sizes.value?.width || webglCanvas?.clientWidth || window.innerWidth
-    const height = sizes.value?.height || webglCanvas?.clientHeight || window.innerHeight
-    
-    // Создаем CSS3DRenderer
     css3dRenderer = new CSS3DRenderer()
-    css3dRenderer.setSize(width, height)
     css3dRenderer.domElement.style.position = 'absolute'
     css3dRenderer.domElement.style.top = '0'
     css3dRenderer.domElement.style.left = '0'
     css3dRenderer.domElement.style.pointerEvents = 'none'
     css3dRenderer.domElement.style.zIndex = '1'
-    
-    // Добавляем CSS3DRenderer в DOM (после WebGL canvas)
-    if (webglCanvas && webglCanvas.parentNode) {
-      webglCanvas.parentNode.appendChild(css3dRenderer.domElement)
+
+    if (webglCanvas?.parentElement) {
+      const parent = webglCanvas.parentElement
+      if (window.getComputedStyle(parent).position === 'static') {
+        parent.style.position = 'relative'
+      }
+      parent.appendChild(css3dRenderer.domElement)
     }
-    
-    // Обновляем размеры при изменении
-    const updateSize = () => {
-      if (!css3dRenderer) return
-      
-      const webglCanvas = renderer.value?.domElement
-      const newWidth = sizes.value?.width || webglCanvas?.clientWidth || window.innerWidth
-      const newHeight = sizes.value?.height || webglCanvas?.clientHeight || window.innerHeight
-      
-      css3dRenderer.setSize(newWidth, newHeight)
-    }
-    
-    // Рендерим CSS3D сцену в каждом кадре через useLoop
-    const { onBeforeRender } = useLoop()
+
+    updateSize(true)
+
     onBeforeRender(() => {
+      updateSize()
       if (css3dRenderer && scene.value && camera.value) {
         css3dRenderer.render(scene.value, camera.value)
       }
     })
-    
-    // Слушаем изменения размеров
-    if (sizes.value) {
-      watch(() => sizes.value, updateSize, { deep: true })
+
+    stopSizesWatch = watch(
+      () => [sizes.value?.width, sizes.value?.height],
+      () => updateSize(true),
+      { immediate: true }
+    )
+
+    if (window.ResizeObserver && webglCanvas) {
+      resizeObserver = new ResizeObserver(() => updateSize(true))
+      resizeObserver.observe(webglCanvas)
+      if (webglCanvas.parentElement) {
+        resizeObserver.observe(webglCanvas.parentElement)
+      }
     }
-    
-    // Также слушаем изменения размеров окна
-    window.addEventListener('resize', updateSize)
+
+    window.addEventListener('resize', onWindowResize)
+    window.addEventListener('fullscreenchange', onFullscreenChange)
+    document.addEventListener('visibilitychange', onVisibilityChange)
   }
-  
+
   initCSS3DRenderer()
 })
 
 onUnmounted(() => {
-  window.removeEventListener('resize', () => {})
-  if (css3dRenderer && css3dRenderer.domElement && css3dRenderer.domElement.parentNode) {
+  if (initTimeout) {
+    clearTimeout(initTimeout)
+  }
+  if (stopSizesWatch) {
+    stopSizesWatch()
+    stopSizesWatch = null
+  }
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+    resizeObserver = null
+  }
+
+  window.removeEventListener('resize', onWindowResize)
+  window.removeEventListener('fullscreenchange', onFullscreenChange)
+  document.removeEventListener('visibilitychange', onVisibilityChange)
+
+  if (css3dRenderer?.domElement?.parentNode) {
     css3dRenderer.domElement.parentNode.removeChild(css3dRenderer.domElement)
   }
+
+  lastWidth = -1
+  lastHeight = -1
   css3dRenderer = null
 })
 </script>

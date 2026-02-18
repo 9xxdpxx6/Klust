@@ -7,90 +7,97 @@ return [
 
         /*
         |--------------------------------------------------------------------------
-        | 1. Старт
+        | 1. Приветствие
         |--------------------------------------------------------------------------
         */
 
         'greeting' => [
-            'client_message' => 'Здравствуйте. Хочу оформить кредитную карту.',
+            'client_message' => 'Добрый день! Я бы хотел узнать насчёт кредитной карты.',
             'user_options' => [
                 [
-                    'id' => 'clarify_goal',
-                    'text' => 'Для каких целей планируете использовать карту?',
+                    'id' => 'greet_warm',
+                    'text' => 'Здравствуйте! Конечно, присаживайтесь. Расскажите, что именно вас интересует?',
                     'actions' => [
-                        [
-                            'type' => 'add_score_points',
-                            'points' => 10,
-                            'reason' => 'Уточнение цели использования карты перед оформлением',
-                        ],
+                        ['type' => 'add_score_points', 'points' => 10, 'reason' => 'Вежливое приветствие и открытый вопрос'],
                     ],
                 ],
                 [
-                    'id' => 'sell_immediately',
-                    'text' => 'Можем оформить прямо сейчас. Нужен только паспорт.',
+                    'id' => 'greet_sell',
+                    'text' => 'Добрый день! У нас как раз акция — оформление за 5 минут. Давайте сразу заявку?',
                     'actions' => [
-                        [
-                            'type' => 'add_score_points',
-                            'points' => -10,
-                            'reason' => 'Агрессивная продажа без выяснения потребности клиента',
-                        ],
-                        ['type' => 'update_client_data', 'field' => 'aggressive_sale', 'value' => true],
+                        ['type' => 'add_score_points', 'points' => -5, 'reason' => 'Агрессивная продажа без выяснения потребности'],
                     ],
                 ],
             ],
             'next_stage' => [
-                'clarify_goal' => 'client_goal',
-                'sell_immediately' => 'client_skeptic',
+                'greet_warm' => 'client_need',
+                'greet_sell' => 'client_pushback',
             ],
         ],
 
         /*
         |--------------------------------------------------------------------------
-        | 2. Потребность
+        | 1а. Реакция клиента на давление
         |--------------------------------------------------------------------------
         */
 
-        'client_goal' => [
-            'client_message' => 'Скорее как подушку безопасности.',
+        'client_pushback' => [
+            'client_message' => 'Подождите-подождите. Я хотел сначала разобраться в условиях, а не оформлять вслепую.',
             'user_options' => [
                 [
-                    'id' => 'ask_income',
-                    'text' => 'Подскажите ваш официальный доход в месяц?',
+                    'id' => 'recover_polite',
+                    'text' => 'Конечно, извините за спешку. Давайте я подробно всё расскажу. Для каких целей вам нужна карта?',
                     'actions' => [
-                        [
-                            'type' => 'add_score_points',
-                            'points' => 10,
-                            'reason' => 'Запрос дохода для оценки платежеспособности',
-                        ],
+                        ['type' => 'add_score_points', 'points' => 5, 'reason' => 'Исправление ситуации после агрессивного старта'],
                     ],
                 ],
                 [
-                    'id' => 'ask_income_detailed',
-                    'text' => 'Чтобы подобрать безопасный лимит, назовите, пожалуйста, ежемесячный официальный доход.',
+                    'id' => 'recover_dry',
+                    'text' => 'Хорошо, расскажите тогда, что вас интересует.',
+                    'actions' => [],
+                ],
+            ],
+            'next_stage' => [
+                'recover_polite' => 'client_need',
+                'recover_dry' => 'client_need',
+            ],
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | 2. Потребность клиента
+        |--------------------------------------------------------------------------
+        */
+
+        'client_need' => [
+            'client_message' => 'Хочу карту как подушку безопасности — на непредвиденные расходы. Лимит тысяч 200–300 был бы идеально.',
+            'user_options' => [
+                [
+                    'id' => 'need_structured',
+                    'text' => 'Разумный подход. Чтобы подобрать оптимальные условия, задам несколько вопросов. Какой у вас примерный ежемесячный доход?',
                     'actions' => [
-                        [
-                            'type' => 'add_score_points',
-                            'points' => 10,
-                            'reason' => 'Корректное уточнение дохода с объяснением цели вопроса',
-                        ],
+                        ['type' => 'add_score_points', 'points' => 10, 'reason' => 'Структурированный подход к выявлению потребности'],
                     ],
                 ],
                 [
-                    'id' => 'ask_income_quick',
-                    'text' => 'Окей, доход в месяц?',
+                    'id' => 'need_casual',
+                    'text' => 'Понял, 200–300 — реальный диапазон. Давайте прикинем. Сколько получаете на руки?',
                     'actions' => [
-                        [
-                            'type' => 'add_score_points',
-                            'points' => 5,
-                            'reason' => 'Доход запрошен, но формулировка менее профессиональна',
-                        ],
+                        ['type' => 'add_score_points', 'points' => 7, 'reason' => 'Быстрый переход к делу'],
+                    ],
+                ],
+                [
+                    'id' => 'need_promise',
+                    'text' => '200–300 тысяч — без проблем, наверняка одобрим. Но формально нужно пройти проверку.',
+                    'actions' => [
+                        ['type' => 'add_score_points', 'points' => -10, 'reason' => 'Необоснованное обещание одобрения до проверки данных'],
                     ],
                 ],
             ],
             'next_stage' => [
-                'ask_income' => 'client_income',
-                'ask_income_detailed' => 'client_income',
-                'ask_income_quick' => 'client_income',
+                'need_structured' => 'client_income',
+                'need_casual' => 'client_income',
+                'need_promise' => 'client_income',
             ],
         ],
 
@@ -101,47 +108,30 @@ return [
         */
 
         'client_income' => [
-            'client_message' => '80 000 рублей.',
-            'required_data' => ['income'],
+            'client_message' => 'Около 80 тысяч рублей, это чистыми на руки.',
+            'on_enter_actions' => [
+                ['type' => 'update_client_data', 'field' => 'income', 'value' => 80000],
+            ],
             'user_options' => [
                 [
                     'id' => 'ask_expenses',
-                    'text' => 'Сколько составляют ваши ежемесячные расходы?',
+                    'text' => 'Хорошо. А какая примерно сумма уходит ежемесячно на обязательные платежи — коммуналка, продукты, транспорт?',
                     'actions' => [
-                        [
-                            'type' => 'add_score_points',
-                            'points' => 10,
-                            'reason' => 'Запрос расходов для расчёта долговой нагрузки',
-                        ],
+                        ['type' => 'add_score_points', 'points' => 10, 'reason' => 'Запрос расходов для оценки платёжеспособности'],
                     ],
                 ],
                 [
-                    'id' => 'ask_expenses_detailed',
-                    'text' => 'Спасибо. Уточните, пожалуйста, регулярные ежемесячные расходы: аренда, кредиты, обязательные платежи.',
+                    'id' => 'skip_to_debts',
+                    'text' => '80 тысяч, зафиксировал. Есть действующие кредиты или рассрочки?',
                     'actions' => [
-                        [
-                            'type' => 'add_score_points',
-                            'points' => 10,
-                            'reason' => 'Профессиональная детализация структуры расходов',
-                        ],
-                    ],
-                ],
-                [
-                    'id' => 'ask_expenses_brief',
-                    'text' => 'А по расходам сколько в среднем уходит?',
-                    'actions' => [
-                        [
-                            'type' => 'add_score_points',
-                            'points' => 8,
-                            'reason' => 'Расходы запрошены, но без достаточной структурности',
-                        ],
+                        ['type' => 'add_score_points', 'points' => 3, 'reason' => 'Пропуск вопроса о расходах — неполная оценка нагрузки'],
+                        ['type' => 'update_client_data', 'field' => 'expenses', 'value' => 40000],
                     ],
                 ],
             ],
             'next_stage' => [
                 'ask_expenses' => 'client_expenses',
-                'ask_expenses_detailed' => 'client_expenses',
-                'ask_expenses_brief' => 'client_expenses',
+                'skip_to_debts' => 'client_debts',
             ],
         ],
 
@@ -152,394 +142,381 @@ return [
         */
 
         'client_expenses' => [
-            'client_message' => '60 000 рублей.',
-            'required_data' => ['expenses'],
+            'client_message' => 'Где-то 45 тысяч в месяц, если всё сложить.',
+            'on_enter_actions' => [
+                ['type' => 'update_client_data', 'field' => 'expenses', 'value' => 45000],
+            ],
             'user_options' => [
                 [
                     'id' => 'ask_debts',
-                    'text' => 'Есть ли действующие кредиты?',
+                    'text' => 'Понял. Есть ли сейчас действующие кредиты или рассрочки?',
                     'actions' => [
-                        [
-                            'type' => 'add_score_points',
-                            'points' => 10,
-                            'reason' => 'Запрос информации о текущей кредитной нагрузке',
-                        ],
+                        ['type' => 'add_score_points', 'points' => 10, 'reason' => 'Полная оценка долговой нагрузки'],
                     ],
                 ],
                 [
-                    'id' => 'ask_debts_detailed',
-                    'text' => 'Есть ли сейчас действующие кредиты или рассрочки? Если да — какой ежемесячный платеж?',
+                    'id' => 'ask_debts_empathy',
+                    'text' => 'Нормальное соотношение. Сразу уточню — других кредитных обязательств нет?',
                     'actions' => [
-                        [
-                            'type' => 'add_score_points',
-                            'points' => 10,
-                            'reason' => 'Уточнение действующих обязательств и платежа по ним',
-                        ],
-                    ],
-                ],
-                [
-                    'id' => 'ask_debts_quick',
-                    'text' => 'Кредиты сейчас есть?',
-                    'actions' => [
-                        [
-                            'type' => 'add_score_points',
-                            'points' => 7,
-                            'reason' => 'Факт кредитов уточнен, но без детализации платежей',
-                        ],
+                        ['type' => 'add_score_points', 'points' => 8, 'reason' => 'Позитивная обратная связь + запрос долговой нагрузки'],
                     ],
                 ],
             ],
             'next_stage' => [
                 'ask_debts' => 'client_debts',
-                'ask_debts_detailed' => 'client_debts',
-                'ask_debts_quick' => 'client_debts',
+                'ask_debts_empathy' => 'client_debts',
             ],
         ],
 
         /*
         |--------------------------------------------------------------------------
-        | 5. Долги
+        | 5. Действующие долги
         |--------------------------------------------------------------------------
         */
 
         'client_debts' => [
-            'client_message' => 'Да, плачу 7 000 рублей по кредиту.',
+            'client_message' => 'Есть потребительский кредит, плачу по 7 000 в месяц. Осталось полгода до закрытия.',
             'user_options' => [
                 [
                     'id' => 'ask_history',
-                    'text' => 'Были ли просрочки по кредитам?',
+                    'text' => 'Хорошо, значит скоро нагрузка снизится. Были ли когда-нибудь просрочки по платежам?',
                     'actions' => [
-                        [
-                            'type' => 'add_score_points',
-                            'points' => 10,
-                            'reason' => 'Запрос кредитной истории перед скорингом',
-                        ],
+                        ['type' => 'add_score_points', 'points' => 10, 'reason' => 'Эмпатичный переход к проверке кредитной дисциплины'],
                     ],
                 ],
                 [
-                    'id' => 'ask_history_detailed',
-                    'text' => 'Понимаю. Подскажите, были ли за последние 12 месяцев просрочки по текущим или прошлым кредитам?',
+                    'id' => 'ask_history_direct',
+                    'text' => '7 000 — учту. Просрочки по кредитам были?',
                     'actions' => [
-                        [
-                            'type' => 'add_score_points',
-                            'points' => 10,
-                            'reason' => 'Уточнение кредитной дисциплины на релевантном горизонте',
-                        ],
-                    ],
-                ],
-                [
-                    'id' => 'ask_history_quick',
-                    'text' => 'С просрочками как ситуация?',
-                    'actions' => [
-                        [
-                            'type' => 'add_score_points',
-                            'points' => 7,
-                            'reason' => 'Кредитная история уточнена, но вопрос сформулирован менее делово',
-                        ],
+                        ['type' => 'add_score_points', 'points' => 5, 'reason' => 'Прямой вопрос без контекста'],
                     ],
                 ],
             ],
             'next_stage' => [
                 'ask_history' => 'client_history',
-                'ask_history_detailed' => 'client_history',
-                'ask_history_quick' => 'client_history',
+                'ask_history_direct' => 'client_history',
             ],
         ],
 
         /*
         |--------------------------------------------------------------------------
-        | 6. История
+        | 6. Кредитная дисциплина (самоотчёт клиента)
         |--------------------------------------------------------------------------
         */
 
         'client_history' => [
-            'client_message' => 'Нет, просрочек не было.',
+            'client_message' => 'Нет, всё плачу вовремя. Ни разу не задерживал.',
             'user_options' => [
                 [
-                    'id' => 'run_scoring',
-                    'text' => 'Проведу скоринговую оценку.',
+                    'id' => 'check_bki',
+                    'text' => 'Отлично. Сейчас проверю вашу кредитную историю в НБКИ — это стандартная процедура.',
                     'actions' => [
-                        [
-                            'type' => 'add_score_points',
-                            'points' => 10,
-                            'reason' => 'Корректный переход к скорингу после сбора ключевых данных',
-                        ],
-                        ['type' => 'calculate_scoring'],
-                        ['type' => 'calculate_credit'],
-                        [
-                            'type' => 'check_condition',
-                            'condition' => 'dti > 0.5',
-                            'true_stage' => 'auto_decline_dti',
-                        ],
-                        [
-                            'type' => 'check_condition',
-                            'condition' => 'credit_history == "bad"',
-                            'true_stage' => 'bad_history_decline',
-                        ],
+                        ['type' => 'add_score_points', 'points' => 15, 'reason' => 'Проверка кредитной истории через БКИ — обязательная процедура'],
                     ],
                 ],
                 [
-                    'id' => 'run_scoring_explain',
-                    'text' => 'Отлично, запущу скоринг и сразу покажу оптимальные условия.',
+                    'id' => 'trust_word',
+                    'text' => 'Хорошо, верю на слово. Для анкеты — сколько вам полных лет?',
                     'actions' => [
-                        [
-                            'type' => 'add_score_points',
-                            'points' => 10,
-                            'reason' => 'Профессиональная коммуникация при запуске скоринга',
-                        ],
-                        ['type' => 'calculate_scoring'],
-                        ['type' => 'calculate_credit'],
-                        [
-                            'type' => 'check_condition',
-                            'condition' => 'dti > 0.5',
-                            'true_stage' => 'auto_decline_dti',
-                        ],
-                        [
-                            'type' => 'check_condition',
-                            'condition' => 'credit_history == "bad"',
-                            'true_stage' => 'bad_history_decline',
-                        ],
-                    ],
-                ],
-                [
-                    'id' => 'run_scoring_quick',
-                    'text' => 'Секунду, считаю.',
-                    'actions' => [
-                        [
-                            'type' => 'add_score_points',
-                            'points' => 6,
-                            'reason' => 'Скоринг выполнен, но коммуникация с клиентом минимальна',
-                        ],
-                        ['type' => 'calculate_scoring'],
-                        ['type' => 'calculate_credit'],
-                        [
-                            'type' => 'check_condition',
-                            'condition' => 'dti > 0.5',
-                            'true_stage' => 'auto_decline_dti',
-                        ],
-                        [
-                            'type' => 'check_condition',
-                            'condition' => 'credit_history == "bad"',
-                            'true_stage' => 'bad_history_decline',
-                        ],
+                        ['type' => 'add_score_points', 'points' => -10, 'reason' => 'Пропуск обязательной проверки кредитной истории в БКИ'],
+                        ['type' => 'update_client_data', 'field' => 'credit_history', 'value' => 'good'],
                     ],
                 ],
             ],
             'next_stage' => [
-                'run_scoring' => 'offer_stage',
-                'run_scoring_explain' => 'offer_stage',
-                'run_scoring_quick' => 'offer_stage',
+                'check_bki' => 'bki_check',
+                'trust_word' => 'client_age',
             ],
         ],
 
         /*
         |--------------------------------------------------------------------------
-        | 7. Авто-отказ по DTI
+        | 7. Симуляция проверки БКИ (НБКИ)
         |--------------------------------------------------------------------------
         */
 
-        'auto_decline_dti' => [
-            'client_message' => 'К сожалению, по расчетам долговая нагрузка превышает допустимый уровень. Банк не может одобрить заявку.',
-            'actions' => [
+        'bki_check' => [
+            'on_enter_actions' => [
+                ['type' => 'show_message', 'role' => 'system', 'message' => '🔍 Запрос в НБКИ (Национальное бюро кредитных историй)...'],
+                ['type' => 'show_message', 'role' => 'system', 'message' => '📋 Получение кредитного отчёта по субъекту...'],
+                ['type' => 'show_message', 'role' => 'system', 'message' => '✅ Отчёт НБКИ получен. Кредитная история положительная. Просрочек за последние 12 мес. не выявлено.'],
+                ['type' => 'update_client_data', 'field' => 'credit_history', 'value' => 'good'],
+            ],
+            'client_message' => 'Надеюсь, всё в порядке?',
+            'user_options' => [
                 [
-                    'type' => 'add_score_points',
-                    'points' => -20,
-                    'reason' => 'Попытка выдачи кредита при DTI выше 50% — нарушение политики банка',
+                    'id' => 'bki_reassure',
+                    'text' => 'Да, всё отлично — история чистая. Осталось уточнить возраст для скоринговой модели.',
+                    'actions' => [
+                        ['type' => 'add_score_points', 'points' => 5, 'reason' => 'Информирование клиента о результатах проверки'],
+                    ],
                 ],
-                ['type' => 'update_client_data', 'field' => 'npl_risk', 'value' => 'high'],
-            ],
-            'is_final' => true,
-        ],
-
-        /*
-        |--------------------------------------------------------------------------
-        | 8. Отказ по плохой истории
-        |--------------------------------------------------------------------------
-        */
-
-        'bad_history_decline' => [
-            'client_message' => 'К сожалению, по данным кредитной истории одобрение невозможно.',
-            'actions' => [
                 [
-                    'type' => 'add_score_points',
-                    'points' => -15,
-                    'reason' => 'Попытка выдачи кредита клиенту с неудовлетворительной кредитной историей',
+                    'id' => 'bki_brief',
+                    'text' => 'Всё чисто. Сколько вам полных лет?',
+                    'actions' => [
+                        ['type' => 'add_score_points', 'points' => 2, 'reason' => 'Краткое подтверждение без деталей'],
+                    ],
                 ],
-                ['type' => 'update_client_data', 'field' => 'npl_risk', 'value' => 'very_high'],
             ],
-            'is_final' => true,
+            'next_stage' => [
+                'bki_reassure' => 'client_age',
+                'bki_brief' => 'client_age',
+            ],
         ],
 
         /*
         |--------------------------------------------------------------------------
-        | 9. Предложение
+        | 8. Возраст клиента
         |--------------------------------------------------------------------------
         */
 
-        'offer_stage' => [
-            'client_message' => 'Какие условия вы можете предложить?',
+        'client_age' => [
+            'client_message' => 'Мне 32 года.',
+            'on_enter_actions' => [
+                ['type' => 'update_client_data', 'field' => 'age', 'value' => 32],
+            ],
+            'user_options' => [
+                [
+                    'id' => 'run_scoring',
+                    'text' => 'Спасибо, все данные для расчёта есть. Провожу скоринговую оценку — это займёт пару секунд.',
+                    'actions' => [
+                        ['type' => 'add_score_points', 'points' => 10, 'reason' => 'Корректный переход к скорингу после сбора данных'],
+                        ['type' => 'calculate_scoring'],
+                        ['type' => 'calculate_credit'],
+                    ],
+                ],
+                [
+                    'id' => 'run_scoring_comment',
+                    'text' => '32 — отличный возраст для кредитных продуктов. Секунду, всё посчитаю.',
+                    'actions' => [
+                        ['type' => 'add_score_points', 'points' => 3, 'reason' => 'Неуместный комментарий о возрасте клиента'],
+                        ['type' => 'calculate_scoring'],
+                        ['type' => 'calculate_credit'],
+                    ],
+                ],
+            ],
+            'next_stage' => [
+                'run_scoring' => 'scoring_result',
+                'run_scoring_comment' => 'scoring_result',
+            ],
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | 9. Результат скоринга → предложение
+        |--------------------------------------------------------------------------
+        */
+
+        'scoring_result' => [
+            'client_message' => 'Ну что, одобрили?',
             'show_calculations' => true,
             'user_options' => [
                 [
-                    'id' => 'conservative_offer',
-                    'text' => 'Предлагаем лимит 250 000 рублей под 18% годовых.',
+                    'id' => 'present_conservative',
+                    'text' => 'Да, одобрение получено. Предлагаю комфортный лимит под ваш доход — все детали на экране.',
                     'actions' => [
-                        [
-                            'type' => 'add_score_points',
-                            'points' => 20,
-                            'reason' => 'Предложение консервативного лимита с управляемой нагрузкой на клиента',
-                        ],
+                        ['type' => 'add_score_points', 'points' => 20, 'reason' => 'Сбалансированное предложение на основе скоринга'],
                         ['type' => 'update_client_data', 'field' => 'bank_profit', 'value' => 'medium'],
                         ['type' => 'update_client_data', 'field' => 'npl_risk', 'value' => 'low'],
                     ],
                 ],
                 [
-                    'id' => 'aggressive_offer',
-                    'text' => 'Можем одобрить 400 000 рублей под 22% годовых.',
+                    'id' => 'present_aggressive',
+                    'text' => 'Одобрено! Могу предложить повышенный лимит — 400 000 рублей. Ставка чуть выше, но зато запас больше.',
                     'actions' => [
-                        [
-                            'type' => 'add_score_points',
-                            'points' => -15,
-                            'reason' => 'Предложение завышенного лимита с высоким риском дефолта (DTI > 40%)',
-                        ],
+                        ['type' => 'add_score_points', 'points' => -15, 'reason' => 'Навязывание завышенного лимита с высоким риском дефолта'],
                         ['type' => 'update_client_data', 'field' => 'bank_profit', 'value' => 'high'],
                         ['type' => 'update_client_data', 'field' => 'npl_risk', 'value' => 'medium'],
                     ],
                 ],
             ],
             'next_stage' => [
-                'conservative_offer' => 'client_decision',
-                'aggressive_offer' => 'risk_warning',
+                'present_conservative' => 'client_satisfied',
+                'present_aggressive' => 'client_concern',
             ],
         ],
 
         /*
         |--------------------------------------------------------------------------
-        | 10. Предупреждение о риске
+        | 10. Тревога клиента (завышенный лимит)
         |--------------------------------------------------------------------------
         */
 
-        'risk_warning' => [
-            'client_message' => 'С таким лимитом платеж будет выше. Вы уверены?',
+        'client_concern' => [
+            'client_message' => '400 тысяч? Не многовато? Я же говорил — мне карта на непредвиденные расходы, а не для покупок на всю зарплату.',
             'user_options' => [
                 [
-                    'id' => 'explain_risk',
-                    'text' => 'Да, нагрузка вырастет до 45% дохода. Это повышает риск просрочки.',
+                    'id' => 'backtrack',
+                    'text' => 'Вы правы, извините. Давайте вернёмся к комфортному лимиту, который соответствует вашему запросу.',
                     'actions' => [
-                        [
-                            'type' => 'add_score_points',
-                            'points' => 20,
-                            'reason' => 'Честное информирование клиента о рисках завышенного лимита',
-                        ],
+                        ['type' => 'add_score_points', 'points' => 10, 'reason' => 'Корректировка предложения по запросу клиента'],
                     ],
                 ],
                 [
-                    'id' => 'ignore_risk',
-                    'text' => 'Это стандартная практика, переживать не стоит.',
+                    'id' => 'insist',
+                    'text' => 'Это стандартный лимит для вашего профиля. Вы не обязаны его весь использовать.',
                     'actions' => [
-                        [
-                            'type' => 'add_score_points',
-                            'points' => -20,
-                            'reason' => 'Скрытие рисков от клиента — нарушение стандартов консультирования',
-                        ],
+                        ['type' => 'add_score_points', 'points' => -20, 'reason' => 'Навязывание завышенного лимита вопреки желанию клиента'],
                         ['type' => 'update_client_data', 'field' => 'future_default_flag', 'value' => true],
                     ],
                 ],
             ],
             'next_stage' => [
-                'explain_risk' => 'client_decision',
-                'ignore_risk' => 'future_default_event',
+                'backtrack' => 'client_satisfied',
+                'insist' => 'client_reluctant',
             ],
         ],
 
         /*
         |--------------------------------------------------------------------------
-        | 11. Будущий дефолт (NPL событие)
+        | 10а. Клиент нехотя соглашается (опасный путь)
         |--------------------------------------------------------------------------
         */
 
-        'future_default_event' => [
-            'client_message' => 'Через 6 месяцев клиент допустил просрочку 90+ дней. Кредит переведен в NPL.',
-            'actions' => [
-                [
-                    'type' => 'add_score_points',
-                    'points' => -50,
-                    'reason' => 'Кредит перешёл в NPL: клиент не справился с нагрузкой, которую вы не предупредили',
-                ],
-                ['type' => 'update_client_data', 'field' => 'bank_profit', 'value' => 'negative'],
-            ],
-            'is_final' => true,
-        ],
-
-        /*
-        |--------------------------------------------------------------------------
-        | 12. Решение клиента
-        |--------------------------------------------------------------------------
-        */
-
-        'client_decision' => [
-            'client_message' => 'Хорошо, оформляем.',
+        'client_reluctant' => [
+            'client_message' => 'Ну... ладно, вам виднее. Давайте оформлять.',
             'user_options' => [
                 [
-                    'id' => 'finalize',
-                    'text' => 'Подготовлю заявку и документы.',
+                    'id' => 'proceed_risky',
+                    'text' => 'Отлично! Мне потребуется ваш паспорт.',
                     'actions' => [
-                        [
-                            'type' => 'add_score_points',
-                            'points' => 30,
-                            'reason' => 'Успешное завершение консультации и оформление продукта',
-                        ],
+                        ['type' => 'add_score_points', 'points' => -5, 'reason' => 'Оформление продукта при явном дискомфорте клиента'],
                     ],
                 ],
                 [
-                    'id' => 'finalize_detailed',
-                    'text' => 'Отлично, фиксирую параметры, подготовлю заявку и передам документы на подписание.',
+                    'id' => 'reconsider',
+                    'text' => 'Знаете, давайте всё-таки снизим лимит. Лучше комфортнее, чем потом переплачивать.',
                     'actions' => [
-                        [
-                            'type' => 'add_score_points',
-                            'points' => 30,
-                            'reason' => 'Четкое завершение сделки с пояснением следующих шагов',
-                        ],
-                    ],
-                ],
-                [
-                    'id' => 'finalize_short',
-                    'text' => 'Супер, тогда оформляем.',
-                    'actions' => [
-                        [
-                            'type' => 'add_score_points',
-                            'points' => 20,
-                            'reason' => 'Сделка закрыта, но финальная коммуникация менее структурна',
-                        ],
+                        ['type' => 'add_score_points', 'points' => 15, 'reason' => 'Ответственное решение в пользу клиента'],
+                        ['type' => 'update_client_data', 'field' => 'npl_risk', 'value' => 'low'],
+                        ['type' => 'update_client_data', 'field' => 'future_default_flag', 'value' => false],
                     ],
                 ],
             ],
             'next_stage' => [
-                'finalize' => 'completion',
-                'finalize_detailed' => 'completion',
-                'finalize_short' => 'completion',
+                'proceed_risky' => 'collect_passport_risky',
+                'reconsider' => 'client_satisfied',
             ],
         ],
 
         /*
         |--------------------------------------------------------------------------
-        | 13. Финал
+        | 11. Клиент доволен условиями
+        |--------------------------------------------------------------------------
+        */
+
+        'client_satisfied' => [
+            'client_message' => 'Хорошо, условия устраивают. Давайте оформлять.',
+            'user_options' => [
+                [
+                    'id' => 'ask_passport',
+                    'text' => 'Отлично. Для оформления договора мне потребуется ваш паспорт.',
+                    'actions' => [
+                        ['type' => 'add_score_points', 'points' => 10, 'reason' => 'Корректный запрос документов после согласия клиента'],
+                    ],
+                ],
+                [
+                    'id' => 'skip_docs',
+                    'text' => 'Хорошо, оформляю. Документы можно донести позже.',
+                    'actions' => [
+                        ['type' => 'add_score_points', 'points' => -15, 'reason' => 'Оформление без проверки документов — нарушение процедуры'],
+                    ],
+                ],
+            ],
+            'next_stage' => [
+                'ask_passport' => 'collect_passport',
+                'skip_docs' => 'completion_no_docs',
+            ],
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | 12. Сбор документов (паспорт → раскрытие ФИО)
+        |--------------------------------------------------------------------------
+        */
+
+        'collect_passport' => [
+            'client_message' => 'Вот, пожалуйста, мой паспорт.',
+            'user_options' => [
+                [
+                    'id' => 'finalize_proper',
+                    'text' => 'Спасибо. Данные проверены, заявка сформирована. Вот договор — пожалуйста, ознакомьтесь с условиями перед подписанием.',
+                    'actions' => [
+                        ['type' => 'add_score_points', 'points' => 15, 'reason' => 'Предоставление договора для ознакомления перед подписанием'],
+                    ],
+                ],
+                [
+                    'id' => 'finalize_quick',
+                    'text' => 'Всё в порядке. Подписывайте здесь и здесь — карту активируем сразу.',
+                    'actions' => [
+                        ['type' => 'add_score_points', 'points' => 5, 'reason' => 'Оформление без разъяснения условий договора'],
+                    ],
+                ],
+            ],
+            'next_stage' => [
+                'finalize_proper' => 'completion',
+                'finalize_quick' => 'completion',
+            ],
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | 12а. Паспорт (опасный путь → NPL)
+        |--------------------------------------------------------------------------
+        */
+
+        'collect_passport_risky' => [
+            'client_message' => 'Вот паспорт.',
+            'user_options' => [
+                [
+                    'id' => 'finalize_risky',
+                    'text' => 'Спасибо, оформляю. Подписывайте.',
+                    'actions' => [],
+                ],
+            ],
+            'next_stage' => [
+                'finalize_risky' => 'future_default_event',
+            ],
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | 13. Успешное завершение
         |--------------------------------------------------------------------------
         */
 
         'completion' => [
-            'client_message' => 'Спасибо за консультацию.',
+            'client_message' => 'Спасибо за консультацию! Всего доброго.',
             'is_final' => true,
         ],
 
         /*
         |--------------------------------------------------------------------------
-        | Скепсис
+        | 13а. Завершение без документов
         |--------------------------------------------------------------------------
         */
 
-        'client_skeptic' => [
-            'client_message' => 'Мне важно понять условия, а не просто оформить.',
+        'completion_no_docs' => [
+            'client_message' => 'Ладно, спасибо. Занесу документы на днях.',
+            'on_enter_actions' => [
+                ['type' => 'add_score_points', 'points' => -10, 'reason' => 'Выдача кредитного продукта без верификации личности'],
+            ],
+            'is_final' => true,
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | 14. NPL-событие (дефолт через 6 месяцев)
+        |--------------------------------------------------------------------------
+        */
+
+        'future_default_event' => [
+            'client_message' => '⚠️ Через 6 месяцев: клиент допустил просрочку свыше 90 дней. Кредит переведён в категорию NPL (проблемная задолженность).',
+            'on_enter_actions' => [
+                ['type' => 'add_score_points', 'points' => -30, 'reason' => 'Кредит перешёл в NPL из-за завышенного лимита'],
+                ['type' => 'update_client_data', 'field' => 'bank_profit', 'value' => 'negative'],
+            ],
             'is_final' => true,
         ],
 

@@ -190,6 +190,8 @@ export function useDialogueSystem({
         case 'show_message':
           if (effect.role === 'client') {
             addClientMessage(effect.message)
+          } else if (effect.role === 'system') {
+            addSystemMessage(effect.message)
           } else {
             addUserMessage(effect.message)
           }
@@ -235,19 +237,40 @@ export function useDialogueSystem({
     }
     
     // Check for duplicates - don't add if message already exists
-    // But allow same text if it's from different stages (rare case)
-    // For now, just check if exact same message exists
     const messageExists = localSessionState.dialogue.messages.some(
       m => m.text === text && m.role === 'user'
     )
     
     if (messageExists) {
-      // Message already exists, skipping
       return
     }
     
     localSessionState.dialogue.messages.push({
       role: 'user',
+      text: text,
+      timestamp: new Date().toISOString()
+    })
+  }
+
+  /**
+   * Add system message (BKI checks, notifications, etc.)
+   */
+  const addSystemMessage = (text) => {
+    if (!localSessionState.dialogue.messages) {
+      localSessionState.dialogue.messages = []
+    }
+    
+    // Check for duplicates
+    const messageExists = localSessionState.dialogue.messages.some(
+      m => m.text === text && m.role === 'system'
+    )
+    
+    if (messageExists) {
+      return
+    }
+    
+    localSessionState.dialogue.messages.push({
+      role: 'system',
       text: text,
       timestamp: new Date().toISOString()
     })
@@ -304,19 +327,16 @@ export function useDialogueSystem({
             sessionState: localSessionState,
             currentStage: currentStageComputed,
             stageConfig: stageConfigComputed,
-            handleOptionSelect,
-            handleDataSubmit
+            handleOptionSelect
           }
         },
         render() {
           // Render function will be called reactively when computed values change
-          // Use computed values directly - Vue will track dependencies
           return h(DialogueInterface, {
             sessionState: localSessionState,
             currentStage: currentStageComputed.value,
             stageConfig: stageConfigComputed.value,
             onOptionSelect: handleOptionSelect,
-            onDataSubmit: handleDataSubmit,
             onCompleteSession: () => {
               // Emit event to parent component to handle session completion
               // This will be handled by the parent component (BankSimulatorSession)
@@ -340,6 +360,53 @@ export function useDialogueSystem({
     nextTick(() => {
       findDialogContent()
     })
+  }
+
+  /**
+   * Apply backend updates directly to localSessionState for immediate reactivity.
+   * This ensures data set via on_enter_actions or action results
+   * is available locally before the next API call.
+   */
+  const applyBackendUpdates = (updates) => {
+    if (!updates || typeof updates !== 'object') return
+
+    // Apply client data updates
+    if (updates.client && typeof updates.client === 'object') {
+      Object.keys(updates.client).forEach(key => {
+        const value = updates.client[key]
+        if (value !== undefined) {
+          localSessionState.client[key] = value
+        }
+      })
+    }
+
+    // Apply calculations updates
+    if (updates.calculations && typeof updates.calculations === 'object') {
+      if (!localSessionState.calculations) {
+        localSessionState.calculations = {}
+      }
+      Object.keys(updates.calculations).forEach(key => {
+        const value = updates.calculations[key]
+        if (value !== undefined) {
+          localSessionState.calculations[key] = value
+        }
+      })
+    }
+
+    // Apply score (take last value if it became an array due to merge)
+    if (updates.score !== undefined) {
+      const score = Array.isArray(updates.score)
+        ? updates.score[updates.score.length - 1]
+        : updates.score
+      localSessionState.score = score
+    }
+
+    // Apply score_history
+    if (updates.score_history !== undefined) {
+      localSessionState.score_history = Array.isArray(updates.score_history)
+        ? updates.score_history
+        : []
+    }
   }
 
   /**
@@ -395,11 +462,16 @@ export function useDialogueSystem({
           result.messages.forEach(msg => {
             if (msg.role === 'client') {
               addClientMessage(msg.message)
+            } else if (msg.role === 'system') {
+              addSystemMessage(msg.message)
             } else {
               addUserMessage(msg.message)
             }
           })
         }
+        
+        // Apply backend updates DIRECTLY to localSessionState (immediate reactivity)
+        applyBackendUpdates(result.updates)
         
         // Use next_stage from backend if available, otherwise use config
         const finalNextStage = result.next_stage || nextStage
@@ -569,13 +641,19 @@ export function useDialogueSystem({
         return numbers.length > 0 ? numbers[0] : null
         
       case 'credit_history':
-        if (lowerMessage.includes('отличн') || lowerMessage.includes('хорош') || lowerMessage.includes('средн') || lowerMessage.includes('плох') || lowerMessage.includes('нет')) {
-          if (lowerMessage.includes('отличн')) return 'excellent'
-          if (lowerMessage.includes('хорош')) return 'good'
-          if (lowerMessage.includes('средн')) return 'fair'
-          if (lowerMessage.includes('плох')) return 'poor'
-          if (lowerMessage.includes('нет')) return 'none'
+        // Сначала проверяем контекст: "просрочек не было" / "вовремя" → хорошая история
+        if (lowerMessage.includes('просрочек не было') || lowerMessage.includes('вовремя') || lowerMessage.includes('без просрочек')) {
+          return 'good'
         }
+        if (lowerMessage.includes('были просрочки') || lowerMessage.includes('были задержки')) {
+          return 'poor'
+        }
+        if (lowerMessage.includes('отличн')) return 'excellent'
+        if (lowerMessage.includes('хорош')) return 'good'
+        if (lowerMessage.includes('средн')) return 'fair'
+        if (lowerMessage.includes('плох')) return 'poor'
+        // "нет" без контекста о просрочках = нет кредитной истории
+        if (lowerMessage.includes('нет') && !lowerMessage.includes('просроч')) return 'none'
         return null
         
       default:
@@ -625,6 +703,11 @@ export function useDialogueSystem({
       await nextTick()
     }
     
+    // Reveal client name at passport stage (ФИО в конце, при предъявлении паспорта)
+    if (normalizedStageId === 'collect_passport' && localSessionState.client._generated_name) {
+      localSessionState.client.name = localSessionState.client._generated_name
+    }
+
     // Automatically show client message (client speaks automatically)
     if (stageConfig.client_message) {
       // Check if this message was already shown (avoid duplicates)
@@ -679,6 +762,8 @@ export function useDialogueSystem({
         result.messages.forEach(msg => {
           if (msg.role === 'client') {
             addClientMessage(msg.message)
+          } else if (msg.role === 'system') {
+            addSystemMessage(msg.message)
           } else {
             addUserMessage(msg.message)
           }
@@ -908,6 +993,7 @@ export function useDialogueSystem({
     localSessionState.dialogue.selected_options = []
     localSessionState.dialogue.formData = {}
     localSessionState.client = {
+      name: null,
       age: null,
       income: null,
       expenses: null,
@@ -928,6 +1014,7 @@ export function useDialogueSystem({
           formData: {}
         },
         client: {
+          name: null,
           age: null,
           income: null,
           expenses: null,
@@ -965,6 +1052,7 @@ export function useDialogueSystem({
     handleDataSubmit,
     addClientMessage,
     addUserMessage,
+    addSystemMessage,
     executeBackendActions,
     executeActions,
     processStageEnterActions,

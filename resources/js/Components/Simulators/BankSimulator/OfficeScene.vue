@@ -17,7 +17,6 @@
         :has-client="hasClientValue"
         :client-data="sessionState.localSessionState.client"
         :calculations="sessionState.localSessionState.calculations"
-        :dialogue-messages="sessionState.localSessionState.dialogue.messages || []"
         :active-tab="sessionState.localSessionState.ui.activeTab"
         :is-phone-ringing="isPhoneRinging"
         :is-client-visible="isClientVisibleValue"

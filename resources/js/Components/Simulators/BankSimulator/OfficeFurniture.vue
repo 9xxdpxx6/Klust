@@ -32,14 +32,13 @@
     v-if="hasClient"
     :client="clientData"
     :calculations="calculations"
-    :dialogue-messages="dialogueMessages"
     :active-tab="activeTab"
     @update:active-tab="$emit('bank-tab-change', $event)"
-    :position="[-1.35, 1.15, -0.3]"
-    :rotation="[0.0, 2.8, 0]"
-    :width="600"
-    :height="400"
-    :scale="0.0005"
+    :position="[-1.67, 1.15, 0.1]"
+    :rotation="[0.0, 2.9, 0]"
+    :width="800"
+    :height="600"
+    :scale="0.001"
   />
   
   <!-- Телефон -->
@@ -128,10 +127,6 @@ const props = defineProps({
   calculations: {
     type: Object,
     default: () => ({})
-  },
-  dialogueMessages: {
-    type: Array,
-    default: () => []
   },
   activeTab: {
     type: String,

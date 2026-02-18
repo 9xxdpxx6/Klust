@@ -315,9 +315,9 @@ class SimulatorsController extends Controller
         $optionId = $request->input('option_id');
         $context = $request->input('context', []);
 
-        // Merge session state into context
+        // Merge session state into context (backend state as base, frontend overrides)
         $sessionState = $session->state ?? [];
-        $context = array_merge($sessionState, $context);
+        $context = $this->deepMergeContext($sessionState, $context);
 
         $result = [
             'success' => true,
@@ -336,7 +336,7 @@ class SimulatorsController extends Controller
                     $result['effects'] = array_merge($result['effects'], $actionResult['effects'] ?? []);
                     $result['messages'] = array_merge($result['messages'], $actionResult['messages'] ?? []);
                     if (isset($actionResult['updates'])) {
-                        $result['updates'] = array_merge_recursive($result['updates'], $actionResult['updates']);
+                        $result['updates'] = $this->deepMergeUpdates($result['updates'], $actionResult['updates']);
                     }
                     if (!$actionResult['success']) {
                         $result['success'] = false;
@@ -356,7 +356,7 @@ class SimulatorsController extends Controller
                     $result['effects'] = array_merge($result['effects'], $actionResult['effects'] ?? []);
                     $result['messages'] = array_merge($result['messages'], $actionResult['messages'] ?? []);
                     if (isset($actionResult['updates'])) {
-                        $result['updates'] = array_merge_recursive($result['updates'], $actionResult['updates']);
+                        $result['updates'] = $this->deepMergeUpdates($result['updates'], $actionResult['updates']);
                     }
                     if (!$actionResult['success']) {
                         $result['success'] = false;
@@ -404,5 +404,54 @@ class SimulatorsController extends Controller
                 'error' => $e->getMessage(),
             ], 400);
         }
+    }
+
+    /**
+     * Deep merge updates: scalars are replaced (not merged into arrays),
+     * nested arrays are recursively merged.
+     *
+     * @param array<string, mixed> $base
+     * @param array<string, mixed> $override
+     * @return array<string, mixed>
+     */
+    private function deepMergeUpdates(array $base, array $override): array
+    {
+        foreach ($override as $key => $value) {
+            if (
+                is_array($value) && !array_is_list($value)
+                && isset($base[$key]) && is_array($base[$key]) && !array_is_list($base[$key])
+            ) {
+                $base[$key] = $this->deepMergeUpdates($base[$key], $value);
+            } else {
+                // Scalar or sequential array → replace
+                $base[$key] = $value;
+            }
+        }
+
+        return $base;
+    }
+
+    /**
+     * Deep merge context: backend session state as base, frontend context overrides
+     * but only for non-null values.
+     *
+     * @param array<string, mixed> $backend
+     * @param array<string, mixed> $frontend
+     * @return array<string, mixed>
+     */
+    private function deepMergeContext(array $backend, array $frontend): array
+    {
+        $merged = $backend;
+
+        foreach ($frontend as $key => $value) {
+            if (is_array($value) && isset($merged[$key]) && is_array($merged[$key])) {
+                $merged[$key] = $this->deepMergeContext($merged[$key], $value);
+            } elseif ($value !== null) {
+                $merged[$key] = $value;
+            }
+            // If frontend value is null but backend has a value, keep backend value
+        }
+
+        return $merged;
     }
 }
