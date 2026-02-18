@@ -306,6 +306,11 @@ defineExpose({
       }, 200)
     }
   },
-  animateContentChange
+  animateContentChange,
+  /**
+   * Вернуть DOM-элемент содержимого диалога.
+   * Используется для монтирования Vue-интерфейсов (диалог с клиентом и т.п.).
+   */
+  getContentElement: () => dialogElementContent.value
 })
 </script>

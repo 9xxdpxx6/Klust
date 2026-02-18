@@ -34,6 +34,7 @@ class UpdateStateRequest extends FormRequest
             'state.client.type' => ['nullable', 'string'],
             'state.client.name' => ['nullable', 'string'],
             'state.client.age' => ['nullable', 'integer', 'min:18', 'max:100'],
+            // Allow null or 0 for reset (will be treated as not set)
             'state.client.income' => ['nullable', 'numeric', 'min:0'],
             'state.client.expenses' => ['nullable', 'numeric', 'min:0'],
             'state.client.credit_history' => ['nullable', 'string', 'in:excellent,good,fair,poor,none'],
@@ -62,6 +63,13 @@ class UpdateStateRequest extends FormRequest
             // UI состояние
             'state.ui' => ['nullable', 'array'],
             'state.ui.activeDialog' => ['nullable', 'string', 'in:phone,calculator,documents,dialogue'],
+            
+            // Система баллов
+            'state.score' => ['nullable', 'numeric', 'min:0'],
+            'state.score_history' => ['nullable', 'array'],
+            'state.score_history.*.points' => ['required_with:state.score_history', 'integer'],
+            'state.score_history.*.reason' => ['nullable', 'string'],
+            'state.score_history.*.timestamp' => ['required_with:state.score_history', 'string', 'date'],
             
             // Действия
             'state.actions' => ['nullable', 'array'],

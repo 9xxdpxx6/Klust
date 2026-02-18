@@ -32,14 +32,33 @@ export function useSimulatorState(sessionId, initialState = {}) {
         state: updates
       })
 
-      // Merge updates into local state
-      Object.assign(state, updates)
+      // Deep merge updates into local state
+      // Object.assign does shallow merge, so we need to handle nested objects
+      const deepMerge = (target, source) => {
+        Object.keys(source).forEach(key => {
+          if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key]) && 
+              target[key] && typeof target[key] === 'object' && !Array.isArray(target[key])) {
+            deepMerge(target[key], source[key])
+          } else {
+            // Special handling for score and score_history - always use the new value directly
+            if (key === 'score' || key === 'score_history') {
+              target[key] = source[key]
+            } else {
+              target[key] = source[key]
+            }
+          }
+        })
+        return target
+      }
+      deepMerge(state, updates)
+      
+      // Score updates handled silently
 
       return response.data
     } catch (e) {
       error.value = e.response?.data?.message || 'Ошибка обновления состояния'
       
-      // Логируем только если не silent и не 422 ошибка
+      // Логируем ошибки только если не silent
       if (!silent && e.response?.status !== 422) {
         console.error('Ошибка обновления состояния:', e)
       }

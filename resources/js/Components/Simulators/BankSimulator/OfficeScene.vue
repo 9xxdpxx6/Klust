@@ -78,6 +78,18 @@
     :session-id="sessionId"
     @close="dialogs.onDepositCalculatorClose"
   />
+  
+  <!-- Модалка подтверждения перезапуска -->
+  <DangerConfirmDialog
+    v-model:visible="showRestartConfirm"
+    type="warning"
+    title="Начать заново?"
+    message="Вы уверены, что хотите начать заново?"
+    confirm-text="Начать заново"
+    cancel-text="Отмена"
+    default-message="Весь прогресс будет сброшен."
+    @confirm="handleRestartConfirm"
+  />
 </template>
 
 <script setup>
@@ -95,6 +107,7 @@ import CreditCalculatorDialog from './CreditCalculatorDialog.vue'
 import DepositCalculatorDialog from './DepositCalculatorDialog.vue'
 import Dialog3D from './Dialog3D.vue'
 import CSS3DRendererPlugin from './CSS3DRendererPlugin.vue'
+import DangerConfirmDialog from '@/Components/UI/DangerConfirmDialog.vue'
 
 const devMode = false // TODO: переключить на false для прода
 
@@ -157,6 +170,9 @@ const scoring = useScoring({
   isLoading: computed(() => props.isLoading)
 })
 
+// Restart confirmation dialog
+const showRestartConfirm = ref(false)
+
 // Dialogue system composable (uses dialog manager's showDialogueDialog)
 const dialogueSystem = useDialogueSystem({
   localSessionState: sessionState.localSessionState,
@@ -173,8 +189,22 @@ const dialogueSystem = useDialogueSystem({
   },
   setActiveDialog: (value) => {
     dialogs.activeDialog.value = value
+  },
+  sessionId: props.sessionId,
+  updateState: props.updateState,
+  openCreditCalculator: dialogs.openCreditCalculator,
+  openDepositCalculator: dialogs.openDepositCalculator,
+  onPhoneClick: dialogs.onPhoneClick,
+  onDocumentsClick: dialogs.onDocumentsClick,
+  onRestartRequest: () => {
+    showRestartConfirm.value = true
   }
 })
+
+const handleRestartConfirm = () => {
+  showRestartConfirm.value = false
+  dialogueSystem.handleRestartSession()
+}
 
 // Client character composable
 const clientCharacter = useClientCharacter({
