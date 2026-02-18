@@ -17,13 +17,16 @@ class SimulatorSessionFactory extends Factory
 
         return [
             'user_id' => User::factory(),
+            // В системе всегда один симулятор, поэтому используем factory()
+            // В сидере будет установлен конкретный ID единственного симулятора
             'simulator_id' => Simulator::factory(),
             'state' => $isCompleted ? [
                 'level' => fake()->numberBetween(1, 10),
                 'completed_tasks' => fake()->numberBetween(1, 5),
                 'score_multiplier' => fake()->randomFloat(2, 1.0, 2.5),
             ] : null,
-            'score' => $isCompleted ? fake()->numberBetween(50, 1000) : fake()->numberBetween(0, 49),
+            // Score должен быть в диапазоне 0-100 (процент)
+            'score' => $isCompleted ? fake()->numberBetween(50, 100) : fake()->numberBetween(0, 49),
             'time_spent' => $timeSpent,
             'is_completed' => $isCompleted,
             'started_at' => $startedAt,

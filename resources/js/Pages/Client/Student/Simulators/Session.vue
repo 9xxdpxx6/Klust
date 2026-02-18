@@ -12,7 +12,8 @@ const props = defineProps({
     },
     simulator: {
         type: Object,
-        required: true
+        required: false,
+        default: null
     }
 })
 
@@ -77,7 +78,7 @@ const exitSession = () => {
 </script>
 
 <template>
-    <Head :title="`Симулятор: ${session.simulator.title}`" />
+    <Head :title="`Симулятор: ${simulator?.title || session.simulator?.title || 'Неизвестный симулятор'}`" />
     <div class="space-y-6">
         <div class="min-h-screen bg-gray-50">
             <!-- Header -->
@@ -85,7 +86,7 @@ const exitSession = () => {
                 <div class="max-w-7xl mx-auto px-4 py-4">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h1 class="text-xl font-bold">{{ simulator.title }}</h1>
+                            <h1 class="text-xl font-bold">{{ simulator?.title || session.simulator?.title || 'Неизвестный симулятор' }}</h1>
                             <p class="text-sm text-gray-600">Сессия #{{ session.id }}</p>
                         </div>
                         <div class="flex items-center gap-6">

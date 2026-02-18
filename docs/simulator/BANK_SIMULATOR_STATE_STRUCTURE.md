@@ -57,6 +57,19 @@
       "timestamp": "2025-01-01T12:00:10Z"
     }
   ],
+  "score": 30,
+  "score_history": [
+    {
+      "points": 10,
+      "reason": "Правильный выбор опции",
+      "timestamp": "2025-01-01T12:00:00Z"
+    },
+    {
+      "points": 20,
+      "reason": "Принятие предложения",
+      "timestamp": "2025-01-01T12:05:00Z"
+    }
+  ],
   "errors": []
 }
 ```
@@ -204,6 +217,44 @@
     "type": "calculation_performed",
     "calculation": "credit_score",
     "timestamp": "2025-01-01T12:00:10Z"
+  }
+]
+```
+
+---
+
+### `score` (number, nullable)
+
+Текущий счет студента за правильные действия в симуляторе. Начисляется через систему действий (actions) в диалогах.
+
+**Пример**:
+```json
+"score": 30
+```
+
+---
+
+### `score_history` (array, nullable)
+
+История начисления баллов. Каждая запись содержит информацию о том, когда и за что были начислены баллы.
+
+**Структура элемента `score_history`**:
+- `points` (integer, required) - Количество начисленных баллов
+- `reason` (string, nullable) - Причина начисления (например, "Правильный выбор опции")
+- `timestamp` (string, required) - ISO 8601 дата и время начисления
+
+**Пример**:
+```json
+"score_history": [
+  {
+    "points": 10,
+    "reason": "Правильный выбор опции",
+    "timestamp": "2025-01-01T12:00:00Z"
+  },
+  {
+    "points": 20,
+    "reason": "Принятие предложения",
+    "timestamp": "2025-01-01T12:05:00Z"
   }
 ]
 ```
@@ -401,12 +452,108 @@
 
 ---
 
+## Система действий (Actions System)
+
+Система действий позволяет настраивать поведение диалогов через конфигурацию. Действия выполняются при выборе опций пользователем или при входе на стадию.
+
+### Типы действий
+
+#### Действия опций (`user_options[].actions`)
+
+Выполняются при выборе конкретной опции в диалоге:
+
+- `add_score_points` - Начисление баллов за правильное действие
+  ```json
+  {"type": "add_score_points", "points": 10, "reason": "Правильный выбор"}
+  ```
+
+- `show_message` - Показ специального сообщения
+  ```json
+  {"type": "show_message", "message": "Хороший выбор!", "role": "client"}
+  ```
+
+- `update_client_data` - Обновление данных клиента
+  ```json
+  {"type": "update_client_data", "field": "income", "value": 50000}
+  ```
+
+- `open_calculator` - Открытие калькулятора
+  ```json
+  {"type": "open_calculator", "calculator": "credit"}
+  ```
+
+- `open_phone` - Открытие диалога телефона
+  ```json
+  {"type": "open_phone"}
+  ```
+
+- `open_documents` - Открытие диалога документов
+  ```json
+  {"type": "open_documents"}
+  ```
+
+#### Действия стадий (`on_enter_actions`)
+
+Выполняются автоматически при входе на стадию:
+
+- `calculate_scoring` - Выполнение расчета скоринга
+  ```json
+  {"type": "calculate_scoring"}
+  ```
+
+- `calculate_credit` - Выполнение расчета кредита
+  ```json
+  {"type": "calculate_credit"}
+  ```
+
+- `calculate_deposit` - Выполнение расчета вклада
+  ```json
+  {"type": "calculate_deposit"}
+  ```
+
+- `check_condition` - Условное выполнение действий
+  ```json
+  {
+    "type": "check_condition",
+    "field": "client.income",
+    "operator": ">",
+    "value": 100000,
+    "then": [
+      {"type": "add_score_points", "points": 5}
+    ]
+  }
+  ```
+
+### Пример конфигурации действий
+
+```php
+'greeting' => [
+    'client_message' => 'Здравствуйте! Чем могу помочь?',
+    'user_options' => [
+        [
+            'id' => 'credit_card',
+            'text' => 'Мне нужна кредитная карта',
+            'actions' => [
+                ['type' => 'add_score_points', 'points' => 10],
+                ['type' => 'show_message', 'message' => 'Отлично!', 'role' => 'client']
+            ]
+        ]
+    ],
+    'on_enter_actions' => [
+        ['type' => 'show_message', 'message' => 'Добро пожаловать!', 'role' => 'client']
+    ]
+]
+```
+
+---
+
 ## Связь с другими модулями
 
 - **Модуль 01 (Backend Foundation)**: Сервисы `ScoringService`, `CreditCalculatorService`, `DepositCalculatorService` заполняют поля в `calculations`
 - **Модуль 08 (Client Generation)**: Сервис `ClientGeneratorService` генерирует данные для поля `client`
 - **Модуль 07 (Dialogue System)**: Управляет полем `dialogue` и обновляет `messages`, `current_step`, `selected_options`
 - **Модуль 12 (State Sync)**: Отвечает за сохранение и загрузку этой структуры в/из `SimulatorSession.state`
+- **Action System**: Сервис `ActionProcessor` обрабатывает действия и обновляет `score`, `score_history`, `calculations`
 
 ---
 
@@ -417,6 +564,9 @@
 3. Даты и время хранятся в формате ISO 8601 (например, "2025-01-01T12:00:00Z")
 4. Поля могут быть `null` до тех пор, пока данные не собраны или расчеты не выполнены
 5. Массив `errors` используется для отслеживания ошибок валидации и других проблем
+6. Поле `score` инициализируется как `0` при создании сессии и обновляется через систему действий
+7. Система действий позволяет настраивать геймификацию через конфигурацию без изменения кода
+8. Действия выполняются на бэкенде через `ActionProcessor` и возвращают эффекты для фронтенда
 
 ---
 

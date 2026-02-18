@@ -50,10 +50,18 @@ const formatDuration = (seconds) => {
 
 const getScoreColor = (score) => {
     if (!score) return 'bg-gray-100 text-gray-800'
-    if (score >= 90) return 'bg-green-100 text-green-800'
-    if (score >= 75) return 'bg-blue-100 text-blue-800'
-    if (score >= 50) return 'bg-yellow-100 text-yellow-800'
+    // Ограничиваем score до 100 для корректного отображения процента
+    const scorePercent = Math.min(score, 100)
+    if (scorePercent >= 90) return 'bg-green-100 text-green-800'
+    if (scorePercent >= 75) return 'bg-blue-100 text-blue-800'
+    if (scorePercent >= 50) return 'bg-yellow-100 text-yellow-800'
     return 'bg-red-100 text-red-800'
+}
+
+const formatScore = (score) => {
+    if (score === null || score === undefined) return null
+    // Ограничиваем score до 100 для корректного отображения процента
+    return Math.min(score, 100)
 }
 
 const sessionColumns = [
@@ -183,7 +191,7 @@ const sessionColumns = [
                                             :class="getScoreColor(session.score)"
                                             class="text-xs"
                                         >
-                                            {{ session.score }}%
+                                            {{ formatScore(session.score) }}%
                                         </Badge>
                                         <span v-else class="text-xs sm:text-sm text-gray-400">N/A</span>
                                     </td>

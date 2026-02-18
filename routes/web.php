@@ -172,6 +172,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/simulators/session/{session}/calculate-deposit', [SimulatorsController::class, 'calculateDeposit'])->name('simulators.calculate-deposit');
         Route::post('/simulators/session/{session}/state', [SimulatorsController::class, 'updateState'])->name('simulators.state.update');
         Route::get('/simulators/session/{session}/state', [SimulatorsController::class, 'getState'])->name('simulators.state.get');
+        Route::post('/simulators/session/{session}/dialogue/actions', [SimulatorsController::class, 'processDialogueActions'])->name('simulators.dialogue.actions');
+        Route::get('/simulators/session/{session}/dialogue/stage', [SimulatorsController::class, 'getDialogueStage'])->name('simulators.dialogue.stage');
 
         // Notifications
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
