@@ -15,6 +15,7 @@ use App\Services\Simulators\BankSimulator\ClientGeneratorService;
 use App\Services\Simulators\BankSimulator\ScoringService;
 use App\Services\Simulators\BankSimulator\CreditCalculatorService;
 use App\Services\Simulators\BankSimulator\DepositCalculatorService;
+use App\Services\Simulators\BankSimulator\DialogueService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,7 +30,8 @@ class SimulatorsController extends Controller
         private ClientGeneratorService $clientGeneratorService,
         private ScoringService $scoringService,
         private CreditCalculatorService $creditCalculatorService,
-        private DepositCalculatorService $depositCalculatorService
+        private DepositCalculatorService $depositCalculatorService,
+        private DialogueService $dialogueService
     ) {
         $this->middleware(['auth', 'role:student']);
     }
@@ -62,7 +64,7 @@ class SimulatorsController extends Controller
         $user = auth()->user();
 
         // Проверить верификацию email
-        if (! $user->hasVerifiedEmail()) {
+        if (! $user->email_verified_at) {
             return redirect()
                 ->route('verification.notice')
                 ->with('error', 'Для запуска симулятора необходимо подтвердить ваш email адрес.');
@@ -93,16 +95,24 @@ class SimulatorsController extends Controller
     /**
      * Продолжение сессии
      */
-    public function session(SimulatorSession $session): Response
+    public function session(SimulatorSession $session): Response|RedirectResponse
     {
         $this->authorize('view', $session);
 
         // Загрузить симулятор и данные сессии
         $session->load(['simulator']);
 
-        // Для банковского симулятора используем специальную страницу
+        // Проверить, что симулятор загружен
         $simulator = $session->simulator;
-        if ($simulator && $simulator->slug === 'bank-simulator') {
+        if (!$simulator) {
+            return redirect()
+                ->route('student.simulators.index')
+                ->with('error', 'Симулятор не найден');
+        }
+
+        // Для банковского симулятора используем специальную страницу
+        // Проверяем по slug (из сидера: 'bankovskaya-set-optimizaciya-filialov')
+        if ($simulator->slug === 'bankovskaya-set-optimizaciya-filialov') {
             return Inertia::render('Client/Student/Simulators/BankSimulatorSession', [
                 'session' => $session,
                 'simulator' => $simulator,
@@ -111,6 +121,7 @@ class SimulatorsController extends Controller
 
         return Inertia::render('Client/Student/Simulators/Session', [
             'session' => $session,
+            'simulator' => $simulator,
         ]);
     }
 
@@ -285,5 +296,113 @@ class SimulatorsController extends Controller
         return response()->json([
             'state' => $session->state ?? [],
         ]);
+    }
+
+    /**
+     * Process dialogue actions
+     */
+    public function processDialogueActions(Request $request, SimulatorSession $session): JsonResponse
+    {
+        $this->authorize('view', $session);
+
+        $request->validate([
+            'stage_id' => 'required|string',
+            'option_id' => 'nullable|string',
+            'context' => 'nullable|array',
+        ]);
+
+        $stageId = $request->input('stage_id');
+        $optionId = $request->input('option_id');
+        $context = $request->input('context', []);
+
+        // Merge session state into context
+        $sessionState = $session->state ?? [];
+        $context = array_merge($sessionState, $context);
+
+        $result = [
+            'success' => true,
+            'effects' => [],
+            'updates' => [],
+            'messages' => [],
+            'next_stage' => null,
+        ];
+
+        try {
+            // Process option actions if option_id is provided
+            if ($optionId !== null) {
+                $optionActions = $this->dialogueService->getOptionActions($stageId, $optionId, $context);
+                if (!empty($optionActions)) {
+                    $actionResult = $this->dialogueService->processActions($stageId, $optionActions, $context);
+                    $result['effects'] = array_merge($result['effects'], $actionResult['effects'] ?? []);
+                    $result['messages'] = array_merge($result['messages'], $actionResult['messages'] ?? []);
+                    if (isset($actionResult['updates'])) {
+                        $result['updates'] = array_merge_recursive($result['updates'], $actionResult['updates']);
+                    }
+                    if (!$actionResult['success']) {
+                        $result['success'] = false;
+                    }
+                }
+
+                // Get next stage
+                $result['next_stage'] = $this->dialogueService->processUserChoice($optionId, $stageId, $context);
+            }
+
+            // Process stage enter actions for next stage (if transitioning)
+            if ($result['next_stage'] !== null) {
+                $nextStageId = $result['next_stage'];
+                $enterActions = $this->dialogueService->getStageEnterActions($nextStageId, $context);
+                if (!empty($enterActions)) {
+                    $actionResult = $this->dialogueService->processActions($nextStageId, $enterActions, $context);
+                    $result['effects'] = array_merge($result['effects'], $actionResult['effects'] ?? []);
+                    $result['messages'] = array_merge($result['messages'], $actionResult['messages'] ?? []);
+                    if (isset($actionResult['updates'])) {
+                        $result['updates'] = array_merge_recursive($result['updates'], $actionResult['updates']);
+                    }
+                    if (!$actionResult['success']) {
+                        $result['success'] = false;
+                    }
+                }
+            }
+
+            // Update session state if there are updates
+            if (!empty($result['updates'])) {
+                $this->simulatorService->updateSessionState($session, $result['updates']);
+            }
+
+            return response()->json($result);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Get dialogue stage configuration
+     */
+    public function getDialogueStage(Request $request, SimulatorSession $session): JsonResponse
+    {
+        $this->authorize('view', $session);
+
+        $request->validate([
+            'stage_id' => 'required|string',
+        ]);
+
+        $stageId = $request->input('stage_id');
+        $context = $request->input('context', []);
+
+        try {
+            $stageConfig = $this->dialogueService->getStage($stageId, $context);
+            return response()->json([
+                'success' => true,
+                'stage' => $stageConfig,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 400);
+        }
     }
 }

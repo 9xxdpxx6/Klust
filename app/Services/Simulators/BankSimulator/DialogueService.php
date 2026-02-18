@@ -8,6 +8,10 @@ use InvalidArgumentException;
 
 class DialogueService
 {
+    public function __construct(
+        private readonly ActionProcessor $actionProcessor
+    ) {
+    }
 
     /**
      * Get dialogue stage configuration
@@ -117,6 +121,55 @@ class DialogueService
         $stage = $this->getStage($stageId, $context);
 
         return (bool) ($stage['show_calculations'] ?? false);
+    }
+
+    /**
+     * Process actions for a stage
+     *
+     * @param string $stageId Stage identifier
+     * @param array<int, array<string, mixed>> $actions Array of actions to process
+     * @param array<string, mixed> $context Context data (session state, client data, etc.)
+     * @return array<string, mixed> Result with success, updates, effects, messages
+     */
+    public function processActions(string $stageId, array $actions, array $context = []): array
+    {
+        return $this->actionProcessor->processActions($actions, $context);
+    }
+
+    /**
+     * Get actions for a specific option
+     *
+     * @param string $stageId Stage identifier
+     * @param string $optionId Option identifier
+     * @param array<string, mixed> $context Additional context data
+     * @return array<int, array<string, mixed>> Array of actions for the option
+     */
+    public function getOptionActions(string $stageId, string $optionId, array $context = []): array
+    {
+        $stage = $this->getStage($stageId, $context);
+        $userOptions = $stage['user_options'] ?? [];
+
+        foreach ($userOptions as $option) {
+            if (isset($option['id']) && $option['id'] === $optionId) {
+                return $option['actions'] ?? [];
+            }
+        }
+
+        return [];
+    }
+
+    /**
+     * Get actions that should be executed when entering a stage
+     *
+     * @param string $stageId Stage identifier
+     * @param array<string, mixed> $context Additional context data
+     * @return array<int, array<string, mixed>> Array of actions to execute on stage enter
+     */
+    public function getStageEnterActions(string $stageId, array $context = []): array
+    {
+        $stage = $this->getStage($stageId, $context);
+
+        return $stage['on_enter_actions'] ?? [];
     }
 
 }
