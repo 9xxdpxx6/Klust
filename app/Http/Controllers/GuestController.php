@@ -71,8 +71,8 @@ class GuestController extends Controller
      */
     public function show(CaseModel $case): Response
     {
-        // Проверить, что кейс активен
-        if ($case->status !== 'active') {
+        // Публично доступны только активные и завершенные кейсы
+        if (! in_array($case->status, ['active', 'completed'], true)) {
             abort(404);
         }
 
