@@ -11,13 +11,14 @@ export default defineConfig({
             refresh: true,
         }),
         vue({
+            ...templateCompilerOptions,
             template: {
+                ...templateCompilerOptions.template,
                 transformAssetUrls: {
                     base: null,
                     includeAbsolute: false,
                 },
             },
-            ...templateCompilerOptions,
         }),
     ],
     resolve: {
