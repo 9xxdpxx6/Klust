@@ -48,15 +48,61 @@
       
       <!-- Детали -->
       <div class="space-y-2">
-        <div class="flex justify-between">
+        <div v-if="calculations.interest_rate != null" class="flex justify-between">
           <span class="text-sm text-gray-600">Процентная ставка:</span>
           <span class="text-sm font-semibold">{{ calculations.interest_rate }}%</span>
         </div>
-        <div class="flex justify-between">
+        <div v-if="calculations.credit_limit != null" class="flex justify-between">
           <span class="text-sm text-gray-600">Кредитный лимит:</span>
           <span class="text-sm font-semibold">
             {{ formatCurrency(calculations.credit_limit) }}
           </span>
+        </div>
+        <div v-if="calculations.monthly_payment != null" class="flex justify-between">
+          <span class="text-sm text-gray-600">Платёж/мес:</span>
+          <span class="text-sm font-semibold">
+            {{ formatCurrency(calculations.monthly_payment) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Условия одобрения (для решений с условиями) -->
+      <div v-if="hasConditions" class="mt-6 pt-4 border-t border-gray-200">
+        <h4 class="text-sm font-semibold text-gray-700 mb-3">Условия одобрения:</h4>
+        <ul class="space-y-2">
+          <li v-if="calculations.requires_insurance" class="flex items-start text-sm text-gray-700">
+            <span class="text-amber-600 mr-2">•</span>
+            <span>Обязательное оформление страховки кредита</span>
+          </li>
+          <li v-if="isLimitedLimit" class="flex items-start text-sm text-gray-700">
+            <span class="text-amber-600 mr-2">•</span>
+            <span>Установлен ограниченный кредитный лимит</span>
+          </li>
+          <li v-if="isElevatedRate" class="flex items-start text-sm text-gray-700">
+            <span class="text-amber-600 mr-2">•</span>
+            <span>Применена повышенная процентная ставка</span>
+          </li>
+          <li v-if="calculations.decision === 'manual_review'" class="flex items-start text-sm text-gray-700">
+            <span class="text-amber-600 mr-2">•</span>
+            <span>Требуется дополнительная проверка документов</span>
+          </li>
+          <li v-if="calculations.decision === 'approve_with_conditions' && !calculations.requires_insurance && !isLimitedLimit && !isElevatedRate" class="flex items-start text-sm text-gray-700">
+            <span class="text-amber-600 mr-2">•</span>
+            <span>Стандартные условия кредитования</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Факторы оценки -->
+      <div v-if="scoreFactors.length > 0" class="mt-4 pt-4 border-t border-gray-100">
+        <div class="text-xs text-gray-500">
+          <div class="font-medium text-gray-600 mb-1">Факторы оценки:</div>
+          <ul class="space-y-0.5">
+            <li v-for="(factor, index) in scoreFactors" :key="index" class="flex items-center">
+              <span class="w-1.5 h-1.5 rounded-full mr-2" :class="factor.color"></span>
+              <span>{{ factor.text }}</span>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
@@ -123,6 +169,48 @@ const formatCurrency = (value) => {
     maximumFractionDigits: 0
   }).format(value)
 }
+
+// Проверка наличия условий
+const hasConditions = computed(() => {
+  const decision = props.calculations?.decision
+  return decision === 'approve_with_conditions' || decision === 'manual_review'
+})
+
+// Проверка ограниченного лимита
+const isLimitedLimit = computed(() => {
+  const multiplier = props.calculations?.limit_multiplier
+  return multiplier != null && multiplier < 1.0
+})
+
+// Проверка повышенной ставки (выше 15%)
+const isElevatedRate = computed(() => {
+  const rate = props.calculations?.interest_rate
+  return rate != null && rate > 15.0
+})
+
+// Факторы, влияющие на оценку
+const scoreFactors = computed(() => {
+  const factors = []
+  const score = props.calculations?.credit_score || 0
+  
+  if (score >= 0.8) {
+    factors.push({ text: 'Отличная кредитная история', color: 'bg-green-500' })
+    factors.push({ text: 'Высокий доход', color: 'bg-green-500' })
+  } else if (score >= 0.5) {
+    factors.push({ text: 'Хорошая кредитная история', color: 'bg-amber-500' })
+    if (score < 0.65) {
+      factors.push({ text: 'Умеренный доход', color: 'bg-amber-500' })
+    }
+  } else if (score >= 0.3) {
+    factors.push({ text: 'Средняя кредитная история', color: 'bg-orange-500' })
+    factors.push({ text: 'Низкий доход или высокие расходы', color: 'bg-orange-500' })
+  } else {
+    factors.push({ text: 'Проблемы с кредитной историей', color: 'bg-red-500' })
+    factors.push({ text: 'Недостаточный доход', color: 'bg-red-500' })
+  }
+  
+  return factors
+})
 </script>
 
 <style scoped>

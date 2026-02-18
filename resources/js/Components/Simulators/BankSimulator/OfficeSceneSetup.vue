@@ -1,8 +1,8 @@
 <template>
   <!-- Камера -->
   <TresPerspectiveCamera 
-    :position="devMode ? [0, 1.6, 0] : [-1.1, 1.07, -0.75]" 
-    :fov="devMode ? 75 : 70"
+    :position="devMode ? DEV_CAMERA_POSITION : PROD_CAMERA_POSITION" 
+    :fov="devMode ? DEV_CAMERA_FOV : PROD_CAMERA_FOV"
     :near="0.1"
     :far="1000"
   />
@@ -13,8 +13,8 @@
   <!-- PROD: Ограниченное движение камеры за курсором -->
   <HeadrestCamera 
     v-else
-    :position="[-1.1, 1.07, -0.75]"
-    :fov="70"
+    :position="PROD_CAMERA_POSITION"
+    :fov="PROD_CAMERA_FOV"
     :max-yaw-left="5"
     :max-yaw-right="20"
     :max-pitch-up="15"
@@ -56,4 +56,9 @@ const props = defineProps({
     required: true
   }
 })
+
+const DEV_CAMERA_POSITION = [0, 1.6, 0]
+const PROD_CAMERA_POSITION = [-1.1, 1.07, -0.75]
+const DEV_CAMERA_FOV = 75
+const PROD_CAMERA_FOV = 70
 </script>

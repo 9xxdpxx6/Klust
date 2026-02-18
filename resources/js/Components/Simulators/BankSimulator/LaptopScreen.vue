@@ -45,10 +45,6 @@ const props = defineProps({
     type: Object,
     default: () => ({})
   },
-  dialogueMessages: {
-    type: Array,
-    default: () => []
-  },
   activeTab: {
     type: String,
     default: '0'
@@ -64,9 +60,8 @@ const screenApp = ref(null)
 
 // Реактивные данные для передачи в BankInterface
 const bankInterfaceData = reactive({
-  client: { ...props.client },
-  calculations: { ...props.calculations },
-  dialogueMessages: [...(props.dialogueMessages || [])],
+  client: { ...(props.client || {}) },
+  calculations: { ...(props.calculations || {}) },
   activeTab: props.activeTab || '0'
 })
 
@@ -94,10 +89,18 @@ onUnmounted(() => {
 })
 
 const initScreen = () => {
+  // Коэффициент увеличения контента (~1.75x крупнее текст)
+  // Уменьшаем CSS-пиксели и компенсируем масштабом CSS3DObject —
+  // физический размер экрана в 3D остаётся прежним
+  const contentScale = 1.75
+  const scaledWidth = Math.round(props.width / contentScale)
+  const scaledHeight = Math.round(props.height / contentScale)
+  const adjustedScale = props.scale * contentScale
+
   // Создаем элемент для экрана
   const element = document.createElement('div')
-  element.style.width = `${props.width}px`
-  element.style.height = `${props.height}px`
+  element.style.width = `${scaledWidth}px`
+  element.style.height = `${scaledHeight}px`
   element.style.background = 'white'
   element.style.borderRadius = '0.5rem'
   element.style.overflow = 'hidden'
@@ -111,7 +114,6 @@ const initScreen = () => {
       return () => h(BankInterface, {
         client: bankInterfaceData.client,
         calculations: bankInterfaceData.calculations,
-        dialogueMessages: bankInterfaceData.dialogueMessages,
         activeTab: bankInterfaceData.activeTab,
         'onUpdate:activeTab': handleTabChangeRef.value
       })
@@ -131,7 +133,7 @@ const initScreen = () => {
   const object = new CSS3DObject(element)
   object.position.set(...props.position)
   object.rotation.set(...props.rotation)
-  object.scale.set(props.scale, props.scale, props.scale)
+  object.scale.set(adjustedScale, adjustedScale, adjustedScale)
   
   css3dObject.value = object
   
@@ -141,17 +143,24 @@ const initScreen = () => {
   }
 }
 
-// Обновляем реактивные данные при изменении props - компонент обновится автоматически
+// Обновляем реактивные данные при изменении props
+// ВАЖНО: заменяем объект целиком чтобы гарантировать реактивность в дочернем Vue app
 watch(() => props.client, (newClient) => {
-  Object.assign(bankInterfaceData.client, newClient)
+  bankInterfaceData.client = { ...(newClient || {}) }
 }, { deep: true })
 
 watch(() => props.calculations, (newCalculations) => {
-  Object.assign(bankInterfaceData.calculations, newCalculations)
-}, { deep: true })
+  const newCalc = { ...(newCalculations || {}) }
+  const hadScore = bankInterfaceData.calculations?.credit_score != null
+  const hasScore = newCalc.credit_score != null
 
-watch(() => props.dialogueMessages, (newMessages) => {
-  bankInterfaceData.dialogueMessages = newMessages
+  bankInterfaceData.calculations = newCalc
+
+  // Авто-переключение на вкладку «Скоринг» при появлении результата
+  if (!hadScore && hasScore) {
+    bankInterfaceData.activeTab = '1'
+    emit('update:activeTab', '1')
+  }
 }, { deep: true })
 
 watch(() => props.activeTab, (newTab) => {

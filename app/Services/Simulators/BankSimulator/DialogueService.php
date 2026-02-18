@@ -29,7 +29,123 @@ class DialogueService
             throw new InvalidArgumentException("Dialogue stage '{$stageId}' not found");
         }
 
-        return $stages[$stageId];
+        return $this->resolveDialogueVariants($stages[$stageId]);
+    }
+
+    /**
+     * Resolve optional text variants to increase dialogue diversity.
+     *
+     * Supported keys:
+     * - client_message_variants: array<int, string>
+     * - user_options[*].text_variants: array<int, string>
+     *
+     * @param array<string, mixed> $stage
+     * @return array<string, mixed>
+     */
+    private function resolveDialogueVariants(array $stage): array
+    {
+        if (isset($stage['client_message_variants']) && is_array($stage['client_message_variants'])) {
+            $stage['client_message'] = $this->pickVariant($stage['client_message_variants'], $stage['client_message'] ?? '');
+        } elseif (isset($stage['client_message']) && is_string($stage['client_message'])) {
+            $stage['client_message'] = $this->diversifyText($stage['client_message'], 'client');
+        }
+
+        if (!isset($stage['user_options']) || !is_array($stage['user_options'])) {
+            return $stage;
+        }
+
+        foreach ($stage['user_options'] as $index => $option) {
+            if (!is_array($option)) {
+                continue;
+            }
+
+            if (isset($option['text_variants']) && is_array($option['text_variants'])) {
+                $stage['user_options'][$index]['text'] = $this->pickVariant($option['text_variants'], $option['text'] ?? '');
+            } elseif (isset($option['text']) && is_string($option['text'])) {
+                $stage['user_options'][$index]['text'] = $this->diversifyText($option['text'], 'manager');
+            }
+        }
+
+        return $stage;
+    }
+
+    /**
+     * @param array<int, mixed> $variants
+     */
+    private function pickVariant(array $variants, string $fallback): string
+    {
+        $normalized = array_values(array_filter($variants, static fn ($item): bool => is_string($item) && trim($item) !== ''));
+
+        if ($normalized === []) {
+            return $fallback;
+        }
+
+        return $normalized[array_rand($normalized)];
+    }
+
+    private function diversifyText(string $text, string $role): string
+    {
+        $variants = $this->buildVariants($text, $role);
+
+        if ($variants === []) {
+            return $text;
+        }
+
+        // Keep the base phrase sometimes to avoid over-randomized speech.
+        $pool = array_merge([$text], $variants);
+
+        return $pool[array_rand($pool)];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function buildVariants(string $text, string $role): array
+    {
+        $variants = [];
+
+        $templates = [
+            'Подскажите ваш официальный доход в месяц?' => [
+                'Уточните, пожалуйста, ваш официальный доход в месяц.',
+                'Назовите, пожалуйста, официальный ежемесячный доход.',
+            ],
+            'Сколько составляют ваши ежемесячные расходы?' => [
+                'Уточните, пожалуйста, ваши ежемесячные расходы.',
+                'Каков средний объём обязательных расходов в месяц?',
+            ],
+            'Есть ли действующие кредиты?' => [
+                'Имеются ли действующие кредиты или рассрочки?',
+                'Подтвердите, пожалуйста, наличие действующих кредитных обязательств.',
+            ],
+            'Были ли просрочки по кредитам?' => [
+                'Были ли случаи просрочки по кредитным платежам?',
+                'Зафиксированы ли просрочки по кредитам за последний период?',
+            ],
+            'Хорошо, оформляем.' => [
+                'Принято, переходим к оформлению.',
+                'Согласовано, начинаем оформление.',
+            ],
+            'Одну минуту, выполняю расчёт.' => [
+                'Минуту, запускаю расчёт параметров.',
+                'Один момент, расчёт выполняется.',
+            ],
+        ];
+
+        if (isset($templates[$text])) {
+            $variants = array_merge($variants, $templates[$text]);
+        }
+
+        if ($role === 'manager' && str_ends_with($text, '?')) {
+            $variants[] = rtrim($text, '?') . ', чтобы рассчитать безопасный лимит?';
+            $variants[] = rtrim($text, '?') . ', для корректной оценки риска?';
+        }
+
+        if ($role === 'client' && str_contains($text, 'Спасибо')) {
+            $variants[] = 'Благодарю, всё понятно.';
+            $variants[] = 'Спасибо, условия прозрачны.';
+        }
+
+        return array_values(array_unique($variants));
     }
 
     /**

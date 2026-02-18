@@ -4,7 +4,6 @@
       <TabList>
         <Tab value="0">Профиль клиента</Tab>
         <Tab value="1">Скоринг</Tab>
-        <Tab value="2">История диалога</Tab>
       </TabList>
       <TabPanels>
         <TabPanel value="0">
@@ -17,12 +16,6 @@
         <TabPanel value="1">
           <ScoringResults 
             :calculations="calculations"
-          />
-        </TabPanel>
-        
-        <TabPanel value="2">
-          <DialogueHistory 
-            :messages="dialogueMessages"
           />
         </TabPanel>
       </TabPanels>
@@ -39,7 +32,6 @@ import TabPanels from 'primevue/tabpanels'
 import TabPanel from 'primevue/tabpanel'
 import ClientProfileForm from './ClientProfileForm.vue'
 import ScoringResults from './ScoringResults.vue'
-import DialogueHistory from './DialogueHistory.vue'
 
 const props = defineProps({
   client: {
@@ -49,10 +41,6 @@ const props = defineProps({
   calculations: {
     type: Object,
     default: () => ({})
-  },
-  dialogueMessages: {
-    type: Array,
-    default: () => []
   },
   activeTab: {
     type: String,
@@ -68,6 +56,14 @@ const activeTab = ref(props.activeTab)
 watch(() => props.activeTab, (newValue) => {
   if (newValue !== activeTab.value) {
     activeTab.value = newValue
+  }
+})
+
+// Авто-переключение на вкладку "Скоринг" когда появляются результаты расчётов
+watch(() => props.calculations?.credit_score, (newVal, oldVal) => {
+  if (newVal !== null && newVal !== undefined && (oldVal === null || oldVal === undefined)) {
+    activeTab.value = '1'
+    emit('update:activeTab', '1')
   }
 })
 

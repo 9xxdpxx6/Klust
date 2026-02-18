@@ -11,7 +11,7 @@
         <div class="message-content">
           {{ message.text }}
         </div>
-        <div class="message-time">
+        <div v-if="message.role !== 'system'" class="message-time">
           {{ formatTime(message.timestamp) }}
         </div>
       </div>
@@ -29,74 +29,6 @@
         {{ option.text }}
       </button>
     </div>
-    
-    <!-- Ввод данных (если требуется и данные еще не заполнены автоматически) -->
-    <div v-if="requiredData.length > 0 && !allDataFilled" class="dialogue-input">
-      <div
-        v-for="field in requiredData"
-        :key="field"
-        class="input-group"
-      >
-        <label :for="field" class="input-label">
-          {{ getFieldLabel(field) }}
-        </label>
-        <input
-          v-if="field !== 'credit_history'"
-          :id="field"
-          v-model.number="formData[field]"
-          :placeholder="getFieldPlaceholder(field)"
-          :type="getInputType(field)"
-          class="data-input"
-          :min="getFieldMin(field)"
-          :max="getFieldMax(field)"
-        />
-        <select
-          v-else
-          :id="field"
-          v-model="formData[field]"
-          class="data-input data-select"
-        >
-          <option value="">Выберите...</option>
-          <option value="excellent">Отличная</option>
-          <option value="good">Хорошая</option>
-          <option value="fair">Средняя</option>
-          <option value="poor">Плохая</option>
-          <option value="none">Нет кредитной истории</option>
-        </select>
-      </div>
-      <button 
-        @click="onDataSubmit" 
-        class="submit-button"
-        :disabled="!isFormValid || isProcessing"
-      >
-        Отправить
-      </button>
-    </div>
-
-    <!-- Отображение результатов расчетов -->
-    <div v-if="showCalculations && calculations" class="calculations-display">
-      <h3 class="calculations-title">Результаты расчета:</h3>
-      <div v-if="calculations.credit_score !== null && calculations.credit_score !== undefined" class="calculation-item">
-        <span class="calculation-label">Кредитный скоринг:</span>
-        <span class="calculation-value">{{ formatScore(calculations.credit_score) }}</span>
-      </div>
-      <div v-if="calculations.credit_limit" class="calculation-item">
-        <span class="calculation-label">Кредитный лимит:</span>
-        <span class="calculation-value">{{ formatCurrency(calculations.credit_limit) }}</span>
-      </div>
-      <div v-if="calculations.interest_rate" class="calculation-item">
-        <span class="calculation-label">Процентная ставка:</span>
-        <span class="calculation-value">{{ calculations.interest_rate }}%</span>
-      </div>
-      <div v-if="calculations.monthly_payment" class="calculation-item">
-        <span class="calculation-label">Ежемесячный платеж:</span>
-        <span class="calculation-value">{{ formatCurrency(calculations.monthly_payment) }}</span>
-      </div>
-      <div v-if="calculations.deposit_result" class="calculation-item">
-        <span class="calculation-label">Сумма вклада:</span>
-        <span class="calculation-value">{{ formatCurrency(calculations.deposit_result) }}</span>
-      </div>
-    </div>
 
     <!-- Индикатор завершения симулятора -->
     <div v-if="isFinalStage" class="completion-indicator">
@@ -105,7 +37,7 @@
         <div class="completion-stats">
           <div class="stat-item">
             <span class="stat-label">Ваш результат:</span>
-            <span class="stat-value">{{ currentScore !== null ? currentScore : 0 }} баллов</span>
+            <span class="stat-value">{{ formatScorePoints(currentScore) }}</span>
           </div>
           <div v-if="currentScore !== null" class="stat-item">
             <span class="stat-label">Оценка:</span>
@@ -127,7 +59,6 @@
               :key="index"
               class="score-history-item score-negative"
             >
-              <span class="score-history-points">{{ entry.points }} баллов</span>
               <span class="score-history-reason">{{ entry.reason }}</span>
             </div>
           </div>
@@ -154,12 +85,8 @@
     <div v-else-if="showCalculations && calculations && Object.keys(calculations).length > 0" class="progress-indicator">
       <div class="progress-content">
         <p class="progress-message">
-          💡 Результаты расчета готовы. Продолжите диалог с клиентом, выбрав один из вариантов ответа выше.
+          💡 Результаты расчёта отображены на экране ноутбука. Продолжите диалог с клиентом.
         </p>
-        <div v-if="currentScore !== null" class="progress-score">
-          <span class="progress-score-label">Текущие баллы:</span>
-          <span class="progress-score-value">{{ currentScore }}</span>
-        </div>
       </div>
     </div>
   </div>
@@ -183,7 +110,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['optionSelect', 'dataSubmit', 'completeSession', 'restartSession'])
+const emit = defineEmits(['optionSelect', 'completeSession', 'restartSession'])
 
 const messages = computed(() => {
   return props.sessionState?.dialogue?.messages || []
@@ -258,10 +185,6 @@ const currentOptions = computed(() => {
   return options
 })
 
-const requiredData = computed(() => {
-  return props.stageConfig?.required_data || []
-})
-
 const showCalculations = computed(() => {
   return props.stageConfig?.show_calculations === true
 })
@@ -286,62 +209,8 @@ const negativeScoreHistory = computed(() => {
   return scoreHistory.value.filter(entry => entry.points < 0)
 })
 
-const formData = ref({})
 const isProcessing = ref(false)
 const messagesContainerRef = ref(null)
-
-// Инициализация formData для всех требуемых полей
-// Предзаполняем данными из client_message или из sessionState
-watch([requiredData, () => props.stageConfig?.client_message, () => props.sessionState?.client, () => props.sessionState?.dialogue?.formData], ([fields, clientMessage, clientData, formDataState]) => {
-  if (fields && fields.length > 0) {
-    const newFormData = {}
-    fields.forEach(field => {
-      // Сначала проверяем, есть ли данные в sessionState
-      if (field === 'credit_amount' || field === 'deposit_amount' || field === 'deposit_period') {
-        // Эти поля в formData
-        if (formDataState && formDataState[field] !== undefined) {
-          newFormData[field] = formDataState[field]
-        } else if (!(field in formData.value)) {
-          newFormData[field] = null
-        } else {
-          newFormData[field] = formData.value[field]
-        }
-      } else {
-        // Эти поля в client
-        if (clientData && clientData[field] !== undefined) {
-          newFormData[field] = clientData[field]
-        } else if (!(field in formData.value)) {
-          newFormData[field] = field === 'credit_history' ? '' : null
-        } else {
-          newFormData[field] = formData.value[field]
-        }
-      }
-    })
-    formData.value = newFormData
-  }
-}, { immediate: true, deep: true })
-
-// Проверка, все ли данные уже заполнены (извлечены из client_message)
-const allDataFilled = computed(() => {
-  if (requiredData.value.length === 0) return true
-  
-  return requiredData.value.every(field => {
-    const value = formData.value[field]
-    if (value === null || value === undefined || value === '') return false
-    
-    // Проверка числовых полей
-    if (['income', 'expenses', 'age', 'credit_amount', 'deposit_amount', 'deposit_period'].includes(field)) {
-      return typeof value === 'number' && value > 0
-    }
-    
-    return true
-  })
-})
-
-// Валидация формы
-const isFormValid = computed(() => {
-  return allDataFilled.value
-})
 
 // Прокрутка к последнему сообщению при добавлении новых сообщений
 const lastMessageCount = ref(0)
@@ -424,23 +293,6 @@ const onOptionSelect = (optionId) => {
   }, 300)
 }
 
-const onDataSubmit = () => {
-  if (!isFormValid.value || isProcessing.value) return
-  
-  isProcessing.value = true
-  
-  // Копируем данные формы
-  const dataToSubmit = { ...formData.value }
-  
-  emit('dataSubmit', dataToSubmit)
-  
-  // Очистка формы после отправки
-  setTimeout(() => {
-    formData.value = {}
-    isProcessing.value = false
-  }, 300)
-}
-
 const formatTime = (timestamp) => {
   if (!timestamp) return ''
   try {
@@ -454,64 +306,30 @@ const formatTime = (timestamp) => {
   }
 }
 
-const getFieldPlaceholder = (field) => {
-  const placeholders = {
-    income: 'Введите доход в рублях',
-    expenses: 'Введите расходы в рублях',
-    age: 'Введите возраст',
-    credit_amount: 'Введите сумму кредита',
-    deposit_amount: 'Введите сумму вклада',
-    deposit_period: 'Введите срок в месяцах',
-    credit_history: 'Выберите кредитную историю'
+const formatScorePoints = (score) => {
+  if (score === null || score === undefined) return '0/100'
+  const currentScore = Math.max(0, Math.round(score))
+  
+  // Определяем максимальный балл автоматически
+  // Если балл <= 100, то max = 100
+  // Если балл > 100, округляем до ближайшего большего "круглого" числа
+  let maxScore = 100
+  if (currentScore > 100) {
+    // Круглые числа: 200, 500, 1000, 2000, 5000, 10000...
+    const roundNumbers = [200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000]
+    for (const roundNum of roundNumbers) {
+      if (currentScore <= roundNum) {
+        maxScore = roundNum
+        break
+      }
+    }
+    // Если балл больше всех круглых чисел, округляем до ближайшей тысячи
+    if (currentScore > roundNumbers[roundNumbers.length - 1]) {
+      maxScore = Math.ceil(currentScore / 1000) * 1000
+    }
   }
-  return placeholders[field] || field
-}
-
-const getFieldLabel = (field) => {
-  const labels = {
-    income: 'Доход (руб.)',
-    expenses: 'Расходы (руб.)',
-    age: 'Возраст',
-    credit_amount: 'Сумма кредита (руб.)',
-    deposit_amount: 'Сумма вклада (руб.)',
-    deposit_period: 'Срок вклада (мес.)',
-    credit_history: 'Кредитная история'
-  }
-  return labels[field] || field
-}
-
-const getInputType = (field) => {
-  if (['income', 'expenses', 'age', 'credit_amount', 'deposit_amount', 'deposit_period'].includes(field)) {
-    return 'number'
-  }
-  return 'text'
-}
-
-const getFieldMin = (field) => {
-  if (field === 'age') return 18
-  if (['income', 'expenses', 'credit_amount', 'deposit_amount'].includes(field)) return 0
-  if (field === 'deposit_period') return 1
-  return undefined
-}
-
-const getFieldMax = (field) => {
-  if (field === 'age') return 100
-  return undefined
-}
-
-const formatCurrency = (value) => {
-  if (value === null || value === undefined) return ''
-  return new Intl.NumberFormat('ru-RU', {
-    style: 'currency',
-    currency: 'RUB',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(value)
-}
-
-const formatScore = (score) => {
-  if (score === null || score === undefined) return ''
-  return (score * 100).toFixed(1) + '%'
+  
+  return `${currentScore}/${maxScore}`
 }
 
 const getScoreClass = (score) => {
@@ -570,6 +388,29 @@ const handleRestartSession = () => {
   overflow: hidden;
 }
 
+:global(.dialog-3d-container) {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(107, 114, 128, 0.6) transparent;
+}
+
+:global(.dialog-3d-container::-webkit-scrollbar) {
+  width: 10px;
+}
+
+:global(.dialog-3d-container::-webkit-scrollbar-track) {
+  background: transparent;
+  margin: 8px 0;
+  border-radius: 999px;
+}
+
+:global(.dialog-3d-container::-webkit-scrollbar-thumb) {
+  background: rgba(107, 114, 128, 0.6);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+}
+
 .dialogue-messages {
   flex: 1;
   overflow: visible;
@@ -614,6 +455,16 @@ const handleRestartSession = () => {
   color: #1f2937;
 }
 
+.message-system {
+  background: #f0f9ff;
+  border-left: 3px solid #3b82f6;
+  color: #1e40af;
+  font-style: italic;
+  font-size: 0.9rem;
+  padding: 8px 14px;
+  margin-bottom: 8px;
+}
+
 .message-content {
   font-size: 1rem;
   line-height: 1.5;
@@ -654,79 +505,6 @@ const handleRestartSession = () => {
 
 .option-button:disabled {
   opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.dialogue-input {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.input-label {
-  font-size: 0.875rem;
-  opacity: 0.9;
-  font-weight: 500;
-}
-
-.data-input {
-  padding: 10px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  background: #ffffff;
-  color: #1f2937;
-  font-size: 1rem;
-  transition: all 0.2s;
-}
-
-.data-input:focus {
-  outline: none;
-  border-color: #6b7280;
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.1);
-}
-
-.data-input::placeholder {
-  color: #9ca3af;
-}
-
-.data-select {
-  cursor: pointer;
-}
-
-.data-select option {
-  background: #ffffff;
-  color: #1f2937;
-}
-
-.submit-button {
-  padding: 12px 24px;
-  background: #374151;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 600;
-  transition: all 0.2s;
-  margin-top: 8px;
-}
-
-.submit-button:hover:not(:disabled) {
-  background: #4b5563;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.submit-button:disabled {
-  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -814,25 +592,6 @@ const handleRestartSession = () => {
   margin: 0;
 }
 
-.progress-score {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-top: 8px;
-  border-top: 1px solid #bae6fd;
-}
-
-.progress-score-label {
-  font-size: 13px;
-  color: #64748b;
-}
-
-.progress-score-value {
-  font-size: 16px;
-  font-weight: bold;
-  color: #1e40af;
-}
-
 .completion-message {
   margin: 16px 0;
   font-size: 14px;
@@ -880,41 +639,38 @@ const handleRestartSession = () => {
   transform: translateY(0);
 }
 
-.calculations-display {
-  margin-top: 20px;
-  padding: 16px;
-  background: #f9fafb;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
+.score-details {
+  margin-top: 16px;
+  text-align: left;
 }
 
-.calculations-title {
-  font-size: 1.125rem;
+.score-details-title {
+  font-size: 16px;
   font-weight: 600;
   margin-bottom: 12px;
-  color: #374151;
+  color: white;
+  text-align: left;
 }
 
-.calculation-item {
+.score-history {
   display: flex;
-  justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
 }
 
-.calculation-item:last-child {
-  border-bottom: none;
+.score-history-item {
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  text-align: left;
 }
 
-.calculation-label {
-  font-size: 0.875rem;
-  opacity: 0.9;
-}
-
-.calculation-value {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #059669;
+.score-history-reason {
+  font-size: 14px;
+  color: white;
+  display: block;
+  text-align: left;
 }
 
 </style>
