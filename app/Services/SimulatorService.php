@@ -245,7 +245,9 @@ class SimulatorService
     }
 
     /**
-     * Глубокий merge массивов (заменяет значения, не создает массивы для скалярных значений)
+     * Глубокий merge массивов.
+     * Associative arrays are merged recursively; list arrays are REPLACED entirely.
+     * This ensures that sending messages: [] or score_history: [] actually clears old data.
      *
      * @param array $array1
      * @param array $array2
@@ -256,11 +258,17 @@ class SimulatorService
         $result = $array1;
 
         foreach ($array2 as $key => $value) {
-            if (isset($result[$key]) && is_array($result[$key]) && is_array($value)) {
-                // Если оба значения - массивы, рекурсивно мерджим
+            if (
+                isset($result[$key])
+                && is_array($result[$key])
+                && is_array($value)
+                && !array_is_list($value)   // Only deep-merge ASSOCIATIVE arrays
+            ) {
+                // Рекурсивный merge ассоциативных массивов (dialogue, client, ui, ...)
                 $result[$key] = $this->deepMerge($result[$key], $value);
             } else {
-                // Иначе заменяем значение
+                // Скалярные значения и LIST-массивы (messages, score_history, selected_options)
+                // заменяются целиком — это критично для корректного сброса при рестарте
                 $result[$key] = $value;
             }
         }

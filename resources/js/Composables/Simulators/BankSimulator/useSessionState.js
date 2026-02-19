@@ -254,6 +254,8 @@ export function useSessionState({ sessionState, isLoading, autoSave }) {
       },
       client: newState.client || {},
       calculations: newState.calculations || {},
+      score: newState.score ?? 0,
+      score_history: Array.isArray(newState.score_history) ? newState.score_history : [],
       ui: {
         activeTab: newState.ui?.activeTab || '0',
         activeDialog: newState.ui?.activeDialog || null

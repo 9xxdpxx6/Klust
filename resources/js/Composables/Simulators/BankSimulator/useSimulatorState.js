@@ -1,4 +1,4 @@
-import { ref, reactive } from 'vue'
+import { ref, reactive, onBeforeUnmount } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import axios from 'axios'
 import { route } from 'ziggy-js'
@@ -122,7 +122,66 @@ export function useSimulatorState(sessionId, initialState = {}) {
       // Silent error handling for auto-save
       // Error is already stored in error.value
     })
-  }, 2000)
+  }, 800)
+
+  /**
+   * Last state snapshot for emergency save on page unload.
+   * Updated every time autoSave is called.
+   */
+  let lastPendingState = null
+  const originalAutoSave = autoSave
+
+  /**
+   * Wrapped autoSave that also stores last pending state for beforeunload.
+   */
+  const wrappedAutoSave = (updates) => {
+    lastPendingState = updates
+    originalAutoSave(updates)
+  }
+
+  /**
+   * Flush pending state on page unload via fetch(keepalive) / sendBeacon.
+   * Ensures the latest state is saved even if the user leaves the page quickly.
+   */
+  const handleBeforeUnload = () => {
+    if (!lastPendingState) return
+
+    const url = route('student.simulators.state.update', { session: sessionId })
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
+
+    try {
+      // fetch with keepalive:true completes even after page unload
+      fetch(url, {
+        method: 'POST',
+        keepalive: true,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': csrfToken || '',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ state: lastPendingState })
+      })
+    } catch {
+      // Fallback: sendBeacon (doesn't support custom headers, but worth trying)
+      try {
+        const blob = new Blob(
+          [JSON.stringify({ state: lastPendingState, _token: csrfToken })],
+          { type: 'application/json' }
+        )
+        navigator.sendBeacon(url, blob)
+      } catch {
+        // Last resort - state may be lost
+      }
+    }
+
+    lastPendingState = null
+  }
+
+  // Register beforeunload handler
+  if (typeof window !== 'undefined') {
+    window.addEventListener('beforeunload', handleBeforeUnload)
+  }
 
   return {
     state,
@@ -130,6 +189,14 @@ export function useSimulatorState(sessionId, initialState = {}) {
     error,
     updateState,
     loadState,
-    autoSave
+    autoSave: wrappedAutoSave,
+    /**
+     * Call this on component unmount to clean up the beforeunload listener
+     */
+    cleanup: () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('beforeunload', handleBeforeUnload)
+      }
+    }
   }
 }
