@@ -13,23 +13,58 @@ class DialogueService
     ) {
     }
 
+    private const DEFAULT_DIALOGUE_TYPE = 'credit_card';
+
+    private const AVAILABLE_DIALOGUE_TYPES = [
+        'credit_card',
+        'mortgage',
+        'consumer_loan',
+    ];
+
     /**
      * Get dialogue stage configuration
      *
      * @param string $stageId Stage identifier (e.g., 'greeting', 'credit_inquiry')
-     * @param array<string, mixed> $context Additional context data
+     * @param array<string, mixed> $context Additional context data (may contain 'dialogue_type')
      * @return array<string, mixed> Stage configuration with client_message, user_options, next_stage, required_data
      * @throws InvalidArgumentException If stage not found
      */
     public function getStage(string $stageId, array $context = []): array
     {
-        $stages = config('simulators.bank_simulator_dialogue.stages', []);
+        $dialogueType = $context['dialogue_type'] ?? self::DEFAULT_DIALOGUE_TYPE;
+        $stages = $this->loadStages($dialogueType);
 
         if (!isset($stages[$stageId])) {
-            throw new InvalidArgumentException("Dialogue stage '{$stageId}' not found");
+            throw new InvalidArgumentException("Dialogue stage '{$stageId}' not found in dialogue type '{$dialogueType}'");
         }
 
         return $this->resolveDialogueVariants($stages[$stageId]);
+    }
+
+    /**
+     * Get list of available dialogue types
+     *
+     * @return array<int, string>
+     */
+    public function getAvailableDialogueTypes(): array
+    {
+        return self::AVAILABLE_DIALOGUE_TYPES;
+    }
+
+    /**
+     * Load dialogue stages for a given dialogue type
+     *
+     * @param string $dialogueType Dialogue type (e.g., 'credit_card', 'mortgage', 'consumer_loan')
+     * @return array<string, mixed>
+     * @throws InvalidArgumentException If dialogue type not found
+     */
+    private function loadStages(string $dialogueType): array
+    {
+        if (!in_array($dialogueType, self::AVAILABLE_DIALOGUE_TYPES, true)) {
+            throw new InvalidArgumentException("Unknown dialogue type: '{$dialogueType}'");
+        }
+
+        return config("simulators.dialogues.{$dialogueType}.stages", []);
     }
 
     /**
