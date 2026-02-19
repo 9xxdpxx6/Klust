@@ -200,9 +200,12 @@ const dialogueSystem = useDialogueSystem({
   }
 })
 
-const handleRestartConfirm = () => {
+const handleRestartConfirm = async () => {
   showRestartConfirm.value = false
-  dialogueSystem.handleRestartSession()
+  // Reset dialogue + backend state
+  await dialogueSystem.handleRestartSession()
+  // Reset client 3D character (hide model, return to idle)
+  clientCharacter.resetClient()
 }
 
 // Client character composable

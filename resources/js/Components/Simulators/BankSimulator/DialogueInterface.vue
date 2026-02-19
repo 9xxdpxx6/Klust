@@ -85,7 +85,7 @@
     <div v-else-if="showCalculations && calculations && Object.keys(calculations).length > 0" class="progress-indicator">
       <div class="progress-content">
         <p class="progress-message">
-          💡 Результаты расчёта отображены на экране ноутбука. Продолжите диалог с клиентом.
+          💡 Результаты расчёта отображены в окне справа. Продолжите диалог с клиентом.
         </p>
       </div>
     </div>

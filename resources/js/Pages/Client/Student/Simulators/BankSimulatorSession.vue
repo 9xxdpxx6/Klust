@@ -45,7 +45,7 @@ const props = defineProps({
 });
 
 // Инициализация композабла для работы с состоянием
-const { state, updateState, loadState, autoSave, isLoading } = useSimulatorState(
+const { state, updateState, loadState, autoSave, isLoading, cleanup } = useSimulatorState(
   props.session.id,
   props.session.state || {}
 );
@@ -120,6 +120,9 @@ onUnmounted(() => {
   document.removeEventListener('fullscreenchange', handleFullscreenChange);
   document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
   document.removeEventListener('msfullscreenchange', handleFullscreenChange);
+  
+  // Clean up beforeunload handler
+  if (cleanup) cleanup();
 });
 </script>
 

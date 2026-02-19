@@ -704,8 +704,15 @@ export function useDialogueSystem({
     }
     
     // Reveal client name at passport stage (ФИО в конце, при предъявлении паспорта)
-    if (normalizedStageId === 'collect_passport' && localSessionState.client._generated_name) {
-      localSessionState.client.name = localSessionState.client._generated_name
+    if (normalizedStageId === 'collect_passport' || normalizedStageId === 'collect_passport_risky') {
+      if (localSessionState.client._generated_name) {
+        localSessionState.client.name = localSessionState.client._generated_name
+      }
+      // Switch LaptopScreen to "Профиль клиента" tab to show the revealed name
+      if (!localSessionState.ui) {
+        localSessionState.ui = {}
+      }
+      localSessionState.ui.activeTab = '0'
     }
 
     // Automatically show client message (client speaks automatically)
@@ -987,7 +994,7 @@ export function useDialogueSystem({
    * Handle restart session
    */
   const handleRestartSession = async () => {
-    // Reset local state
+    // Reset local state (synchronous, before any async calls)
     localSessionState.dialogue.messages = []
     localSessionState.dialogue.current_step = 'greeting'
     localSessionState.dialogue.selected_options = []
@@ -998,49 +1005,67 @@ export function useDialogueSystem({
       income: null,
       expenses: null,
       credit_history: null,
-      has_deposit: false
+      has_deposit: false,
+      type: null,
+      model_path: null,
+      _generated_name: null
     }
     localSessionState.calculations = {}
     localSessionState.score = 0
     localSessionState.score_history = []
-    
-    // Reset backend state
-    if (sessionId && updateState) {
-      await updateState({
-        dialogue: {
-          messages: [],
-          current_step: 'greeting',
-          selected_options: [],
-          formData: {}
-        },
-        client: {
-          name: null,
-          age: null,
-          income: null,
-          expenses: null,
-          credit_history: null,
-          has_deposit: false
-        },
-        calculations: {},
-        score: 0,
-        score_history: []
-      })
+    // Reset UI to default tab
+    if (!localSessionState.ui) {
+      localSessionState.ui = {}
     }
+    localSessionState.ui.activeTab = '0'
+    localSessionState.ui.activeDialog = null
     
-    // Clear stage config cache to force reload
+    // Clear stage config cache to force reload (do this BEFORE backend call)
     stageConfigCache.value = {}
     
-    // Unmount and remount dialogue interface to ensure clean state
+    // Unmount dialogue app immediately to prevent stale renders
     if (dialogueAppRef.value) {
       dialogueAppRef.value.unmount()
       dialogueAppRef.value = null
     }
     
-    // Close dialogue and reopen to start fresh
+    // Close dialogue
     closeDialogueDialog()
-    setTimeout(() => {
-      openDialogueDialog()
-    }, 500)
+
+    // Reset backend state (wrapped in try-catch so UI always resets)
+    try {
+      if (sessionId && updateState) {
+        await updateState({
+          dialogue: {
+            messages: [],
+            current_step: 'greeting',
+            selected_options: [],
+            formData: {}
+          },
+          client: {
+            name: null,
+            age: null,
+            income: null,
+            expenses: null,
+            credit_history: null,
+            has_deposit: false,
+            type: null,
+            model_path: null,
+            _generated_name: null
+          },
+          calculations: {},
+          score: 0,
+          score_history: [],
+          ui: {
+            activeTab: '0',
+            activeDialog: null
+          }
+        })
+      }
+    } catch (e) {
+      console.error('Error resetting backend state:', e)
+      // Continue with local reset regardless of backend error
+    }
   }
 
   return {
