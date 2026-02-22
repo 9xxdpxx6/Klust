@@ -50,6 +50,10 @@ const props = defineProps({
   count: {
     type: Number,
     default: 3
+  },
+  interactive: {
+    type: Boolean,
+    default: true
   }
 })
 
@@ -80,16 +84,19 @@ const hitboxHeight = computed(() => {
 })
 
 const onHoverEnter = () => {
+  if (!props.interactive) return
   targetScale.value = 1.07
   isHovered.value = true
 }
 
 const onHoverLeave = () => {
+  if (!props.interactive) return
   targetScale.value = 1
   isHovered.value = false
 }
 
 const onClick = () => {
+  if (!props.interactive) return
   emit('click')
 }
 

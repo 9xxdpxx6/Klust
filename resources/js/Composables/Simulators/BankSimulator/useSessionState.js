@@ -33,7 +33,10 @@ export function useSessionState({ sessionState, isLoading, autoSave }) {
       activeTab: '0'
     },
     score: 0,
-    score_history: []
+    score_history: [],
+    variants_progress: {},
+    dialogue_type: null,
+    max_score: 100
   })
 
   /**
@@ -200,6 +203,14 @@ export function useSessionState({ sessionState, isLoading, autoSave }) {
         score_history: Array.isArray(newState.score_history)
           ? newState.score_history
           : (localSessionState.score_history || []),
+        // Scoring metadata from dialogue config
+        max_score: newState.max_score ?? localSessionState.max_score ?? 100,
+        dialogue_type: newState.dialogue_type ?? localSessionState.dialogue_type ?? 'credit_card',
+        // Variant progress: merge backend over local (backend is source of truth for completed variants)
+        variants_progress: {
+          ...(localSessionState.variants_progress || {}),
+          ...(newState.variants_progress || {})
+        },
         ui: {
           activeTab: newState.ui?.activeTab || localSessionState.ui?.activeTab || '0',
           activeDialog: newState.ui?.activeDialog || localSessionState.ui?.activeDialog || null
@@ -256,6 +267,9 @@ export function useSessionState({ sessionState, isLoading, autoSave }) {
       calculations: newState.calculations || {},
       score: newState.score ?? 0,
       score_history: Array.isArray(newState.score_history) ? newState.score_history : [],
+      variants_progress: newState.variants_progress || {},
+      dialogue_type: newState.dialogue_type || null,
+      max_score: newState.max_score ?? 100,
       ui: {
         activeTab: newState.ui?.activeTab || '0',
         activeDialog: newState.ui?.activeDialog || null

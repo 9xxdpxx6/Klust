@@ -26,9 +26,8 @@
         :is-client-speaking="isClientSpeakingValue"
         :preloaded-client-model="preloadedClientModelValue"
         :client-model-path="clientModelPathValue"
-        @door-click="clientCharacter.onDoorClick"
-        @phone-click="dialogs.onPhoneClick"
-        @documents-click="dialogs.onDocumentsClick"
+        @door-click="onDoorClick"
+        @laptop-click="onLaptopClick"
         @bank-tab-change="sessionState.onBankTabChange"
         @client-animation-finished="clientCharacter.onClientAnimationFinished"
     />
@@ -78,6 +77,14 @@
     @close="dialogs.onDepositCalculatorClose"
   />
   
+  <!-- Меню выбора варианта симулятора -->
+  <VariantSelector
+    :visible="showVariantSelector"
+    :variants-progress="sessionState.localSessionState.variants_progress || {}"
+    @select="onVariantSelected"
+    @close="showVariantSelector = false"
+  />
+
   <!-- Модалка подтверждения перезапуска -->
   <DangerConfirmDialog
     v-model:visible="showRestartConfirm"
@@ -107,6 +114,7 @@ import DepositCalculatorDialog from './DepositCalculatorDialog.vue'
 import Dialog3D from './Dialog3D.vue'
 import CSS3DRendererPlugin from './CSS3DRendererPlugin.vue'
 import DangerConfirmDialog from '@/Components/UI/DangerConfirmDialog.vue'
+import VariantSelector from './VariantSelector.vue'
 
 const devMode = false // TODO: переключить на false для прода
 
@@ -133,7 +141,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['phoneClick', 'documentsClick', 'calculatorClick'])
+const emit = defineEmits([])
 
 // Refs for dialogs
 const mainDialogRef = ref(null)
@@ -172,6 +180,12 @@ const scoring = useScoring({
 // Restart confirmation dialog
 const showRestartConfirm = ref(false)
 
+// Variant selector state
+const showVariantSelector = ref(false)
+const pendingDoorPayload = ref(null)
+const lastDoorPayload = ref(null)
+const DEFAULT_DOOR_PAYLOAD = { position: [3.95, 0, 0.5] }
+
 // Dialogue system composable (uses dialog manager's showDialogueDialog)
 const dialogueSystem = useDialogueSystem({
   localSessionState: sessionState.localSessionState,
@@ -202,10 +216,55 @@ const dialogueSystem = useDialogueSystem({
 
 const handleRestartConfirm = async () => {
   showRestartConfirm.value = false
+
+  // Close dialogue UI first
+  dialogs.closeDialogueDialog()
+  if (dialogs.showPhoneDialog) dialogs.showPhoneDialog.value = false
+  if (dialogs.showCalculatorDialog) dialogs.showCalculatorDialog.value = false
+  if (dialogs.showDocumentsDialog) dialogs.showDocumentsDialog.value = false
+
+  // Animate client exit: stand up → walk to door → disappear
+  if (clientCharacter.isClientVisible.value && clientCharacter.clientState.value === 'seated') {
+    await clientCharacter.exitClient()
+  }
+
   // Reset dialogue + backend state
   await dialogueSystem.handleRestartSession()
   // Reset client 3D character (hide model, return to idle)
   clientCharacter.resetClient()
+
+  // Auto-open variant selector after client fully exits on restart
+  pendingDoorPayload.value = lastDoorPayload.value || DEFAULT_DOOR_PAYLOAD
+  showVariantSelector.value = true
+}
+
+// Door click — show variant selector instead of directly generating client
+const onDoorClick = (payload) => {
+  // If client is already present, ignore
+  if (clientCharacter.isClientVisible.value && clientCharacter.clientState.value !== 'idle') {
+    return
+  }
+  // Save door payload and show variant selector
+  pendingDoorPayload.value = payload
+  lastDoorPayload.value = payload
+  showVariantSelector.value = true
+}
+
+// Variant selected — generate client with chosen dialogue type
+const onVariantSelected = (dialogueType) => {
+  showVariantSelector.value = false
+  if (pendingDoorPayload.value) {
+    clientCharacter.onDoorClick(pendingDoorPayload.value, dialogueType)
+    pendingDoorPayload.value = null
+  }
+}
+
+// Laptop click — reopen dialogue dialog if client is seated
+const onLaptopClick = () => {
+  // Only reopen if there's a client present (dialogue is ongoing)
+  if (clientCharacter.hasClient.value && !dialogs.showDialogueDialog.value) {
+    dialogueSystem.openDialogueDialog()
+  }
 }
 
 // Client character composable

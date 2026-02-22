@@ -2,6 +2,7 @@
   <TresGroup 
     :position="position" 
     :rotation="rotation"
+    @click="onClick"
     @pointer-enter="onHoverEnter"
     @pointer-leave="onHoverLeave"
   >
@@ -83,6 +84,8 @@ const props = defineProps({
   }
 })
 
+const emit = defineEmits(['click'])
+
 const scale = ref(1)
 const targetScale = ref(1)
 const isModelLoaded = ref(false)
@@ -94,6 +97,11 @@ const { renderer } = useTres()
 
 // Computed scale как массив для реактивности TresGroup
 const scaleArray = computed(() => [scale.value, scale.value, scale.value])
+
+// Click handler — emits event to parent (reopen dialogue)
+const onClick = () => {
+  emit('click')
+}
 
 // Hover обработчики
 const onHoverEnter = () => {

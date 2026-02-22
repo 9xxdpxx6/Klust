@@ -50,6 +50,10 @@ const props = defineProps({
   isRinging: {
     type: Boolean,
     default: false
+  },
+  interactive: {
+    type: Boolean,
+    default: true
   }
 })
 
@@ -91,16 +95,19 @@ const computedRotation = computed(() => {
 })
 
 const onHoverEnter = () => {
+  if (!props.interactive) return
   targetScale.value = 1.1
   isHovered.value = true
 }
 
 const onHoverLeave = () => {
+  if (!props.interactive) return
   targetScale.value = 1
   isHovered.value = false
 }
 
 const onClick = () => {
+  if (!props.interactive) return
   emit('click')
 }
 

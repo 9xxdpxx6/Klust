@@ -25,6 +25,7 @@
     :position="[-0.98, 0.7974, -0.4]"
     :rotation="[0, 3.2, 0]"
     :color="laptopColor"
+    @click="$emit('laptop-click')"
   />
   
   <!-- Экран ноутбука с интерфейсом банковской системы (показывается только когда есть клиент) -->
@@ -41,22 +42,22 @@
     :scale="0.001"
   />
   
-  <!-- Телефон -->
+  <!-- Телефон (декоративный, не кликабельный) -->
   <Phone 
     :position="[-1.4, 0.7955, -0.55]"
     :base-scale="[0.001, 0.001, 0.001]"
     :base-rotation="[Math.PI / 2, 0, 0.5]"
     :is-ringing="isPhoneRinging"
-    @click="$emit('phone-click')"
+    :interactive="false"
   />
   
-  <!-- Документы -->
+  <!-- Документы (декоративные, не кликабельные) -->
   <Documents 
     :position="[-1.27, 0.79, -0.37]"
     :rotation="[0, 3.25, 0]"
     :count="1"
     :scale="[0.45, 0.45, 0.45]"
-    @click="$emit('documents-click')"
+    :interactive="false"
   />
   
   <!-- Кактус -->
@@ -166,5 +167,5 @@ const props = defineProps({
   }
 })
 
-defineEmits(['door-click', 'phone-click', 'documents-click', 'bank-tab-change', 'client-animation-finished'])
+defineEmits(['door-click', 'laptop-click', 'bank-tab-change', 'client-animation-finished'])
 </script>
