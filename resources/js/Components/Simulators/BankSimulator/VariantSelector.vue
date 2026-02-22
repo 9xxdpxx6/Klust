@@ -61,6 +61,20 @@
           <span class="summary-text">
             Пройдено: {{ completedCount }} / {{ variants.length }}
           </span>
+
+          <!-- Кнопка завершения симулятора (только когда все пройдены) -->
+          <button
+            v-if="allCompleted"
+            class="complete-simulator-btn"
+            @click.stop="$emit('complete')"
+          >
+            <i class="pi pi-check-circle"></i>
+            Завершить симулятор
+            <span class="complete-score">Итог: {{ finalScoreDisplay }}%</span>
+          </button>
+          <p v-else class="remaining-hint">
+            Пройдите все сценарии, чтобы завершить симулятор
+          </p>
         </div>
       </div>
     </div>
@@ -108,7 +122,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['select', 'close'])
+const emit = defineEmits(['select', 'close', 'complete'])
 
 const variants = computed(() => {
   return VARIANT_CONFIG.map(v => ({
@@ -123,6 +137,21 @@ const completedCount = computed(() => {
 
 const completionPercent = computed(() => {
   return Math.round((completedCount.value / variants.value.length) * 100)
+})
+
+const allCompleted = computed(() => {
+  return completedCount.value === variants.value.length
+})
+
+/**
+ * Calculate final score for display.
+ * Rule: sum of normalized scores; if sum > 100, use average.
+ */
+const finalScoreDisplay = computed(() => {
+  if (!allCompleted.value) return 0
+  const scores = variants.value.map(v => v.progress?.normalized_score ?? 0)
+  const sum = scores.reduce((a, b) => a + b, 0)
+  return sum <= 100 ? Math.round(sum) : Math.round(sum / scores.length)
 })
 
 const getScoreClass = (score) => {
@@ -418,6 +447,53 @@ const selectVariant = (key) => {
   font-size: 0.75rem;
   color: #64748b;
   font-weight: 500;
+}
+
+.complete-simulator-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 0.65rem 1rem;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+.complete-simulator-btn:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+  transform: translateY(-1px);
+}
+
+.complete-simulator-btn:active {
+  transform: translateY(0);
+}
+
+.complete-simulator-btn i {
+  font-size: 1rem;
+}
+
+.complete-score {
+  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.75rem;
+}
+
+.remaining-hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.7rem;
+  color: #94a3b8;
+  font-style: italic;
 }
 
 /* Transitions */

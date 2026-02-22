@@ -83,6 +83,7 @@
     :variants-progress="sessionState.localSessionState.variants_progress || {}"
     @select="onVariantSelected"
     @close="showVariantSelector = false"
+    @complete="handleCompleteSimulator"
   />
 
   <!-- Модалка подтверждения перезапуска -->
@@ -141,7 +142,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits([])
+const emit = defineEmits(['completeSimulator'])
 
 // Refs for dialogs
 const mainDialogRef = ref(null)
@@ -177,6 +178,59 @@ const scoring = useScoring({
   isLoading: computed(() => props.isLoading)
 })
 
+// ── Score aggregation across all 4 variants ──
+const VARIANT_KEYS = ['credit_card', 'mortgage', 'consumer_loan', 'deposit']
+
+/**
+ * Calculate aggregated final score from all completed variants.
+ * Rule: sum of normalized scores; if sum > 100, use average instead.
+ * Returns { score, allCompleted, completedCount, total }
+ */
+const calculateFinalScore = () => {
+  const progress = sessionState.localSessionState.variants_progress || {}
+  const completedVariants = VARIANT_KEYS.filter(k => progress[k]?.status === 'completed')
+  const scores = completedVariants.map(k => progress[k]?.normalized_score ?? 0)
+  const sum = scores.reduce((a, b) => a + b, 0)
+  const avg = completedVariants.length > 0 ? sum / completedVariants.length : 0
+
+  return {
+    score: sum <= 100 ? Math.round(sum) : Math.round(avg),
+    allCompleted: completedVariants.length === VARIANT_KEYS.length,
+    completedCount: completedVariants.length,
+    total: VARIANT_KEYS.length
+  }
+}
+
+/**
+ * Handle "Завершить сессию" from DialogueInterface or VariantSelector.
+ * If all 4 variants completed → emit aggregated score to parent page.
+ * Otherwise → close dialogue, show variant selector with remaining variants.
+ */
+const handleCompleteSimulator = () => {
+  const result = calculateFinalScore()
+
+  if (result.allCompleted) {
+    // Save aggregated max_score=100 in state so ProgressLogService normalizes correctly
+    if (props.updateState) {
+      props.updateState({ max_score: 100 })
+    }
+    emit('completeSimulator', {
+      score: result.score,
+      variants_progress: sessionState.localSessionState.variants_progress
+    })
+  } else {
+    // Not all variants done — close current dialogue, show variant selector
+    dialogs.closeDialogueDialog()
+    if (dialogs.showPhoneDialog) dialogs.showPhoneDialog.value = false
+    if (dialogs.showCalculatorDialog) dialogs.showCalculatorDialog.value = false
+    if (dialogs.showDocumentsDialog) dialogs.showDocumentsDialog.value = false
+
+    // Open variant selector so student can pick the next one
+    pendingDoorPayload.value = lastDoorPayload.value || DEFAULT_DOOR_PAYLOAD
+    showVariantSelector.value = true
+  }
+}
+
 // Restart confirmation dialog
 const showRestartConfirm = ref(false)
 
@@ -184,7 +238,8 @@ const showRestartConfirm = ref(false)
 const showVariantSelector = ref(false)
 const pendingDoorPayload = ref(null)
 const lastDoorPayload = ref(null)
-const DEFAULT_DOOR_PAYLOAD = { position: [3.95, 0, 0.5] }
+// Door world position (local [3.95, 0, 0.5] rotated by -PI/2 → world [-0.5, 0, 3.95])
+const DEFAULT_DOOR_PAYLOAD = { position: [-0.5, 0, 3.95] }
 
 // Dialogue system composable (uses dialog manager's showDialogueDialog)
 const dialogueSystem = useDialogueSystem({
@@ -211,7 +266,8 @@ const dialogueSystem = useDialogueSystem({
   onDocumentsClick: dialogs.onDocumentsClick,
   onRestartRequest: () => {
     showRestartConfirm.value = true
-  }
+  },
+  onCompleteSession: handleCompleteSimulator
 })
 
 const handleRestartConfirm = async () => {
