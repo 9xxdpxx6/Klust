@@ -66,7 +66,8 @@ export function useDialogueSystem({
       const context = {
         client: localSessionState.client || {},
         calculations: localSessionState.calculations || {},
-        dialogue: localSessionState.dialogue || {}
+        dialogue: localSessionState.dialogue || {},
+        dialogue_type: localSessionState.dialogue_type || 'credit_card'
       }
 
       const response = await axios.get(
@@ -133,7 +134,8 @@ export function useDialogueSystem({
         calculations: localSessionState.calculations || {},
         dialogue: localSessionState.dialogue || {},
         score: localSessionState.score || 0,
-        score_history: localSessionState.score_history || []
+        score_history: localSessionState.score_history || [],
+        dialogue_type: localSessionState.dialogue_type || 'credit_card'
       }
 
       const response = await axios.post(
@@ -406,6 +408,16 @@ export function useDialogueSystem({
       localSessionState.score_history = Array.isArray(updates.score_history)
         ? updates.score_history
         : []
+    }
+
+    // Apply max_score (from dialogue config)
+    if (updates.max_score !== undefined) {
+      localSessionState.max_score = updates.max_score
+    }
+
+    // Apply dialogue_type
+    if (updates.dialogue_type !== undefined) {
+      localSessionState.dialogue_type = updates.dialogue_type
     }
   }
 
@@ -746,6 +758,42 @@ export function useDialogueSystem({
     
     // Process on_enter_actions for the stage
     await processStageEnterActions(normalizedStageId)
+
+    // Track variant completion when reaching a final stage
+    if (stageConfig.is_final) {
+      markCurrentVariantCompleted()
+    }
+  }
+
+  /**
+   * Mark the current dialogue variant as completed in variants_progress
+   */
+  const markCurrentVariantCompleted = () => {
+    const dialogueType = localSessionState.dialogue_type || 'credit_card'
+    const rawScore = localSessionState.score ?? 0
+    const maxScore = localSessionState.max_score ?? 100
+    const normalizedScore = maxScore > 0
+      ? Math.min(100, Math.round(Math.max(0, rawScore) / maxScore * 100))
+      : 0
+
+    if (!localSessionState.variants_progress) {
+      localSessionState.variants_progress = {}
+    }
+
+    localSessionState.variants_progress[dialogueType] = {
+      status: 'completed',
+      score: rawScore,
+      max_score: maxScore,
+      normalized_score: normalizedScore,
+      completed_at: new Date().toISOString()
+    }
+
+    // Persist to backend
+    if (updateState) {
+      updateState({
+        variants_progress: localSessionState.variants_progress
+      })
+    }
   }
 
   /**
@@ -1013,6 +1061,8 @@ export function useDialogueSystem({
     localSessionState.calculations = {}
     localSessionState.score = 0
     localSessionState.score_history = []
+    localSessionState.dialogue_type = null
+    localSessionState.max_score = 100
     // Reset UI to default tab
     if (!localSessionState.ui) {
       localSessionState.ui = {}
@@ -1056,6 +1106,10 @@ export function useDialogueSystem({
           calculations: {},
           score: 0,
           score_history: [],
+          // Preserve variants_progress across restarts
+          variants_progress: localSessionState.variants_progress || {},
+          dialogue_type: null,
+          max_score: 100,
           ui: {
             activeTab: '0',
             activeDialog: null

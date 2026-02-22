@@ -306,45 +306,37 @@ const formatTime = (timestamp) => {
   }
 }
 
+const maxScore = computed(() => {
+  return props.sessionState?.max_score ?? 100
+})
+
 const formatScorePoints = (score) => {
-  if (score === null || score === undefined) return '0/100'
-  const currentScore = Math.max(0, Math.round(score))
-  
-  // Определяем максимальный балл автоматически
-  // Если балл <= 100, то max = 100
-  // Если балл > 100, округляем до ближайшего большего "круглого" числа
-  let maxScore = 100
-  if (currentScore > 100) {
-    // Круглые числа: 200, 500, 1000, 2000, 5000, 10000...
-    const roundNumbers = [200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000]
-    for (const roundNum of roundNumbers) {
-      if (currentScore <= roundNum) {
-        maxScore = roundNum
-        break
-      }
-    }
-    // Если балл больше всех круглых чисел, округляем до ближайшей тысячи
-    if (currentScore > roundNumbers[roundNumbers.length - 1]) {
-      maxScore = Math.ceil(currentScore / 1000) * 1000
-    }
-  }
-  
-  return `${currentScore}/${maxScore}`
+  if (score === null || score === undefined) return `0/${maxScore.value}`
+  const points = Math.max(0, Math.round(score))
+  return `${points}/${maxScore.value}`
 }
+
+const normalizedScore = computed(() => {
+  if (currentScore.value === null || maxScore.value <= 0) return 0
+  return Math.min(100, Math.round(Math.max(0, currentScore.value) / maxScore.value * 100))
+})
 
 const getScoreClass = (score) => {
   if (score === null || score === undefined) return ''
-  if (score >= 80) return 'score-excellent'
-  if (score >= 60) return 'score-good'
-  if (score >= 40) return 'score-average'
+  // Use normalized 0-100 scale for thresholds
+  const pct = normalizedScore.value
+  if (pct >= 80) return 'score-excellent'
+  if (pct >= 60) return 'score-good'
+  if (pct >= 40) return 'score-average'
   return 'score-poor'
 }
 
 const getScoreText = (score) => {
   if (score === null || score === undefined) return 'Не оценено'
-  if (score >= 80) return 'Отлично'
-  if (score >= 60) return 'Хорошо'
-  if (score >= 40) return 'Удовлетворительно'
+  const pct = normalizedScore.value
+  if (pct >= 80) return 'Отлично'
+  if (pct >= 60) return 'Хорошо'
+  if (pct >= 40) return 'Удовлетворительно'
   return 'Неудовлетворительно'
 }
 
@@ -352,13 +344,14 @@ const getCompletionMessage = (score) => {
   if (score === null || score === undefined) {
     return 'Диалог завершен.'
   }
-  if (score >= 80) {
+  const pct = normalizedScore.value
+  if (pct >= 80) {
     return 'Отличная работа! Вы успешно провели консультацию с клиентом, продемонстрировав высокий уровень профессионализма.'
   }
-  if (score >= 60) {
+  if (pct >= 60) {
     return 'Хорошая работа! Вы провели консультацию с клиентом, но есть моменты, которые можно улучшить.'
   }
-  if (score >= 40) {
+  if (pct >= 40) {
     return 'Консультация завершена. Есть существенные моменты, которые требуют улучшения в вашей работе.'
   }
   return 'Консультация завершена. Рекомендуется пройти обучение и повторить попытку для улучшения результатов.'

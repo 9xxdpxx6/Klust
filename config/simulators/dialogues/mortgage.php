@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'max_score' => 125,
     'stages' => [
 
         /*
@@ -18,14 +19,14 @@ return [
                     'id' => 'greet_warm',
                     'text' => 'Здравствуйте! Конечно, присаживайтесь. Расскажите, какую недвижимость рассматриваете?',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => 10, 'reason' => 'Вежливое приветствие и открытый вопрос'],
+                        ['type' => 'add_score_points', 'points' => 10, 'category' => 'service_quality', 'reason' => 'Вежливое приветствие и открытый вопрос'],
                     ],
                 ],
                 [
                     'id' => 'greet_push',
                     'text' => 'Добрый день! У нас отличные условия — давайте сразу посчитаем платёж?',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => -5, 'reason' => 'Спешка без выяснения потребности'],
+                        ['type' => 'add_score_points', 'points' => -5, 'category' => 'service_quality', 'reason' => 'Спешка без выяснения потребности'],
                     ],
                 ],
             ],
@@ -48,7 +49,7 @@ return [
                     'id' => 'recover_polite',
                     'text' => 'Конечно, извините. Давайте по порядку — расскажите, что именно вы ищете.',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => 5, 'reason' => 'Исправление ситуации'],
+                        ['type' => 'add_score_points', 'points' => 5, 'category' => 'service_quality', 'reason' => 'Исправление ситуации'],
                     ],
                 ],
                 [
@@ -76,21 +77,21 @@ return [
                     'id' => 'need_structured',
                     'text' => 'Понял. Чтобы подобрать оптимальную программу, задам несколько вопросов. Какой у вас совокупный семейный доход?',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => 10, 'reason' => 'Структурированный подход к выявлению потребности'],
+                        ['type' => 'add_score_points', 'points' => 10, 'category' => 'correctness', 'reason' => 'Структурированный подход к выявлению потребности'],
                     ],
                 ],
                 [
                     'id' => 'need_quick',
                     'text' => '5–6 миллионов, миллион взнос — можем работать. Сколько зарабатываете вместе?',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => 7, 'reason' => 'Быстрый переход к делу'],
+                        ['type' => 'add_score_points', 'points' => 7, 'category' => 'correctness', 'reason' => 'Быстрый переход к делу'],
                     ],
                 ],
                 [
                     'id' => 'need_promise',
                     'text' => 'С миллионом взноса — без проблем одобрим. Формальности пройдём быстро.',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => -10, 'reason' => 'Необоснованное обещание одобрения'],
+                        ['type' => 'add_score_points', 'points' => -10, 'category' => 'compliance', 'reason' => 'Необоснованное обещание одобрения'],
                     ],
                 ],
             ],
@@ -117,14 +118,14 @@ return [
                     'id' => 'ask_expenses',
                     'text' => 'Хорошо. Какие у вас сейчас обязательные расходы — коммуналка, аренда, транспорт, дети?',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => 10, 'reason' => 'Запрос расходов для оценки платёжеспособности'],
+                        ['type' => 'add_score_points', 'points' => 10, 'category' => 'correctness', 'reason' => 'Запрос расходов для оценки платёжеспособности'],
                     ],
                 ],
                 [
                     'id' => 'skip_to_debts',
                     'text' => '150 тысяч — зафиксировал. Есть действующие кредиты?',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => 3, 'reason' => 'Пропуск вопроса о расходах'],
+                        ['type' => 'add_score_points', 'points' => 3, 'category' => 'correctness', 'reason' => 'Пропуск вопроса о расходах'],
                         ['type' => 'update_client_data', 'field' => 'expenses', 'value' => 70000],
                     ],
                 ],
@@ -151,14 +152,14 @@ return [
                     'id' => 'ask_debts',
                     'text' => 'Понял. Есть ли действующие кредиты или рассрочки?',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => 10, 'reason' => 'Полная оценка долговой нагрузки'],
+                        ['type' => 'add_score_points', 'points' => 10, 'category' => 'correctness', 'reason' => 'Полная оценка долговой нагрузки'],
                     ],
                 ],
                 [
                     'id' => 'ask_debts_empathy',
                     'text' => 'Хорошее соотношение. Уточню — есть другие кредитные обязательства?',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => 8, 'reason' => 'Позитивная обратная связь + запрос долговой нагрузки'],
+                        ['type' => 'add_score_points', 'points' => 8, 'category' => 'service_quality', 'reason' => 'Позитивная обратная связь + запрос долговой нагрузки'],
                     ],
                 ],
             ],
@@ -181,14 +182,14 @@ return [
                     'id' => 'ask_history',
                     'text' => 'Хорошо, нагрузка минимальная. Были ли просрочки по платежам — у вас или у супруги?',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => 10, 'reason' => 'Проверка кредитной дисциплины обоих заёмщиков'],
+                        ['type' => 'add_score_points', 'points' => 10, 'category' => 'correctness', 'reason' => 'Проверка кредитной дисциплины обоих заёмщиков'],
                     ],
                 ],
                 [
                     'id' => 'ask_history_direct',
                     'text' => '3 000 — мелочь. Просрочки были?',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => 5, 'reason' => 'Прямой вопрос без контекста'],
+                        ['type' => 'add_score_points', 'points' => 5, 'category' => 'correctness', 'reason' => 'Прямой вопрос без контекста'],
                     ],
                 ],
             ],
@@ -211,14 +212,14 @@ return [
                     'id' => 'check_bki',
                     'text' => 'Отлично. Проверю кредитные истории в НБКИ по обоим заёмщикам — это обязательная процедура.',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => 15, 'reason' => 'Проверка КИ через БКИ — обязательная процедура'],
+                        ['type' => 'add_score_points', 'points' => 15, 'category' => 'compliance', 'reason' => 'Проверка КИ через БКИ — обязательная процедура'],
                     ],
                 ],
                 [
                     'id' => 'trust_word',
                     'text' => 'Хорошо, верю. Сколько вам обоим лет?',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => -10, 'reason' => 'Пропуск обязательной проверки КИ'],
+                        ['type' => 'add_score_points', 'points' => -10, 'category' => 'compliance', 'reason' => 'Пропуск обязательной проверки КИ'],
                         ['type' => 'update_client_data', 'field' => 'credit_history', 'value' => 'good'],
                     ],
                 ],
@@ -248,14 +249,14 @@ return [
                     'id' => 'bki_reassure',
                     'text' => 'Да, обе истории чистые. Уточню возраст — это влияет на максимальный срок ипотеки.',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => 5, 'reason' => 'Информирование о результатах проверки'],
+                        ['type' => 'add_score_points', 'points' => 5, 'category' => 'service_quality', 'reason' => 'Информирование о результатах проверки'],
                     ],
                 ],
                 [
                     'id' => 'bki_brief',
                     'text' => 'Чисто. Сколько вам лет?',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => 2, 'reason' => 'Краткое подтверждение'],
+                        ['type' => 'add_score_points', 'points' => 2, 'category' => 'service_quality', 'reason' => 'Краткое подтверждение'],
                     ],
                 ],
             ],
@@ -281,7 +282,7 @@ return [
                     'id' => 'run_scoring',
                     'text' => 'Отлично, все данные есть. Рассчитываю параметры ипотечного кредита.',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => 10, 'reason' => 'Корректный переход к расчёту'],
+                        ['type' => 'add_score_points', 'points' => 10, 'category' => 'correctness', 'reason' => 'Корректный переход к расчёту'],
                         ['type' => 'calculate_scoring'],
                         ['type' => 'calculate_credit'],
                     ],
@@ -290,7 +291,7 @@ return [
                     'id' => 'run_scoring_comment',
                     'text' => 'Молодая семья — хорошо, будут льготные программы. Секунду, считаю.',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => 5, 'reason' => 'Упоминание льготных программ — полезно, но преждевременно'],
+                        ['type' => 'add_score_points', 'points' => 5, 'category' => 'service_quality', 'reason' => 'Упоминание льготных программ — полезно, но преждевременно'],
                         ['type' => 'calculate_scoring'],
                         ['type' => 'calculate_credit'],
                     ],
@@ -316,7 +317,7 @@ return [
                     'id' => 'present_balanced',
                     'text' => 'Да, предварительное одобрение есть. Вот параметры — обратите внимание на ежемесячный платёж и общую переплату.',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => 20, 'reason' => 'Сбалансированная презентация с акцентом на переплату'],
+                        ['type' => 'add_score_points', 'points' => 20, 'category' => 'correctness', 'reason' => 'Сбалансированная презентация с акцентом на переплату'],
                         ['type' => 'update_client_data', 'field' => 'bank_profit', 'value' => 'medium'],
                         ['type' => 'update_client_data', 'field' => 'npl_risk', 'value' => 'low'],
                     ],
@@ -325,7 +326,7 @@ return [
                     'id' => 'present_max',
                     'text' => 'Одобрено! Можем дать даже больше — до 7 миллионов. Может, посмотрите квартиру побольше?',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => -15, 'reason' => 'Навязывание завышенной суммы'],
+                        ['type' => 'add_score_points', 'points' => -15, 'category' => 'compliance', 'reason' => 'Навязывание завышенной суммы'],
                         ['type' => 'update_client_data', 'field' => 'bank_profit', 'value' => 'high'],
                         ['type' => 'update_client_data', 'field' => 'npl_risk', 'value' => 'medium'],
                     ],
@@ -350,14 +351,14 @@ return [
                     'id' => 'backtrack',
                     'text' => 'Понимаю, вы правы — лучше взять комфортную сумму. Вернёмся к вашему варианту.',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => 10, 'reason' => 'Корректировка по запросу клиента'],
+                        ['type' => 'add_score_points', 'points' => 10, 'category' => 'service_quality', 'reason' => 'Корректировка по запросу клиента'],
                     ],
                 ],
                 [
                     'id' => 'insist',
                     'text' => 'Это просто одобренный лимит, не обязательно его весь брать. Но запас не помешает.',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => -20, 'reason' => 'Настаивание на завышенной сумме'],
+                        ['type' => 'add_score_points', 'points' => -20, 'category' => 'compliance', 'reason' => 'Настаивание на завышенной сумме'],
                         ['type' => 'update_client_data', 'field' => 'future_default_flag', 'value' => true],
                     ],
                 ],
@@ -381,14 +382,14 @@ return [
                     'id' => 'proceed_risky',
                     'text' => 'Отлично! Потребуются паспорта обоих супругов и справки о доходах.',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => -5, 'reason' => 'Оформление при дискомфорте клиента'],
+                        ['type' => 'add_score_points', 'points' => -5, 'category' => 'compliance', 'reason' => 'Оформление при дискомфорте клиента'],
                     ],
                 ],
                 [
                     'id' => 'reconsider',
                     'text' => 'Знаете, давайте всё-таки посчитаем под ваш комфортный бюджет. Ипотека — это надолго.',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => 15, 'reason' => 'Ответственное решение в пользу клиента'],
+                        ['type' => 'add_score_points', 'points' => 15, 'category' => 'service_quality', 'reason' => 'Ответственное решение в пользу клиента'],
                         ['type' => 'update_client_data', 'field' => 'npl_risk', 'value' => 'low'],
                         ['type' => 'update_client_data', 'field' => 'future_default_flag', 'value' => false],
                     ],
@@ -413,14 +414,14 @@ return [
                     'id' => 'ask_documents',
                     'text' => 'Для оформления потребуются: паспорта обоих супругов, справки 2-НДФЛ, копии трудовых книжек, и документы на объект недвижимости.',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => 15, 'reason' => 'Полный перечень документов для ипотеки'],
+                        ['type' => 'add_score_points', 'points' => 15, 'category' => 'compliance', 'reason' => 'Полный перечень документов для ипотеки'],
                     ],
                 ],
                 [
                     'id' => 'skip_docs',
                     'text' => 'Принесите паспорта, остальное решим по ходу.',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => -10, 'reason' => 'Неполный перечень документов'],
+                        ['type' => 'add_score_points', 'points' => -10, 'category' => 'compliance', 'reason' => 'Неполный перечень документов'],
                     ],
                 ],
             ],
@@ -443,14 +444,14 @@ return [
                     'id' => 'finalize_proper',
                     'text' => 'Пожалуйста! Когда соберёте документы — приходите, подготовим договор. Обязательно ознакомьтесь с условиями перед подписанием.',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => 10, 'reason' => 'Напоминание об ознакомлении с договором'],
+                        ['type' => 'add_score_points', 'points' => 10, 'category' => 'compliance', 'reason' => 'Напоминание об ознакомлении с договором'],
                     ],
                 ],
                 [
                     'id' => 'finalize_quick',
                     'text' => 'Жду вас с документами. До свидания!',
                     'actions' => [
-                        ['type' => 'add_score_points', 'points' => 5, 'reason' => 'Завершение без дополнительных рекомендаций'],
+                        ['type' => 'add_score_points', 'points' => 5, 'category' => 'service_quality', 'reason' => 'Завершение без дополнительных рекомендаций'],
                     ],
                 ],
             ],
@@ -500,7 +501,7 @@ return [
         'completion_incomplete' => [
             'client_message' => 'Ладно, разберёмся. До свидания.',
             'on_enter_actions' => [
-                ['type' => 'add_score_points', 'points' => -5, 'reason' => 'Клиент ушёл с неполной информацией о требуемых документах'],
+                ['type' => 'add_score_points', 'points' => -5, 'category' => 'compliance', 'reason' => 'Клиент ушёл с неполной информацией о требуемых документах'],
             ],
             'is_final' => true,
         ],
@@ -514,7 +515,7 @@ return [
         'future_default_event' => [
             'client_message' => '⚠️ Через 14 месяцев: семья не справляется с ипотечными платежами. Просрочка свыше 90 дней. Кредит переведён в категорию NPL.',
             'on_enter_actions' => [
-                ['type' => 'add_score_points', 'points' => -30, 'reason' => 'Ипотека перешла в NPL из-за завышенной суммы кредита'],
+                ['type' => 'add_score_points', 'points' => -30, 'category' => 'correctness', 'reason' => 'Ипотека перешла в NPL из-за завышенной суммы кредита'],
                 ['type' => 'update_client_data', 'field' => 'bank_profit', 'value' => 'negative'],
             ],
             'is_final' => true,
