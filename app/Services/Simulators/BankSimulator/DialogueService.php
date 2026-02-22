@@ -19,6 +19,7 @@ class DialogueService
         'credit_card',
         'mortgage',
         'consumer_loan',
+        'deposit',
     ];
 
     /**
@@ -49,6 +50,21 @@ class DialogueService
     public function getAvailableDialogueTypes(): array
     {
         return self::AVAILABLE_DIALOGUE_TYPES;
+    }
+
+    /**
+     * Get max_score for a dialogue type
+     *
+     * @param string $dialogueType Dialogue type (e.g., 'credit_card', 'mortgage')
+     * @return int Maximum possible score for the dialogue
+     */
+    public function getMaxScore(string $dialogueType = self::DEFAULT_DIALOGUE_TYPE): int
+    {
+        if (!in_array($dialogueType, self::AVAILABLE_DIALOGUE_TYPES, true)) {
+            $dialogueType = self::DEFAULT_DIALOGUE_TYPE;
+        }
+
+        return (int) config("simulators.dialogues.{$dialogueType}.max_score", 100);
     }
 
     /**

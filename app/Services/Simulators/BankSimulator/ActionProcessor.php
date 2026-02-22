@@ -164,11 +164,18 @@ class ActionProcessor
             $scoreHistory = [];
         }
 
-        $scoreHistory[] = [
+        $entry = [
             'points' => $points,
             'reason' => $action['reason'] ?? 'Action reward',
             'timestamp' => now()->toIso8601String(),
         ];
+
+        // Track evaluation category if provided
+        if (isset($action['category']) && is_string($action['category'])) {
+            $entry['category'] = $action['category'];
+        }
+
+        $scoreHistory[] = $entry;
 
         return [
             'success' => true,

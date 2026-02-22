@@ -28,8 +28,16 @@ class ProgressLogService
             $user = $session->user;
             $simulator = $session->simulator;
 
-            // Calculate points based on score
-            $pointsEarned = $this->calculatePointsFromScore($session->score);
+            // Normalize raw dialogue score to 0-100 using max_score from session state
+            $rawScore = $session->score;
+            $maxScore = (int) ($session->state['max_score'] ?? 100);
+            $normalizedScore = $maxScore > 0
+                ? (int) round(max(0, $rawScore) / $maxScore * 100)
+                : 0;
+            $normalizedScore = min(100, $normalizedScore);
+
+            // Calculate points based on normalized score (0-100)
+            $pointsEarned = $this->calculatePointsFromScore($normalizedScore);
 
             // Check if simulator is linked to a case with required skills
             $case = $simulator->cases()->first();

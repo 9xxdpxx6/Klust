@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'scoring' => [
         'weights' => [
@@ -15,6 +17,24 @@ return [
             'auto_reject' => 0.0,
         ],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Evaluation category weights (used by EvaluationService)
+    |--------------------------------------------------------------------------
+    | Must sum to 1.0
+    */
+    'evaluation_weights' => [
+        'correctness' => 0.40,
+        'service_quality' => 0.30,
+        'compliance' => 0.30,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Client templates for random generation
+    |--------------------------------------------------------------------------
+    */
     'client_templates' => [
         'student' => [
             'type' => 'student',
@@ -33,6 +53,24 @@ return [
             'expenses_range' => [60000, 300000],
             'credit_history_options' => ['good', 'excellent'],
             'has_deposit_probability' => 0.6,
+        ],
+        'family' => [
+            'type' => 'family',
+            'model_path' => '/models/characters/female1.glb',
+            'age_range' => [30, 45],
+            'income_range' => [100000, 200000],
+            'expenses_range' => [70000, 150000],
+            'credit_history_options' => ['good', 'excellent'],
+            'has_deposit_probability' => 0.5,
+        ],
+        'pensioner' => [
+            'type' => 'pensioner',
+            'model_path' => '/models/characters/male1.glb',
+            'age_range' => [55, 70],
+            'income_range' => [25000, 50000],
+            'expenses_range' => [20000, 40000],
+            'credit_history_options' => ['excellent', 'good'],
+            'has_deposit_probability' => 0.7,
         ],
     ],
 ];

@@ -151,11 +151,35 @@ class SimulatorsController extends Controller
         $this->authorize('view', $session);
 
         $type = $request->input('type', 'random');
+        $dialogueType = $request->input('dialogue_type', 'credit_card');
+
         $clientData = $this->clientGeneratorService->generateClient($type);
 
-        // Update session state with client data
+        // Update session state with client data + dialogue metadata
         $state = $session->state ?? [];
         $state['client'] = $clientData;
+        $state['dialogue_type'] = $dialogueType;
+        $state['max_score'] = $this->dialogueService->getMaxScore($dialogueType);
+
+        // Reset dialogue state for the new variant
+        $state['dialogue'] = [
+            'messages' => [],
+            'current_step' => 'greeting',
+            'selected_options' => [],
+            'formData' => [],
+        ];
+        $state['score'] = 0;
+        $state['score_history'] = [];
+        $state['calculations'] = [];
+
+        // Mark variant as in_progress
+        $variantsProgress = $state['variants_progress'] ?? [];
+        $variantsProgress[$dialogueType] = [
+            'status' => 'in_progress',
+            'started_at' => now()->toIso8601String(),
+        ];
+        $state['variants_progress'] = $variantsProgress;
+
         $session->update(['state' => $state]);
 
         return response()->json($clientData);
@@ -278,9 +302,15 @@ class SimulatorsController extends Controller
     {
         $this->authorize('update', $session);
 
+        // Use input() instead of validated()['state'] because state contains
+        // dynamic keys (dialogue_type, max_score, variants_progress, etc.)
+        // that are not in strict validation rules. The FormRequest already
+        // validates that 'state' is a required array.
+        $stateData = $request->input('state', []);
+
         $this->simulatorService->updateSessionState(
             $session,
-            $request->validated()['state']
+            $stateData
         );
 
         return response()->json(['success' => true]);
@@ -317,12 +347,19 @@ class SimulatorsController extends Controller
 
         // Merge session state into context (backend state as base, frontend overrides)
         $sessionState = $session->state ?? [];
+        $dialogueType = $context['dialogue_type']
+            ?? $sessionState['dialogue_type']
+            ?? 'credit_card';
+        $context['dialogue_type'] = $dialogueType;
         $context = $this->deepMergeContext($sessionState, $context);
 
         $result = [
             'success' => true,
             'effects' => [],
-            'updates' => [],
+            'updates' => [
+                'dialogue_type' => $dialogueType,
+                'max_score' => $this->dialogueService->getMaxScore($dialogueType),
+            ],
             'messages' => [],
             'next_stage' => null,
         ];
@@ -392,11 +429,20 @@ class SimulatorsController extends Controller
         $stageId = $request->input('stage_id');
         $context = $request->input('context', []);
 
+        // Determine dialogue type from session state or context
+        $sessionState = $session->state ?? [];
+        $dialogueType = $context['dialogue_type']
+            ?? $sessionState['dialogue_type']
+            ?? 'credit_card';
+
+        $context['dialogue_type'] = $dialogueType;
+
         try {
             $stageConfig = $this->dialogueService->getStage($stageId, $context);
             return response()->json([
                 'success' => true,
                 'stage' => $stageConfig,
+                'max_score' => $this->dialogueService->getMaxScore($dialogueType),
             ]);
         } catch (\Exception $e) {
             return response()->json([
