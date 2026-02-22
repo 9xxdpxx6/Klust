@@ -10,6 +10,7 @@
         :update-state="updateState"
         :auto-save="autoSave"
         :is-loading="isLoading"
+        @complete-simulator="handleCompleteSimulator"
       />
 
       <!-- Прелоадер сцены -->
@@ -89,7 +90,8 @@
 
 <script setup>
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, useForm, router } from '@inertiajs/vue3';
+import { route } from 'ziggy-js';
 import OfficeScene from '@/Components/Simulators/BankSimulator/OfficeScene.vue';
 import { useSimulatorState } from '@/Composables/Simulators/BankSimulator/useSimulatorState';
 
@@ -107,6 +109,38 @@ const { state, updateState, loadState, autoSave, isLoading, cleanup } = useSimul
 const isFullscreen = ref(false);
 const containerRef = ref(null);
 const sceneContainerRef = ref(null);
+
+// ── Timer for time_spent tracking ──
+const timeSpent = ref(0);
+let timerInterval = null;
+
+// ── Completion form ──
+const isCompleting = ref(false);
+
+/**
+ * Handle simulator completion emitted from OfficeScene.
+ * All 4 variants are completed → aggregate score → POST to backend → redirect.
+ */
+const handleCompleteSimulator = (payload) => {
+  if (isCompleting.value) return;
+  isCompleting.value = true;
+
+  const completeForm = useForm({
+    score: payload.score,
+    time_spent: timeSpent.value || 1,
+    answers: payload.variants_progress || {}
+  });
+
+  completeForm.post(route('student.simulators.complete', props.session.id), {
+    onSuccess: () => {
+      router.visit(route('student.simulators.index'));
+    },
+    onError: (errors) => {
+      console.error('Ошибка завершения сессии:', errors);
+      isCompleting.value = false;
+    }
+  });
+};
 
 // --- Прелоадер ---
 const sceneReady = ref(false);
@@ -184,6 +218,11 @@ onMounted(() => {
   preloaderTimer = setTimeout(() => {
     sceneReady.value = true;
   }, 2000);
+
+  // Start time tracking
+  timerInterval = setInterval(() => {
+    timeSpent.value++;
+  }, 1000);
 });
 
 onUnmounted(() => {
@@ -192,6 +231,7 @@ onUnmounted(() => {
   document.removeEventListener('msfullscreenchange', handleFullscreenChange);
   
   if (preloaderTimer) clearTimeout(preloaderTimer);
+  if (timerInterval) clearInterval(timerInterval);
   if (cleanup) cleanup();
 });
 </script>

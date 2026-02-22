@@ -41,20 +41,37 @@ export function useDialogueSystem({
   openDepositCalculator,
   onPhoneClick,
   onDocumentsClick,
-  onRestartRequest
+  onRestartRequest,
+  onCompleteSession
 }) {
   // Cache for stage configurations (reactive)
   const stageConfigCache = ref({})
+
+  /**
+   * Build a cache key that includes dialogue_type so different variants
+   * don't share cached stage configs (e.g. greeting for credit_card ≠ greeting for mortgage).
+   */
+  const cacheKey = (stageId) => {
+    const dtype = localSessionState.dialogue_type || '_none'
+    return `${dtype}::${stageId}`
+  }
 
   /**
    * Get stage configuration from backend API
    */
   const getStageConfig = async (stageId) => {
     if (!stageId) return {}
+
+    // Don't fetch stage config when dialogue_type is not set (variant not selected yet)
+    if (!localSessionState.dialogue_type) {
+      return {}
+    }
     
+    const key = cacheKey(stageId)
+
     // Check cache first
-    if (stageConfigCache.value[stageId]) {
-      return stageConfigCache.value[stageId]
+    if (stageConfigCache.value[key]) {
+      return stageConfigCache.value[key]
     }
 
     // If no sessionId, return empty config (fallback)
@@ -67,7 +84,7 @@ export function useDialogueSystem({
         client: localSessionState.client || {},
         calculations: localSessionState.calculations || {},
         dialogue: localSessionState.dialogue || {},
-        dialogue_type: localSessionState.dialogue_type || 'credit_card'
+        dialogue_type: localSessionState.dialogue_type
       }
 
       const response = await axios.get(
@@ -82,8 +99,8 @@ export function useDialogueSystem({
 
       if (response.data.success && response.data.stage) {
         const config = response.data.stage
-        // Cache the configuration reactively
-        stageConfigCache.value[stageId] = config
+        // Cache the configuration reactively (keyed by dialogue_type + stageId)
+        stageConfigCache.value[key] = config
         return config
       }
 
@@ -99,7 +116,7 @@ export function useDialogueSystem({
    */
   const getStageConfigSync = (stageId) => {
     if (!stageId) return {}
-    return stageConfigCache.value[stageId] || {}
+    return stageConfigCache.value[cacheKey(stageId)] || {}
   }
 
   /**
@@ -135,7 +152,7 @@ export function useDialogueSystem({
         dialogue: localSessionState.dialogue || {},
         score: localSessionState.score || 0,
         score_history: localSessionState.score_history || [],
-        dialogue_type: localSessionState.dialogue_type || 'credit_card'
+        dialogue_type: localSessionState.dialogue_type || null
       }
 
       const response = await axios.post(
@@ -315,8 +332,8 @@ export function useDialogueSystem({
       // Make stageConfig reactive to cache changes
       const stageConfigComputed = computed(() => {
         const stageId = normalizeCurrentStep(localSessionState.dialogue.current_step)
-        // Access cache.value to make it reactive
-        return stageConfigCache.value[stageId] || {}
+        // Access cache.value to make it reactive (keyed by dialogue_type + stageId)
+        return stageConfigCache.value[cacheKey(stageId)] || {}
       })
       
       const app = createApp({
@@ -340,8 +357,9 @@ export function useDialogueSystem({
             stageConfig: stageConfigComputed.value,
             onOptionSelect: handleOptionSelect,
             onCompleteSession: () => {
-              // Emit event to parent component to handle session completion
-              // This will be handled by the parent component (BankSimulatorSession)
+              if (onCompleteSession) {
+                onCompleteSession()
+              }
             },
             onRestartSession: () => {
               if (onRestartRequest) {
@@ -769,7 +787,8 @@ export function useDialogueSystem({
    * Mark the current dialogue variant as completed in variants_progress
    */
   const markCurrentVariantCompleted = () => {
-    const dialogueType = localSessionState.dialogue_type || 'credit_card'
+    const dialogueType = localSessionState.dialogue_type
+    if (!dialogueType) return // No variant selected — can't mark completion
     const rawScore = localSessionState.score ?? 0
     const maxScore = localSessionState.max_score ?? 100
     const normalizedScore = maxScore > 0
@@ -1030,8 +1049,9 @@ export function useDialogueSystem({
   }
 
   // Watch for stage changes to load config (but don't remount - causes scroll reset)
+  // Skip when dialogue_type is null (variant not yet selected — e.g. after restart)
   watch(() => localSessionState.dialogue.current_step, async (newStep) => {
-    if (newStep) {
+    if (newStep && localSessionState.dialogue_type) {
       // Load stage config when step changes
       await getStageConfig(newStep)
       // Component will update automatically via reactivity, no need to remount

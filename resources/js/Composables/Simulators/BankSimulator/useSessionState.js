@@ -205,7 +205,7 @@ export function useSessionState({ sessionState, isLoading, autoSave }) {
           : (localSessionState.score_history || []),
         // Scoring metadata from dialogue config
         max_score: newState.max_score ?? localSessionState.max_score ?? 100,
-        dialogue_type: newState.dialogue_type ?? localSessionState.dialogue_type ?? 'credit_card',
+        dialogue_type: newState.dialogue_type ?? localSessionState.dialogue_type ?? null,
         // Variant progress: merge backend over local (backend is source of truth for completed variants)
         variants_progress: {
           ...(localSessionState.variants_progress || {}),
