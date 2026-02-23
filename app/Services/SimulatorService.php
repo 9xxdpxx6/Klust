@@ -178,10 +178,12 @@ class SimulatorService
     public function getStudentSessions(User $user): array
     {
         // Исключаем поле state из выборки для оптимизации (оно может быть очень большим)
+        $selectColumns = ['id', 'user_id', 'simulator_id', 'score', 'time_spent', 'points_earned', 'is_completed', 'started_at', 'completed_at', 'created_at', 'updated_at'];
+
         $activeSessions = SimulatorSession::with('simulator')
             ->where('user_id', $user->id)
             ->whereNull('completed_at')
-            ->select(['id', 'user_id', 'simulator_id', 'score', 'time_spent', 'is_completed', 'started_at', 'completed_at', 'created_at', 'updated_at'])
+            ->select($selectColumns)
             ->orderBy('created_at', 'desc')
             ->limit(50)
             ->get();
@@ -189,7 +191,7 @@ class SimulatorService
         $completedSessions = SimulatorSession::with('simulator')
             ->where('user_id', $user->id)
             ->whereNotNull('completed_at')
-            ->select(['id', 'user_id', 'simulator_id', 'score', 'time_spent', 'is_completed', 'started_at', 'completed_at', 'created_at', 'updated_at'])
+            ->select($selectColumns)
             ->orderBy('completed_at', 'desc')
             ->limit(10)
             ->get();
@@ -201,15 +203,22 @@ class SimulatorService
     }
 
     /**
-     * Complete simulator session
+     * Complete simulator session.
+     * Returns the session (fresh from DB) or null if already completed.
      */
     public function completeSession(SimulatorSession $session, array $data): SimulatorSession
     {
         if ($session->completed_at !== null) {
-            throw new \Exception('Session is already completed');
+            return $session;
         }
 
         return DB::transaction(function () use ($session, $data) {
+            // Re-check inside transaction to avoid race conditions
+            $session->refresh();
+            if ($session->completed_at !== null) {
+                return $session;
+            }
+
             // Update session
             $session->update([
                 'score' => $data['score'] ?? 0,
@@ -217,9 +226,6 @@ class SimulatorService
                 'answers' => $data['answers'] ?? null,
                 'completed_at' => now(),
             ]);
-
-            // Award points and update student progress
-            // This will be handled by ProgressLogService
 
             return $session->fresh();
         });

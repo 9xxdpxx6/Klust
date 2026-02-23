@@ -5,13 +5,10 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use App\Models\Badge;
-use App\Models\User;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class BadgeEarnedNotification extends Notification implements ShouldQueue
+class BadgeEarnedNotification extends Notification
 {
     use Queueable;
 
@@ -21,23 +18,11 @@ class BadgeEarnedNotification extends Notification implements ShouldQueue
 
     /**
      * Get the notification's delivery channels.
+     * Only database — in-app notifications (no email spam for badges).
      */
     public function via($notifiable): array
     {
-        return ['database', 'mail'];
-    }
-
-    /**
-     * Get the mail representation of the notification.
-     */
-    public function toMail($notifiable): MailMessage
-    {
-        return (new MailMessage)
-            ->subject('Новое достижение получено!')
-            ->line("Поздравляем! Вы получили новое достижение: {$this->badge->name}")
-            ->line("Описание: {$this->badge->description}")
-            ->action('Просмотреть достижения', url('/student/badges'))
-            ->line('Продолжайте в том же духе!');
+        return ['database'];
     }
 
     /**
