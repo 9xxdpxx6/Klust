@@ -75,7 +75,7 @@ const props = defineProps({
     type: {
         type: String,
         default: 'delete',
-        validator: (value) => ['delete', 'archive', 'warning'].includes(value),
+        validator: (value) => ['delete', 'archive', 'warning', 'success', 'info'].includes(value),
     },
     title: {
         type: String,
@@ -122,6 +122,8 @@ const iconClass = computed(() => {
         delete: 'pi pi-exclamation-triangle text-3xl',
         archive: 'pi pi-archive text-3xl',
         warning: 'pi pi-exclamation-triangle text-3xl',
+        success: 'pi pi-check-circle text-3xl',
+        info: 'pi pi-info-circle text-3xl',
     }
     return icons[props.type] || icons.delete
 })
@@ -131,6 +133,8 @@ const iconBgClass = computed(() => {
         delete: 'bg-red-100',
         archive: 'bg-amber-100',
         warning: 'bg-yellow-100',
+        success: 'bg-green-100',
+        info: 'bg-blue-100',
     }
     return classes[props.type] || classes.delete
 })
@@ -140,6 +144,8 @@ const iconTextClass = computed(() => {
         delete: 'text-red-600',
         archive: 'text-amber-600',
         warning: 'text-yellow-600',
+        success: 'text-green-600',
+        info: 'text-blue-600',
     }
     return classes[props.type] || classes.delete
 })
@@ -149,6 +155,8 @@ const confirmButtonClass = computed(() => {
         delete: 'bg-red-600 text-white hover:bg-red-700',
         archive: 'bg-gray-600 text-white hover:bg-gray-700',
         warning: 'bg-yellow-600 text-white hover:bg-yellow-700',
+        success: 'bg-green-600 text-white hover:bg-green-700',
+        info: 'bg-blue-600 text-white hover:bg-blue-700',
     }
     return classes[props.type] || classes.delete
 })
@@ -158,8 +166,9 @@ const defaultMessageClass = computed(() => {
         delete: 'text-red-600 bg-red-50',
         archive: 'text-amber-600 bg-amber-50',
         warning: 'text-yellow-600 bg-yellow-50',
+        success: 'text-green-600 bg-green-50',
+        info: 'text-blue-600 bg-blue-50',
     }
     return classes[props.type] || classes.delete
 })
 </script>
-

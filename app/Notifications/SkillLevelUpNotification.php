@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class SkillLevelUpNotification extends Notification implements ShouldQueue
+class SkillLevelUpNotification extends Notification
 {
     use Queueable;
 
@@ -20,22 +18,11 @@ class SkillLevelUpNotification extends Notification implements ShouldQueue
 
     /**
      * Get the notification's delivery channels.
+     * Only database — in-app notifications (no email spam for skill levels).
      */
     public function via($notifiable): array
     {
-        return ['database', 'mail'];
-    }
-
-    /**
-     * Get the mail representation of the notification.
-     */
-    public function toMail($notifiable): MailMessage
-    {
-        return (new MailMessage)
-            ->subject('Повышение уровня навыка!')
-            ->line("Ваш навык {$this->skillName} достиг уровня {$this->newLevel}!")
-            ->action('Посмотреть навыки', url('/student/skills'))
-            ->line('Продолжайте развиваться!');
+        return ['database'];
     }
 
     /**

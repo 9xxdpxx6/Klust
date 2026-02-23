@@ -13,6 +13,18 @@
         @complete-simulator="handleCompleteSimulator"
       />
 
+      <!-- Оверлей завершения -->
+      <Transition name="preloader-fade">
+        <div v-if="isCompleting" class="scene-preloader completing-overlay">
+          <div class="preloader-content">
+            <div class="preloader-spinner">
+              <i class="pi pi-spin pi-check-circle preloader-icon" style="color: #10b981;"></i>
+            </div>
+            <p class="preloader-text">Сохранение результата...</p>
+          </div>
+        </div>
+      </Transition>
+
       <!-- Прелоадер сцены -->
       <Transition name="preloader-fade">
         <div v-if="!sceneReady" class="scene-preloader">
@@ -90,7 +102,7 @@
 
 <script setup>
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue';
-import { Head, useForm, router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { route } from 'ziggy-js';
 import OfficeScene from '@/Components/Simulators/BankSimulator/OfficeScene.vue';
 import { useSimulatorState } from '@/Composables/Simulators/BankSimulator/useSimulatorState';
@@ -114,29 +126,23 @@ const sceneContainerRef = ref(null);
 const timeSpent = ref(0);
 let timerInterval = null;
 
-// ── Completion form ──
+// ── Completion ──
 const isCompleting = ref(false);
 
 /**
  * Handle simulator completion emitted from OfficeScene.
- * All 4 variants are completed → aggregate score → POST to backend → redirect.
+ * Uses router.post (Inertia) — lighter than useForm, handles redirect natively.
  */
 const handleCompleteSimulator = (payload) => {
   if (isCompleting.value) return;
   isCompleting.value = true;
 
-  const completeForm = useForm({
+  router.post(route('student.simulators.complete', props.session.id), {
     score: payload.score,
     time_spent: timeSpent.value || 1,
     answers: payload.variants_progress || {}
-  });
-
-  completeForm.post(route('student.simulators.complete', props.session.id), {
-    onSuccess: () => {
-      router.visit(route('student.simulators.index'));
-    },
-    onError: (errors) => {
-      console.error('Ошибка завершения сессии:', errors);
+  }, {
+    onError: () => {
       isCompleting.value = false;
     }
   });
@@ -303,6 +309,18 @@ onUnmounted(() => {
 .preloader-fade-leave-to {
   opacity: 0;
 }
+.preloader-fade-enter-active {
+  transition: opacity 0.3s ease;
+}
+.preloader-fade-enter-from {
+  opacity: 0;
+}
+
+.completing-overlay {
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(4px);
+  z-index: 200 !important;
+}
 
 /* ── UI оверлей ── */
 .ui-overlay {
@@ -324,32 +342,42 @@ onUnmounted(() => {
   position: absolute;
   top: 1rem;
   left: 1rem;
-  background: none;
-  border: none;
+  width: 2.5rem;
+  height: 2.5rem;
   padding: 0;
+  border-radius: 9999px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(255, 255, 255, 0.45);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   z-index: 20;
   line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.1);
 }
 
 .info-button:hover {
-  transform: scale(1.1);
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.62);
+  border-color: rgba(100, 116, 139, 0.4);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.14);
 }
 
 .info-button:active {
-  transform: scale(0.95);
+  transform: translateY(0);
 }
 
 .info-button i {
-  font-size: 1.75rem;
-  color: rgba(100, 116, 139, 0.55);
-  transition: color 0.2s;
-  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.6);
+  font-size: 1.35rem;
+  color: #475569;
+  transition: color 0.2s ease;
+  text-shadow: none;
 }
 
 .info-button:hover i {
-  color: rgba(71, 85, 105, 0.85);
+  color: #334155;
 }
 
 /* ── Панель информации ── */

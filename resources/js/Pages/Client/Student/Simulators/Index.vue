@@ -42,19 +42,20 @@ const formatDuration = (seconds) => {
     if (!seconds) return 'N/A'
     const hours = Math.floor(seconds / 3600)
     const minutes = Math.floor((seconds % 3600) / 60)
+    const displayMinutes = Math.max(1, minutes)
     if (hours > 0) {
-        return `${hours}ч ${minutes}м`
+        return `${hours}ч ${displayMinutes}м`
     }
-    return `${minutes}м`
+    return `${displayMinutes}м`
 }
 
-const getScoreColor = (score) => {
-    if (!score && score !== 0) return 'bg-gray-100 text-gray-800'
-    // Score is a raw value; thresholds apply to raw score percentage
-    if (score >= 90) return 'bg-green-100 text-green-800'
-    if (score >= 75) return 'bg-blue-100 text-blue-800'
-    if (score >= 50) return 'bg-yellow-100 text-yellow-800'
-    return 'bg-red-100 text-red-800'
+const getScoreBadgeClass = (score) => {
+    if (!score && score !== 0) return 'border-gray-300 text-gray-500'
+    // Same palette as simulator variants: 80/60/40
+    if (score >= 80) return 'border-emerald-500 text-emerald-700'
+    if (score >= 60) return 'border-blue-500 text-blue-700'
+    if (score >= 40) return 'border-amber-500 text-amber-700'
+    return 'border-red-500 text-red-700'
 }
 
 const formatScore = (score) => {
@@ -184,13 +185,13 @@ const sessionColumns = [
                                         </div>
                                     </td>
                                     <td class="px-3 sm:px-6 py-3 sm:py-4">
-                                        <Badge
+                                        <span
                                             v-if="session.score !== null"
-                                            :class="getScoreColor(session.score)"
-                                            class="text-xs"
+                                            :class="getScoreBadgeClass(session.score)"
+                                            class="inline-flex items-center rounded-full border bg-transparent px-2.5 py-0.5 text-xs font-semibold"
                                         >
                                             {{ formatScore(session.score) }}%
-                                        </Badge>
+                                        </span>
                                         <span v-else class="text-xs sm:text-sm text-gray-400">N/A</span>
                                     </td>
                                     <td class="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-500">

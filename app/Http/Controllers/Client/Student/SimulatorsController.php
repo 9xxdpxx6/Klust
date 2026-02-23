@@ -19,6 +19,7 @@ use App\Services\Simulators\BankSimulator\DialogueService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -126,17 +127,35 @@ class SimulatorsController extends Controller
     }
 
     /**
-     * Завершение и сохранение результатов
+     * Завершение и сохранение результатов.
+     *
+     * Сначала завершаем сессию (быстрая DB-операция), затем логируем прогресс.
+     * Нотификации (email) отправляются ПОСЛЕ ответа, чтобы не блокировать запрос.
      */
     public function complete(CompleteRequest $request, SimulatorSession $session): RedirectResponse
     {
         $this->authorize('update', $session);
 
-        // Завершить сессию и начислить очки
+        // Если сессия уже завершена — просто редиректим
+        if ($session->completed_at !== null) {
+            return redirect()
+                ->route('student.simulators.index')
+                ->with('success', 'Симулятор уже завершён.');
+        }
+
+        // Завершить сессию (быстрая DB-операция)
         $this->simulatorService->completeSession($session, $request->validated());
 
-        // Обновить прогресс студента
-        $this->progressLogService->logSimulatorCompletion($session);
+        // Обновить прогресс студента (DB-операции в транзакции, нотификации — после ответа)
+        try {
+            $this->progressLogService->logSimulatorCompletion($session);
+        } catch (\Throwable $e) {
+            Log::error('Failed to log simulator completion', [
+                'session_id' => $session->id,
+                'error' => $e->getMessage(),
+            ]);
+            // Сессия уже завершена — не блокируем пользователя из-за ошибки в логировании
+        }
 
         return redirect()
             ->route('student.simulators.index')

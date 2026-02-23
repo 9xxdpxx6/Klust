@@ -20,11 +20,18 @@ class ProgressLogService
     ) {}
 
     /**
-     * Log simulator completion and award points
+     * Log simulator completion and award points.
+     *
+     * DB operations (points, badges) run inside a transaction.
+     * Email notifications are deferred to AFTER the HTTP response
+     * so they never block the request or cause timeouts.
      */
     public function logSimulatorCompletion(SimulatorSession $session): void
     {
-        DB::transaction(function () use ($session) {
+        $newBadges = [];
+        $user = null;
+
+        DB::transaction(function () use ($session, &$newBadges, &$user) {
             $user = $session->user;
             $simulator = $session->simulator;
 
@@ -39,25 +46,39 @@ class ProgressLogService
             // Calculate points based on normalized score (0-100)
             $pointsEarned = $this->calculatePointsFromScore($normalizedScore);
 
-            // Check if simulator is linked to a case with required skills
-            $case = $simulator->cases()->first();
+            // Collect skills from all sources:
+            // 1) Skills linked directly to the simulator (simulator_skills pivot)
+            // 2) Skills from cases linked to this simulator (case_skills pivot)
+            $skills = collect();
 
+            // Direct simulator → skills
+            if ($simulator->skills->isNotEmpty()) {
+                $skills = $skills->merge($simulator->skills);
+            }
+
+            // Case → skills (fallback / additional)
+            $case = $simulator->cases()->first();
             if ($case && $case->skills->isNotEmpty()) {
-                // Award points to case-related skills without updating total_points yet
-                foreach ($case->skills as $skill) {
-                    $this->awardSkillPoints(
-                        $user,
-                        $skill,
-                        $pointsEarned,
-                        'simulator_completion',
-                        [
-                            'simulator_id' => $simulator->id,
-                            'session_id' => $session->id,
-                            'score' => $session->score,
-                        ],
-                        false // Don't update total_points per skill
-                    );
-                }
+                $skills = $skills->merge($case->skills);
+            }
+
+            // Deduplicate by skill ID
+            $skills = $skills->unique('id');
+
+            // Award points to each skill
+            foreach ($skills as $skill) {
+                $this->awardSkillPoints(
+                    $user,
+                    $skill,
+                    $pointsEarned,
+                    'simulator_completion',
+                    [
+                        'simulator_id' => $simulator->id,
+                        'session_id' => $session->id,
+                        'score' => $session->score,
+                    ],
+                    false // Don't update total_points per skill
+                );
             }
 
             // Update student total points once
@@ -66,13 +87,22 @@ class ProgressLogService
                 $studentProfile->increment('total_points', $pointsEarned);
             }
 
-            // Check for new badges once
-            $this->checkAndAwardBadges($user);
+            // Save points_earned on the session itself (for display in history)
+            $session->update(['points_earned' => $pointsEarned]);
+
+            // Check and award badges (DB operation)
+            $newBadges = $this->badgeService->checkBadgeEligibility($user);
+
+            // Send in-app (database) notifications for new badges
+            foreach ($newBadges as $badgeData) {
+                $this->notificationService->notifyBadgeEarned($user, $badgeData['badge']);
+            }
         });
     }
 
     /**
-     * Award skill points to user
+     * Award skill points to user.
+     * DB operations run in a transaction; notifications are deferred.
      */
     public function awardSkillPoints(
         User $user,
@@ -82,7 +112,11 @@ class ProgressLogService
         array $metadata = [],
         bool $updateTotalPoints = true
     ): void {
-        DB::transaction(function () use ($user, $skill, $points, $source, $metadata, $updateTotalPoints) {
+        $leveledUp = false;
+        $newLevel = 0;
+        $newBadges = [];
+
+        DB::transaction(function () use ($user, $skill, $points, $source, $metadata, $updateTotalPoints, &$leveledUp, &$newLevel, &$newBadges) {
             // Get or create user skill
             $userSkill = UserSkill::firstOrCreate(
                 [
@@ -116,9 +150,9 @@ class ProgressLogService
                 'points_earned' => $points,
             ]);
 
-            // Notify if level up
+            // Track if level up occurred (notification sent later)
             if ($newLevel > $oldLevel) {
-                $this->notificationService->notifySkillLevelUp($user, $skill->name, $newLevel);
+                $leveledUp = true;
             }
 
             // Update student total points only if requested
@@ -128,10 +162,21 @@ class ProgressLogService
                     $studentProfile->increment('total_points', $points);
                 }
 
-                // Check for new badges
-                $this->checkAndAwardBadges($user);
+                // Check for new badges (DB only)
+                $newBadges = $this->badgeService->checkBadgeEligibility($user);
             }
         });
+
+        // Send in-app (database) notifications — instant, no SMTP
+        if ($leveledUp) {
+            $this->notificationService->notifySkillLevelUp($user, $skill->name, $newLevel);
+        }
+
+        if ($updateTotalPoints && !empty($newBadges)) {
+            foreach ($newBadges as $badgeData) {
+                $this->notificationService->notifyBadgeEarned($user, $badgeData['badge']);
+            }
+        }
     }
 
     /**
@@ -212,23 +257,14 @@ class ProgressLogService
     }
 
     /**
-     * Check and award new badges
+     * Check and award new badges (DB only, no notifications).
+     * Notifications are handled by deferBadgeNotifications().
+     *
+     * @return array Newly awarded badges for notification purposes
      */
-    private function checkAndAwardBadges(User $user): void
+    private function checkAndAwardBadges(User $user): array
     {
-        $newBadges = $this->badgeService->checkBadgeEligibility($user);
-
-        foreach ($newBadges as $badgeData) {
-            $badge = $badgeData['badge'];
-            $level = $badgeData['level'];
-            $isUpgrade = $badgeData['is_upgrade'] ?? false;
-            
-            $message = $isUpgrade 
-                ? "Получено достижение \"{$badge->name}\" уровня {$level}!" 
-                : "Поздравляем! Вы получили достижение \"{$badge->name}\"";
-            
-            $this->notificationService->notifyBadgeEarned($user, $badge);
-        }
+        return $this->badgeService->checkBadgeEligibility($user);
     }
 
     /**
