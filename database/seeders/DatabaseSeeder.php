@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             CertificateSeeder::class,    // 7.2 Сертификаты
             PartnerSeeder::class,        // 8. Партнёры (15)
             SimulatorSeeder::class,      // 9. Симуляторы (5, 1 активный)
+            SimulatorSkillSeeder::class, // 9.1 Навыки симуляторов (pivot)
             SimulatorSessionSeeder::class, // 10. Сессии симуляторов (200)
             CaseSeeder::class,           // 11. Кейсы (30)
             CaseSkillSeeder::class,      // 12. Навыки кейсов (pivot)

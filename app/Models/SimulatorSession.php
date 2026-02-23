@@ -16,6 +16,8 @@ class SimulatorSession extends Model
         'state',
         'score',
         'time_spent',
+        'points_earned',
+        'answers',
         'is_completed',
         'started_at',
         'completed_at',
@@ -23,6 +25,8 @@ class SimulatorSession extends Model
 
     protected $casts = [
         'state' => 'array',
+        'answers' => 'array',
+        'points_earned' => 'integer',
         'is_completed' => 'boolean',
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
