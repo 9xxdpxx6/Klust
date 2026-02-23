@@ -89,13 +89,25 @@
   <!-- Модалка подтверждения перезапуска -->
   <DangerConfirmDialog
     v-model:visible="showRestartConfirm"
-    type="warning"
+    type="info"
     title="Начать заново?"
     message="Вы уверены, что хотите начать заново?"
     confirm-text="Начать заново"
     cancel-text="Отмена"
-    default-message="Весь прогресс будет сброшен."
+    default-message="Можно пройти сценарий еще раз или выбрать другой режим симулятора."
     @confirm="handleRestartConfirm"
+  />
+
+  <!-- Модалка подтверждения завершения симулятора -->
+  <DangerConfirmDialog
+    v-model:visible="showCompleteConfirm"
+    :type="completeConfirmData.allCompleted ? 'success' : 'warning'"
+    :title="completeConfirmData.allCompleted ? 'Завершить симулятор?' : 'Завершить досрочно?'"
+    :message="completeConfirmData.message"
+    :confirm-text="completeConfirmData.allCompleted ? 'Завершить' : 'Завершить досрочно'"
+    cancel-text="Продолжить"
+    :default-message="completeConfirmData.defaultMessage"
+    @confirm="handleCompleteConfirm"
   />
 </template>
 
@@ -201,34 +213,47 @@ const calculateFinalScore = () => {
   }
 }
 
+// ── Completion confirmation ──
+const showCompleteConfirm = ref(false)
+const completeConfirmData = ref({ allCompleted: false, score: 0, message: '', defaultMessage: '' })
+
 /**
  * Handle "Завершить сессию" from DialogueInterface or VariantSelector.
- * If all 4 variants completed → emit aggregated score to parent page.
- * Otherwise → close dialogue, show variant selector with remaining variants.
+ * Shows a confirmation dialog with score preview.
  */
 const handleCompleteSimulator = () => {
   const result = calculateFinalScore()
 
   if (result.allCompleted) {
-    // Save aggregated max_score=100 in state so ProgressLogService normalizes correctly
-    if (props.updateState) {
-      props.updateState({ max_score: 100 })
-    }
-    emit('completeSimulator', {
+    completeConfirmData.value = {
+      allCompleted: true,
       score: result.score,
-      variants_progress: sessionState.localSessionState.variants_progress
-    })
+      message: `Все ${result.total} сценария пройдены. Итоговая оценка: ${result.score}%`,
+      defaultMessage: `Результат будет сохранён, и вы вернётесь к списку симуляторов.`
+    }
   } else {
-    // Not all variants done — close current dialogue, show variant selector
-    dialogs.closeDialogueDialog()
-    if (dialogs.showPhoneDialog) dialogs.showPhoneDialog.value = false
-    if (dialogs.showCalculatorDialog) dialogs.showCalculatorDialog.value = false
-    if (dialogs.showDocumentsDialog) dialogs.showDocumentsDialog.value = false
-
-    // Open variant selector so student can pick the next one
-    pendingDoorPayload.value = lastDoorPayload.value || DEFAULT_DOOR_PAYLOAD
-    showVariantSelector.value = true
+    completeConfirmData.value = {
+      allCompleted: false,
+      score: result.score,
+      message: `Пройдено ${result.completedCount} из ${result.total} сценариев.${result.completedCount > 0 ? ` Промежуточная оценка: ${result.score}%` : ''}`,
+      defaultMessage: `Оставшиеся сценарии не будут учтены. Вы уверены, что хотите завершить?`
+    }
   }
+
+  showCompleteConfirm.value = true
+}
+
+/**
+ * Confirmed completion — emit to parent page (no extra updateState call).
+ * Score is already pre-normalized 0-100; backend defaults max_score to 100.
+ */
+const handleCompleteConfirm = () => {
+  showCompleteConfirm.value = false
+
+  emit('completeSimulator', {
+    score: completeConfirmData.value.score,
+    variants_progress: sessionState.localSessionState.variants_progress
+  })
 }
 
 // Restart confirmation dialog

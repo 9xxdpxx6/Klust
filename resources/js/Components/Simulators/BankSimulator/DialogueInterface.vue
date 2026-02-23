@@ -69,7 +69,7 @@
             @click="handleRestartSession" 
             class="completion-button restart-button"
           >
-            Пройти заново
+            Пройти ещё раз
           </button>
           <button 
             @click="handleCompleteSession" 
