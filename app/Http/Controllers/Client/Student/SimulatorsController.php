@@ -16,6 +16,7 @@ use App\Services\Simulators\BankSimulator\ScoringService;
 use App\Services\Simulators\BankSimulator\CreditCalculatorService;
 use App\Services\Simulators\BankSimulator\DepositCalculatorService;
 use App\Services\Simulators\BankSimulator\DialogueService;
+use App\Services\Simulators\BankSimulator\EvaluationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -32,7 +33,8 @@ class SimulatorsController extends Controller
         private ScoringService $scoringService,
         private CreditCalculatorService $creditCalculatorService,
         private DepositCalculatorService $depositCalculatorService,
-        private DialogueService $dialogueService
+        private DialogueService $dialogueService,
+        private EvaluationService $evaluationService
     ) {
         $this->middleware(['auth', 'role:student']);
     }
@@ -144,10 +146,29 @@ class SimulatorsController extends Controller
         }
 
         // Завершить сессию (быстрая DB-операция)
-        $this->simulatorService->completeSession($session, $request->validated());
+        $session = $this->simulatorService->completeSession($session, $request->validated());
+
+        // Run evaluation across all completed variants and store the result
+        try {
+            $sessionState = $session->state ?? [];
+            // Merge variants_progress from answers (frontend sends it there)
+            $sessionState['variants_progress'] = $session->answers ?? $sessionState['variants_progress'] ?? [];
+            $evaluation = $this->evaluationService->evaluateSession($sessionState);
+
+            // Store evaluation alongside the existing answers
+            $answers = is_array($session->answers) ? $session->answers : [];
+            $answers['evaluation'] = $evaluation;
+            $session->update(['answers' => $answers]);
+        } catch (\Throwable $e) {
+            Log::warning('Evaluation failed, continuing with raw score', [
+                'session_id' => $session->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         // Обновить прогресс студента (DB-операции в транзакции, нотификации — после ответа)
         try {
+            $session->refresh();
             $this->progressLogService->logSimulatorCompletion($session);
         } catch (\Throwable $e) {
             Log::error('Failed to log simulator completion', [
@@ -172,7 +193,7 @@ class SimulatorsController extends Controller
         $type = $request->input('type', 'random');
         $dialogueType = $request->input('dialogue_type', 'credit_card');
 
-        $clientData = $this->clientGeneratorService->generateClient($type);
+        $clientData = $this->clientGeneratorService->generateClient($type, $dialogueType);
 
         // Update session state with client data + dialogue metadata
         $state = $session->state ?? [];

@@ -804,6 +804,7 @@ export function useDialogueSystem({
       score: rawScore,
       max_score: maxScore,
       normalized_score: normalizedScore,
+      score_history: [...(localSessionState.score_history || [])],
       completed_at: new Date().toISOString()
     }
 
