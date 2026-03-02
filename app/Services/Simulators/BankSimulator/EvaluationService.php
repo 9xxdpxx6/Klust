@@ -7,15 +7,6 @@ namespace App\Services\Simulators\BankSimulator;
 class EvaluationService
 {
     /**
-     * Evaluation categories with weights (must sum to 1.0)
-     */
-    private const CATEGORY_WEIGHTS = [
-        'correctness' => 0.40,      // Корректность решения (сбор данных, скоринг)
-        'service_quality' => 0.30,   // Качество обслуживания (эмпатия, коммуникация)
-        'compliance' => 0.30,        // Соблюдение регламентов (БКИ, документы, процедуры)
-    ];
-
-    /**
      * Category labels for display
      */
     private const CATEGORY_LABELS = [
@@ -25,30 +16,46 @@ class EvaluationService
     ];
 
     /**
-     * Evaluate a completed simulator session
+     * Get evaluation category weights from config (single source of truth).
      *
-     * @param array<string, mixed> $sessionState Session state with score_history
-     * @param int $maxScore Maximum possible score for the dialogue
+     * @return array<string, float>
+     */
+    private function getCategoryWeights(): array
+    {
+        return config('simulators.bank_simulator.evaluation_weights', [
+            'correctness' => 0.40,
+            'service_quality' => 0.30,
+            'compliance' => 0.30,
+        ]);
+    }
+
+    /**
+     * Normalize a raw score to 0-100 using maxScore.
+     * Single source of truth — no other code should duplicate this logic.
+     */
+    public static function normalizeScore(int $rawScore, int $maxScore): int
+    {
+        if ($maxScore <= 0) {
+            return 0;
+        }
+
+        return min(100, (int) round(max(0, $rawScore) / $maxScore * 100));
+    }
+
+    /**
+     * Evaluate a single dialogue variant.
+     *
+     * @param array<string, mixed> $variantData  Variant state with score_history, score, max_score
      * @return array<string, mixed> Evaluation result with breakdown
      */
-    public function evaluate(array $sessionState, int $maxScore = 100): array
+    public function evaluate(array $variantData, int $maxScore = 100): array
     {
-        $scoreHistory = $sessionState['score_history'] ?? [];
-        $rawScore = (int) ($sessionState['score'] ?? 0);
+        $scoreHistory = $variantData['score_history'] ?? [];
+        $rawScore = (int) ($variantData['score'] ?? 0);
 
-        // Calculate per-category totals
         $categoryScores = $this->calculateCategoryScores($scoreHistory);
-
-        // Normalize total score to 0-100
-        $normalizedScore = $maxScore > 0
-            ? (int) round(max(0, $rawScore) / $maxScore * 100)
-            : 0;
-        $normalizedScore = min(100, $normalizedScore);
-
-        // Build category breakdown
+        $normalizedScore = self::normalizeScore($rawScore, $maxScore);
         $breakdown = $this->buildCategoryBreakdown($categoryScores, $maxScore);
-
-        // Calculate weighted score
         $weightedScore = $this->calculateWeightedScore($breakdown);
 
         return [
@@ -64,6 +71,70 @@ class EvaluationService
     }
 
     /**
+     * Evaluate the full session across all completed variants.
+     *
+     * Aggregates score_history from each variant in variants_progress,
+     * then computes a combined weighted score.
+     *
+     * @param array<string, mixed> $sessionState  Full session state
+     * @return array<string, mixed>  Combined evaluation
+     */
+    public function evaluateSession(array $sessionState): array
+    {
+        $variantsProgress = $sessionState['variants_progress'] ?? [];
+        $perVariant = [];
+        $aggregatedScoreHistory = [];
+        $totalRaw = 0;
+        $totalMax = 0;
+
+        foreach ($variantsProgress as $variant => $data) {
+            if (($data['status'] ?? '') !== 'completed') {
+                continue;
+            }
+
+            $raw = (int) ($data['score'] ?? 0);
+            $max = (int) ($data['max_score'] ?? 100);
+            $history = $data['score_history'] ?? [];
+
+            // Evaluate individual variant
+            $perVariant[$variant] = $this->evaluate($data, $max);
+
+            // Accumulate for aggregated analysis
+            $totalRaw += $raw;
+            $totalMax += $max;
+            $aggregatedScoreHistory = array_merge($aggregatedScoreHistory, $history);
+        }
+
+        // Overall category breakdown from aggregated score_history
+        $categoryScores = $this->calculateCategoryScores($aggregatedScoreHistory);
+        $overallBreakdown = $this->buildCategoryBreakdown($categoryScores, max(1, $totalMax));
+        $overallWeighted = $this->calculateWeightedScore($overallBreakdown);
+
+        // Overall normalized score (same logic as frontend: sum, avg if > 100)
+        $normalizedScores = array_map(
+            fn ($ev) => $ev['normalized_score'],
+            $perVariant
+        );
+        $sum = array_sum($normalizedScores);
+        $count = count($normalizedScores);
+        $finalScore = $count > 0
+            ? ($sum <= 100 ? (int) round($sum) : (int) round($sum / $count))
+            : 0;
+
+        return [
+            'final_score' => $finalScore,
+            'weighted_score' => $overallWeighted,
+            'grade' => $this->getGrade($overallWeighted),
+            'grade_label' => $this->getGradeLabel($overallWeighted),
+            'categories' => $overallBreakdown,
+            'feedback' => $this->generateFeedback($overallBreakdown, $overallWeighted),
+            'variants' => $perVariant,
+            'variants_completed' => count($perVariant),
+            'variants_total' => 4,
+        ];
+    }
+
+    /**
      * Calculate scores per category from score_history
      *
      * @param array<int, array<string, mixed>> $scoreHistory
@@ -71,11 +142,12 @@ class EvaluationService
      */
     private function calculateCategoryScores(array $scoreHistory): array
     {
+        $weights = $this->getCategoryWeights();
+
         $categories = [];
-        foreach (array_keys(self::CATEGORY_WEIGHTS) as $category) {
+        foreach (array_keys($weights) as $category) {
             $categories[$category] = ['earned' => 0, 'lost' => 0, 'total' => 0];
         }
-        // Fallback for actions without category
         $categories['uncategorized'] = ['earned' => 0, 'lost' => 0, 'total' => 0];
 
         foreach ($scoreHistory as $entry) {
@@ -97,8 +169,7 @@ class EvaluationService
         // Distribute uncategorized points proportionally
         $uncategorized = $categories['uncategorized'];
         if ($uncategorized['total'] !== 0) {
-            foreach (array_keys(self::CATEGORY_WEIGHTS) as $cat) {
-                $weight = self::CATEGORY_WEIGHTS[$cat];
+            foreach ($weights as $cat => $weight) {
                 $categories[$cat]['earned'] += (int) round($uncategorized['earned'] * $weight);
                 $categories[$cat]['lost'] += (int) round($uncategorized['lost'] * $weight);
                 $categories[$cat]['total'] += (int) round($uncategorized['total'] * $weight);
@@ -118,13 +189,13 @@ class EvaluationService
      */
     private function buildCategoryBreakdown(array $categoryScores, int $maxScore): array
     {
+        $weights = $this->getCategoryWeights();
         $breakdown = [];
 
-        foreach (self::CATEGORY_WEIGHTS as $category => $weight) {
+        foreach ($weights as $category => $weight) {
             $data = $categoryScores[$category] ?? ['earned' => 0, 'lost' => 0, 'total' => 0];
             $categoryMax = (int) round($maxScore * $weight);
 
-            // Percentage: how much of the category max was earned (net)
             $percentage = $categoryMax > 0
                 ? (int) round(max(0, $data['total']) / $categoryMax * 100)
                 : 0;
@@ -154,11 +225,12 @@ class EvaluationService
      */
     private function calculateWeightedScore(array $breakdown): int
     {
+        $weights = $this->getCategoryWeights();
         $weightedSum = 0.0;
         $totalWeight = 0.0;
 
         foreach ($breakdown as $category => $data) {
-            $weight = self::CATEGORY_WEIGHTS[$category] ?? 0;
+            $weight = $weights[$category] ?? 0;
             $weightedSum += $data['percentage'] * $weight;
             $totalWeight += $weight;
         }
@@ -234,8 +306,9 @@ class EvaluationService
      */
     public function getCategoryInfo(): array
     {
+        $weights = $this->getCategoryWeights();
         $info = [];
-        foreach (self::CATEGORY_WEIGHTS as $category => $weight) {
+        foreach ($weights as $category => $weight) {
             $info[$category] = [
                 'weight' => $weight,
                 'label' => self::CATEGORY_LABELS[$category] ?? $category,

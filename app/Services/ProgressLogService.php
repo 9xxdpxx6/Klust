@@ -35,16 +35,17 @@ class ProgressLogService
             $user = $session->user;
             $simulator = $session->simulator;
 
-            // Normalize raw dialogue score to 0-100 using max_score from session state
-            $rawScore = $session->score;
-            $maxScore = (int) ($session->state['max_score'] ?? 100);
-            $normalizedScore = $maxScore > 0
-                ? (int) round(max(0, $rawScore) / $maxScore * 100)
-                : 0;
-            $normalizedScore = min(100, $normalizedScore);
+            // $session->score is already a final normalized 0-100 score
+            // (aggregated from per-variant normalized_scores by the frontend).
+            // Do NOT re-normalize with max_score — that would be double normalization.
+            $finalScore = min(100, max(0, (int) $session->score));
 
-            // Calculate points based on normalized score (0-100)
-            $pointsEarned = $this->calculatePointsFromScore($normalizedScore);
+            // If evaluation was computed, prefer the weighted_score (accounts for categories)
+            $evaluation = $session->answers['evaluation'] ?? null;
+            $scoreForPoints = $evaluation['weighted_score'] ?? $finalScore;
+
+            // Calculate points based on score (0-100)
+            $pointsEarned = $this->calculatePointsFromScore($scoreForPoints);
 
             // Collect skills from all sources:
             // 1) Skills linked directly to the simulator (simulator_skills pivot)

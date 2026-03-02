@@ -9,16 +9,29 @@ use Illuminate\Support\Facades\Config;
 class ClientGeneratorService
 {
     /**
-     * Generate client data with random parameters based on template
+     * Generate client data with random parameters based on template.
      *
-     * @param string $type Client type ('random', 'student', 'entrepreneur')
+     * When $dialogueType is provided, the client type is determined by the
+     * dialogue_client_mapping config (each variant gets a thematically
+     * appropriate client). Falls back to random if no mapping exists.
+     *
+     * @param string $type Client type ('random', 'student', 'entrepreneur', etc.)
+     * @param string|null $dialogueType Dialogue variant (e.g. 'credit_card', 'mortgage')
      * @return array<string, mixed> Client data array
      */
-    public function generateClient(string $type = 'random'): array
+    public function generateClient(string $type = 'random', ?string $dialogueType = null): array
     {
         $templates = config('simulators.bank_simulator.client_templates', []);
 
-        // If random, select random type
+        // Resolve type from dialogue mapping when type is 'random' and dialogueType is given
+        if ($type === 'random' && $dialogueType !== null) {
+            $mapping = config('simulators.bank_simulator.dialogue_client_mapping', []);
+            if (isset($mapping[$dialogueType])) {
+                $type = $mapping[$dialogueType];
+            }
+        }
+
+        // If still random, pick random type
         if ($type === 'random') {
             $availableTypes = array_keys($templates);
             if (empty($availableTypes)) {

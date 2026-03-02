@@ -32,8 +32,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Client templates for random generation
+    | Dialogue type → client type mapping
     |--------------------------------------------------------------------------
+    | Ensures each simulator variant gets a thematically appropriate client
+    | with a distinct 3D model (where possible).
+    */
+    'dialogue_client_mapping' => [
+        'credit_card'   => 'student',       // Студент оформляет первую карту
+        'consumer_loan' => 'entrepreneur',  // Предприниматель берёт кредит
+        'mortgage'      => 'family',        // Семья берёт ипотеку
+        'deposit'       => 'pensioner',     // Пенсионер открывает вклад
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Client templates for generation
+    |--------------------------------------------------------------------------
+    | Each template has a unique 3D model_path where possible.
     */
     'client_templates' => [
         'student' => [
@@ -56,7 +71,7 @@ return [
         ],
         'family' => [
             'type' => 'family',
-            'model_path' => '/models/characters/female1.glb',
+            'model_path' => '/models/characters/male2.glb',
             'age_range' => [30, 45],
             'income_range' => [100000, 200000],
             'expenses_range' => [70000, 150000],
@@ -65,7 +80,7 @@ return [
         ],
         'pensioner' => [
             'type' => 'pensioner',
-            'model_path' => '/models/characters/male1.glb',
+            'model_path' => '/models/characters/female1.glb',
             'age_range' => [55, 70],
             'income_range' => [25000, 50000],
             'expenses_range' => [20000, 40000],
