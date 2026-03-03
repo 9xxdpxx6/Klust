@@ -109,51 +109,19 @@ class SkillService
     }
 
     /**
-     * Calculate progress to next level
+     * Calculate progress to next level using shared config thresholds.
      */
     private function calculateProgressToNextLevel(int $points, int $currentLevel, int $maxLevel): array
     {
-        // Level thresholds - более плавная прогрессия
-        // Используем полиномиальный рост вместо экспоненциального
-        $levelThresholds = [
-            1 => 0,
-            2 => 50,
-            3 => 120,
-            4 => 210,
-            5 => 320,
-            6 => 450,
-            7 => 600,
-            8 => 770,
-            9 => 960,
-            10 => 1170,
-        ];
+        // Use the same thresholds as ProgressLogService and StudentService
+        $levelThresholds = config('skills.level_thresholds');
 
-        // Calculate threshold for levels above 10 using polynomial formula
-        // Формула: base + (level - 10) * multiplier, где multiplier постепенно увеличивается
-        for ($level = 11; $level <= $maxLevel; $level++) {
+        // Extend thresholds for levels above the config max using exponential growth
+        $configMaxLevel = max(array_keys($levelThresholds));
+        $configMaxValue = $levelThresholds[$configMaxLevel];
+        for ($level = $configMaxLevel + 1; $level <= $maxLevel; $level++) {
             if (!isset($levelThresholds[$level])) {
-                // Более плавный рост: базовое значение + квадратичный рост
-                // Для уровней 11-20: базовое 1170 + (level - 10) * 200 + (level - 10)^2 * 10
-                // Для уровней 21+: более медленный рост
-                $levelDiff = $level - 10;
-                if ($level <= 20) {
-                    $levelThresholds[$level] = 1170 + ($levelDiff * 200) + ($levelDiff * $levelDiff * 10);
-                } elseif ($level <= 50) {
-                    // Для средних уровней: более медленный рост
-                    $base20 = $levelThresholds[20] ?? 1170 + (10 * 200) + (10 * 10 * 10);
-                    $levelDiff20 = $level - 20;
-                    $levelThresholds[$level] = $base20 + ($levelDiff20 * 500) + ($levelDiff20 * $levelDiff20 * 5);
-                } else {
-                    // Для высоких уровней: еще более медленный рост
-                    $base50 = $levelThresholds[50] ?? 0;
-                    if ($base50 === 0) {
-                        // Вычисляем базовое значение для уровня 50
-                        $base20 = 1170 + (10 * 200) + (10 * 10 * 10);
-                        $base50 = $base20 + (30 * 500) + (30 * 30 * 5);
-                    }
-                    $levelDiff50 = $level - 50;
-                    $levelThresholds[$level] = $base50 + ($levelDiff50 * 1000) + ($levelDiff50 * $levelDiff50 * 2);
-                }
+                $levelThresholds[$level] = (int) ($configMaxValue * pow(2, $level - $configMaxLevel));
             }
         }
 
@@ -178,9 +146,9 @@ class SkillService
         }
 
         // Get thresholds for current and next level
-        $currentLevelThreshold = $levelThresholds[$currentLevel] ?? ($levelThresholds[10] * pow(2, max(0, $currentLevel - 10)));
-        $nextLevelThreshold = $levelThresholds[$nextLevel] ?? ($levelThresholds[10] * pow(2, max(0, $nextLevel - 10)));
-        
+        $currentLevelThreshold = $levelThresholds[$currentLevel] ?? 0;
+        $nextLevelThreshold = $levelThresholds[$nextLevel] ?? ($currentLevelThreshold * 2);
+
         $pointsInCurrentLevel = $points - $currentLevelThreshold;
         $pointsNeededForNextLevel = $nextLevelThreshold - $currentLevelThreshold;
 

@@ -152,10 +152,10 @@
                         </Link>
                         <button
                             type="submit"
-                            :disabled="processing"
+                            :disabled="form.processing"
                             class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <span v-if="processing">Создание...</span>
+                            <span v-if="form.processing">Создание...</span>
                             <span v-else>Создать кейс</span>
                         </button>
                     </div>
@@ -166,7 +166,7 @@
 </template>
 
 <script setup>
-import {ref, computed} from 'vue'
+import {computed} from 'vue'
 import {useForm} from '@inertiajs/vue3'
 import {Head, Link} from '@inertiajs/vue3'
 import {route} from "ziggy-js";
@@ -181,8 +181,6 @@ const props = defineProps({
     statusOptions: Array,
     difficulties: Array,
 })
-
-const processing = ref(false)
 
 const form = useForm({
     title: '',
@@ -224,7 +222,7 @@ const teamSizeOptions = computed(() => [
 const simulatorOptions = computed(() => [
     { label: 'Без симулятора', value: '' },
     ...props.simulators.map(simulator => ({
-        label: simulator.name,
+        label: simulator.title,
         value: simulator.id
     }))
 ])
@@ -238,22 +236,12 @@ const difficultyOptions = computed(() => [
 ])
 
 const submitForm = () => {
-    processing.value = true
     form.transform((data) => ({
         ...data,
         deadline: data.deadline ? formatDateForServer(data.deadline) : null,
         difficulty_id: data.difficulty_id ? parseInt(data.difficulty_id) : null,
     })).post(route('admin.cases.store'), {
         preserveScroll: true,
-        onSuccess: () => {
-            processing.value = false
-        },
-        onError: () => {
-            processing.value = false
-        },
-        onFinish: () => {
-            processing.value = false
-        },
     })
 }
 </script>

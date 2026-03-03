@@ -76,23 +76,11 @@ class StudentService
     }
 
     /**
-     * Calculate level from points
+     * Calculate level from points using shared config thresholds.
      */
     private function calculateLevelFromPoints(int $points): int
     {
-        // Level thresholds
-        $thresholds = [
-            1 => 0,
-            2 => 100,
-            3 => 250,
-            4 => 500,
-            5 => 1000,
-            6 => 2000,
-            7 => 4000,
-            8 => 8000,
-            9 => 16000,
-            10 => 32000,
-        ];
+        $thresholds = config('skills.level_thresholds');
 
         $level = 1;
         foreach ($thresholds as $lvl => $threshold) {

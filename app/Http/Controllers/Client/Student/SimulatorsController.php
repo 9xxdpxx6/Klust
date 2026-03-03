@@ -146,7 +146,15 @@ class SimulatorsController extends Controller
         }
 
         // Завершить сессию (быстрая DB-операция)
+        $alreadyHadPoints = $session->points_earned !== null && $session->points_earned > 0;
         $session = $this->simulatorService->completeSession($session, $request->validated());
+
+        // If session was already completed by a concurrent request, skip evaluation & points
+        if ($alreadyHadPoints) {
+            return redirect()
+                ->route('student.simulators.index')
+                ->with('success', 'Симулятор уже завершён.');
+        }
 
         // Run evaluation across all completed variants and store the result
         try {

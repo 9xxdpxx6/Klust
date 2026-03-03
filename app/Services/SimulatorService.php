@@ -204,7 +204,7 @@ class SimulatorService
 
     /**
      * Complete simulator session.
-     * Returns the session (fresh from DB) or null if already completed.
+     * Returns the session (fresh from DB) or the existing session if already completed.
      */
     public function completeSession(SimulatorSession $session, array $data): SimulatorSession
     {
@@ -224,6 +224,7 @@ class SimulatorService
                 'score' => $data['score'] ?? 0,
                 'time_spent' => $data['time_spent'] ?? null,
                 'answers' => $data['answers'] ?? null,
+                'is_completed' => true,
                 'completed_at' => now(),
             ]);
 
