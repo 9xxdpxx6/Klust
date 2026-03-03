@@ -264,7 +264,7 @@ class CasesController extends Controller
     /**
      * Детали кейса
      */
-    public function show(CaseModel $case): Response
+    public function show(CaseModel $case): Response|RedirectResponse
     {
         $user = auth()->user();
 
@@ -275,12 +275,16 @@ class CasesController extends Controller
         if ($case->status !== 'active') {
             // Разрешаем просмотр только если у студента есть принятая заявка на этот кейс
             if (!$applicationStatus) {
-                abort(404);
+                return redirect()
+                    ->route('student.cases.index')
+                    ->with('error', 'Кейс больше недоступен для просмотра');
             }
 
             $acceptedStatusId = \App\Models\ApplicationStatus::getIdByName('accepted');
             if ($applicationStatus->status_id !== $acceptedStatusId) {
-                abort(404);
+                return redirect()
+                    ->route('student.cases.index')
+                    ->with('error', 'Кейс больше недоступен для просмотра');
             }
         }
 

@@ -42,6 +42,25 @@
                     </p>
                 </div>
 
+                <!-- Поле для комментария при одобрении (необязательное) -->
+                <div v-if="type === 'approve'" class="mb-4">
+                    <label for="approve-comment" class="block text-sm font-medium text-gray-700 mb-2">
+                        Комментарий <span class="text-gray-400 font-normal">(необязательно)</span>
+                    </label>
+                    <Textarea
+                        id="approve-comment"
+                        v-model="approveComment"
+                        :rows="3"
+                        placeholder="Добавьте комментарий для студента..."
+                        :disabled="loading"
+                        class="w-full"
+                    />
+                    <p v-if="approveComment.length > 1000" class="mt-1 text-sm text-red-600">Комментарий не должен превышать 1000 символов.</p>
+                    <p v-else class="mt-1 text-xs text-gray-500">
+                        Осталось символов: {{ Math.max(0, 1000 - approveComment.length) }}
+                    </p>
+                </div>
+
                 <!-- Кнопки -->
                 <div class="flex justify-center gap-3 mt-6">
                     <button
@@ -115,6 +134,7 @@ const props = defineProps({
 const emit = defineEmits(['update:visible', 'confirm'])
 
 const rejectionReason = ref('')
+const approveComment = ref('')
 const error = ref('')
 
 const remainingChars = computed(() => {
@@ -126,6 +146,9 @@ const canConfirm = computed(() => {
     if (props.type === 'reject') {
         const trimmed = rejectionReason.value.trim()
         return trimmed.length >= 10 && trimmed.length <= 1000
+    }
+    if (props.type === 'approve') {
+        return approveComment.value.length <= 1000
     }
     return true
 })
@@ -166,7 +189,12 @@ const handleConfirm = () => {
             rejection_reason: rejectionReason.value.trim()
         })
     } else {
-        emit('confirm')
+        const data = {}
+        const comment = approveComment.value.trim()
+        if (comment) {
+            data.comment = comment
+        }
+        emit('confirm', data)
     }
 }
 
@@ -175,6 +203,7 @@ const handleClose = () => {
     // Сброс формы при закрытии
     setTimeout(() => {
         rejectionReason.value = ''
+        approveComment.value = ''
         error.value = ''
     }, 300)
 }
@@ -198,6 +227,7 @@ watch(rejectionReason, () => {
 watch(() => props.visible, (newVal) => {
     if (newVal) {
         rejectionReason.value = ''
+        approveComment.value = ''
         error.value = ''
     }
 })
