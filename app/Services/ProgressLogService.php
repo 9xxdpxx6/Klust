@@ -32,17 +32,29 @@ class ProgressLogService
         $user = null;
 
         DB::transaction(function () use ($session, &$newBadges, &$user) {
-            $user = $session->user;
-            $simulator = $session->simulator;
+            // Lock session row to make completion logging idempotent under concurrent requests.
+            $lockedSession = SimulatorSession::query()
+                ->whereKey($session->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            // Points were already awarded by another request.
+            if ($lockedSession->points_earned !== null) {
+                return;
+            }
+
+            $user = $lockedSession->user;
+            $simulator = $lockedSession->simulator;
 
             // $session->score is already a final normalized 0-100 score
             // (aggregated from per-variant normalized_scores by the frontend).
             // Do NOT re-normalize with max_score — that would be double normalization.
-            $finalScore = min(100, max(0, (int) $session->score));
+            $finalScore = min(100, max(0, (int) $lockedSession->score));
 
-            // If evaluation was computed, prefer the weighted_score (accounts for categories)
-            $evaluation = $session->answers['evaluation'] ?? null;
-            $scoreForPoints = $evaluation['weighted_score'] ?? $finalScore;
+            // Use the raw normalized score for points calculation.
+            // The weighted_score from evaluation accounts for category weights and
+            // can differ significantly from the displayed score, leading to incorrect awards.
+            $scoreForPoints = $finalScore;
 
             // Calculate points based on score (0-100)
             $pointsEarned = $this->calculatePointsFromScore($scoreForPoints);
@@ -75,8 +87,8 @@ class ProgressLogService
                     'simulator_completion',
                     [
                         'simulator_id' => $simulator->id,
-                        'session_id' => $session->id,
-                        'score' => $session->score,
+                        'session_id' => $lockedSession->id,
+                        'score' => $lockedSession->score,
                     ],
                     false // Don't update total_points per skill
                 );
@@ -89,7 +101,7 @@ class ProgressLogService
             }
 
             // Save points_earned on the session itself (for display in history)
-            $session->update(['points_earned' => $pointsEarned]);
+            $lockedSession->update(['points_earned' => $pointsEarned]);
 
             // Check and award badges (DB operation)
             $newBadges = $this->badgeService->checkBadgeEligibility($user);
@@ -227,23 +239,11 @@ class ProgressLogService
     }
 
     /**
-     * Calculate level from points
+     * Calculate level from points using shared config thresholds.
      */
     private function calculateLevelFromPoints(int $points): int
     {
-        // Level thresholds
-        $thresholds = [
-            1 => 0,
-            2 => 100,
-            3 => 250,
-            4 => 500,
-            5 => 1000,
-            6 => 2000,
-            7 => 4000,
-            8 => 8000,
-            9 => 16000,
-            10 => 32000,
-        ];
+        $thresholds = config('skills.level_thresholds');
 
         $level = 1;
         foreach ($thresholds as $lvl => $threshold) {

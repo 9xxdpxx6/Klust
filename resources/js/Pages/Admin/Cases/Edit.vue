@@ -228,7 +228,7 @@ const teamSizeOptions = computed(() => [
 const simulatorOptions = computed(() => [
     { label: 'Без симулятора', value: null },
     ...props.simulators.map(simulator => ({
-        label: simulator.name,
+        label: simulator.title,
         value: simulator.id
     }))
 ])
