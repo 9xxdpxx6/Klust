@@ -22,6 +22,10 @@ class CaseApplication extends Model
         'submitted_at',
     ];
 
+    protected $appends = [
+        'team_size',
+    ];
+
     protected $casts = [
         'submitted_at' => 'datetime',
         'reviewed_at' => 'datetime',

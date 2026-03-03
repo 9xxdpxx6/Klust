@@ -505,6 +505,7 @@
                                     <p class="text-xs text-gray-500">{{ application.leader?.email }}</p>
                                     <p class="text-xs text-gray-500 mt-1">Размер команды: {{ application.team_size || 1 }}</p>
                                     <p class="text-xs text-gray-500 mt-1">Подана: {{ formatDate(application.created_at) }}</p>
+                                    <p v-if="application.reviewed_at" class="text-xs text-gray-500 mt-1">Рассмотрена: {{ formatDate(application.reviewed_at) }}</p>
                                 </div>
                             </div>
                             
@@ -1121,7 +1122,7 @@ const handleApplicationConfirm = (data) => {
     
     const payload = applicationModalType.value === 'reject'
         ? { rejection_reason: data.rejection_reason }
-        : {};
+        : (data?.comment ? { comment: data.comment } : {});
     
     router.post(
         route(routeName, { 

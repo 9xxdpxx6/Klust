@@ -161,6 +161,9 @@ const formatDate = (dateString) => {
                             <p v-if="applicationStatus.partner_comment" class="mt-2 text-sm text-gray-600">
                                 <strong>Комментарий:</strong> {{ applicationStatus.partner_comment }}
                             </p>
+                            <p v-if="applicationStatus.reviewed_at" class="mt-2 text-xs text-gray-400">
+                                Дата рассмотрения: {{ formatDate(applicationStatus.reviewed_at) }}
+                            </p>
                         </div>
                         <div class="flex flex-col sm:flex-row gap-2 sm:ml-4 w-full sm:w-auto">
                             <Button
