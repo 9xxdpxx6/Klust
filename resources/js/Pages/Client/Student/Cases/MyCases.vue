@@ -401,7 +401,7 @@ const viewTeam = (application) => {
                             <div class="mt-4 flex-grow flex flex-col justify-end">
                                 <div class="flex items-center gap-2 text-xs sm:text-sm text-gray-600 mb-2">
                                     <i class="pi pi-calendar"></i>
-                                    <span>Отклонено: {{ formatDate(application.updated_at) }}</span>
+                                    <span>Отклонено: {{ formatDate(application.reviewed_at || application.updated_at) }}</span>
                                 </div>
                                 <div class="border-t border-gray-200 pt-2">
                                     <Button

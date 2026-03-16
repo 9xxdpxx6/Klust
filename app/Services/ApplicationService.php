@@ -335,7 +335,7 @@ class ApplicationService
         };
 
         // Helper to get paginated applications for a status
-        $getPaginatedApplications = function (int $statusId, string $tabKey) use ($baseQuery, $request) {
+        $getPaginatedApplications = function (int $statusId, string $tabKey) use ($baseQuery, $request, $user) {
             $query = $baseQuery();
             $query->where('status_id', $statusId);
 
@@ -360,9 +360,17 @@ class ApplicationService
             $queryParams = $request->query();
             $queryParams[$pageKey] = null; // Will be set by paginator
             
-            return $query
+            $paginated = $query
                 ->paginate($pagination['per_page'], ['*'], $pageKey)
                 ->appends($queryParams);
+
+            // Add is_leader flag for each application
+            $paginated->getCollection()->transform(function ($application) use ($user) {
+                $application->setAttribute('is_leader', (int) $application->leader_id === (int) $user->id);
+                return $application;
+            });
+
+            return $paginated;
         };
 
         return [

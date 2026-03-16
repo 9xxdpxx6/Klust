@@ -119,9 +119,18 @@ class SkillService
         // Extend thresholds for levels above the config max using exponential growth
         $configMaxLevel = max(array_keys($levelThresholds));
         $configMaxValue = $levelThresholds[$configMaxLevel];
+        $prevThreshold = $configMaxValue;
         for ($level = $configMaxLevel + 1; $level <= $maxLevel; $level++) {
             if (!isset($levelThresholds[$level])) {
-                $levelThresholds[$level] = (int) ($configMaxValue * pow(2, $level - $configMaxLevel));
+                $nextThreshold = $prevThreshold * 2;
+                // Overflow protection: cap at a safe maximum when multiplication overflows
+                if ($nextThreshold <= $prevThreshold || $nextThreshold > PHP_INT_MAX / 2) {
+                    $nextThreshold = $prevThreshold + $configMaxValue;
+                }
+                $levelThresholds[$level] = $nextThreshold;
+                $prevThreshold = $nextThreshold;
+            } else {
+                $prevThreshold = $levelThresholds[$level];
             }
         }
 
