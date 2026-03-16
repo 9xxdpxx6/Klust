@@ -111,7 +111,13 @@ class CasesController extends Controller
             // Создаем запрос с жестким условием по user_id (partner_id)
             $casesQuery = CaseModel::query()
                 ->where('user_id', $partnerId)
-                ->with(['skills', 'simulator', 'difficulty']);
+                ->with(['skills', 'simulator', 'difficulty'])
+                ->withCount([
+                    'applications',
+                    'applications as teams_count' => function ($query) {
+                        $query->accepted();
+                    },
+                ]);
 
             // Студенты могут видеть только активные кейсы
             if ($user->hasRole('student')) {
@@ -500,58 +506,11 @@ class CasesController extends Controller
     }
 
     /**
-     * Управление заявками
+     * Управление заявками — редирект на страницу кейса (заявки отображаются на Show)
      */
-    public function applications(CaseModel $case, Request $request): Response
+    public function applications(CaseModel $case, Request $request): RedirectResponse
     {
-        try {
-            // Проверить права
-            $this->authorize('viewApplications', $case);
-
-            $filters = $request->only([
-                'search',
-                'status',
-                'case_id',
-                'submitted_from',
-                'submitted_to',
-                'sort_by',
-                'sort_order',
-                'per_page',
-            ]);
-
-            $applicationFilter = new CaseApplicationFilter($filters);
-
-            // Use direct query to CaseApplication with case_id filter
-            $applicationsQuery = \App\Models\CaseApplication::query()
-                ->where('case_id', $case->id)
-                ->with([
-                    'leader',
-                    'status',
-                    'teamMembers.user',
-                    'statusHistory.changedBy',
-                    'statusHistory.oldStatus',
-                    'statusHistory.newStatus',
-                ]);
-
-            $pagination = $applicationFilter->getPaginationParams();
-
-            $applications = $applicationFilter
-                ->apply($applicationsQuery)
-                ->paginate($pagination['per_page'])
-                ->withQueryString();
-
-            return Inertia::render('Client/Partner/Cases/Applications', [
-                'case' => $case,
-                'applications' => $applications,
-                'filters' => $filters,
-            ]);
-        } catch (\Exception $e) {
-            return Inertia::render('Client/Partner/Cases/Applications', [
-                'case' => $case,
-                'applications' => collect(),
-                'error' => 'Ошибка при загрузке заявок: '.$e->getMessage(),
-            ]);
-        }
+        return redirect()->route('partner.cases.show', $case);
     }
 
     /**

@@ -36,7 +36,7 @@ class ApplicationSubmittedNotification extends Notification implements ShouldQue
             ->line("На ваш кейс '{$this->application->case->title}' подана новая заявка.")
             ->line("Лидер команды: {$this->application->leader->name}")
             ->line("Количество участников: {$this->application->team_size}")
-            ->action('Просмотреть заявку', url("/partner/cases/{$this->application->case->id}/applications"))
+            ->action('Просмотреть заявку', url("/partner/cases/{$this->application->case->id}"))
             ->line('Спасибо за использование нашего сервиса!');
     }
 
@@ -49,7 +49,7 @@ class ApplicationSubmittedNotification extends Notification implements ShouldQue
             'title' => 'Новая заявка на кейс',
             'message' => "На ваш кейс '{$this->application->case->title}' подана новая заявка от {$this->application->leader->name}",
             'type' => 'new_application',
-            'link' => "/partner/cases/{$this->application->case->id}/applications",
+            'link' => "/partner/cases/{$this->application->case->id}",
             'icon' => 'pi-inbox',
             'action_text' => 'Просмотреть',
             'case_id' => $this->application->case->id,

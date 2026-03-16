@@ -39,7 +39,8 @@ class ProgressLogService
                 ->firstOrFail();
 
             // Points were already awarded by another request.
-            if ($lockedSession->points_earned !== null) {
+            // DB default is 0, so we check > 0 to distinguish from "not yet awarded".
+            if ($lockedSession->points_earned > 0) {
                 return;
             }
 
@@ -240,6 +241,7 @@ class ProgressLogService
 
     /**
      * Calculate level from points using shared config thresholds.
+     * Extends beyond config max using exponential growth (same formula as SkillService).
      */
     private function calculateLevelFromPoints(int $points): int
     {
@@ -251,6 +253,26 @@ class ProgressLogService
                 $level = $lvl;
             } else {
                 break;
+            }
+        }
+
+        // Extend beyond config max if points exceed the highest configured threshold
+        $configMaxLevel = max(array_keys($thresholds));
+        $configMaxValue = $thresholds[$configMaxLevel];
+
+        if ($level === $configMaxLevel && $points >= $configMaxValue) {
+            $nextThreshold = $configMaxValue;
+            while (true) {
+                $next = $nextThreshold * 2;
+                // Overflow protection: stop if multiplication overflows or exceeds safe bounds
+                if ($next <= $nextThreshold || $next > PHP_INT_MAX / 2) {
+                    break;
+                }
+                if ($points < $next) {
+                    break;
+                }
+                $level++;
+                $nextThreshold = $next;
             }
         }
 

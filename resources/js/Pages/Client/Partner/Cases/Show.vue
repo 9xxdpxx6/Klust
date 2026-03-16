@@ -503,7 +503,7 @@
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm font-semibold text-gray-900">{{ application.leader?.name }}</p>
                                     <p class="text-xs text-gray-500">{{ application.leader?.email }}</p>
-                                    <p class="text-xs text-gray-500 mt-1">Размер команды: {{ application.team_size || 1 }}</p>
+                                    <p class="text-xs text-gray-500 mt-1">Размер команды: {{ application.team_size ?? 1 }}</p>
                                     <p class="text-xs text-gray-500 mt-1">Подана: {{ formatDate(application.created_at) }}</p>
                                     <p v-if="application.reviewed_at" class="text-xs text-gray-500 mt-1">Рассмотрена: {{ formatDate(application.reviewed_at) }}</p>
                                 </div>
@@ -572,6 +572,26 @@
                             </div>
                         </div>
                         
+                        <!-- Состав команды -->
+                        <div v-if="application.team_members && application.team_members.length > 0" class="pt-4 border-t border-gray-200">
+                            <p class="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">Состав команды:</p>
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2 text-sm text-gray-900">
+                                    <i class="pi pi-star text-amber-500 text-xs"></i>
+                                    <span class="font-semibold">{{ application.leader?.name }}</span>
+                                    <span class="text-xs text-gray-400">(лидер)</span>
+                                </div>
+                                <div
+                                    v-for="member in application.team_members"
+                                    :key="member.id"
+                                    class="flex items-center gap-2 text-sm text-gray-700"
+                                >
+                                    <i class="pi pi-user text-gray-400 text-xs"></i>
+                                    <span>{{ member.user?.name }}</span>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Соответствие навыкам кейса -->
                         <div v-if="caseData.skills && caseData.skills.length > 0" class="pt-4 border-t border-gray-200">
                             <div class="flex items-center justify-between mb-3">

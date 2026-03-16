@@ -167,7 +167,7 @@ class CaseSeeder extends Seeder
                     'simulator_id' => $simulatorId,
                     'deadline' => $deadline,
                     'difficulty_id' => $difficultyIds->random(),
-                    'required_team_size' => fake()->numberBetween(2, 6),
+                    'required_team_size' => $this->generateRequiredTeamSize(),
                     'status' => $status,
                     'created_at' => $createdAt,
                     'updated_at' => $status === 'draft' ? $createdAt : fake()->dateTimeBetween($createdAt, 'now'),
@@ -211,7 +211,7 @@ class CaseSeeder extends Seeder
                 'simulator_id' => $simulatorId,
                 'deadline' => $deadline,
                 'difficulty_id' => $difficultyIds->random(),
-                'required_team_size' => fake()->numberBetween(2, 6),
+                'required_team_size' => $this->generateRequiredTeamSize(),
                 'status' => $status,
                 'created_at' => $createdAt,
                 'updated_at' => $status === 'draft' ? $createdAt : fake()->dateTimeBetween($createdAt, 'now'),
@@ -249,12 +249,17 @@ class CaseSeeder extends Seeder
                     'simulator_id' => $simulatorId,
                     'deadline' => $deadline,
                     'difficulty_id' => $difficultyIds->random(),
-                    'required_team_size' => fake()->numberBetween(2, 6),
+                    'required_team_size' => $this->generateRequiredTeamSize(),
                     'status' => $status,
                     'created_at' => $createdAt,
                     'updated_at' => $status === 'draft' ? $createdAt : fake()->dateTimeBetween($createdAt, 'now'),
                 ]);
             }
         }
+    }
+
+    private function generateRequiredTeamSize(): int
+    {
+        return fake()->randomElement([1, 1, 2, 2, 3, 3, 4, 5]);
     }
 }

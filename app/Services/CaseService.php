@@ -175,7 +175,13 @@ class CaseService
         $caseFilter = new CaseFilter($filters);
 
         $query = CaseModel::query()
-            ->with(['partnerUser.partnerProfile', 'skills', 'difficulty']);
+            ->with(['partnerUser.partnerProfile', 'skills', 'difficulty'])
+            ->withCount([
+                'applications',
+                'applications as teams_count' => function ($query) {
+                    $query->accepted();
+                },
+            ]);
 
         $query = $caseFilter->apply($query);
 

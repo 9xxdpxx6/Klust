@@ -220,10 +220,13 @@ const handleMarkAsRead = async (notificationId) => {
   await fetchUnreadCount();
 };
 
-const handleNotificationClick = async (notification) => {
-  // Отметить как прочитанное
+const handleNotificationClick = (notification) => {
+  // Закрыть попапер перед переходом
+  closePopover();
+
+  // Отметить как прочитанное (не await, чтобы не блокировать навигацию)
   if (!notification.read_at) {
-    await handleMarkAsRead(notification.id);
+    handleMarkAsRead(notification.id);
   }
 
   // Переход по ссылке, если она есть

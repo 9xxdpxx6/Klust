@@ -8,152 +8,233 @@ use App\Models\CaseModel;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 class CaseApplicationSeeder extends Seeder
 {
     public function run(): void
     {
         $students = User::role('student')->get();
-        $cases = CaseModel::whereIn('status', ['active', 'completed'])->get();
 
-        if ($cases->isEmpty()) {
+        if ($students->isEmpty()) {
             return;
         }
 
-        $pendingId = ApplicationStatus::getIdByName('pending');
-        $acceptedId = ApplicationStatus::getIdByName('accepted');
-        $rejectedId = ApplicationStatus::getIdByName('rejected');
+        $openCases = CaseModel::query()
+            ->where('status', 'active')
+            ->whereDate('deadline', '>=', now()->toDateString())
+            ->get();
 
-        // 120 заявок на кейсы с разнообразными датами и статусами
-        for ($i = 0; $i < 120; $i++) {
-            $case = $cases->random();
-            $leader = $students->random();
-            
-            // Дата подачи заявки (от 5 месяцев назад до сейчас)
-            $submittedAt = fake()->dateTimeBetween('-5 months', 'now');
-            
-            // Определяем статус с весами
-            $statusWeights = [
-                'pending' => 30,   // 30% ожидают рассмотрения
-                'accepted' => 45,   // 45% приняты
-                'rejected' => 25,   // 25% отклонены
-            ];
-            
-            $statusId = fake()->randomElement(array_merge(
-                array_fill(0, $statusWeights['pending'], $pendingId),
-                array_fill(0, $statusWeights['accepted'], $acceptedId),
-                array_fill(0, $statusWeights['rejected'], $rejectedId)
-            ));
+        $historicalCases = CaseModel::query()
+            ->whereIn('status', ['completed', 'archived'])
+            ->get();
 
-            // Если заявка не pending, то есть дата рассмотрения
-            $reviewedAt = null;
-            $partnerComment = null;
-            $rejectionReason = null;
-            
-            if ($statusId !== $pendingId) {
-                // Рассмотрена через 1-14 дней после подачи
-                $reviewedAt = fake()->dateTimeBetween($submittedAt, min(Carbon::parse($submittedAt)->addDays(14), Carbon::now()));
-                
-                if ($statusId === $acceptedId) {
-                    // Для принятых заявок - положительный комментарий
-                    $partnerComment = fake()->randomElement([
-                        'Отличная мотивация и команда!',
-                        'Хорошо проработанная заявка.',
-                        'Команда имеет необходимые навыки.',
-                        'Интересный подход к решению задачи.',
-                        'Рекомендую к принятию.',
-                    ]);
-                } else {
-                    // Для отклоненных - причина отклонения
-                    $rejectionReason = fake()->randomElement([
-                        'Недостаточно опыта у команды.',
-                        'Заявка не соответствует требованиям.',
-                        'Команда не подходит по составу.',
-                        'Уже выбрана другая команда.',
-                        'Кейс закрыт.',
-                    ]);
-                }
-            }
+        if ($openCases->isEmpty() && $historicalCases->isEmpty()) {
+            return;
+        }
 
-            $createdAt = $submittedAt;
-            $updatedAt = $reviewedAt ?? $submittedAt;
+        $statusIds = [
+            'pending' => ApplicationStatus::getIdByName('pending'),
+            'accepted' => ApplicationStatus::getIdByName('accepted'),
+            'rejected' => ApplicationStatus::getIdByName('rejected'),
+        ];
+
+        $usedLeadersByCase = [];
+
+        foreach ($openCases as $case) {
+            $created = $this->seedCaseApplications($case, $students, $statusIds, $usedLeadersByCase, false);
+            $usedLeadersByCase[$case->id] = $created;
+        }
+
+        foreach ($historicalCases as $case) {
+            $created = $this->seedCaseApplications($case, $students, $statusIds, $usedLeadersByCase, true);
+            $usedLeadersByCase[$case->id] = $created;
+        }
+
+        $this->seedExtraApplicationsForTestStudent($students, $openCases, $historicalCases, $statusIds, $usedLeadersByCase);
+    }
+
+    private function seedCaseApplications(
+        CaseModel $case,
+        Collection $students,
+        array $statusIds,
+        array $usedLeadersByCase,
+        bool $historical
+    ): array {
+        $existingLeaders = collect($usedLeadersByCase[$case->id] ?? []);
+        $availableStudents = $students->whereNotIn('id', $existingLeaders->all())->shuffle()->values();
+
+        if ($availableStudents->isEmpty()) {
+            return $existingLeaders->all();
+        }
+
+        $applicationsCount = min(
+            $availableStudents->count(),
+            fake()->numberBetween(2, $historical ? 4 : 5)
+        );
+
+        for ($i = 0; $i < $applicationsCount; $i++) {
+            $leader = $availableStudents[$i];
+            $timeline = $this->makeTimelineForCase($case, $historical);
+            $statusName = $this->pickStatusName($historical);
 
             CaseApplication::create([
                 'case_id' => $case->id,
                 'leader_id' => $leader->id,
-                'motivation' => fake()->paragraphs(2, true),
-                'status_id' => $statusId,
-                'rejection_reason' => $rejectionReason,
-                'partner_comment' => $partnerComment,
-                'reviewed_at' => $reviewedAt,
-                'submitted_at' => $submittedAt,
-                'created_at' => $createdAt,
-                'updated_at' => $updatedAt,
+                'motivation' => $this->makeMotivation($case),
+                'status_id' => $statusIds[$statusName],
+                'rejection_reason' => $statusName === 'rejected' ? $this->makeRejectionReason() : null,
+                'partner_comment' => $statusName === 'accepted' ? $this->makePartnerComment() : null,
+                'reviewed_at' => $statusName === 'pending' ? null : $timeline['reviewed_at'],
+                'submitted_at' => $timeline['submitted_at'],
+                'created_at' => $timeline['submitted_at'],
+                'updated_at' => $statusName === 'pending' ? $timeline['submitted_at'] : $timeline['reviewed_at'],
+            ]);
+
+            $existingLeaders->push($leader->id);
+        }
+
+        return $existingLeaders->unique()->values()->all();
+    }
+
+    private function seedExtraApplicationsForTestStudent(
+        Collection $students,
+        Collection $openCases,
+        Collection $historicalCases,
+        array $statusIds,
+        array $usedLeadersByCase
+    ): void {
+        $testStudent = User::where('email', 'zxc@zxc.zxc')->first();
+
+        if (! $testStudent) {
+            return;
+        }
+
+        $candidateCases = $openCases
+            ->merge($historicalCases)
+            ->filter(function (CaseModel $case) use ($usedLeadersByCase, $testStudent) {
+                return ! in_array($testStudent->id, $usedLeadersByCase[$case->id] ?? [], true);
+            })
+            ->shuffle()
+            ->take(12);
+
+        foreach ($candidateCases as $case) {
+            $historical = in_array($case->status, ['completed', 'archived'], true);
+            $timeline = $this->makeTimelineForCase($case, $historical);
+            $statusName = $historical ? fake()->randomElement(['accepted', 'accepted', 'rejected']) : fake()->randomElement(['pending', 'accepted', 'accepted', 'rejected']);
+
+            CaseApplication::create([
+                'case_id' => $case->id,
+                'leader_id' => $testStudent->id,
+                'motivation' => $this->makeMotivation($case),
+                'status_id' => $statusIds[$statusName],
+                'rejection_reason' => $statusName === 'rejected' ? $this->makeRejectionReason() : null,
+                'partner_comment' => $statusName === 'accepted' ? $this->makePartnerComment() : null,
+                'reviewed_at' => $statusName === 'pending' ? null : $timeline['reviewed_at'],
+                'submitted_at' => $timeline['submitted_at'],
+                'created_at' => $timeline['submitted_at'],
+                'updated_at' => $statusName === 'pending' ? $timeline['submitted_at'] : $timeline['reviewed_at'],
             ]);
         }
+    }
 
-        // Создаем много заявок для тестового студента
-        $testStudent = User::where('email', 'zxc@zxc.zxc')->first();
-        if ($testStudent && $cases->isNotEmpty()) {
-            // 25 заявок для тестового студента
-            for ($i = 0; $i < 25; $i++) {
-                $case = $cases->random();
-                $submittedAt = fake()->dateTimeBetween('-5 months', 'now');
-                
-                $statusWeights = [
-                    'pending' => 20,
-                    'accepted' => 50,
-                    'rejected' => 30,
-                ];
-                
-                $statusId = fake()->randomElement(array_merge(
-                    array_fill(0, $statusWeights['pending'], $pendingId),
-                    array_fill(0, $statusWeights['accepted'], $acceptedId),
-                    array_fill(0, $statusWeights['rejected'], $rejectedId)
-                ));
+    private function makeTimelineForCase(CaseModel $case, bool $historical): array
+    {
+        $createdAt = Carbon::parse($case->created_at)->startOfDay();
 
-                $reviewedAt = null;
-                $partnerComment = null;
-                $rejectionReason = null;
-                
-                if ($statusId !== $pendingId) {
-                    $reviewedAt = fake()->dateTimeBetween($submittedAt, min(Carbon::parse($submittedAt)->addDays(14), Carbon::now()));
-                    
-                    if ($statusId === $acceptedId) {
-                        $partnerComment = fake()->randomElement([
-                            'Отличная мотивация и команда!',
-                            'Хорошо проработанная заявка.',
-                            'Команда имеет необходимые навыки.',
-                            'Интересный подход к решению задачи.',
-                            'Рекомендую к принятию.',
-                        ]);
-                    } else {
-                        $rejectionReason = fake()->randomElement([
-                            'Недостаточно опыта у команды.',
-                            'Заявка не соответствует требованиям.',
-                            'Команда не подходит по составу.',
-                            'Уже выбрана другая команда.',
-                            'Кейс закрыт.',
-                        ]);
-                    }
-                }
+        if ($historical) {
+            $deadline = Carbon::parse($case->deadline)->endOfDay();
+            $submittedAt = $this->randomCarbonBetween(
+                $createdAt->copy()->addDay(),
+                $deadline->copy()->subDays(3)
+            );
+            $reviewedAt = $this->randomCarbonBetween(
+                $submittedAt->copy()->addHours(6),
+                $deadline->copy()->subDay()
+            );
 
-                $createdAt = $submittedAt;
-                $updatedAt = $reviewedAt ?? $submittedAt;
-
-                CaseApplication::create([
-                    'case_id' => $case->id,
-                    'leader_id' => $testStudent->id,
-                    'motivation' => fake()->paragraphs(2, true),
-                    'status_id' => $statusId,
-                    'rejection_reason' => $rejectionReason,
-                    'partner_comment' => $partnerComment,
-                    'reviewed_at' => $reviewedAt,
-                    'submitted_at' => $submittedAt,
-                    'created_at' => $createdAt,
-                    'updated_at' => $updatedAt,
-                ]);
-            }
+            return [
+                'submitted_at' => $submittedAt,
+                'reviewed_at' => $reviewedAt,
+            ];
         }
+
+        $deadline = Carbon::parse($case->deadline)->subDay()->endOfDay();
+        $submittedStart = $createdAt->copy();
+        $recentBoundary = now()->copy()->subMonths(2)->startOfDay();
+        if ($recentBoundary->greaterThan($submittedStart)) {
+            $submittedStart = $recentBoundary;
+        }
+
+        $submittedAt = $this->randomCarbonBetween(
+            $submittedStart,
+            $deadline->copy()->subDays(2)
+        );
+
+        $reviewBoundary = $deadline->copy();
+        $nowBoundary = now()->copy()->subHours(2);
+        if ($nowBoundary->lessThan($reviewBoundary)) {
+            $reviewBoundary = $nowBoundary;
+        }
+
+        $reviewedAt = $this->randomCarbonBetween(
+            $submittedAt->copy()->addHours(4),
+            $reviewBoundary
+        );
+
+        return [
+            'submitted_at' => $submittedAt,
+            'reviewed_at' => $reviewedAt,
+        ];
+    }
+
+    private function pickStatusName(bool $historical): string
+    {
+        if ($historical) {
+            return fake()->randomElement(['accepted', 'accepted', 'accepted', 'rejected']);
+        }
+
+        return fake()->randomElement(['pending', 'pending', 'accepted', 'accepted', 'rejected']);
+    }
+
+    private function makeMotivation(CaseModel $case): string
+    {
+        $templates = [
+            'We want to work on this case because it matches our coursework and gives us a realistic business problem to solve.',
+            'Our team can cover analysis, presentation, and execution, so this case is a good fit for us.',
+            'This case looks practical and measurable, which makes it useful for testing both teamwork and decision making.',
+            'We are applying because the topic is relevant to our specialization and the expected outcome is concrete.',
+        ];
+
+        return fake()->randomElement($templates) . ' ' . $case->title . '.';
+    }
+
+    private function makePartnerComment(): string
+    {
+        return fake()->randomElement([
+            'Strong motivation and balanced team composition.',
+            'The application looks solid and relevant to the case.',
+            'Good fit for the scope and expected workload.',
+            'Accepted because the team has a clear plan and relevant skills.',
+        ]);
+    }
+
+    private function makeRejectionReason(): string
+    {
+        return fake()->randomElement([
+            'Another team matched the case requirements more closely.',
+            'The application is valid, but the team composition is weaker than competing submissions.',
+            'The motivation is too generic for this case.',
+            'The team profile does not align well with the expected workload.',
+        ]);
+    }
+
+    private function randomCarbonBetween(Carbon $start, Carbon $end): Carbon
+    {
+        if ($start->greaterThan($end)) {
+            return $end->copy();
+        }
+
+        return Carbon::instance(fake()->dateTimeBetween($start, $end));
     }
 }
