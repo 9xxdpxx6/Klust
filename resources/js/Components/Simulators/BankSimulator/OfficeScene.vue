@@ -10,6 +10,22 @@
     :use-legacy-lights="false"
     :shadow-map-type="lighting.shadowMapType"
   >
+    <Suspense>
+      <Environment
+        :files="ENVIRONMENT_HDR_FILE"
+        :background="false"
+        :environment-intensity="ENVIRONMENT_LIGHT_INTENSITY"
+        :environment-rotation="ENVIRONMENT_LIGHT_ROTATION"
+        :sync-materials="true"
+      />
+    </Suspense>
+
+    <SceneBackdrop
+      :texture-path="ENVIRONMENT_BACKDROP_FILE"
+      :rotation="ENVIRONMENT_BACKGROUND_ROTATION"
+      :intensity="ENVIRONMENT_BACKGROUND_INTENSITY"
+    />
+
     <OfficeSceneSetup :dev-mode="devMode" :directionalLightRef="lighting.directionalLightRef">
       <!-- Мебель и объекты сцены -->
       <OfficeFurniture
@@ -114,6 +130,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { TresCanvas } from '@tresjs/core'
+import { Environment } from '@tresjs/cientos'
 import { useSceneLighting } from '@/Composables/Simulators/BankSimulator/useSceneLighting.js'
 import { useDialogManager } from '@/Composables/Simulators/BankSimulator/useDialogManager.js'
 import { useClientCharacter } from '@/Composables/Simulators/BankSimulator/useClientCharacter.js'
@@ -127,9 +144,17 @@ import DepositCalculatorDialog from './DepositCalculatorDialog.vue'
 import Dialog3D from './Dialog3D.vue'
 import CSS3DRendererPlugin from './CSS3DRendererPlugin.vue'
 import DangerConfirmDialog from '@/Components/UI/DangerConfirmDialog.vue'
+import SceneBackdrop from './SceneBackdrop.vue'
 import VariantSelector from './VariantSelector.vue'
 
 const devMode = false // TODO: переключить на false для прода
+
+const ENVIRONMENT_HDR_FILE = '/hdr/modern_evening_street_1k.hdr'
+const ENVIRONMENT_BACKDROP_FILE = '/hdr/modern_evening_street_tonemapped.jpg'
+const ENVIRONMENT_BACKGROUND_ROTATION = [0, Math.PI * 0.65, 0]
+const ENVIRONMENT_LIGHT_ROTATION = [0, Math.PI * 0.65, 0]
+const ENVIRONMENT_BACKGROUND_INTENSITY = 1
+const ENVIRONMENT_LIGHT_INTENSITY = 1
 
 const props = defineProps({
   sessionState: {
