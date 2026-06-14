@@ -4,7 +4,7 @@ Thank you for your interest in contributing to **Klust**! This document explains
 
 ## Code of Conduct
 
-Be respectful and constructive. Assume good intent, keep discussions focused on the work, and help make this a welcoming community for contributors of all backgrounds.
+This project follows a [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold it: be respectful and constructive, assume good intent, keep discussions focused on the work, and help make this a welcoming community for contributors of all backgrounds.
 
 ## Getting Started
 
@@ -19,8 +19,11 @@ Be respectful and constructive. Assume good intent, keep discussions focused on 
 
 ```bash
 # 1. Fork the repository on GitHub, then clone your fork
-git clone https://github.com/<your-username>/klust.git
-cd klust
+git clone https://github.com/<your-username>/Klust.git
+cd Klust
+
+# (optional) point "upstream" at the canonical repository
+git remote add upstream https://github.com/9xxdpxx6/Klust.git
 
 # 2. Install dependencies
 composer install
@@ -56,7 +59,7 @@ Klust is a Laravel + Vue 3 + Inertia.js monolith. Please keep changes consistent
 - Validate input with **Form Request** classes (`app/Http/Requests/{Role}/{Resource}/{Action}Request.php`), never inline in controllers.
 - Wrap multi-table writes in `DB::transaction()`.
 - Prevent N+1 queries with eager loading (`with()`).
-- This is **not** a REST API — render pages with `Inertia::render(...)` and use `routes/web.php`. Do not add `routes/api.php`.
+- This is **not** a REST API — render pages with `Inertia::render(...)` and define routes in `routes/web.php`. (`routes/api.php` contains only Laravel's default stub and is unused; don't build features on it.)
 
 ### Vue / Frontend
 
@@ -105,7 +108,7 @@ Add tests for new behavior where practical — feature tests for user flows and 
 
 ## Security
 
-If you discover a security vulnerability, please **do not** open a public issue. Instead, report it privately to the maintainers so it can be addressed responsibly.
+If you discover a security vulnerability, please **do not** open a public issue. Follow the private disclosure process described in [SECURITY.md](SECURITY.md) so it can be addressed responsibly.
 
 ---
 

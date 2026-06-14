@@ -14,7 +14,7 @@ Klust already implements a substantial feature set:
 - Partner analytics with Excel exports
 - A rich demo dataset via database seeders
 
-Known gaps that shape the roadmap below: automated test coverage is minimal (only example tests exist), the UI and content are primarily in Russian, and there is no `.env.example` or CI pipeline yet.
+Known gaps that shape the roadmap below: automated test coverage is minimal (only the default example tests exist), the UI and content are primarily in Russian, and there is no CI pipeline yet.
 
 ---
 
@@ -22,10 +22,10 @@ Known gaps that shape the roadmap below: automated test coverage is minimal (onl
 
 Make the project easy for new contributors to clone, run, and trust.
 
-- [ ] Add a sanitized `.env.example` covering all required configuration keys
+- [x] Add a sanitized `.env.example` covering all required configuration keys
+- [x] Add a `CODE_OF_CONDUCT.md`, `SECURITY.md`, and issue/PR templates
 - [ ] Set up CI (GitHub Actions) to run `pint` and `php artisan test` on pull requests
-- [ ] Replace placeholder example tests with real **feature tests** for core flows (auth, case application, partner approval)
-- [ ] Add a `CODE_OF_CONDUCT.md` and issue/PR templates
+- [ ] Replace the default example tests with real **feature tests** for core flows (auth, case application, partner approval)
 - [ ] Document the seeded demo accounts and how to log in as each role
 
 ## Milestone 2 — Quality & Stability (near term)

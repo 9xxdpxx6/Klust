@@ -130,8 +130,8 @@ Authentication is handled by **Laravel Sanctum**, and authorization by **Spatie 
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/<your-org>/klust.git
-cd klust
+git clone https://github.com/9xxdpxx6/Klust.git
+cd Klust
 
 # 2. Install PHP dependencies
 composer install
@@ -264,7 +264,7 @@ database/
 └── factories/
 
 routes/
-└── web.php                   # All application routes (no api.php — this is not a REST API)
+└── web.php                   # All application routes (the app is Inertia-driven, not a REST API)
 
 docs/
 ├── simulator/                # Bank simulator design, formulas, and implementation roadmap
@@ -285,6 +285,8 @@ A few highlights:
 - Use Vue 3 **Composition API** with `<script setup>`.
 - Keep controllers thin — put business logic in **services**.
 - Run `./vendor/bin/pint` and `php artisan test` before opening a pull request.
+
+Please also review our [Code of Conduct](CODE_OF_CONDUCT.md). To report a security issue, follow the process in [SECURITY.md](SECURITY.md).
 
 ## License
 

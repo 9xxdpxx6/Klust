@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- See [ROADMAP.md](ROADMAP.md) for planned work.
+### Added
+
+- Community health files: `CODE_OF_CONDUCT.md` and `SECURITY.md`.
+- GitHub issue templates (bug report, feature request) and a pull request template under `.github/`.
+- A curated backlog of proposed issues under `docs/github-issues/`.
+
+See [ROADMAP.md](ROADMAP.md) for planned work.
 
 ## [0.1.0] - 2026-06-14
 
@@ -28,5 +34,5 @@ First public open-source release.
 - **Demo data seeders** populating students, partners, teachers, cases, applications, skills, badges, simulator sessions, and notifications.
 - Project documentation: README, ROADMAP, CONTRIBUTING, MIT LICENSE, and simulator/testing docs under `docs/`.
 
-[Unreleased]: https://github.com/<your-org>/klust/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/<your-org>/klust/releases/tag/v0.1.0
+[Unreleased]: https://github.com/9xxdpxx6/Klust/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/9xxdpxx6/Klust/releases/tag/v0.1.0
