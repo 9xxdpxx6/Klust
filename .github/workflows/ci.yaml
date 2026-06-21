@@ -71,6 +71,9 @@ jobs:
       - name: Run migrations
         run: php artisan migrate --force
 
+      - name: Seed database
+        run: php artisan db:seed --force
+
       - name: Pint check
         run: ./vendor/bin/pint --test
 
