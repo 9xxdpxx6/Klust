@@ -11,6 +11,7 @@ class ExampleTest extends TestCase
      * A basic test example.
      */
     use RefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();
