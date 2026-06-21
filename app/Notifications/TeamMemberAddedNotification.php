@@ -63,4 +63,3 @@ class TeamMemberAddedNotification extends Notification implements ShouldQueue
         ];
     }
 }
-

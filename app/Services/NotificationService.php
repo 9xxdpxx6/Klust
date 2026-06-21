@@ -31,7 +31,7 @@ class NotificationService
                 'leader:id,name,email',
                 'case:id,title,user_id,required_team_size',
                 'case.partnerUser:id,name',
-                'teamMembers:id,application_id'
+                'teamMembers:id,application_id',
             ]);
 
             $case = $application->case;

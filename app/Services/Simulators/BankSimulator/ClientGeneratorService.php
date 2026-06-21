@@ -15,8 +15,8 @@ class ClientGeneratorService
      * dialogue_client_mapping config (each variant gets a thematically
      * appropriate client). Falls back to random if no mapping exists.
      *
-     * @param string $type Client type ('random', 'student', 'entrepreneur', etc.)
-     * @param string|null $dialogueType Dialogue variant (e.g. 'credit_card', 'mortgage')
+     * @param  string  $type  Client type ('random', 'student', 'entrepreneur', etc.)
+     * @param  string|null  $dialogueType  Dialogue variant (e.g. 'credit_card', 'mortgage')
      * @return array<string, mixed> Client data array
      */
     public function generateClient(string $type = 'random', ?string $dialogueType = null): array
@@ -41,7 +41,7 @@ class ClientGeneratorService
         }
 
         // Get template
-        if (!isset($templates[$type])) {
+        if (! isset($templates[$type])) {
             throw new \InvalidArgumentException("Client type '{$type}' not found");
         }
 
@@ -50,9 +50,9 @@ class ClientGeneratorService
         // Generate random values based on template ranges
         $age = random_int($template['age_range'][0], $template['age_range'][1]);
         $income = random_int($template['income_range'][0], $template['income_range'][1]);
-        
+
         // Expenses should be less than income
-        $maxExpenses = min($template['expenses_range'][1], (int)($income * 0.9));
+        $maxExpenses = min($template['expenses_range'][1], (int) ($income * 0.9));
         $minExpenses = min($template['expenses_range'][0], $maxExpenses);
         $expenses = random_int($minExpenses, $maxExpenses);
 
@@ -90,15 +90,16 @@ class ClientGeneratorService
     /**
      * Get template for a specific client type
      *
-     * @param string $type Client type
+     * @param  string  $type  Client type
      * @return array<string, mixed> Template array
+     *
      * @throws \InvalidArgumentException If type not found
      */
     public function getTemplate(string $type): array
     {
         $templates = config('simulators.bank_simulator.client_templates', []);
 
-        if (!isset($templates[$type])) {
+        if (! isset($templates[$type])) {
             throw new \InvalidArgumentException("Client type '{$type}' not found");
         }
 

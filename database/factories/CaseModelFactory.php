@@ -39,7 +39,7 @@ class CaseModelFactory extends Factory
         return [
             'user_id' => User::query()->role('partner')->inRandomOrder()->value('id') ?? User::factory()->partner(),
             'title' => fake()->randomElement($titles),
-            'description' => fake()->randomElement($descriptions) . ' ' . fake()->paragraph(),
+            'description' => fake()->randomElement($descriptions).' '.fake()->paragraph(),
             'simulator_id' => null,
             'deadline' => $deadline,
             'difficulty_id' => Difficulty::query()->inRandomOrder()->value('id')

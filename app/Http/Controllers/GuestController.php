@@ -82,7 +82,7 @@ class GuestController extends Controller
                 $query->with(['user.partnerProfile']);
             },
             'skills',
-            'difficulty'
+            'difficulty',
         ]);
 
         // Получить статус заявки, если пользователь авторизован и является студентом
@@ -90,7 +90,7 @@ class GuestController extends Controller
         $user = auth()->user();
         if ($user && $user->hasRole('student')) {
             $applicationStatus = $this->applicationService->getStudentApplicationStatus($user, $case);
-            
+
             // Загрузить историю статусов, если заявка существует
             if ($applicationStatus) {
                 $applicationStatus->load([
@@ -136,7 +136,7 @@ class GuestController extends Controller
             'partner' => function ($query) {
                 $query->with(['user.partnerProfile']);
             },
-            'skills'
+            'skills',
         ])
             ->where('status', 'completed')
             ->orderBy('updated_at', 'desc')

@@ -22,8 +22,7 @@ class UpdateCaseStatusByDeadline implements ShouldQueue
      */
     public function __construct(
         public int $caseId
-    ) {
-    }
+    ) {}
 
     /**
      * Execute the job.
@@ -36,11 +35,11 @@ class UpdateCaseStatusByDeadline implements ShouldQueue
             Log::info('Job cancelled, skipping execution', [
                 'case_id' => $this->caseId,
             ]);
-            
+
             // Clean up
             Cache::forget("case_status_job_{$this->caseId}");
             Cache::forget("case_status_job_cancelled_{$this->caseId}");
-            
+
             return;
         }
 
@@ -59,7 +58,7 @@ class UpdateCaseStatusByDeadline implements ShouldQueue
         if ($case->status === 'active' && $case->deadline && $case->deadline->isPast()) {
             // Дополнительная проверка: убеждаемся, что задача все еще актуальна
             $jobInfo = Cache::get("case_status_job_{$this->caseId}");
-            
+
             if ($jobInfo && isset($jobInfo['deadline'])) {
                 $scheduledDeadline = \Carbon\Carbon::parse($jobInfo['deadline']);
                 // Если дедлайн изменился, не обновляем статус

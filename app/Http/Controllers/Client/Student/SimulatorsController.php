@@ -10,13 +10,13 @@ use App\Http\Requests\Student\Simulator\UpdateStateRequest;
 use App\Models\Simulator;
 use App\Models\SimulatorSession;
 use App\Services\ProgressLogService;
-use App\Services\SimulatorService;
 use App\Services\Simulators\BankSimulator\ClientGeneratorService;
-use App\Services\Simulators\BankSimulator\ScoringService;
 use App\Services\Simulators\BankSimulator\CreditCalculatorService;
 use App\Services\Simulators\BankSimulator\DepositCalculatorService;
 use App\Services\Simulators\BankSimulator\DialogueService;
 use App\Services\Simulators\BankSimulator\EvaluationService;
+use App\Services\Simulators\BankSimulator\ScoringService;
+use App\Services\SimulatorService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -107,7 +107,7 @@ class SimulatorsController extends Controller
 
         // Проверить, что симулятор загружен
         $simulator = $session->simulator;
-        if (!$simulator) {
+        if (! $simulator) {
             return redirect()
                 ->route('student.simulators.index')
                 ->with('error', 'Симулятор не найден');
@@ -416,14 +416,14 @@ class SimulatorsController extends Controller
             // Process option actions if option_id is provided
             if ($optionId !== null) {
                 $optionActions = $this->dialogueService->getOptionActions($stageId, $optionId, $context);
-                if (!empty($optionActions)) {
+                if (! empty($optionActions)) {
                     $actionResult = $this->dialogueService->processActions($stageId, $optionActions, $context);
                     $result['effects'] = array_merge($result['effects'], $actionResult['effects'] ?? []);
                     $result['messages'] = array_merge($result['messages'], $actionResult['messages'] ?? []);
                     if (isset($actionResult['updates'])) {
                         $result['updates'] = $this->deepMergeUpdates($result['updates'], $actionResult['updates']);
                     }
-                    if (!$actionResult['success']) {
+                    if (! $actionResult['success']) {
                         $result['success'] = false;
                     }
                 }
@@ -436,21 +436,21 @@ class SimulatorsController extends Controller
             if ($result['next_stage'] !== null) {
                 $nextStageId = $result['next_stage'];
                 $enterActions = $this->dialogueService->getStageEnterActions($nextStageId, $context);
-                if (!empty($enterActions)) {
+                if (! empty($enterActions)) {
                     $actionResult = $this->dialogueService->processActions($nextStageId, $enterActions, $context);
                     $result['effects'] = array_merge($result['effects'], $actionResult['effects'] ?? []);
                     $result['messages'] = array_merge($result['messages'], $actionResult['messages'] ?? []);
                     if (isset($actionResult['updates'])) {
                         $result['updates'] = $this->deepMergeUpdates($result['updates'], $actionResult['updates']);
                     }
-                    if (!$actionResult['success']) {
+                    if (! $actionResult['success']) {
                         $result['success'] = false;
                     }
                 }
             }
 
             // Update session state if there are updates
-            if (!empty($result['updates'])) {
+            if (! empty($result['updates'])) {
                 $this->simulatorService->updateSessionState($session, $result['updates']);
             }
 
@@ -487,6 +487,7 @@ class SimulatorsController extends Controller
 
         try {
             $stageConfig = $this->dialogueService->getStage($stageId, $context);
+
             return response()->json([
                 'success' => true,
                 'stage' => $stageConfig,
@@ -504,16 +505,16 @@ class SimulatorsController extends Controller
      * Deep merge updates: scalars are replaced (not merged into arrays),
      * nested arrays are recursively merged.
      *
-     * @param array<string, mixed> $base
-     * @param array<string, mixed> $override
+     * @param  array<string, mixed>  $base
+     * @param  array<string, mixed>  $override
      * @return array<string, mixed>
      */
     private function deepMergeUpdates(array $base, array $override): array
     {
         foreach ($override as $key => $value) {
             if (
-                is_array($value) && !array_is_list($value)
-                && isset($base[$key]) && is_array($base[$key]) && !array_is_list($base[$key])
+                is_array($value) && ! array_is_list($value)
+                && isset($base[$key]) && is_array($base[$key]) && ! array_is_list($base[$key])
             ) {
                 $base[$key] = $this->deepMergeUpdates($base[$key], $value);
             } else {
@@ -529,8 +530,8 @@ class SimulatorsController extends Controller
      * Deep merge context: backend session state as base, frontend context overrides
      * but only for non-null values.
      *
-     * @param array<string, mixed> $backend
-     * @param array<string, mixed> $frontend
+     * @param  array<string, mixed>  $backend
+     * @param  array<string, mixed>  $frontend
      * @return array<string, mixed>
      */
     private function deepMergeContext(array $backend, array $frontend): array

@@ -56,7 +56,7 @@ class UpdateRequest extends FormRequest
                 'mimes:jpeg,png,jpg,gif,svg',
                 'max:5120', // 5MB
             ],
-            
+
             // Аватар пользователя - только JPG, JPEG, PNG
             'avatar' => [
                 'nullable',

@@ -7,7 +7,6 @@ use App\Models\Difficulty;
 use App\Models\Simulator;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Carbon;
 
 class CaseSeeder extends Seeder
 {

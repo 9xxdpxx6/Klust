@@ -14,6 +14,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 class TeamsExport implements FromCollection, WithHeadings, WithMapping, WithStyles
 {
     protected int $userId;
+
     protected array $filters;
 
     public function __construct(int $userId, array $filters = [])

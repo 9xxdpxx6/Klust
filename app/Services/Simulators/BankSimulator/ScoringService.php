@@ -11,9 +11,10 @@ class ScoringService
     /**
      * Calculate credit score based on client data
      *
-     * @param array<string, mixed> $clientData Client data: income, expenses, age, credit_history, has_deposit
-     * @param array<string, mixed> $creditParams Credit parameters (reserved for future use)
+     * @param  array<string, mixed>  $clientData  Client data: income, expenses, age, credit_history, has_deposit
+     * @param  array<string, mixed>  $creditParams  Credit parameters (reserved for future use)
      * @return float Score in range [0, 1]
+     *
      * @throws InvalidArgumentException If required client data is missing or invalid
      */
     public function calculateCreditScore(array $clientData, array $creditParams = []): float
@@ -79,7 +80,7 @@ class ScoringService
      * Interest rate is calculated dynamically based on the score:
      *   score 1.0 → ~10%,  score 0.8 → ~13%,  score 0.5 → ~19%,  score 0.3 → ~22%
      *
-     * @param float $score Credit score in range [0, 1]
+     * @param  float  $score  Credit score in range [0, 1]
      * @return array<string, mixed> Decision array with: decision, interest_rate, limit_multiplier, requires_insurance
      */
     public function interpretScore(float $score): array
@@ -145,7 +146,7 @@ class ScoringService
     /**
      * Get credit history coefficient based on history type
      *
-     * @param string $creditHistory Credit history type: excellent, good, fair, poor, none
+     * @param  string  $creditHistory  Credit history type: excellent, good, fair, poor, none
      * @return float Coefficient value
      */
     private function getCreditHistoryCoefficient(string $creditHistory): float
@@ -163,7 +164,8 @@ class ScoringService
     /**
      * Validate client data structure
      *
-     * @param array<string, mixed> $clientData Client data to validate
+     * @param  array<string, mixed>  $clientData  Client data to validate
+     *
      * @throws InvalidArgumentException If required fields are missing
      */
     private function validateClientData(array $clientData): void
@@ -171,7 +173,7 @@ class ScoringService
         $requiredFields = ['income', 'expenses', 'age', 'credit_history'];
 
         foreach ($requiredFields as $field) {
-            if (!isset($clientData[$field])) {
+            if (! isset($clientData[$field])) {
                 throw new InvalidArgumentException("Missing required field: {$field}");
             }
         }

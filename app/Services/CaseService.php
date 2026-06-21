@@ -471,19 +471,19 @@ class CaseService
                     try {
                         $redis = Redis::connection();
                         $queueName = config('queue.connections.redis.queue', 'default');
-                        
+
                         // Laravel stores delayed jobs in sorted sets with key: queues:{queue}:delayed
                         $delayedKey = "queues:{$queueName}:delayed";
-                        
+
                         // Get all delayed jobs
                         $delayedJobs = $redis->zrange($delayedKey, 0, -1, 'WITHSCORES');
-                        
+
                         foreach ($delayedJobs as $job => $score) {
                             // Decode job payload (Laravel uses base64 encoding)
                             $decoded = json_decode(base64_decode($job), true);
-                            
+
                             // Check if this is our job
-                            if (isset($decoded['data']['commandName']) 
+                            if (isset($decoded['data']['commandName'])
                                 && str_contains($decoded['data']['commandName'], 'UpdateCaseStatusByDeadline')
                                 && isset($decoded['data']['command']['caseId'])
                                 && $decoded['data']['command']['caseId'] === $caseId) {
@@ -514,7 +514,7 @@ class CaseService
                     'case_id' => $caseId,
                     'error' => $e->getMessage(),
                 ]);
-                
+
                 // Always set cancellation flag as fallback
                 Cache::put("case_status_job_cancelled_{$caseId}", true, now()->addDays(30));
                 Cache::forget($cacheKey);

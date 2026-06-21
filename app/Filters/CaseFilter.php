@@ -87,7 +87,7 @@ final class CaseFilter extends BaseFilter
         // Если установлено, не перезаписываем его (защита от перезаписи)
         $wheres = $query->getQuery()->wheres ?? [];
         $hasUserIdCondition = false;
-        
+
         foreach ($wheres as $where) {
             if (isset($where['column']) && $where['column'] === 'user_id') {
                 $hasUserIdCondition = true;

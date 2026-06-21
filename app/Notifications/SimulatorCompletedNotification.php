@@ -55,4 +55,3 @@ class SimulatorCompletedNotification extends Notification implements ShouldQueue
         ];
     }
 }
-

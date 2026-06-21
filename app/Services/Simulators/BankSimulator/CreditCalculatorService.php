@@ -14,10 +14,11 @@ class CreditCalculatorService
      * Formula: Payment = Amount * (rate * (1+rate)^months) / ((1+rate)^months - 1)
      * Where rate = annualRate / 12 / 100
      *
-     * @param float $amount Loan amount
-     * @param int $months Loan term in months
-     * @param float $annualRate Annual interest rate in percent (e.g., 15.0 for 15%)
+     * @param  float  $amount  Loan amount
+     * @param  int  $months  Loan term in months
+     * @param  float  $annualRate  Annual interest rate in percent (e.g., 15.0 for 15%)
      * @return float Monthly payment amount
+     *
      * @throws InvalidArgumentException If parameters are invalid
      */
     public function calculateAnnuityPayment(float $amount, int $months, float $annualRate): float
@@ -48,9 +49,10 @@ class CreditCalculatorService
     /**
      * Calculate total payment amount over loan term
      *
-     * @param float $monthlyPayment Monthly payment amount
-     * @param int $months Loan term in months
+     * @param  float  $monthlyPayment  Monthly payment amount
+     * @param  int  $months  Loan term in months
      * @return float Total payment amount
+     *
      * @throws InvalidArgumentException If parameters are invalid
      */
     public function calculateTotalPayment(float $monthlyPayment, int $months): float
@@ -68,9 +70,10 @@ class CreditCalculatorService
     /**
      * Calculate overpayment (total interest paid)
      *
-     * @param float $totalPayment Total payment amount
-     * @param float $amount Original loan amount
+     * @param  float  $totalPayment  Total payment amount
+     * @param  float  $amount  Original loan amount
      * @return float Overpayment amount
+     *
      * @throws InvalidArgumentException If parameters are invalid
      */
     public function calculateOverpayment(float $totalPayment, float $amount): float

@@ -19,13 +19,13 @@ class NotificationSeeder extends Seeder
 
         while ($notificationsCreated < $totalNotifications) {
             $user = $users->random();
-            
+
             // Количество уведомлений для пользователя (0-8, но чаще 1-3)
             $notificationsCount = fake()->numberBetween(0, 8);
             if ($notificationsCount === 0 && fake()->boolean(70)) {
                 continue; // 70% шанс пропустить пользователя без уведомлений
             }
-            
+
             // Ограничиваем, чтобы не превысить общее количество
             $remaining = $totalNotifications - $notificationsCreated;
             $notificationsCount = min($notificationsCount, $remaining);
@@ -33,7 +33,7 @@ class NotificationSeeder extends Seeder
             for ($i = 0; $i < $notificationsCount; $i++) {
                 // Дата уведомления (от 6 месяцев назад до сейчас)
                 $createdAt = fake()->dateTimeBetween('-6 months', 'now');
-                
+
                 // Типы уведомлений с весами
                 $types = [
                     'info' => 30,
@@ -44,7 +44,7 @@ class NotificationSeeder extends Seeder
                     'application_approved' => 5,
                     'application_rejected' => 5,
                 ];
-                
+
                 $type = fake()->randomElement(array_merge(
                     array_fill(0, $types['info'], 'info'),
                     array_fill(0, $types['success'], 'success'),
@@ -137,9 +137,9 @@ class NotificationSeeder extends Seeder
                     }
                     $dbNotification->save();
                 }
-                
+
                 $notificationsCreated++;
-                
+
                 if ($notificationsCreated >= $totalNotifications) {
                     break 2;
                 }
@@ -159,7 +159,7 @@ class NotificationSeeder extends Seeder
             // 50 уведомлений для каждого тестового пользователя
             for ($i = 0; $i < 50; $i++) {
                 $createdAt = fake()->dateTimeBetween('-6 months', 'now');
-                
+
                 $types = [
                     'info' => 30,
                     'success' => 25,
@@ -169,7 +169,7 @@ class NotificationSeeder extends Seeder
                     'application_approved' => 5,
                     'application_rejected' => 5,
                 ];
-                
+
                 $type = fake()->randomElement(array_merge(
                     array_fill(0, $types['info'], 'info'),
                     array_fill(0, $types['success'], 'success'),

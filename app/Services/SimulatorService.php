@@ -255,10 +255,6 @@ class SimulatorService
      * Глубокий merge массивов.
      * Associative arrays are merged recursively; list arrays are REPLACED entirely.
      * This ensures that sending messages: [] or score_history: [] actually clears old data.
-     *
-     * @param array $array1
-     * @param array $array2
-     * @return array
      */
     private function deepMerge(array $array1, array $array2): array
     {
@@ -269,7 +265,7 @@ class SimulatorService
                 isset($result[$key])
                 && is_array($result[$key])
                 && is_array($value)
-                && !array_is_list($value)   // Only deep-merge ASSOCIATIVE arrays
+                && ! array_is_list($value)   // Only deep-merge ASSOCIATIVE arrays
             ) {
                 // Рекурсивный merge ассоциативных массивов (dialogue, client, ui, ...)
                 $result[$key] = $this->deepMerge($result[$key], $value);

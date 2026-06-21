@@ -55,7 +55,7 @@ class StudentService
                 $q->where('total_points', '>', $totalPoints);
             })
             ->count();
-        
+
         // Rating is position: 1 = best, higher number = lower position
         // If 5 students have more points, this student is at position 6
         $rating = $studentsWithMorePoints + 1;
@@ -108,7 +108,7 @@ class StudentService
             ->map(function ($badge) {
                 // Get icon path - if icon is a file, return storage path, otherwise null
                 $iconPath = null;
-                if ($badge->icon && !str_starts_with($badge->icon, 'pi-') && !str_starts_with($badge->icon, 'fa-')) {
+                if ($badge->icon && ! str_starts_with($badge->icon, 'pi-') && ! str_starts_with($badge->icon, 'fa-')) {
                     $iconPath = '/storage/'.$badge->icon;
                 }
 
@@ -120,7 +120,7 @@ class StudentService
                     'icon_path' => $iconPath,
                     'image' => $iconPath, // For backward compatibility with Vue component
                     'level' => $badge->pivot->level ?? 1,
-                    'earned_at' => $badge->pivot->earned_at 
+                    'earned_at' => $badge->pivot->earned_at
                         ? (\Carbon\Carbon::parse($badge->pivot->earned_at)->toISOString())
                         : null,
                 ];
@@ -171,7 +171,7 @@ class StudentService
                         ->completed()
                         ->first();
 
-                    if (!$application) {
+                    if (! $application) {
                         $teamMember = CaseTeamMember::where('user_id', $user->id)
                             ->whereHas('application', function ($q) use ($case) {
                                 $q->where('case_id', $case->id)->completed();

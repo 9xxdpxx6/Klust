@@ -53,9 +53,9 @@ class CasesController extends Controller
         ]);
 
         // Ensure skills is an array
-        if (isset($filters['skills']) && !is_array($filters['skills'])) {
-            $filters['skills'] = is_string($filters['skills']) 
-                ? explode(',', $filters['skills']) 
+        if (isset($filters['skills']) && ! is_array($filters['skills'])) {
+            $filters['skills'] = is_string($filters['skills'])
+                ? explode(',', $filters['skills'])
                 : [$filters['skills']];
         }
 
@@ -71,7 +71,7 @@ class CasesController extends Controller
             ->with(['partner', 'skills', 'difficulty']);
 
         // Если статус не указан в фильтрах, показываем только активные кейсы
-        if (!isset($filters['status']) || $filters['status'] === '') {
+        if (! isset($filters['status']) || $filters['status'] === '') {
             $casesQuery->where('status', 'active');
         }
 
@@ -88,7 +88,7 @@ class CasesController extends Controller
             $application = $this->applicationService->getStudentApplicationStatus($user, $case);
             if ($application) {
                 // Загрузить статус, если еще не загружен
-                if (!$application->relationLoaded('status')) {
+                if (! $application->relationLoaded('status')) {
                     $application->load('status');
                 }
                 $case->user_application = [
@@ -160,7 +160,7 @@ class CasesController extends Controller
         ]);
 
         // Ensure skills is an array
-        if (isset($filters['skills']) && !is_array($filters['skills'])) {
+        if (isset($filters['skills']) && ! is_array($filters['skills'])) {
             $filters['skills'] = is_string($filters['skills'])
                 ? explode(',', $filters['skills'])
                 : [$filters['skills']];
@@ -183,7 +183,7 @@ class CasesController extends Controller
             })
             ->with(['partner', 'skills', 'difficulty']);
 
-        if (!empty($studentSkillIds)) {
+        if (! empty($studentSkillIds)) {
             $casesQuery
                 ->whereHas('skills', function ($q) use ($studentSkillIds) {
                     $q->whereIn('skills.id', $studentSkillIds);
@@ -201,7 +201,7 @@ class CasesController extends Controller
         $cases = $caseFilter
             ->apply($casesQuery)
             ->reorder()
-            ->when(!empty($studentSkillIds), function ($q) {
+            ->when(! empty($studentSkillIds), function ($q) {
                 $q->orderByDesc('matching_skills_count');
             })
             ->orderByDesc('id')
@@ -212,7 +212,7 @@ class CasesController extends Controller
         foreach ($cases->items() as $case) {
             $application = $this->applicationService->getStudentApplicationStatus($user, $case);
             if ($application) {
-                if (!$application->relationLoaded('status')) {
+                if (! $application->relationLoaded('status')) {
                     $application->load('status');
                 }
                 $case->user_application = [
@@ -274,7 +274,7 @@ class CasesController extends Controller
         // Если кейс не активен, проверяем, есть ли у студента принятая заявка
         if ($case->status !== 'active') {
             // Разрешаем просмотр только если у студента есть принятая заявка на этот кейс
-            if (!$applicationStatus) {
+            if (! $applicationStatus) {
                 return redirect()
                     ->route('student.cases.index')
                     ->with('error', 'Кейс больше недоступен для просмотра');
@@ -294,7 +294,7 @@ class CasesController extends Controller
                 $query->with(['user.partnerProfile']);
             },
             'skills',
-            'difficulty'
+            'difficulty',
         ]);
 
         // Загрузить историю статусов, если заявка существует
@@ -310,7 +310,7 @@ class CasesController extends Controller
         // Убеждаемся, что partner загружен с нужными связями
         if ($case->partner) {
             // Принудительно загружаем связи, если они еще не загружены
-            if (!$case->partner->relationLoaded('user')) {
+            if (! $case->partner->relationLoaded('user')) {
                 $case->partner->load('user.partnerProfile');
             }
         }
@@ -366,14 +366,14 @@ class CasesController extends Controller
 
         // Подготовить данные для создания заявки
         $data = $request->validated();
-        
+
         // Если переданы email'ы, конвертируем их в user_id
         if ($request->has('team_member_emails') && is_array($request->team_member_emails)) {
             $userIds = \App\Models\User::whereIn('email', $request->team_member_emails)
                 ->where('id', '!=', $user->id) // Исключаем текущего пользователя
                 ->pluck('id')
                 ->toArray();
-            
+
             $data['team_members'] = $userIds;
         }
 
@@ -405,7 +405,7 @@ class CasesController extends Controller
                 'case_id' => $case->id,
                 'error' => $e->getMessage(),
             ]);
-            
+
             return redirect()
                 ->route('student.cases.show', $case)
                 ->with('error', 'Произошла ошибка при подаче заявки: '.$e->getMessage());

@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\HasApiTokens;
@@ -124,7 +124,6 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-
     // Progress Logs
     public function progressLogs()
     {
@@ -145,7 +144,7 @@ class User extends Authenticatable
     {
         return Attribute::make(
             get: function ($value) {
-                if (!$value) {
+                if (! $value) {
                     return null;
                 }
 
@@ -173,7 +172,7 @@ class User extends Authenticatable
         $email = $this->email ?? null;
 
         // Проверяем валидность email
-        if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if (! $email || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
             // Если email невалидный, возвращаем null
             // Laravel не отправит письмо, но это лучше чем ошибка
             return null;

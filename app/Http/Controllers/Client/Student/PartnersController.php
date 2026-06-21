@@ -19,13 +19,13 @@ class PartnersController extends Controller
 
     public function show(User $partner): Response
     {
-        if (!$partner->hasRole('partner')) {
+        if (! $partner->hasRole('partner')) {
             abort(404);
         }
 
         $partner->load(['partnerProfile']);
 
-        if (!$partner->partnerProfile) {
+        if (! $partner->partnerProfile) {
             abort(404);
         }
 
@@ -39,7 +39,7 @@ class PartnersController extends Controller
 
         // Получить активные кейсы партнера для гостей
         $cases = [];
-        if (!$isStudent) {
+        if (! $isStudent) {
             $cases = \App\Models\CaseModel::where('user_id', $partner->id)
                 ->where('status', 'active')
                 ->with(['skills'])
@@ -67,5 +67,3 @@ class PartnersController extends Controller
         ]);
     }
 }
-
-

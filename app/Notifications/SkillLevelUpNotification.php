@@ -42,4 +42,3 @@ class SkillLevelUpNotification extends Notification
         ];
     }
 }
-

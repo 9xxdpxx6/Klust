@@ -25,19 +25,19 @@ class StudentsExport implements FromView, ShouldAutoSize, WithStyles
         $query = User::role('student')->with(['profile', 'studentProfile']);
 
         // Apply filters if provided
-        if (!empty($this->filters['specialty'])) {
+        if (! empty($this->filters['specialty'])) {
             $query->whereHas('studentProfile', function ($q) {
                 $q->where('specialty', $this->filters['specialty']);
             });
         }
 
-        if (!empty($this->filters['course'])) {
+        if (! empty($this->filters['course'])) {
             $query->whereHas('studentProfile', function ($q) {
                 $q->where('course', $this->filters['course']);
             });
         }
 
-        if (!empty($this->filters['group'])) {
+        if (! empty($this->filters['group'])) {
             $query->whereHas('studentProfile', function ($q) {
                 $q->where('group', $this->filters['group']);
             });
@@ -46,7 +46,7 @@ class StudentsExport implements FromView, ShouldAutoSize, WithStyles
         $students = $query->get();
 
         return view('exports.students', [
-            'students' => $students
+            'students' => $students,
         ]);
     }
 

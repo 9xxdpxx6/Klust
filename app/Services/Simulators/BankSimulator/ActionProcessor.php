@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\Simulators\BankSimulator;
 
-use InvalidArgumentException;
-
 /**
  * Service for processing dialogue actions
- * 
+ *
  * Handles execution of various action types defined in dialogue configuration:
  * - add_score_points: Add points to user score
  * - show_message: Show a message to client/user
@@ -27,14 +25,13 @@ class ActionProcessor
         private readonly ScoringService $scoringService,
         private readonly CreditCalculatorService $creditCalculatorService,
         private readonly DepositCalculatorService $depositCalculatorService
-    ) {
-    }
+    ) {}
 
     /**
      * Process array of actions
      *
-     * @param array<int, array<string, mixed>> $actions Array of action configurations
-     * @param array<string, mixed> $context Context data (session state, client data, etc.)
+     * @param  array<int, array<string, mixed>>  $actions  Array of action configurations
+     * @param  array<string, mixed>  $context  Context data (session state, client data, etc.)
      * @return array<string, mixed> Result with success, updates, effects, messages
      */
     public function processActions(array $actions, array $context = []): array
@@ -48,9 +45,10 @@ class ActionProcessor
         ];
 
         foreach ($actions as $action) {
-            if (!isset($action['type'])) {
+            if (! isset($action['type'])) {
                 $result['errors'][] = 'Action missing type field';
                 $result['success'] = false;
+
                 continue;
             }
 
@@ -71,7 +69,7 @@ class ActionProcessor
                 if (isset($actionResult['messages'])) {
                     $result['messages'] = array_merge($result['messages'], $actionResult['messages']);
                 }
-                if (isset($actionResult['success']) && !$actionResult['success']) {
+                if (isset($actionResult['success']) && ! $actionResult['success']) {
                     $result['success'] = false;
                 }
                 if (isset($actionResult['errors'])) {
@@ -90,16 +88,16 @@ class ActionProcessor
      * Deep merge: scalars replace (not turned into arrays),
      * associative arrays are recursively merged.
      *
-     * @param array<string, mixed> $base
-     * @param array<string, mixed> $override
+     * @param  array<string, mixed>  $base
+     * @param  array<string, mixed>  $override
      * @return array<string, mixed>
      */
     private function deepMergeUpdates(array $base, array $override): array
     {
         foreach ($override as $key => $value) {
             if (
-                is_array($value) && !array_is_list($value)
-                && isset($base[$key]) && is_array($base[$key]) && !array_is_list($base[$key])
+                is_array($value) && ! array_is_list($value)
+                && isset($base[$key]) && is_array($base[$key]) && ! array_is_list($base[$key])
             ) {
                 $base[$key] = $this->deepMergeUpdates($base[$key], $value);
             } else {
@@ -113,8 +111,8 @@ class ActionProcessor
     /**
      * Process single action
      *
-     * @param array<string, mixed> $action Action configuration
-     * @param array<string, mixed> $context Context data
+     * @param  array<string, mixed>  $action  Action configuration
+     * @param  array<string, mixed>  $context  Context data
      * @return array<string, mixed> Action result
      */
     private function processSingleAction(array $action, array $context): array
@@ -142,13 +140,13 @@ class ActionProcessor
     /**
      * Process add_score_points action
      *
-     * @param array<string, mixed> $action Action configuration: {type: 'add_score_points', points: int}
-     * @param array<string, mixed> $context Context data
+     * @param  array<string, mixed>  $action  Action configuration: {type: 'add_score_points', points: int}
+     * @param  array<string, mixed>  $context  Context data
      * @return array<string, mixed> Result
      */
     private function processAddScorePoints(array $action, array $context): array
     {
-        if (!isset($action['points']) || !is_numeric($action['points'])) {
+        if (! isset($action['points']) || ! is_numeric($action['points'])) {
             return [
                 'success' => false,
                 'errors' => ['add_score_points action requires points field'],
@@ -157,10 +155,10 @@ class ActionProcessor
 
         $points = (int) $action['points'];
         $currentScore = (int) ($context['score'] ?? 0);
-        
+
         // Ensure score_history is an array
         $scoreHistory = $context['score_history'] ?? [];
-        if (!is_array($scoreHistory)) {
+        if (! is_array($scoreHistory)) {
             $scoreHistory = [];
         }
 
@@ -189,13 +187,13 @@ class ActionProcessor
     /**
      * Process show_message action
      *
-     * @param array<string, mixed> $action Action configuration: {type: 'show_message', message: string, role: 'client'|'user'}
-     * @param array<string, mixed> $context Context data
+     * @param  array<string, mixed>  $action  Action configuration: {type: 'show_message', message: string, role: 'client'|'user'}
+     * @param  array<string, mixed>  $context  Context data
      * @return array<string, mixed> Result
      */
     private function processShowMessage(array $action, array $context): array
     {
-        if (!isset($action['message'])) {
+        if (! isset($action['message'])) {
             return [
                 'success' => false,
                 'errors' => ['show_message action requires message field'],
@@ -219,13 +217,13 @@ class ActionProcessor
     /**
      * Process update_client_data action
      *
-     * @param array<string, mixed> $action Action configuration: {type: 'update_client_data', field: string, value: mixed}
-     * @param array<string, mixed> $context Context data
+     * @param  array<string, mixed>  $action  Action configuration: {type: 'update_client_data', field: string, value: mixed}
+     * @param  array<string, mixed>  $context  Context data
      * @return array<string, mixed> Result
      */
     private function processUpdateClientData(array $action, array $context): array
     {
-        if (!isset($action['field']) || !isset($action['value'])) {
+        if (! isset($action['field']) || ! isset($action['value'])) {
             return [
                 'success' => false,
                 'errors' => ['update_client_data action requires field and value'],
@@ -248,13 +246,13 @@ class ActionProcessor
     /**
      * Process open_calculator action
      *
-     * @param array<string, mixed> $action Action configuration: {type: 'open_calculator', calculator: 'credit'|'deposit'}
-     * @param array<string, mixed> $context Context data
+     * @param  array<string, mixed>  $action  Action configuration: {type: 'open_calculator', calculator: 'credit'|'deposit'}
+     * @param  array<string, mixed>  $context  Context data
      * @return array<string, mixed> Result
      */
     private function processOpenCalculator(array $action, array $context): array
     {
-        if (!isset($action['calculator'])) {
+        if (! isset($action['calculator'])) {
             return [
                 'success' => false,
                 'errors' => ['open_calculator action requires calculator field'],
@@ -262,7 +260,7 @@ class ActionProcessor
         }
 
         $calculator = $action['calculator'];
-        if (!in_array($calculator, ['credit', 'deposit'], true)) {
+        if (! in_array($calculator, ['credit', 'deposit'], true)) {
             return [
                 'success' => false,
                 'errors' => ["Invalid calculator type: {$calculator}"],
@@ -283,8 +281,8 @@ class ActionProcessor
     /**
      * Process open_phone action
      *
-     * @param array<string, mixed> $action Action configuration: {type: 'open_phone'}
-     * @param array<string, mixed> $context Context data
+     * @param  array<string, mixed>  $action  Action configuration: {type: 'open_phone'}
+     * @param  array<string, mixed>  $context  Context data
      * @return array<string, mixed> Result
      */
     private function processOpenPhone(array $action, array $context): array
@@ -302,8 +300,8 @@ class ActionProcessor
     /**
      * Process open_documents action
      *
-     * @param array<string, mixed> $action Action configuration: {type: 'open_documents'}
-     * @param array<string, mixed> $context Context data
+     * @param  array<string, mixed>  $action  Action configuration: {type: 'open_documents'}
+     * @param  array<string, mixed>  $context  Context data
      * @return array<string, mixed> Result
      */
     private function processOpenDocuments(array $action, array $context): array
@@ -321,8 +319,8 @@ class ActionProcessor
     /**
      * Process calculate_scoring action
      *
-     * @param array<string, mixed> $action Action configuration: {type: 'calculate_scoring'}
-     * @param array<string, mixed> $context Context data
+     * @param  array<string, mixed>  $action  Action configuration: {type: 'calculate_scoring'}
+     * @param  array<string, mixed>  $context  Context data
      * @return array<string, mixed> Result
      */
     private function processCalculateScoring(array $action, array $context): array
@@ -332,7 +330,7 @@ class ActionProcessor
         // Validate required fields
         $requiredFields = ['income', 'expenses', 'age', 'credit_history'];
         foreach ($requiredFields as $field) {
-            if (!isset($clientData[$field])) {
+            if (! isset($clientData[$field])) {
                 return [
                     'success' => false,
                     'errors' => ["Missing required client data field: {$field}"],
@@ -359,7 +357,7 @@ class ActionProcessor
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'errors' => ['Failed to calculate scoring: ' . $e->getMessage()],
+                'errors' => ['Failed to calculate scoring: '.$e->getMessage()],
             ];
         }
     }
@@ -367,8 +365,8 @@ class ActionProcessor
     /**
      * Process calculate_credit action
      *
-     * @param array<string, mixed> $action Action configuration: {type: 'calculate_credit'}
-     * @param array<string, mixed> $context Context data
+     * @param  array<string, mixed>  $action  Action configuration: {type: 'calculate_credit'}
+     * @param  array<string, mixed>  $context  Context data
      * @return array<string, mixed> Result
      */
     private function processCalculateCredit(array $action, array $context): array
@@ -421,7 +419,7 @@ class ActionProcessor
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'errors' => ['Failed to calculate credit: ' . $e->getMessage()],
+                'errors' => ['Failed to calculate credit: '.$e->getMessage()],
             ];
         }
     }
@@ -429,8 +427,8 @@ class ActionProcessor
     /**
      * Process calculate_deposit action
      *
-     * @param array<string, mixed> $action Action configuration: {type: 'calculate_deposit'}
-     * @param array<string, mixed> $context Context data
+     * @param  array<string, mixed>  $action  Action configuration: {type: 'calculate_deposit'}
+     * @param  array<string, mixed>  $context  Context data
      * @return array<string, mixed> Result
      */
     private function processCalculateDeposit(array $action, array $context): array
@@ -474,7 +472,7 @@ class ActionProcessor
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'errors' => ['Failed to calculate deposit: ' . $e->getMessage()],
+                'errors' => ['Failed to calculate deposit: '.$e->getMessage()],
             ];
         }
     }
@@ -482,13 +480,13 @@ class ActionProcessor
     /**
      * Process check_condition action
      *
-     * @param array<string, mixed> $action Action configuration: {type: 'check_condition', field: string, operator: string, value: mixed, then: array}
-     * @param array<string, mixed> $context Context data
+     * @param  array<string, mixed>  $action  Action configuration: {type: 'check_condition', field: string, operator: string, value: mixed, then: array}
+     * @param  array<string, mixed>  $context  Context data
      * @return array<string, mixed> Result
      */
     private function processCheckCondition(array $action, array $context): array
     {
-        if (!isset($action['field']) || !isset($action['operator']) || !isset($action['value'])) {
+        if (! isset($action['field']) || ! isset($action['operator']) || ! isset($action['value'])) {
             return [
                 'success' => false,
                 'errors' => ['check_condition action requires field, operator, and value'],
@@ -528,8 +526,8 @@ class ActionProcessor
     /**
      * Get nested value from array using dot notation
      *
-     * @param array<string, mixed> $array Array to search
-     * @param string $path Dot-notation path (e.g., 'client.income')
+     * @param  array<string, mixed>  $array  Array to search
+     * @param  string  $path  Dot-notation path (e.g., 'client.income')
      * @return mixed Value or null if not found
      */
     private function getNestedValue(array $array, string $path): mixed
@@ -538,7 +536,7 @@ class ActionProcessor
         $value = $array;
 
         foreach ($keys as $key) {
-            if (!is_array($value) || !isset($value[$key])) {
+            if (! is_array($value) || ! isset($value[$key])) {
                 return null;
             }
             $value = $value[$key];

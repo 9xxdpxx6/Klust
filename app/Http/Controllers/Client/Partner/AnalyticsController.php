@@ -7,7 +7,6 @@ namespace App\Http\Controllers\Client\Partner;
 use App\Exports\ApplicationsExport;
 use App\Exports\CasesExport;
 use App\Exports\TeamsExport;
-use App\Helpers\FilterHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Partner\Analytics\IndexRequest;
 use App\Services\AnalyticsService;

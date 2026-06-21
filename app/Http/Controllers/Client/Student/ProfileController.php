@@ -27,7 +27,7 @@ class ProfileController extends Controller
     public function show(): Response
     {
         $user = auth()->user()->load(['studentProfile.faculty']);
-        
+
         $faculties = \App\Models\Faculty::where('is_active', true)
             ->orderBy('name')
             ->get(['id', 'name', 'code']);
@@ -45,7 +45,7 @@ class ProfileController extends Controller
     public function edit(): Response
     {
         $user = auth()->user()->load(['studentProfile.faculty']);
-        
+
         $faculties = \App\Models\Faculty::where('is_active', true)
             ->orderBy('name')
             ->get(['id', 'name', 'code']);

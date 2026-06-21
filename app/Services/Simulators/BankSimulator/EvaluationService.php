@@ -45,7 +45,7 @@ class EvaluationService
     /**
      * Evaluate a single dialogue variant.
      *
-     * @param array<string, mixed> $variantData  Variant state with score_history, score, max_score
+     * @param  array<string, mixed>  $variantData  Variant state with score_history, score, max_score
      * @return array<string, mixed> Evaluation result with breakdown
      */
     public function evaluate(array $variantData, int $maxScore = 100): array
@@ -76,8 +76,8 @@ class EvaluationService
      * Aggregates score_history from each variant in variants_progress,
      * then computes a combined weighted score.
      *
-     * @param array<string, mixed> $sessionState  Full session state
-     * @return array<string, mixed>  Combined evaluation
+     * @param  array<string, mixed>  $sessionState  Full session state
+     * @return array<string, mixed> Combined evaluation
      */
     public function evaluateSession(array $sessionState): array
     {
@@ -137,7 +137,7 @@ class EvaluationService
     /**
      * Calculate scores per category from score_history
      *
-     * @param array<int, array<string, mixed>> $scoreHistory
+     * @param  array<int, array<string, mixed>>  $scoreHistory
      * @return array<string, array{earned: int, lost: int, total: int}>
      */
     private function calculateCategoryScores(array $scoreHistory): array
@@ -154,7 +154,7 @@ class EvaluationService
             $points = (int) ($entry['points'] ?? 0);
             $category = $entry['category'] ?? 'uncategorized';
 
-            if (!isset($categories[$category])) {
+            if (! isset($categories[$category])) {
                 $category = 'uncategorized';
             }
 
@@ -183,8 +183,7 @@ class EvaluationService
     /**
      * Build category breakdown with percentages
      *
-     * @param array<string, array{earned: int, lost: int, total: int}> $categoryScores
-     * @param int $maxScore
+     * @param  array<string, array{earned: int, lost: int, total: int}>  $categoryScores
      * @return array<string, array<string, mixed>>
      */
     private function buildCategoryBreakdown(array $categoryScores, int $maxScore): array
@@ -220,7 +219,7 @@ class EvaluationService
     /**
      * Calculate weighted score from category breakdown
      *
-     * @param array<string, array<string, mixed>> $breakdown
+     * @param  array<string, array<string, mixed>>  $breakdown
      * @return int Weighted score 0-100
      */
     private function calculateWeightedScore(array $breakdown): int
@@ -273,8 +272,7 @@ class EvaluationService
     /**
      * Generate feedback based on category breakdown
      *
-     * @param array<string, array<string, mixed>> $breakdown
-     * @param int $weightedScore
+     * @param  array<string, array<string, mixed>>  $breakdown
      * @return array<int, string>
      */
     private function generateFeedback(array $breakdown, int $weightedScore): array
@@ -314,6 +312,7 @@ class EvaluationService
                 'label' => self::CATEGORY_LABELS[$category] ?? $category,
             ];
         }
+
         return $info;
     }
 }
