@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [ashiq/feat-ci-workflow]
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-22.04
+
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: test_db
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: test_db
+      DB_USERNAME: root
+      DB_PASSWORD: root
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # PHP setup
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.1
+          extensions: dom, pdo, pdo_mysql
+          coverage: none
+
+      # Composer cache
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('**/composer.lock') }}
+
+      - name: Install PHP deps
+        run: composer install --no-interaction --prefer-dist
+
+      # Node setup
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+
+      - name: Install JS deps
+        run: npm ci
+
+      # App setup
+      - name: Setup app
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Run migrations
+        run: php artisan migrate --force
+
+      # Lint
+      - name: Pint check
+        run: ./vendor/bin/pint --test
+
+      # Build
+      - name: Build frontend
+        run: npm run build
+
+      # Tests
+      - name: Run tests
+        run: php artisan test
