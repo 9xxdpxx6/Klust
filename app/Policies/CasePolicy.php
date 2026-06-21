@@ -6,7 +6,6 @@ namespace App\Policies;
 
 use App\Models\CaseModel;
 use App\Models\User;
-use Illuminate\Support\Facades\Log;
 
 class CasePolicy
 {

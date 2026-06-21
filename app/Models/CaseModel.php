@@ -85,7 +85,7 @@ class CaseModel extends Model
                 return $partner;
             }
         }
-        
+
         // Если partner не загружено, проверяем partnerUser и его partnerProfile
         // Используем прямой доступ к relation, если он загружен
         if ($this->relationLoaded('partnerUser')) {
@@ -98,16 +98,16 @@ class CaseModel extends Model
                 return $partnerUser->partnerProfile;
             }
         }
-        
+
         // Если relations не загружены, но есть user_id, пытаемся загрузить через отношение
         // Это может вызвать N+1 проблему, но работает как fallback
-        if (!$this->relationLoaded('partnerUser') && $this->user_id) {
+        if (! $this->relationLoaded('partnerUser') && $this->user_id) {
             $partnerUser = $this->partnerUser;
             if ($partnerUser) {
                 return $partnerUser->partnerProfile;
             }
         }
-        
+
         return null;
     }
 

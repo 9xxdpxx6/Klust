@@ -40,7 +40,7 @@ class PartnerSeeder extends Seeder
             $description = $this->getDescription($companyName);
             $website = $this->getWebsite($companyName);
 
-            $profile = $partner->partnerProfile ?? new PartnerProfile();
+            $profile = $partner->partnerProfile ?? new PartnerProfile;
             $profile->fill([
                 'user_id' => $partner->id,
                 'company_name' => $companyName,

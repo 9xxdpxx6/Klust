@@ -32,7 +32,7 @@ class SkillsController extends Controller
         // Вычислить средний уровень (округляем до целых)
         $averageLevel = 0;
         if ($skills->isNotEmpty()) {
-            $totalLevel = $skills->sum(fn($skill) => $skill['level']);
+            $totalLevel = $skills->sum(fn ($skill) => $skill['level']);
             $averageLevel = (int) round($totalLevel / $skills->count());
         }
 
@@ -45,10 +45,10 @@ class SkillsController extends Controller
             'maxLevelInSystem' => $this->skillService->getMaxLevelInSystem(),
             'progressHistory' => $history->map(function ($log) {
                 $skill = $log->loggable;
-                
+
                 // Формируем описание с учетом наличия навыка
                 $description = match ($log->action) {
-                    'simulator_completion' => $skill 
+                    'simulator_completion' => $skill
                         ? "Получено {$log->points_earned} очков в навыке {$skill->name} за прохождение симулятора"
                         : "Получено {$log->points_earned} очков за прохождение симулятора",
                     'case_completion' => $skill

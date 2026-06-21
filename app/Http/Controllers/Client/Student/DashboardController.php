@@ -50,7 +50,7 @@ class DashboardController extends Controller
         foreach ($recommendations as $case) {
             $application = $this->applicationService->getStudentApplicationStatus($user, $case);
             if ($application) {
-                if (!$application->relationLoaded('status')) {
+                if (! $application->relationLoaded('status')) {
                     $application->load('status');
                 }
                 $case->user_application = [

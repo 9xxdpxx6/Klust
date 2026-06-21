@@ -22,7 +22,7 @@ class UserSkillSeeder extends Seeder
         foreach ($students as $student) {
             // Дата регистрации студента
             $studentCreatedAt = $student->created_at ?? Carbon::now()->subMonths(6);
-            
+
             // Количество навыков (3-10)
             $studentSkillsCount = fake()->numberBetween(3, 10);
             $randomSkills = $skills->random(min($studentSkillsCount, $skills->count()));
@@ -34,12 +34,12 @@ class UserSkillSeeder extends Seeder
             // Навыки получаются постепенно, начиная с даты регистрации
             $skillDates = [];
             $baseDate = Carbon::parse($studentCreatedAt);
-            
+
             foreach ($randomSkills as $index => $skill) {
                 // Первые навыки получаются сразу после регистрации
                 // Остальные - постепенно в течение следующих месяцев
                 $now = Carbon::now();
-                
+
                 if ($index === 0) {
                     $earnedAt = $baseDate->copy()->addDays(fake()->numberBetween(1, 7));
                 } elseif ($index === 1) {
@@ -48,7 +48,7 @@ class UserSkillSeeder extends Seeder
                     // Остальные навыки получаются в течение следующих 1-5 месяцев
                     $startDate = $baseDate->copy()->addDays(30);
                     $endDate = min($baseDate->copy()->addMonths(5), $now);
-                    
+
                     // Убеждаемся, что начальная дата меньше конечной
                     if ($startDate >= $endDate) {
                         $earnedAt = $now->copy()->subDays(fake()->numberBetween(1, 30));
@@ -70,21 +70,21 @@ class UserSkillSeeder extends Seeder
                 // Уровень навыка зависит от max_level навыка и времени получения
                 $monthsSinceEarned = $earnedAt->diffInMonths($now);
                 $skillMaxLevel = $skill->max_level ?? 100;
-                
+
                 // Определяем, является ли этот навык одним из "топовых"
                 $isTopSkill = $topSkills->pluck('id')->contains($skill->id);
-                
+
                 // Генерируем уровень с учетом max_level навыка
                 if ($isTopSkill) {
                     // Топовые навыки: 90-100% от max_level (но не больше max_level)
-                    $minLevel = (int)($skillMaxLevel * 0.9);
+                    $minLevel = (int) ($skillMaxLevel * 0.9);
                     $maxLevel = $skillMaxLevel;
                     $level = fake()->numberBetween($minLevel, $maxLevel);
                 } else {
                     // Остальные навыки: 60-95% от max_level, более рассредоточенно
                     // Учитываем время получения навыка
                     $basePercent = 60; // Минимум 60% от max_level
-                    
+
                     // Чем раньше получен навык, тем выше может быть уровень
                     if ($monthsSinceEarned >= 3) {
                         $basePercent = 70; // Старые навыки: 70-95%
@@ -92,22 +92,22 @@ class UserSkillSeeder extends Seeder
                         $basePercent = 65; // Средние навыки: 65-90%
                     }
                     // Новые навыки: 60-80%
-                    
-                    $minLevel = (int)($skillMaxLevel * ($basePercent / 100));
-                    $maxLevel = (int)($skillMaxLevel * 0.95);
-                    
+
+                    $minLevel = (int) ($skillMaxLevel * ($basePercent / 100));
+                    $maxLevel = (int) ($skillMaxLevel * 0.95);
+
                     // Добавляем вариативность: некоторые навыки могут быть ниже
                     if (fake()->boolean(20)) { // 20% шанс быть ниже базового уровня
-                        $minLevel = (int)($skillMaxLevel * 0.5);
-                        $maxLevel = (int)($skillMaxLevel * 0.7);
+                        $minLevel = (int) ($skillMaxLevel * 0.5);
+                        $maxLevel = (int) ($skillMaxLevel * 0.7);
                     }
-                    
+
                     $level = fake()->numberBetween($minLevel, $maxLevel);
                 }
-                
+
                 // Убеждаемся, что уровень не превышает max_level
                 $level = min($level, $skillMaxLevel);
-                
+
                 // Очки должны соответствовать порогам уровней
                 // Используем ту же логику, что и в SkillService
                 $levelThresholds = [
@@ -122,7 +122,7 @@ class UserSkillSeeder extends Seeder
                     9 => 960,
                     10 => 1170,
                 ];
-                
+
                 // Вычисляем порог для текущего уровня
                 $currentThreshold = $levelThresholds[$level] ?? 0;
                 if ($level > 10) {
@@ -140,7 +140,7 @@ class UserSkillSeeder extends Seeder
                         $currentThreshold = $base50 + ($levelDiff50 * 1000) + ($levelDiff50 * $levelDiff50 * 2);
                     }
                 }
-                
+
                 // Вычисляем порог для следующего уровня
                 $nextLevel = $level + 1;
                 $nextThreshold = $levelThresholds[$nextLevel] ?? 0;
@@ -159,14 +159,14 @@ class UserSkillSeeder extends Seeder
                         $nextThreshold = $base50 + ($levelDiff50 * 1000) + ($levelDiff50 * $levelDiff50 * 2);
                     }
                 }
-                
+
                 // Генерируем очки с более рассредоточенным прогрессом
                 // Прогресс должен быть равномерно распределен от 5% до 95% к следующему уровню
                 $pointsRange = $nextThreshold - $currentThreshold;
-                
+
                 // Для более реалистичного распределения используем разные диапазоны
                 $progressPercent = fake()->numberBetween(5, 95); // Случайный процент прогресса
-                $pointsEarned = $currentThreshold + (int)($pointsRange * ($progressPercent / 100));
+                $pointsEarned = $currentThreshold + (int) ($pointsRange * ($progressPercent / 100));
 
                 // Для updated_at убеждаемся, что дата корректна
                 $updatedAt = $earnedAt;
@@ -194,7 +194,7 @@ class UserSkillSeeder extends Seeder
             // Тестовый студент имеет все навыки с высокими уровнями
             $studentCreatedAt = $testStudent->created_at ?? Carbon::now()->subMonths(6);
             $baseDate = Carbon::parse($studentCreatedAt);
-            
+
             foreach ($skills as $index => $skill) {
                 // Навыки получаются постепенно
                 if ($index === 0) {
@@ -217,22 +217,22 @@ class UserSkillSeeder extends Seeder
 
                 $monthsSinceEarned = Carbon::parse($earnedAt)->diffInMonths(Carbon::now());
                 $skillMaxLevel = $skill->max_level ?? 100;
-                
+
                 // Для тестового студента: большинство навыков близко к максимуму
                 // 1-2 навыка на максимуме, остальные 85-98% от max_level
                 $isTopSkill = ($index < 2) && fake()->boolean(50);
-                
+
                 if ($isTopSkill) {
                     // Топовые навыки: 95-100% от max_level
-                    $minLevel = (int)($skillMaxLevel * 0.95);
+                    $minLevel = (int) ($skillMaxLevel * 0.95);
                     $level = fake()->numberBetween($minLevel, $skillMaxLevel);
                 } else {
                     // Остальные навыки: 85-98% от max_level
-                    $minLevel = (int)($skillMaxLevel * 0.85);
-                    $maxLevel = (int)($skillMaxLevel * 0.98);
+                    $minLevel = (int) ($skillMaxLevel * 0.85);
+                    $maxLevel = (int) ($skillMaxLevel * 0.98);
                     $level = fake()->numberBetween($minLevel, $maxLevel);
                 }
-                
+
                 $level = min($level, $skillMaxLevel);
 
                 // Вычисляем очки для уровня
@@ -240,7 +240,7 @@ class UserSkillSeeder extends Seeder
                     1 => 0, 2 => 50, 3 => 120, 4 => 210, 5 => 320,
                     6 => 450, 7 => 600, 8 => 770, 9 => 960, 10 => 1170,
                 ];
-                
+
                 $currentThreshold = $levelThresholds[$level] ?? 0;
                 if ($level > 10) {
                     $levelDiff = $level - 10;
@@ -257,7 +257,7 @@ class UserSkillSeeder extends Seeder
                         $currentThreshold = $base50 + ($levelDiff50 * 1000) + ($levelDiff50 * $levelDiff50 * 2);
                     }
                 }
-                
+
                 $nextLevel = $level + 1;
                 $nextThreshold = $levelThresholds[$nextLevel] ?? 0;
                 if ($nextLevel > 10) {
@@ -275,12 +275,12 @@ class UserSkillSeeder extends Seeder
                         $nextThreshold = $base50 + ($levelDiff50 * 1000) + ($levelDiff50 * $levelDiff50 * 2);
                     }
                 }
-                
+
                 $pointsRange = $nextThreshold - $currentThreshold;
-                
+
                 // Для тестового студента прогресс более рассредоточен
                 $progressPercent = fake()->numberBetween(10, 90);
-                $pointsEarned = $currentThreshold + (int)($pointsRange * ($progressPercent / 100));
+                $pointsEarned = $currentThreshold + (int) ($pointsRange * ($progressPercent / 100));
 
                 $testStudent->skills()->syncWithoutDetaching([
                     $skill->id => [
@@ -288,7 +288,7 @@ class UserSkillSeeder extends Seeder
                         'points_earned' => $pointsEarned,
                         'created_at' => $earnedAt,
                         'updated_at' => $earnedAt,
-                    ]
+                    ],
                 ]);
             }
         }

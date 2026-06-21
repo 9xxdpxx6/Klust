@@ -206,7 +206,7 @@ class CaseApplicationSeeder extends Seeder
             'We are applying because the topic is relevant to our specialization and the expected outcome is concrete.',
         ];
 
-        return fake()->randomElement($templates) . ' ' . $case->title . '.';
+        return fake()->randomElement($templates).' '.$case->title.'.';
     }
 
     private function makePartnerComment(): string

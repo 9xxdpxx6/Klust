@@ -27,11 +27,11 @@ class ProfileController extends Controller
     public function show(): Response
     {
         $user = auth()->user();
-        
+
         // Загружаем профили в зависимости от роли
         /** @var \App\Models\User $user */
         $user->load(['studentProfile.faculty', 'teacherProfile', 'partnerProfile', 'roles']);
-        
+
         // Загружаем факультеты для студентов
         $faculties = [];
         if ($user && method_exists($user, 'hasRole') && $user->hasRole('student')) {

@@ -12,7 +12,6 @@ use Illuminate\Http\Request;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
@@ -51,7 +50,7 @@ class Handler extends ExceptionHandler
         // Фильтруем исключения, которые не нужно логировать
         $this->reportable(function (Throwable $e) {
             $request = request();
-            
+
             // Исключаем .well-known запросы (Chrome DevTools и другие инструменты)
             if ($request && str_contains($request->path(), '.well-known')) {
                 return false;
@@ -122,10 +121,10 @@ class Handler extends ExceptionHandler
                 'status' => $statusCode,
                 'message' => $e->getMessage(),
             ])->toResponse($request);
-            
+
             // Устанавливаем статус код и заголовки, чтобы предотвратить редирект
             $response->setStatusCode($statusCode);
-            
+
             return $response;
         });
     }

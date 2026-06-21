@@ -7,8 +7,8 @@ namespace App\Services;
 use App\Helpers\FilterHelper;
 use App\Models\CaseApplication;
 use App\Models\ProgressLog;
-use App\Models\User;
 use App\Models\SimulatorSession;
+use App\Models\User;
 use Illuminate\Support\Collection;
 
 class TeamService
@@ -43,7 +43,7 @@ class TeamService
         // Get matching skills with case requirements
         // Требуемые навыки для кейса (из таблицы case_skills)
         $caseSkillIds = $application->case->skills->pluck('id')->toArray();
-        
+
         // Собираем все навыки всех участников команды
         $teamAllSkillIds = collect();
         foreach ($allMembers as $member) {
@@ -51,7 +51,7 @@ class TeamService
             $teamAllSkillIds = $teamAllSkillIds->merge($memberSkillIds);
         }
         $teamAllSkillIds = $teamAllSkillIds->unique();
-        
+
         // Считаем покрытие: сколько из требуемых навыков есть у команды (хотя бы у одного участника)
         $coveredSkillIds = array_intersect($caseSkillIds, $teamAllSkillIds->toArray());
         $coveredSkillsCount = count($coveredSkillIds);
@@ -121,7 +121,7 @@ class TeamService
                     default => "{$userName}: получено {$log->points_earned} баллов",
                 };
 
-                if ($log->points_earned > 0 && !str_contains($description, (string)$log->points_earned)) {
+                if ($log->points_earned > 0 && ! str_contains($description, (string) $log->points_earned)) {
                     $description .= " ({$log->points_earned} баллов)";
                 }
 
@@ -143,30 +143,30 @@ class TeamService
 
         // 2. Get simulator sessions completed by team members for THIS case's simulator only
         if ($application->case->simulator_id) {
-        $simulatorSessions = SimulatorSession::whereIn('user_id', $teamMemberIds)
+            $simulatorSessions = SimulatorSession::whereIn('user_id', $teamMemberIds)
                 ->where('simulator_id', $application->case->simulator_id)
-            ->whereNotNull('completed_at')
-            ->with(['user', 'simulator'])
+                ->whereNotNull('completed_at')
+                ->with(['user', 'simulator'])
                 ->latest('completed_at')
-            ->get()
-            ->map(function ($session) {
+                ->get()
+                ->map(function ($session) {
                     $userName = $session->user->name;
                     $simulatorTitle = $session->simulator->title;
-                    
-                return [
+
+                    return [
                         'id' => $session->id,
-                    'type' => 'simulator_completed',
-                    'user' => $session->user,
+                        'type' => 'simulator_completed',
+                        'user' => $session->user,
                         'description' => "{$userName} завершил(а) симулятор: {$simulatorTitle}",
-                    'date' => $session->completed_at,
+                        'date' => $session->completed_at,
                         'created_at' => $session->completed_at,
-                    'data' => [
+                        'data' => [
                             'simulator' => $simulatorTitle,
-                        'score' => $session->score,
-                        'time_spent' => $session->time_spent,
-                    ],
-                ];
-            });
+                            'score' => $session->score,
+                            'time_spent' => $session->time_spent,
+                        ],
+                    ];
+                });
 
             $activities = $activities->merge($simulatorSessions);
         }
@@ -176,6 +176,7 @@ class TeamService
             if ($item['type'] === 'simulator_completed') {
                 return $item['type'].'_'.$item['user']['id'].'_'.$item['date']->format('Y-m-d H:i:s');
             }
+
             return $item['type'].'_'.$item['id'];
         });
 

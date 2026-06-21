@@ -322,7 +322,7 @@ class UserService
             ];
 
             // Handle password update
-            if (!empty($data['password'])) {
+            if (! empty($data['password'])) {
                 $updateData['password'] = bcrypt($data['password']);
             }
 
@@ -330,7 +330,7 @@ class UserService
             if (isset($data['avatar'])) {
                 // Удаляем старый аватар перед сохранением нового
                 $this->updateUserAvatar($user, $data['avatar']);
-                
+
                 // Если это файл (UploadedFile), сохраняем его
                 if ($data['avatar'] instanceof \Illuminate\Http\UploadedFile) {
                     $updateData['avatar'] = $this->fileService->storeAvatar($data['avatar']);
@@ -357,7 +357,7 @@ class UserService
                 if (isset($data['phone'])) {
                     // Для teacher phone можно хранить в users, но сейчас не используется
                 }
-                if (!empty($profileData)) {
+                if (! empty($profileData)) {
                     $user->teacherProfile->update($profileData);
                 }
             } elseif ($user->hasRole('student') && $user->studentProfile) {
@@ -380,7 +380,7 @@ class UserService
                 if (isset($data['bio'])) {
                     $profileData['bio'] = $data['bio'];
                 }
-                if (!empty($profileData)) {
+                if (! empty($profileData)) {
                     $user->studentProfile->update($profileData);
                 }
             } elseif ($user->hasRole('partner') && $user->partnerProfile) {
@@ -406,7 +406,7 @@ class UserService
                 if (isset($data['contact_phone'])) {
                     $profileData['contact_phone'] = $data['contact_phone'];
                 }
-                if (!empty($profileData)) {
+                if (! empty($profileData)) {
                     $user->partnerProfile->update($profileData);
                 }
             }
@@ -547,7 +547,7 @@ class UserService
             if ($oldAvatarPath) {
                 $this->fileService->deleteFile($oldAvatarPath);
             }
-            
+
             // Удаляем из БД
             $user->update(['avatar' => null]);
         }

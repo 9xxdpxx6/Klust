@@ -38,34 +38,34 @@ final class TeamFilter extends BaseFilter
         }
 
         $searchTerm = (string) $this->getFilter('search');
-        
+
         $words = array_filter(
             array_map('trim', explode(' ', $searchTerm)),
             fn (string $word): bool => mb_strlen($word) >= 2
         );
-        
+
         if (empty($words)) {
             return;
         }
-        
-        $query->where(function ($q) use ($words, $searchTerm) {
+
+        $query->where(function ($q) use ($words) {
             // Поиск по мотивации
             foreach ($words as $word) {
                 $escapedWord = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $word);
                 $q->orWhere('motivation', 'like', '%'.$escapedWord.'%');
             }
-            
+
             // Поиск по лидеру (имя, email)
             $q->orWhereHas('leader', function ($leaderQuery) use ($words) {
                 foreach ($words as $word) {
                     $escapedWord = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $word);
                     $leaderQuery->where(function ($lq) use ($escapedWord) {
                         $lq->where('name', 'like', '%'.$escapedWord.'%')
-                           ->orWhere('email', 'like', '%'.$escapedWord.'%');
+                            ->orWhere('email', 'like', '%'.$escapedWord.'%');
                     });
                 }
             });
-            
+
             // Поиск по названию кейса
             $q->orWhereHas('case', function ($caseQuery) use ($words) {
                 foreach ($words as $word) {
@@ -73,7 +73,7 @@ final class TeamFilter extends BaseFilter
                     $caseQuery->where('title', 'like', '%'.$escapedWord.'%');
                 }
             });
-            
+
             // Поиск по именам участников команды
             $q->orWhereHas('teamMembers.user', function ($memberQuery) use ($words) {
                 foreach ($words as $word) {

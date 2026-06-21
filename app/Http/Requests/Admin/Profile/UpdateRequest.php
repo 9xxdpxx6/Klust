@@ -26,21 +26,21 @@ class UpdateRequest extends FormRequest
     {
         $userId = auth()->id();
         $user = auth()->user();
-        
+
         // Определяем роль пользователя
         $isTeacher = false;
         $isStudent = false;
         $isPartner = false;
-        
+
         if ($user && $user->roles) {
             $roleNames = $user->roles->pluck('name')->toArray();
             $isTeacher = in_array('teacher', $roleNames);
             $isStudent = in_array('student', $roleNames);
             $isPartner = in_array('partner', $roleNames);
         }
-        
+
         // Базовые правила для всех ролей
-        
+
         $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => [
@@ -64,7 +64,7 @@ class UpdateRequest extends FormRequest
                 'max:2048', // 2MB
             ],
         ];
-        
+
         // Поля для преподавателя
         if ($isTeacher) {
             $rules['department'] = ['nullable', 'string', 'max:255'];
@@ -91,7 +91,7 @@ class UpdateRequest extends FormRequest
             $rules['contact_phone'] = ['nullable', 'string', 'max:20'];
         }
         // Для админа - только базовые поля (name, email, avatar, password)
-        
+
         return $rules;
     }
 

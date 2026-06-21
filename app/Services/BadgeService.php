@@ -151,17 +151,17 @@ class BadgeService
 
         foreach ($allBadges as $badge) {
             $userBadge = $userBadges->get($badge->id);
-            
+
             if ($userBadge === null) {
                 // User doesn't have this badge yet - check for level 1
                 $requiredPointsForLevel1 = $badge->getRequiredPointsForLevel(1);
-                
+
                 if ($totalPoints >= $requiredPointsForLevel1) {
                     // Award badge at level 1
-            $user->badges()->attach($badge->id, [
+                    $user->badges()->attach($badge->id, [
                         'level' => 1,
-                'earned_at' => now(),
-            ]);
+                        'earned_at' => now(),
+                    ]);
 
                     $newBadges[] = [
                         'badge' => $badge,
@@ -173,15 +173,15 @@ class BadgeService
                 // User already has this badge - check for next level
                 $currentLevel = $userBadge->pivot->level ?? 1;
                 $nextLevel = $currentLevel + 1;
-                
+
                 // Check if badge has max level and user reached it
                 if ($badge->max_level !== null && $nextLevel > $badge->max_level) {
                     continue; // Already at max level
                 }
-                
+
                 // Calculate required points for next level
                 $requiredPointsForNextLevel = $badge->getRequiredPointsForLevel($nextLevel);
-                
+
                 if ($totalPoints >= $requiredPointsForNextLevel) {
                     // Upgrade badge to next level
                     DB::table('user_badges')
@@ -191,7 +191,7 @@ class BadgeService
                             'level' => $nextLevel,
                             'earned_at' => now(), // Update earned_at to reflect latest upgrade
                         ]);
-                    
+
                     $newBadges[] = [
                         'badge' => $badge,
                         'level' => $nextLevel,
@@ -261,7 +261,7 @@ class BadgeService
         }
 
         $totalPoints = $studentProfile->total_points;
-        
+
         // Get badges user has with their levels
         $userBadges = $user->badges()
             ->withPivot('level')
@@ -275,11 +275,11 @@ class BadgeService
 
         foreach ($allBadges as $badge) {
             $userBadge = $userBadges->get($badge->id);
-            
+
             if ($userBadge === null) {
                 // User doesn't have this badge - show level 1 requirement
                 $requiredPointsForLevel1 = $badge->getRequiredPointsForLevel(1);
-                
+
                 if ($requiredPointsForLevel1 > $totalPoints) {
                     $iconPath = null;
                     if ($badge->icon && ! str_starts_with($badge->icon, 'pi-') && ! str_starts_with($badge->icon, 'fa-')) {
@@ -295,35 +295,35 @@ class BadgeService
                         'required_points' => $requiredPointsForLevel1,
                         'level' => 1,
                         'points_needed' => $requiredPointsForLevel1 - $totalPoints,
-                        'progress_percentage' => $requiredPointsForLevel1 > 0 
-                            ? round(($totalPoints / $requiredPointsForLevel1) * 100, 2) 
+                        'progress_percentage' => $requiredPointsForLevel1 > 0
+                            ? round(($totalPoints / $requiredPointsForLevel1) * 100, 2)
                             : 0,
                     ]);
                 }
             } else {
                 // User has this badge - check if there's a next level
                 $currentLevel = $userBadge->pivot->level ?? 1;
-                
+
                 // Check if badge has max level and user reached it
                 if ($badge->max_level !== null && $currentLevel >= $badge->max_level) {
                     continue; // Already at max level, skip
                 }
-                
+
                 $nextLevel = $currentLevel + 1;
                 $requiredPointsForNextLevel = $badge->getRequiredPointsForLevel($nextLevel);
-                
+
                 if ($requiredPointsForNextLevel > $totalPoints) {
-                $iconPath = null;
-                if ($badge->icon && ! str_starts_with($badge->icon, 'pi-') && ! str_starts_with($badge->icon, 'fa-')) {
-                    $iconPath = '/storage/'.$badge->icon;
-                }
+                    $iconPath = null;
+                    if ($badge->icon && ! str_starts_with($badge->icon, 'pi-') && ! str_starts_with($badge->icon, 'fa-')) {
+                        $iconPath = '/storage/'.$badge->icon;
+                    }
 
                     $upcoming->push([
-                    'id' => $badge->id,
-                    'name' => $badge->name,
-                    'description' => $badge->description,
-                    'icon' => $badge->icon,
-                    'icon_path' => $iconPath,
+                        'id' => $badge->id,
+                        'name' => $badge->name,
+                        'description' => $badge->description,
+                        'icon' => $badge->icon,
+                        'icon_path' => $iconPath,
                         'required_points' => $requiredPointsForNextLevel,
                         'level' => $nextLevel,
                         'current_level' => $currentLevel,

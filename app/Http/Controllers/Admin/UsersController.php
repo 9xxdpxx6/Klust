@@ -46,7 +46,7 @@ class UsersController extends Controller
         // Создаем отдельный запрос для статистики с учетом фильтров (до пагинации)
         $filteredStatsQuery = User::query();
         $filteredStatsQuery = $userFilter->apply($filteredStatsQuery);
-        
+
         // Подсчитываем статистику с учетом фильтров
         $filteredStatistics = [
             'total_users' => $filteredStatsQuery->count(),
@@ -373,7 +373,7 @@ class UsersController extends Controller
             if ($request->has('bio')) {
                 $profileData['bio'] = $request->bio;
             }
-            if (!empty($profileData)) {
+            if (! empty($profileData)) {
                 $user->studentProfile->update($profileData);
             }
         }
@@ -413,7 +413,7 @@ class UsersController extends Controller
                 $profileData['logo'] = $logoPath;
             }
 
-            if (!empty($profileData)) {
+            if (! empty($profileData)) {
                 $user->partnerProfile->update($profileData);
             }
         }
@@ -430,7 +430,7 @@ class UsersController extends Controller
             if ($request->has('bio')) {
                 $profileData['bio'] = $request->bio;
             }
-            if (!empty($profileData)) {
+            if (! empty($profileData)) {
                 $user->teacherProfile->update($profileData);
             }
         }

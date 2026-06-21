@@ -72,7 +72,7 @@ class CaseController extends Controller
         $caseFilter = new \App\Filters\CaseFilter($filters);
         $statisticsQuery = CaseModel::query();
         $statisticsQuery = $caseFilter->apply($statisticsQuery);
-        
+
         $statistics = [
             'total_cases' => $statisticsQuery->count(),
             'active_cases' => (clone $statisticsQuery)->where('status', 'active')->count(),

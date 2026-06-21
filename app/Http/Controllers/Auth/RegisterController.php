@@ -62,7 +62,7 @@ class RegisterController extends Controller
             // Вызываем событие Registered для отправки письма верификации
             // Важно: событие должно быть вызвано ДО входа пользователя
             event(new Registered($user));
-            
+
             // Также отправляем письмо напрямую на случай, если событие не сработало
             try {
                 $user->sendEmailVerificationNotification();
@@ -134,7 +134,7 @@ class RegisterController extends Controller
             // Вызываем событие Registered для отправки письма верификации
             // Важно: событие должно быть вызвано ДО входа пользователя
             event(new Registered($user));
-            
+
             // Также отправляем письмо напрямую на случай, если событие не сработало
             try {
                 $user->sendEmailVerificationNotification();

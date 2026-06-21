@@ -130,7 +130,7 @@ class ProgressLogService
         $newLevel = 0;
         $newBadges = [];
 
-        DB::transaction(function () use ($user, $skill, $points, $source, $metadata, $updateTotalPoints, &$leveledUp, &$newLevel, &$newBadges) {
+        DB::transaction(function () use ($user, $skill, $points, $source, $updateTotalPoints, &$leveledUp, &$newLevel, &$newBadges) {
             // Get or create user skill
             $userSkill = UserSkill::firstOrCreate(
                 [
@@ -186,7 +186,7 @@ class ProgressLogService
             $this->notificationService->notifySkillLevelUp($user, $skill->name, $newLevel);
         }
 
-        if ($updateTotalPoints && !empty($newBadges)) {
+        if ($updateTotalPoints && ! empty($newBadges)) {
             foreach ($newBadges as $badgeData) {
                 $this->notificationService->notifyBadgeEarned($user, $badgeData['badge']);
             }
@@ -207,7 +207,7 @@ class ProgressLogService
         }
 
         $logs = $query->latest()->get();
-        
+
         // Фильтруем записи, где loggable существует (навык не удален)
         return $logs->filter(function ($log) {
             return $log->loggable !== null;

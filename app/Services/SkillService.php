@@ -121,7 +121,7 @@ class SkillService
         $configMaxValue = $levelThresholds[$configMaxLevel];
         $prevThreshold = $configMaxValue;
         for ($level = $configMaxLevel + 1; $level <= $maxLevel; $level++) {
-            if (!isset($levelThresholds[$level])) {
+            if (! isset($levelThresholds[$level])) {
                 $nextThreshold = $prevThreshold * 2;
                 // Overflow protection: cap at a safe maximum when multiplication overflows
                 if ($nextThreshold <= $prevThreshold || $nextThreshold > PHP_INT_MAX / 2) {

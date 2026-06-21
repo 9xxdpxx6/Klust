@@ -14,7 +14,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class ApplicationService
 {
@@ -114,7 +113,7 @@ class ApplicationService
             throw new \Exception('Только заявки со статусом "ожидает" могут быть отклонены');
         }
 
-        return DB::transaction(function () use ($application, $rejectionReason, $pendingStatusId, $rejectedStatusId) {
+        return DB::transaction(function () use ($application, $rejectionReason, $rejectedStatusId) {
             $oldStatusId = $application->status_id;
 
             $application->update([
@@ -145,8 +144,8 @@ class ApplicationService
         $this->ensureCaseDeadlineNotPassed($application->case, 'изменять статус заявок');
 
         $newStatusId = ApplicationStatus::getIdByName($statusName);
-        
-        if (!$newStatusId) {
+
+        if (! $newStatusId) {
             throw new \Exception("Неизвестный статус: {$statusName}");
         }
 
@@ -330,7 +329,7 @@ class ApplicationService
                     'case.partnerUser.partnerProfile',
                     'teamMembers.user',
                     'status',
-                    'leader'
+                    'leader',
                 ]);
         };
 
@@ -342,7 +341,7 @@ class ApplicationService
             // Get pagination parameters for this tab
             $pageKey = "page_{$tabKey}";
             $perPageKey = "per_page_{$tabKey}";
-            
+
             $filters = [
                 'page' => $request->query($pageKey, 1),
                 'per_page' => $request->query($perPageKey, 12),
@@ -353,13 +352,13 @@ class ApplicationService
 
             $filter = new CaseApplicationFilter($filters);
             $query = $filter->apply($query);
-            
+
             $pagination = $filter->getPaginationParams();
-            
+
             // Build query string for pagination links
             $queryParams = $request->query();
             $queryParams[$pageKey] = null; // Will be set by paginator
-            
+
             $paginated = $query
                 ->paginate($pagination['per_page'], ['*'], $pageKey)
                 ->appends($queryParams);
@@ -367,6 +366,7 @@ class ApplicationService
             // Add is_leader flag for each application
             $paginated->getCollection()->transform(function ($application) use ($user) {
                 $application->setAttribute('is_leader', (int) $application->leader_id === (int) $user->id);
+
                 return $application;
             });
 
@@ -388,13 +388,13 @@ class ApplicationService
     {
         $pageKey = "page_{$tabKey}";
         $perPageKey = "per_page_{$tabKey}";
-        
+
         $page = (int) $request->query($pageKey, 1);
         $perPage = (int) $request->query($perPageKey, 12);
-        
+
         // Create empty collection paginator
         $items = collect();
-        
+
         return new \Illuminate\Pagination\LengthAwarePaginator(
             $items,
             0,
@@ -447,10 +447,11 @@ class ApplicationService
                 ->pluck('leader_id')
                 ->toArray();
 
-            if (!empty($existingLeaders)) {
+            if (! empty($existingLeaders)) {
                 $user = User::whereIn('id', $existingLeaders)->first();
                 throw new \Exception("Студент {$user->name} уже является лидером команды для этого кейса");
             }
+
             return;
         }
 

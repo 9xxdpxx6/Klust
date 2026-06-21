@@ -96,7 +96,6 @@ class AnalyticsService
      * Calculate overview statistics
      *
      * @param  \Illuminate\Support\Collection  $cases
-     * @param  int  $acceptedStatusId
      */
     private function calculateOverviewStatistics($cases, int $acceptedStatusId): array
     {
@@ -196,6 +195,7 @@ class AnalyticsService
         $labels = array_map(function ($key) use ($monthNames) {
             $date = Carbon::parse($key);
             $month = $monthNames[$date->month] ?? $date->format('M');
+
             return $month.' '.$date->year;
         }, array_keys($months));
 
@@ -276,7 +276,6 @@ class AnalyticsService
      * Get top cases by applications count
      *
      * @param  \Illuminate\Support\Collection  $cases
-     * @param  int  $acceptedStatusId
      */
     private function getTopCases($cases, int $acceptedStatusId): array
     {

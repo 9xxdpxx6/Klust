@@ -12,7 +12,7 @@ class SimulatorSkillSeeder extends Seeder
     {
         $bankSimulator = Simulator::where('slug', 'bankovskaya-set-optimizaciya-filialov')->first();
 
-        if (!$bankSimulator) {
+        if (! $bankSimulator) {
             return;
         }
 

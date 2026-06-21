@@ -38,10 +38,10 @@ return [
     | with a distinct 3D model (where possible).
     */
     'dialogue_client_mapping' => [
-        'credit_card'   => 'student',       // Студент оформляет первую карту
+        'credit_card' => 'student',       // Студент оформляет первую карту
         'consumer_loan' => 'entrepreneur',  // Предприниматель берёт кредит
-        'mortgage'      => 'family',        // Семья берёт ипотеку
-        'deposit'       => 'pensioner',     // Пенсионер открывает вклад
+        'mortgage' => 'family',        // Семья берёт ипотеку
+        'deposit' => 'pensioner',     // Пенсионер открывает вклад
     ],
 
     /*

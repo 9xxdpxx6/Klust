@@ -54,20 +54,20 @@ class ProgressLogSeeder extends Seeder
             foreach ($case->skills as $skill) {
                 $createdAt = $session->completed_at ?? $session->started_at ?? Carbon::now();
 
-            // Если дата в будущем, используем текущую дату
-            if ($createdAt > Carbon::now()) {
-                $createdAt = Carbon::now();
-            }
+                // Если дата в будущем, используем текущую дату
+                if ($createdAt > Carbon::now()) {
+                    $createdAt = Carbon::now();
+                }
 
-            ProgressLog::create([
+                ProgressLog::create([
                     'user_id' => $session->user_id,
                     'action' => 'simulator_completion',
                     'loggable_type' => Skill::class,
                     'loggable_id' => $skill->id,
                     'points_earned' => $pointsEarned,
-                'created_at' => $createdAt,
-                'updated_at' => $createdAt,
-            ]);
+                    'created_at' => $createdAt,
+                    'updated_at' => $createdAt,
+                ]);
 
                 $processedSessions++;
 
@@ -102,7 +102,7 @@ class ProgressLogSeeder extends Seeder
             for ($i = 0; $i < 200; $i++) {
                 $skill = $skills->random();
                 $action = fake()->randomElement(['simulator_completion', 'manual']);
-                
+
                 $pointsEarned = match ($action) {
                     'simulator_completion' => fake()->numberBetween(50, 500),
                     'manual' => fake()->numberBetween(10, 100),

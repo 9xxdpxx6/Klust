@@ -61,4 +61,3 @@ class ApplicationStatusChangedMail extends Mailable implements ShouldQueue
         return [];
     }
 }
-

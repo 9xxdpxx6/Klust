@@ -13,8 +13,7 @@ class SearchController extends Controller
 {
     public function __construct(
         private SearchService $searchService
-    ) {
-    }
+    ) {}
 
     /**
      * Global search across multiple entities

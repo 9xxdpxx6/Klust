@@ -24,7 +24,7 @@ class VerificationController extends Controller
             return redirect()->route('dashboard')
                 ->with('success', 'Email успешно подтвержден!');
         }
-        
+
         return Inertia::render('Auth/VerifyEmail');
     }
 
@@ -58,7 +58,7 @@ class VerificationController extends Controller
         try {
             $user = $request->user();
             $user->sendEmailVerificationNotification();
-            
+
             return redirect()->route('verification.notice')
                 ->with('success', 'Письмо с подтверждением отправлено на ваш email.');
         } catch (\Exception $e) {
@@ -67,10 +67,9 @@ class VerificationController extends Controller
                 'email' => $request->user()->email,
                 'error' => $e->getMessage(),
             ]);
-            
+
             return redirect()->route('verification.notice')
                 ->with('error', 'Не удалось отправить письмо. Попробуйте позже или обратитесь в поддержку.');
         }
     }
 }
-

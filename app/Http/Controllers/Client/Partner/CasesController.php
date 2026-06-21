@@ -58,12 +58,12 @@ class CasesController extends Controller
             if ($user->hasAnyRole(['admin', 'teacher'])) {
                 $partnerId = $request->input('partner_id');
                 // Если partner_id не указан, редиректим на админскую страницу кейсов
-                if (!$partnerId) {
+                if (! $partnerId) {
                     return redirect()->route('admin.cases.index');
                 }
                 // Проверяем, что указанный пользователь действительно партнер
                 $partnerUser = \App\Models\User::find($partnerId);
-                if (!$partnerUser || !$partnerUser->hasRole('partner')) {
+                if (! $partnerUser || ! $partnerUser->hasRole('partner')) {
                     return redirect()->route('admin.cases.index')
                         ->with('error', 'Партнер не найден');
                 }
@@ -72,13 +72,13 @@ class CasesController extends Controller
             } elseif ($user->hasRole('student')) {
                 // Студенты могут просматривать кейсы партнера, если указан partner_id
                 $partnerId = $request->input('partner_id');
-                if (!$partnerId) {
+                if (! $partnerId) {
                     return redirect()->route('student.cases.index')
                         ->with('error', 'Партнер не указан');
                 }
                 // Проверяем, что указанный пользователь действительно партнер
                 $partnerUser = \App\Models\User::find($partnerId);
-                if (!$partnerUser || !$partnerUser->hasRole('partner')) {
+                if (! $partnerUser || ! $partnerUser->hasRole('partner')) {
                     return redirect()->route('student.cases.index')
                         ->with('error', 'Партнер не найден');
                 }
@@ -160,6 +160,7 @@ class CasesController extends Controller
             ]);
         } catch (\Exception $e) {
             $user = auth()->user();
+
             return Inertia::render('Client/Partner/Cases/Index', [
                 'cases' => [],
                 'filters' => [],
@@ -271,53 +272,53 @@ class CasesController extends Controller
             // Применить сортировку
             $teamSortBy = $request->query('team_sort_by', 'id');
             $teamSortOrder = $request->query('team_sort_order', 'desc');
-            
+
             // Валидация полей сортировки
             $allowedSortFields = ['id', 'created_at', 'submitted_at'];
-            if (!in_array($teamSortBy, $allowedSortFields, true)) {
+            if (! in_array($teamSortBy, $allowedSortFields, true)) {
                 $teamSortBy = 'id';
             }
-            
-            if (!in_array(strtolower($teamSortOrder), ['asc', 'desc'], true)) {
+
+            if (! in_array(strtolower($teamSortOrder), ['asc', 'desc'], true)) {
                 $teamSortOrder = 'desc';
             }
-            
+
             $teamsQuery->orderBy($teamSortBy, $teamSortOrder);
 
             // Пагинация
             $perPage = (int) $request->query('team_per_page', 12);
             $perPage = min(max($perPage, 5), 100); // Clamp between 5 and 100
-            
+
             $teams = $teamsQuery
                 ->paginate($perPage, ['*'], 'team_page')
                 ->withQueryString();
-            
+
             // Добавляем информацию о навыках для каждой команды
             $teams->getCollection()->transform(function ($application) use ($case) {
                 // Собираем всех участников команды (лидер + участники)
                 $allMembers = collect([$application->leader])
                     ->merge($application->teamMembers->pluck('user'))
                     ->filter();
-                
+
                 // Собираем все навыки команды (уникальные ID)
                 $teamSkillIds = $allMembers
-                    ->flatMap(fn($member) => $member->skills->pluck('id'))
+                    ->flatMap(fn ($member) => $member->skills->pluck('id'))
                     ->unique()
                     ->values()
                     ->toArray();
-                
+
                 // Получаем навыки кейса
                 $caseSkillIds = $case->skills->pluck('id')->toArray();
-                
+
                 // Вычисляем покрытые и непокрытые навыки
                 $coveredSkillIds = array_intersect($caseSkillIds, $teamSkillIds);
                 $missingSkillIds = array_diff($caseSkillIds, $teamSkillIds);
-                
+
                 // Добавляем информацию о навыках в объект команды через setAttribute
                 $application->setAttribute('team_skill_ids', $teamSkillIds);
                 $application->setAttribute('covered_skill_ids', array_values($coveredSkillIds));
                 $application->setAttribute('missing_skill_ids', array_values($missingSkillIds));
-                
+
                 return $application;
             });
 
@@ -333,23 +334,23 @@ class CasesController extends Controller
                 'sort_by' => $request->query('sort_by', 'id'),
                 'sort_order' => $request->query('sort_order', 'desc'),
             ]);
-            
+
             $applicationsQuery = $filter->apply($applicationsQuery);
 
             $applications = $applicationsQuery
                 ->paginate(10)
                 ->withQueryString();
-            
+
             // Добавляем информацию о навыках для каждой заявки
             $applications->getCollection()->transform(function ($application) use ($case) {
                 // Собираем ID всех участников команды (лидер + участники)
                 $memberIds = collect();
-                
+
                 // Добавляем ID лидера
                 if ($application->leader_id) {
                     $memberIds->push($application->leader_id);
                 }
-                
+
                 // Добавляем ID участников команды
                 if ($application->teamMembers) {
                     foreach ($application->teamMembers as $teamMember) {
@@ -358,32 +359,31 @@ class CasesController extends Controller
                         }
                     }
                 }
-                
+
                 // Убираем дубликаты
                 $memberIds = $memberIds->unique()->values();
-                
+
                 // Получаем все навыки команды напрямую из БД
                 $teamSkillIds = DB::table('user_skills')
                     ->whereIn('user_id', $memberIds->toArray())
                     ->distinct()
                     ->pluck('skill_id')
                     ->toArray();
-                
+
                 // Получаем навыки кейса
                 $caseSkillIds = $case->skills ? $case->skills->pluck('id')->toArray() : [];
-                
+
                 // Вычисляем покрытые и непокрытые навыки
                 $coveredSkillIds = array_intersect($caseSkillIds, $teamSkillIds);
                 $missingSkillIds = array_diff($caseSkillIds, $teamSkillIds);
-                
+
                 // Добавляем информацию о навыках в объект заявки через setAttribute
                 $application->setAttribute('team_skill_ids', $teamSkillIds);
                 $application->setAttribute('covered_skill_ids', array_values($coveredSkillIds));
                 $application->setAttribute('missing_skill_ids', array_values($missingSkillIds));
-                
+
                 return $application;
             });
-
 
             return Inertia::render('Client/Partner/Cases/Show', [
                 'caseData' => $case,
@@ -519,7 +519,7 @@ class CasesController extends Controller
     public function approve(ApproveRequest $request, CaseModel $case, CaseApplication $application): RedirectResponse
     {
         $startTime = microtime(true);
-        
+
         try {
             // Проверить права (кейс принадлежит партнеру)
             $this->authorize('approveApplication', $case);
@@ -540,7 +540,7 @@ class CasesController extends Controller
             $serviceStart = microtime(true);
             $updatedApplication = $this->applicationService->approveApplication($application, $request->comment ?? null);
             $serviceTime = round((microtime(true) - $serviceStart) * 1000, 2);
-            
+
             // Перезагрузить кейс с актуальными данными
             $case->refresh();
 
@@ -553,9 +553,9 @@ class CasesController extends Controller
                 $request->comment ?? null
             );
             $notificationTime = round((microtime(true) - $notificationStart) * 1000, 2);
-            
+
             $totalTime = round((microtime(true) - $startTime) * 1000, 2);
-            
+
             Log::info('Application status changed: approved', [
                 'application_id' => $updatedApplication->id,
                 'case_id' => $case->id,
@@ -570,13 +570,14 @@ class CasesController extends Controller
                 ->with('success', 'Заявка успешно одобрена');
         } catch (\Exception $e) {
             $totalTime = round((microtime(true) - $startTime) * 1000, 2);
-            
+
             Log::error('Error approving application', [
                 'application_id' => $application->id,
                 'case_id' => $case->id,
                 'error' => $e->getMessage(),
                 'total_time_ms' => $totalTime,
             ]);
+
             return redirect()
                 ->back()
                 ->with('error', 'Ошибка при одобрении заявки: '.$e->getMessage());
@@ -589,7 +590,7 @@ class CasesController extends Controller
     public function reject(RejectRequest $request, CaseModel $case, CaseApplication $application): RedirectResponse
     {
         $startTime = microtime(true);
-        
+
         try {
             // Проверить права
             $this->authorize('rejectApplication', $case);
@@ -632,9 +633,9 @@ class CasesController extends Controller
                 ]);
             }
             $notificationTime = round((microtime(true) - $notificationStart) * 1000, 2);
-            
+
             $totalTime = round((microtime(true) - $startTime) * 1000, 2);
-            
+
             Log::info('Application status changed: rejected', [
                 'application_id' => $updatedApplication->id,
                 'case_id' => $case->id,
@@ -643,13 +644,13 @@ class CasesController extends Controller
                 'notification_time_ms' => $notificationTime,
                 'total_time_ms' => $totalTime,
             ]);
-            
+
             return redirect()
                 ->route('partner.cases.show', $case->id)
                 ->with('success', 'Заявка отклонена');
         } catch (\Exception $e) {
             $totalTime = round((microtime(true) - $startTime) * 1000, 2);
-            
+
             Log::error('Error rejecting application', [
                 'application_id' => $application->id,
                 'case_id' => $case->id,
@@ -658,7 +659,7 @@ class CasesController extends Controller
                 'total_time_ms' => $totalTime,
                 'exception_class' => get_class($e),
             ]);
-            
+
             // Редиректим на страницу кейса вместо back(), чтобы избежать проблем с GET запросами
             return redirect()
                 ->route('partner.cases.show', $case->id)
@@ -672,7 +673,7 @@ class CasesController extends Controller
     public function updateApplicationStatus(UpdateStatusRequest $request, CaseModel $case, CaseApplication $application): RedirectResponse
     {
         $startTime = microtime(true);
-        
+
         try {
             // Проверить права (кейс принадлежит партнеру и дедлайн не прошел)
             $this->authorize('updateApplicationStatus', $case);
@@ -682,9 +683,9 @@ class CasesController extends Controller
             }
 
             $newStatus = $request->validated()['status'];
-            
+
             // Загружаем статус если еще не загружен
-            if (!$application->relationLoaded('status')) {
+            if (! $application->relationLoaded('status')) {
                 $application->load('status');
             }
             $oldStatus = $application->status->name ?? 'unknown';
@@ -715,7 +716,7 @@ class CasesController extends Controller
             }
 
             $totalTime = round((microtime(true) - $startTime) * 1000, 2);
-            
+
             Log::info('Application status changed', [
                 'application_id' => $updatedApplication->id,
                 'case_id' => $case->id,
@@ -729,16 +730,17 @@ class CasesController extends Controller
 
             return redirect()
                 ->route('partner.cases.show', $case)
-                ->with('success', "Статус заявки изменен на: " . ($updatedApplication->status->label ?? $newStatus));
+                ->with('success', 'Статус заявки изменен на: '.($updatedApplication->status->label ?? $newStatus));
         } catch (\Exception $e) {
             $totalTime = round((microtime(true) - $startTime) * 1000, 2);
-            
+
             Log::error('Error updating application status', [
                 'application_id' => $application->id,
                 'case_id' => $case->id,
                 'error' => $e->getMessage(),
                 'total_time_ms' => $totalTime,
             ]);
+
             return redirect()
                 ->back()
                 ->with('error', 'Ошибка при изменении статуса заявки: '.$e->getMessage());

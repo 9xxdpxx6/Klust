@@ -18,7 +18,6 @@ use App\Http\Controllers\Client\Partner\TeamController;
 use App\Http\Controllers\Client\Student\BadgesController;
 use App\Http\Controllers\Client\Student\CasesController as StudentCasesController;
 use App\Http\Controllers\Client\Student\DashboardController as StudentDashboardController;
-use App\Models\CaseModel;
 use App\Http\Controllers\Client\Student\PartnersController as StudentPartnersController;
 use App\Http\Controllers\Client\Student\ProfileController as StudentProfileController;
 use App\Http\Controllers\Client\Student\SimulatorsController;
@@ -26,6 +25,7 @@ use App\Http\Controllers\Client\Student\SkillsController;
 use App\Http\Controllers\GuestController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Search\SearchController;
+use App\Models\CaseModel;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -164,7 +164,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/simulators/{simulator}/start', [SimulatorsController::class, 'start'])->name('simulators.start');
         Route::get('/simulators/session/{session}', [SimulatorsController::class, 'session'])->name('simulators.session');
         Route::post('/simulators/session/{session}/complete', [SimulatorsController::class, 'complete'])->name('simulators.complete');
-        
+
         // Simulator API endpoints
         Route::post('/simulators/session/{session}/generate-client', [SimulatorsController::class, 'generateClient'])->name('simulators.generate-client');
         Route::post('/simulators/session/{session}/calculate-scoring', [SimulatorsController::class, 'calculateScoring'])->name('simulators.calculate-scoring');

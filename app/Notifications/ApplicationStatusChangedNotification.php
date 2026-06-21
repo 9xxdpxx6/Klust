@@ -76,9 +76,9 @@ class ApplicationStatusChangedNotification extends Notification implements Shoul
         }
 
         // Если routeNotificationForMail вернул null или не существует, проверяем напрямую
-        if (!$recipientEmail) {
+        if (! $recipientEmail) {
             $notifiableEmail = $notifiable->email ?? null;
-            
+
             // Проверяем валидность email
             if ($notifiableEmail && filter_var($notifiableEmail, FILTER_VALIDATE_EMAIL)) {
                 $recipientEmail = $notifiableEmail;
@@ -177,4 +177,3 @@ class ApplicationStatusChangedNotification extends Notification implements Shoul
         return now()->toIso8601String();
     }
 }
-

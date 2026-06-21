@@ -47,10 +47,11 @@ final class UserFilter extends BaseFilter
 
         // Если поисковый запрос - одно число, ищем по ID
         if (count($keywords) === 1 && is_numeric($search)) {
-        $query->where(function ($q) use ($search): void {
+            $query->where(function ($q) use ($search): void {
                 $q->where('id', (int) $search)
-                ->orWhere('kubgtu_id', 'like', "%{$search}%");
+                    ->orWhere('kubgtu_id', 'like', "%{$search}%");
             });
+
             return;
         }
 
@@ -156,4 +157,3 @@ final class UserFilter extends BaseFilter
         $query->orderBy($sortBy, $sortOrder);
     }
 }
-

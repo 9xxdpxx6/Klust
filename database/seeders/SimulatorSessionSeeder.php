@@ -15,7 +15,7 @@ class SimulatorSessionSeeder extends Seeder
         $students = User::role('student')->get();
         $simulator = Simulator::first();
 
-        if (!$simulator) {
+        if (! $simulator) {
             return;
         }
 
@@ -28,16 +28,16 @@ class SimulatorSessionSeeder extends Seeder
             }
 
             // 70% вероятность создания сессии для студента
-            if (!fake()->boolean(70)) {
+            if (! fake()->boolean(70)) {
                 continue;
             }
 
             // Дата начала сессии (от 6 месяцев назад до сейчас)
             $startedAt = fake()->dateTimeBetween('-6 months', 'now');
-            
+
             // 75% сессий завершены
             $isCompleted = fake()->boolean(75);
-            
+
             // Если завершена, то completed_at через 5-120 минут после started_at
             $completedAt = null;
             if ($isCompleted) {
@@ -46,17 +46,17 @@ class SimulatorSessionSeeder extends Seeder
                     min(Carbon::parse($startedAt)->addHours(2), Carbon::now())
                 );
             }
-            
+
             // Время, потраченное на сессию (в секундах)
-            $timeSpent = $isCompleted 
+            $timeSpent = $isCompleted
                 ? fake()->numberBetween(300, 7200) // 5 минут - 2 часа для завершенных
                 : fake()->numberBetween(60, 1800);  // 1 минута - 30 минут для незавершенных
-            
+
             // Score должен быть в диапазоне 0-100 (процент)
-            $score = $isCompleted 
+            $score = $isCompleted
                 ? fake()->numberBetween(50, 100)
                 : fake()->numberBetween(0, 49);
-            
+
             // Состояние игры (только для завершенных)
             $state = $isCompleted ? [
                 'level' => fake()->numberBetween(1, 10),
@@ -80,12 +80,12 @@ class SimulatorSessionSeeder extends Seeder
 
         // Для тестового студента создаем сессию, если её еще нет
         $testStudent = User::where('email', 'zxc@zxc.zxc')->first();
-        if ($testStudent && !$testStudent->simulatorSessions()->exists()) {
+        if ($testStudent && ! $testStudent->simulatorSessions()->exists()) {
             $startedAt = fake()->dateTimeBetween('-6 months', 'now');
-            
+
             // 90% вероятность завершения для тестового студента
             $isCompleted = fake()->boolean(90);
-            
+
             $completedAt = null;
             if ($isCompleted) {
                 $completedAt = fake()->dateTimeBetween(
@@ -93,16 +93,16 @@ class SimulatorSessionSeeder extends Seeder
                     min(Carbon::parse($startedAt)->addHours(2), Carbon::now())
                 );
             }
-            
-            $timeSpent = $isCompleted 
+
+            $timeSpent = $isCompleted
                 ? fake()->numberBetween(300, 7200)
                 : fake()->numberBetween(60, 1800);
-            
+
             // Score должен быть в диапазоне 0-100 (процент)
-            $score = $isCompleted 
+            $score = $isCompleted
                 ? fake()->numberBetween(70, 100) // Высокие очки для тестового студента
                 : fake()->numberBetween(0, 49);
-            
+
             $state = $isCompleted ? [
                 'level' => fake()->numberBetween(5, 10),
                 'completed_tasks' => fake()->numberBetween(3, 5),

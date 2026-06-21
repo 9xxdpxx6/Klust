@@ -32,7 +32,7 @@ class ApplicationRejectedNotification extends Notification implements ShouldQueu
     public function toMail($notifiable): MailMessage
     {
         $rejectionReason = $this->application->rejection_reason ?? 'Не указана';
-        
+
         return (new MailMessage)
             ->subject('Заявка отклонена')
             ->line("Ваша заявка на кейс '{$this->application->case->title}' была отклонена.")
