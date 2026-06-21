@@ -53,7 +53,6 @@ jobs:
       - name: Install PHP deps
         run: composer install --no-interaction --prefer-dist
 
-      # Node setup
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -72,14 +71,11 @@ jobs:
       - name: Run migrations
         run: php artisan migrate --force
 
-      # Build frontend
-      - name: Build frontend
-        run: npm run build
-
-      # Lint
       - name: Pint check
         run: ./vendor/bin/pint --test
 
-      # Tests
+      - name: Build frontend
+        run: npm run build
+
       - name: Run tests
         run: php artisan test
