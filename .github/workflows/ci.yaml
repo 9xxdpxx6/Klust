@@ -72,13 +72,13 @@ jobs:
       - name: Run migrations
         run: php artisan migrate --force
 
+      # Build frontend
+      - name: Build frontend
+        run: npm run build
+
       # Lint
       - name: Pint check
         run: ./vendor/bin/pint --test
-
-      # Build
-      - name: Build frontend
-        run: npm run build
 
       # Tests
       - name: Run tests
