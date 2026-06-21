@@ -2,8 +2,11 @@ name: CI
 
 on:
   push:
-    branches: [ashiq/feat-ci-workflow]
+    branches:
+      - main
   pull_request:
+    branches:
+      - main
 
 jobs:
   ci:
